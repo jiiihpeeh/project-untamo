@@ -3,4 +3,8 @@ project-Untamo
 
 Tavoite synkronoitava heräytyskello. Mahdollisusus laajentaa puhelimiin  ja laitteisiin.
 
-Frontend: React, backend Node express, tietokanta mongodb, mahd. React Native.
+Frontend: React, 
+Backend: Node express, 
+Tietokanta: mongodb
+
+mahd. React Native.
