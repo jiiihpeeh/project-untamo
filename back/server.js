@@ -19,7 +19,7 @@ const mongo_user=process.env.MONGODB_USERNAME;
 const mongo_password=process.env.MONGODB_PASSWORD;
 const mongo_url=process.env.MONGODB_URL;
 
-mongoose.connect ("mongodb+srv://"+mongo_user+":"+mongo_password+"@"+mongo_url+"/shoppingdatabase?retryWrites=true&w=majority").then( () => console.log("Connected to mongodb"),(err) => console.log("Failed to connect. Reason",err));
+mongoose.connect ("mongodb+srv://"+mongo_user+":"+mongo_password+"@"+mongo_url+"/untamodatabase?retryWrites=true&w=majority").then( () => console.log("Connected to mongodb"),(err) => console.log("Failed to connect. Reason",err));
 
 mongoose.set("toJSON",{virtuals:true});
 
@@ -68,20 +68,20 @@ isUserLogged = (req,res,next) => {
 	})
 }
 
-//LOGIN API
+// LOGIN API:
 
 app.post("/register",function(req,res) {
-	if(!req.body) {
+	if(!req.body) {														// jos POSTissa ei bodyä:
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(!req.body.username || !req.body.password) {
+	if(!req.body.username || !req.body.password) {						// jos POSTissa ei 'username'a tai 'password'ia:
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(req.body.username.length < 4 || req.body.password.length < 8) {
+	if(req.body.username.length < 4 || req.body.password.length < 8) {	// jos username alle 4 tai password alle 8 merkkiä:
 		return res.status(400).json({message:"Bad Request"}); 
 	}
-	
-	bcrypt.hash(req.body.password,14,function(err,hash) {
+
+	bcrypt.hash(req.body.password,14,function(err,hash) { 				// hashaa salasana
 		if(err) {
 			return res.status(400).json({message:"Bad Request"}); 
 		}
@@ -165,4 +165,9 @@ app.use("/api",isUserLogged,apiroute);
 
 app.listen(port);
 
+console.log("***************************");
+console.log("* PROJECT UNTAMO: BACKEND *");
+console.log("***************************");
+console.log("");
 console.log("Running in port",port);
+console.log("");

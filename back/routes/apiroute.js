@@ -34,7 +34,7 @@ router.post("/alarm",function(req,res) {
 			console.log("Failed to create alarm. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
-		return res.status(201).json({message:"Created"});
+		return res.status(201).json({message:"New Alarm Created"});
 	})
 })
 
@@ -64,7 +64,7 @@ router.put("/alarm/:id",function(req,res) {
 	}
 	alarmModel.replaceOne({"_id":req.params.id,"user":req.session.user},alarm,function(err) {
 		if(err) {
-			console.log("Failed to update ite. Reason",err);
+			console.log("Failed to update alarm. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
 		}
 		return res.status(200).json({message:"Success"});
