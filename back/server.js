@@ -6,9 +6,14 @@ const mongoose = require("mongoose");
 const userModel = require("./models/user");
 const sessionModel = require("./models/session");
 const user = require("./models/user");
-
+const fuzzy = require('fuzzy-comparison');
+const { default: compare } = require('fuzzy-comparison');
+const zxcvbn = require('zxcvbn');
 
 let app = express();
+
+const expressWs = require('express-ws')(app);
+
 
 app.use(express.json());
 
@@ -160,6 +165,66 @@ app.post("/logout",function(req,res) {
 		return res.status(200).json({message:"Logged out"});
 	})
 })
+
+//TO BE CLEANED
+app.ws('/registercheck', function(ws, req) {
+    ws.on('message', function(msgs) {
+        let msg = JSON.parse(msgs)
+        //console.log(msg)
+        let report = {type:null, content:null, original: msg}
+        switch (msg.query) {
+            case "zxcvbn":
+                report.type = "zxcvbn"
+                let pwmsg = msg.password.slice(0, 35)
+                report.content = zxcvbn(pwmsg)
+                break
+            case "form":
+                const emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+                let pass = true
+                if (!msg.email.match(emailPattern)){
+                    pass  = false
+                }
+                if(pass){
+                    let emailparts = msg.email.split("@")
+                    let forbidden = [
+                        msg.firstname,
+                        msg.lastname,
+                        msg.email,
+                        msg.firstname + msg.lastname,
+                        msg.lastname + msg.firstname,
+                        emailparts[0],
+                        emailparts[1],
+                        msg.firstname + msg.lastname+emailparts[1],
+                        msg.lastname + msg.firstname+emailparts[1],
+                        msg.firstname+emailparts[1],
+                        msg.lastname +emailparts[1]
+                                    ]
+
+                    const password =  msg.password.toLowerCase()
+                    let  threshold = { threshold: 7 }
+                    for (let i =0; i<forbidden.length; i++){
+                        let cmp = forbidden[i].toLowerCase()
+                        if(cmp === password || compare(password, cmp, threshold) || compare(password, cmp.replace(/[^a-z0-9]/gi,''), threshold) ){
+                            pass = false
+                            break
+                        }
+                    }
+                }
+
+                report.type = "form"
+                report.content = pass
+
+                break
+            default:
+                break
+        }
+        console.log(report)
+        delete report.original.query
+        ws.send(JSON.stringify(report))
+    });
+    console.log('socket', req.testing)
+});
+
 
 app.use("/api",isUserLogged,apiroute);
 
