@@ -1,8 +1,7 @@
 const express = require("express");
 const apiroute = require("./routes/apiroute");
 const bcrypt = require("bcrypt");
-//ehdotus parempi hash
-//const argon2 = require('argon2');
+
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const userModel = require("./models/user");
@@ -169,7 +168,9 @@ app.post("/logout",function(req,res) {
 })
 
 //TO BE CLEANED
+const guessCount =  1000000000
 app.ws('/registercheck', function(ws, req) {
+
     ws.on('message', function(msgs) {
         let msg = JSON.parse(msgs)
         //console.log(msg)
@@ -179,6 +180,7 @@ app.ws('/registercheck', function(ws, req) {
                 report.type = "zxcvbn"
                 let pwmsg = msg.password.slice(0, 35)
                 report.content = zxcvbn(pwmsg)
+				report.content.server_minimum = guessCount
                 break
             case "form":
                 const emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
