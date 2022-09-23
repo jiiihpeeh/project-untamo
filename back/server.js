@@ -1,6 +1,8 @@
 const express = require("express");
 const apiroute = require("./routes/apiroute");
 const bcrypt = require("bcrypt");
+//ehdotus parempi hash
+//const argon2 = require('argon2');
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const userModel = require("./models/user");
