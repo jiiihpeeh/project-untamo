@@ -4,7 +4,7 @@ const RegisterSubmit = (props) => {
     let passSubmit = true
     try{
         if (props.values.forms.get(formString(props.values.current)) &&
-         props.values.passwords.get(props.values.current.password).guesses >= guessCount){
+         props.values.passwords.get(props.values.current.password).guesses >= props.values.passwords.get(props.values.current.password).server_minimum){
             passSubmit = false
         }
     } catch(err){

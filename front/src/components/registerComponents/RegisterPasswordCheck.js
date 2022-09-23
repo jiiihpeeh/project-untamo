@@ -59,7 +59,7 @@ const RegisterPasswordCheck = (props) => {
 
     if(passwordCheck && formCheck){
         console.log("yup...")
-        if (passwordData !== undefined && formCheck && passwordData.guesses >= guessCount){
+        if (passwordData !== undefined && formCheck && passwordData.guesses >= passwordData.guesses.server_minimum){
             pass = true
         }
     }
