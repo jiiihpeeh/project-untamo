@@ -7,7 +7,7 @@ import RegisterPasswordCheck from './registerComponents/RegisterPasswordCheck';
 import { wsURL } from './registerComponents/registerConst';
 import RegisterSubmit from './registerComponents/RegisterSubmit';
 
-
+import axios from 'axios'
 
 
 const Register = (props) => {
@@ -110,6 +110,12 @@ const Register = (props) => {
         }
     }
 
+    const onRegister = async (event) => {
+        const res = await axios.post('http://localhost:3001/register',formData );
+        console.log(res)
+    }
+
+
     return (
         <form onSubmit={onSubmit}>
             <label htmlFor="firstname">First name</label>
@@ -145,7 +151,7 @@ const Register = (props) => {
             />
             <RegisterPasswordCheck values={values} />
             <br/>
-            <RegisterSubmit values={values} />
+            <RegisterSubmit values={values} onRegister={onRegister} />
         </form> 
     )
 }

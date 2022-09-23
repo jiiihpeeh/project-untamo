@@ -11,7 +11,7 @@ const RegisterSubmit = (props) => {
         console.log("something wong")
     }
     return (
-        <input type="submit" value="Submit" disabled={passSubmit}/>
+        <input type="submit" value="Submit" disabled={passSubmit} onClick={props.onRegister}/>
     )
 }
 export default RegisterSubmit

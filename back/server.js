@@ -1,5 +1,6 @@
 const express = require("express");
 const apiroute = require("./routes/apiroute");
+const cors = require('cors')
 const bcrypt = require("bcrypt");
 
 const crypto = require("crypto");
@@ -19,7 +20,7 @@ const expressWs = require('express-ws')(app);
 
 
 app.use(express.json());
-
+app.use(cors())
 let port = process.env.PORT || 3001;
 
 //MONGOOSE CONNECTION
@@ -35,6 +36,7 @@ let registeredUsers = [];
 let loggedSessions = [];
 const time_to_live_diff = 3600000;
 
+const guessCount =  1000000000
 //MIDDLEWARE
 
 createToken = () => {
@@ -82,19 +84,25 @@ app.post("/register",function(req,res) {
 	if(!req.body) {														// jos POSTissa ei bodyä:
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(!req.body.username || !req.body.password) {						// jos POSTissa ei 'username'a tai 'password'ia:
+	if(!req.body.email || !req.body.password) {						// jos POSTissa ei 'username'a tai 'password'ia:
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(req.body.username.length < 4 || req.body.password.length < 8) {	// jos username alle 4 tai password alle 8 merkkiä:
+	if(req.body.email.length < 4 || req.body.password.length < 6) {	// jos username alle 4 tai password alle 6 merkkiä:
 		return res.status(400).json({message:"Bad Request"}); 
 	}
-
+	if (!formChecker(req.body)){
+		return res.status(400).json({message:"Bad Request. Password carries too much user information"}); 
+	}
+	if(zxcvbn(req.body.password).guesses < guessCount){
+		return res.status(400).json({message:"Bad Request. Password is too obvious"}); 
+	}
+	
 	bcrypt.hash(req.body.password,14,function(err,hash) { 				// hashaa salasana
 		if(err) {
 			return res.status(400).json({message:"Bad Request"}); 
 		}
 		let user = new userModel({
-			username:req.body.username,
+			email:req.body.email,
 			password:hash
 		})
 		user.save(function(err,user) {
@@ -123,7 +131,7 @@ app.post("/login",function(req,res) {
 	if(req.body.username.length < 4 || req.body.password.length < 8) {
 		return res.status(400).json({message:"Bad Request"}); 
 	}
-	userModel.findOne({"username":req.body.username},function(err,user) {
+	userModel.findOne({"email":req.body.email},function(err,user) {
 		if(err) {
 			console.log("Failed to login. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
@@ -170,7 +178,6 @@ app.post("/logout",function(req,res) {
 })
 
 
-const guessCount =  1000000000
 app.ws('/registercheck', function(ws, req) {
 
     ws.on('message', function(msgs) {
