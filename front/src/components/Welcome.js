@@ -6,7 +6,7 @@ const Welcome = () => {
         user:(localStorage['user']) ? localStorage['user'] :'',
         firstname:(localStorage['firstname']) ? localStorage['firstname'] :'',
         lastname:(localStorage['lastname']) ? localStorage['lastname'] :'',
-        screen_name:(localStorage['screenname']) ? localStorage['screenname'] :'',
+        screenname:(localStorage['screenname']) ? localStorage['screenname'] :'',
     })
     const  navigate = useNavigate()
     useEffect(() => {
@@ -17,7 +17,7 @@ const Welcome = () => {
     return(
         <>
             <div>
-                <h2>Tere tere, {user.screen_name}!</h2>
+                <h2>Tere tere, {user.screenname}!</h2>
             </div>
         </>
     )
