@@ -81,6 +81,9 @@ isUserLogged = (req,res,next) => {
 	})
 }
 
+
+
+
 // LOGIN API:
 
 app.post("/register",function(req,res) {
@@ -214,6 +217,10 @@ app.ws('/registercheck', function(ws, req) {
     });
     console.log('socket', req.testing)
 });
+
+
+app.use('/resources', express.static('resources'))
+
 
 
 app.use("/api",isUserLogged,apiroute);
