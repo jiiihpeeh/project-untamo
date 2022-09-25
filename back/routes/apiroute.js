@@ -1,7 +1,7 @@
 const express = require("express");
 const alarm = require("../models/alarm");
 const alarmModel = require("../models/alarm");
-
+const userModel = require("../models/user");
 const router = express.Router();
 
 
@@ -15,6 +15,8 @@ router.get("/alarm",function(req,res) {
 		return res.status(200).json(alarms);
 	})
 });
+
+
 
 router.post("/alarm",function(req,res) {
 	if(!req.body) {

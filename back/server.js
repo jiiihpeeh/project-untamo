@@ -9,9 +9,11 @@ const userModel = require("./models/user");
 const sessionModel = require("./models/session");
 const user = require("./models/user");
 
+const formScreenName = require('./modules/form_screenname')
+
 const zxcvbn = require('zxcvbn');
 
-const formChecker  = require('./modules/register')
+const formChecker  = require('./modules/formcheck')
 
 
 let app = express();
@@ -34,7 +36,8 @@ mongoose.set("toJSON",{virtuals:true});
 
 let registeredUsers = [];
 let loggedSessions = [];
-const time_to_live_diff = 3600000;
+const time_to_live_diff = 365*24*60*60*1000//3600000;
+const time_to_live_diff_admin = 10*60*1000
 
 const guessCount =  1000000000
 //MIDDLEWARE
@@ -101,9 +104,13 @@ app.post("/register",function(req,res) {
 		if(err) {
 			return res.status(400).json({message:"Bad Request"}); 
 		}
+		
 		let user = new userModel({
-			email:req.body.email,
-			password:hash
+			user:req.body.email,
+			password:hash,
+			firstname: req.body.firstname,
+			lastname: req.body.lastname,
+			screenname: formScreenName(req.body)
 		})
 		user.save(function(err,user) {
 			if(err) {
@@ -125,13 +132,13 @@ app.post("/login",function(req,res) {
 	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(!req.body.username || !req.body.password) {
+	if(!req.body.user || !req.body.password) {
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(req.body.username.length < 4 || req.body.password.length < 8) {
+	if(req.body.user.length < 4 || req.body.password.length < 6) {
 		return res.status(400).json({message:"Bad Request"}); 
 	}
-	userModel.findOne({"email":req.body.email},function(err,user) {
+	userModel.findOne({"user":req.body.user},function(err,user) {
 		if(err) {
 			console.log("Failed to login. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
@@ -150,7 +157,7 @@ app.post("/login",function(req,res) {
 			let token=createToken();
 			let now=Date.now();
 			let session= new sessionModel({
-				user:req.body.username,
+				user:req.body.user,
 				ttl:now + time_to_live_diff,
 				token:token
 			})
@@ -159,7 +166,8 @@ app.post("/login",function(req,res) {
 					console.log("Saving session failed. Reason",err);
 					return res.status(500).json({message:"Internal server error"})
 				}
-				return res.status(200).json({token:token});
+				return res.status(200).json({token:token, user: user.user, 
+					screenname:user.screenname, firstname: user.firstname, lastname:user.lastname});
 			})
 		})
 	})

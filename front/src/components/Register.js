@@ -6,8 +6,8 @@ import { formString } from './registerComponents/formString';
 import RegisterPasswordCheck from './registerComponents/RegisterPasswordCheck';
 import { wsURL } from './registerComponents/registerConst';
 import RegisterSubmit from './registerComponents/RegisterSubmit';
-
-import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 const Register = (props) => {
@@ -16,62 +16,64 @@ const Register = (props) => {
         firstname: "",
         lastname: "",
         email: "",
-        password: ""
-    })
-    const [socketUrl, setSocketUrl] = useState(wsURL)
-    const [passwordCheck, setPasswordCheck] = useState(new Map())
-    const [formCheck, setFormCheck] = useState(new Map())
+        password: "",
+        password_confirm: ""
+    });
+
+    const [passwordCheck, setPasswordCheck] = useState(new Map());
+    const [formCheck, setFormCheck] = useState(new Map());
     const [values, setValues] = useState({
         passwords: {},
         forms: {},
         current: {}
-    })
+    });
 
-    const { sendMessage, lastMessage } = useWebSocket(socketUrl);
+    const { sendMessage, lastMessage } = useWebSocket(wsURL);
   
     useEffect(() => {
         if(!formCheck.has(formString(formData))){
-            let formmsg = Object.assign({},formData)
-            formmsg.query = "form"
-            sendMessage(JSON.stringify(formmsg))
+            let formmsg_part = Object.assign({},formData);
+            delete formmsg_part.password_confirm
+            formmsg_part.query = "form";
+            sendMessage(JSON.stringify(formmsg_part));
         }
         if (lastMessage !== null) {
-            let msg = JSON.parse(lastMessage.data)
+            let msg = JSON.parse(lastMessage.data);
             switch (msg.type){
                 case "zxcvbn":
                     setPasswordCheck( (passwordCheck) => {
-                        let pcheck = passwordCheck
+                        let pcheck = passwordCheck;
 
                         if(msg.content !== null){
                             if (pcheck === undefined){
                                 //let initialPassword = new Map()
-                                pcheck.set(msg.content.password , msg.content)
+                                pcheck.set(msg.content.password , msg.content);
                             }
                             if (!pcheck.has(msg.content.password)){
-                                pcheck.set(msg.content.password , msg.content)
+                                pcheck.set(msg.content.password , msg.content);
                             }
                         }
                     //console.log(pcheck)
-                    return pcheck
+                    return pcheck;
                     })
                     break
                 case "form":
                     setFormCheck((formCheck) => {
-                        let fcheck = formCheck
-                        let formstring = formString(msg.original)
+                        let fcheck = formCheck;
+                        let formstring = formString(msg.original);
                         if (fcheck === undefined){
                             //fcheck = new Map()
-                            fcheck.set(formstring, msg.content)
+                            fcheck.set(formstring, msg.content);
                         }
                         if (!fcheck.has(formstring)){
-                            fcheck.set(formstring, msg.content)
+                            fcheck.set(formstring, msg.content);
                         }
                     //console.log(fcheck)
-                        return fcheck
+                        return fcheck;
                     })
-                    break
-            default:
-                break
+                    break;
+                default:
+                    break;
             }
        }
     }, [lastMessage, sendMessage, formCheck, formData]);
@@ -82,7 +84,7 @@ const Register = (props) => {
                 current: formData,
                 forms: formCheck,
                 passwords: passwordCheck
-            }
+            };
         })
     },[passwordCheck, formCheck, formData])
 
@@ -91,31 +93,35 @@ const Register = (props) => {
             return {
                 ...formData,
                 [event.target.name] : event.target.value
-            }
+            };
         })
-
     }
  
     const onSubmit = (event) => {
-        event.preventDefault()
-        console.log("pushed")
+        event.preventDefault();
+        console.log("pushed");
     }
     const onPassWordChange = (event) => {
         if(!passwordCheck.has(event.target.value)){
             let pwmsg = {
                 password: event.target.value, 
                 query: "zxcvbn"
-            } 
-            sendMessage(JSON.stringify(pwmsg))
+            } ;
+            sendMessage(JSON.stringify(pwmsg));
         }
     }
 
     const onRegister = async (event) => {
-        const res = await axios.post('http://localhost:3001/register',formData );
-        console.log(res)
+        try {
+            const res = await axios.post('http://localhost:3001/register',formData );
+            console.log(res.data);
+            navigate('/login')
+        } catch (err){
+            console.error(err)
+        }
     }
 
-
+    const navigate = useNavigate()
     return (
         <form onSubmit={onSubmit}>
             <label htmlFor="firstname">First name</label>
@@ -125,6 +131,7 @@ const Register = (props) => {
                 onChange={onChange}
                 value={formData.firstname}
             />
+            <label htmlFor='firstname'>(Optional)</label>
             <br/>
             <label htmlFor="lastname">Last name</label>
             <input type="text"
@@ -133,6 +140,7 @@ const Register = (props) => {
                 onChange={onChange}
                 value={formData.lastname}
             />
+            <label htmlFor='lastname'>(Optional)</label>
             <br/>
             <label htmlFor="email">Email</label>
             <input type="email"
@@ -141,6 +149,7 @@ const Register = (props) => {
                 onChange={onChange}
                 value={formData.email}
             />
+            <label htmlFor='email'>(Required)</label>
             <br/>
             <label htmlFor='password'>Password</label>
             <input type="password"
@@ -151,9 +160,17 @@ const Register = (props) => {
             />
             <RegisterPasswordCheck values={values} />
             <br/>
+            <label htmlFor='password_confirm'>Confirm Password</label>
+            <input type="password"
+                name="password_confirm"
+                id="password_confirm"
+                onChange= {onChange}
+                value={formData.password_confirm}
+            />
+            
             <RegisterSubmit values={values} onRegister={onRegister} />
         </form> 
     )
 }
 
-export default Register
+export default Register;

@@ -1,7 +1,6 @@
 import { formString } from "./formString"
 import './registerCheck.css'
 
-import { guessCount } from "./registerConst"
 
 const ShowSignal = (props) => {
     let signal = "failSign"
@@ -45,7 +44,7 @@ const RegisterPasswordCheck = (props) => {
     }
 
     
-    if (passwordData === undefined|| passwordData.guesses < guessCount){
+    if (passwordData === undefined|| passwordData.guesses < passwordData.server_minimum){
         message = `${message}\nPassword too weak. `
     }
     if (!formCheck) {
