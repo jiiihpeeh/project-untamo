@@ -9,11 +9,27 @@ const Welcome = () => {
         screenname:(localStorage['screenname']) ? localStorage['screenname'] :'',
     })
     const  navigate = useNavigate()
+
+
+
     useEffect(() => {
+        const playAudio = async () => {
+            var audio = new Audio('http://localhost:3001/resources/Rooster.opus');  
+            audio.type = 'audio/opus';
+          
+            try {
+              await audio.play();
+              console.log('Playing...');
+            } catch (err) {
+              console.log('Failed to play...' + err);
+            }
+          }
         if(!localStorage['user']){
             navigate('/login')
         }
+        playAudio()
     },[user])
+
     return(
         <>
             <div>
