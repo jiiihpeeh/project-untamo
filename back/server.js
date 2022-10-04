@@ -219,6 +219,7 @@ app.ws('/registercheck', function(ws, req) {
 });
 
 
+//app.use('/resources', isUserLogged, express.static('resources'))
 app.use('/resources', express.static('resources'))
 
 
