@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios'
-import { audioGet, audioStore, audioKeys } from '../audiostorage/audioDatabase'
+import { getAudio, storeAudio, hasAudio } from '../audiostorage/audioDatabase'
 
 
 
@@ -19,16 +19,13 @@ const Welcome = () => {
 
     useEffect(() => {
         const playAudio = async () => {
-            let audiofiles = await audioKeys()
-            //if (audioKeys())
-            if (audiofiles.indexOf('rooster') === -1 ){
-                console.log(audiofiles)
+            if (! await hasAudio('rooster')){
                 let res = await axios.get("/resources/Rooster.opus",{
                     responseType: 'blob'
                 })
-                await audioStore('rooster', res.data)
+                await storeAudio('rooster', res.data)
             }
-            let data =  await audioGet('rooster')
+            let data =  await getAudio('rooster')
             let audioelem = document.createElement('audio');
             audioelem.src = URL.createObjectURL(data)
             audioelem.type = 'audio/ogg'
