@@ -28,7 +28,8 @@ export async function hasAudio(key) {
 export async function fetchAudio(audio) {
     //console.log(audio)
     let res = await axios.get(`/audioresources/${audio}.opus`,{
-        responseType: 'blob'
+        responseType: 'blob', 
+        headers: {'token': localStorage['token']}
     })
     await storeAudio(audio, res.data);
 }
@@ -40,7 +41,9 @@ export async function hasOrFetchAudio(audio){
 }
 
 export async function fetchAudioFiles(){
-    let res = await axios.get(`/audioresources/resource_list.json`);
+    let res = await axios.get(`/audioresources/resource_list.json`,{
+        headers: {'token': localStorage['token']}
+    });
     for (const audio of res.data){
         hasOrFetchAudio(audio);
     }
