@@ -1,12 +1,8 @@
-import { getAudio, storeAudio, hasAudio } from '../audiostorage/audioDatabase'
-import axios from 'axios'
+import { getAudio, fetchAudio, hasAudio } from '../audiostorage/audioDatabase'
 
 const playAudio = async (audio) => {
     if (! await hasAudio(audio)){
-        let res = await axios.get(`/resources/${audio}.opus`,{
-            responseType: 'blob'
-        })
-        await storeAudio(audio, res.data);
+        await fetchAudio(audio);
     }
     let data =  await getAudio(audio);
     let audioelem = document.createElement('audio');

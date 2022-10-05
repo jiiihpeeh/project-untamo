@@ -1,5 +1,6 @@
 import { get, set, del, clear, keys } from './audioDatabaseHandler'
 import { blobToBase64String, base64StringToBlob }  from 'blob-util'
+import axios from 'axios';
 
 
 export async function getAudio(key) {
@@ -22,4 +23,12 @@ export async function keysAudio() {
 export async function hasAudio(key) {
     let keyList = await keys();
     return keyList.indexOf(key) !== -1;
+}
+
+export async function fetchAudio(audio) {
+    console.log(audio)
+    let res = await axios.get(`/resources/${audio}.opus`,{
+        responseType: 'blob'
+    })
+    await storeAudio(audio, res.data);
 }
