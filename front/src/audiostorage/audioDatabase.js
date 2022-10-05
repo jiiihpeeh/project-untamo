@@ -27,7 +27,7 @@ export async function hasAudio(key) {
 
 export async function fetchAudio(audio) {
     //console.log(audio)
-    let res = await axios.get(`/resources/${audio}.opus`,{
+    let res = await axios.get(`/audioresources/${audio}.opus`,{
         responseType: 'blob'
     })
     await storeAudio(audio, res.data);
