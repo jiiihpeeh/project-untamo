@@ -38,3 +38,10 @@ export async function hasOrFetchAudio(audio){
         await fetchAudio(audio);
     }
 }
+
+export async function fetchAudioFiles(){
+    let res = await axios.get(`/audioresources/resource_list.json`);
+    for (const audio of res.data){
+        hasOrFetchAudio(audio);
+    }
+}

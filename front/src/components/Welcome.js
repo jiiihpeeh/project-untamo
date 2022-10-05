@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 //import axios from 'axios'
 import playAudio from './playAudio'
 
-
+import { fetchAudioFiles } from '../audiostorage/audioDatabase' 
 
 
 const Welcome = () => {
@@ -18,6 +18,7 @@ const Welcome = () => {
 
 
     useEffect(() => {
+        fetchAudioFiles()
         playAudio('rooster')
         if(!localStorage['user']){
             navigate('/login')
