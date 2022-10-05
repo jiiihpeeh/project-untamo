@@ -1,9 +1,7 @@
-import { getAudio, fetchAudio, hasAudio } from '../audiostorage/audioDatabase'
+import { getAudio, hasOrFetchAudio } from '../audiostorage/audioDatabase'
 
 const playAudio = async (audio) => {
-    if (! await hasAudio(audio)){
-        await fetchAudio(audio);
-    }
+    await hasOrFetchAudio(audio)
     let data =  await getAudio(audio);
     let audioelem = document.createElement('audio');
     audioelem.src = URL.createObjectURL(data);

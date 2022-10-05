@@ -32,3 +32,9 @@ export async function fetchAudio(audio) {
     })
     await storeAudio(audio, res.data);
 }
+
+export async function hasOrFetchAudio(audio){
+    if (! await hasAudio(audio)){
+        await fetchAudio(audio);
+    }
+}
