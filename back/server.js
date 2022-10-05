@@ -2,17 +2,13 @@ const express = require("express");
 const apiroute = require("./routes/apiroute");
 const cors = require('cors')
 const bcrypt = require("bcrypt");
-
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const userModel = require("./models/user");
 const sessionModel = require("./models/session");
 const user = require("./models/user");
-
 const formScreenName = require('./modules/form_screenname')
-
 const zxcvbn = require('zxcvbn');
-
 const formChecker  = require('./modules/formcheck')
 
 
@@ -87,6 +83,7 @@ isUserLogged = (req,res,next) => {
 // LOGIN API:
 
 app.post("/register",function(req,res) {
+	console.log("/register");
 	if(!req.body) {														// jos POSTissa ei bodyä:
 		return res.status(400).json({message:"Bad Request"});
 	}
@@ -132,6 +129,7 @@ app.post("/register",function(req,res) {
 })
 
 app.post("/login",function(req,res) {
+	console.log("/login");
 	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
 	}
@@ -177,6 +175,7 @@ app.post("/login",function(req,res) {
 });
 
 app.post("/logout",function(req,res) {
+	console.log("/logout");
 	if(!req.headers.token) {
 		return res.status(404).json({message:"Not found"});
 	}
@@ -203,7 +202,7 @@ app.ws('/registercheck', function(ws, req) {
 				report.content.server_minimum = guessCount
                 break
             case "form":
-              	let pass = formChecker(msg)
+				let pass = formChecker(msg)
                 report.type = "form"
                 report.content = pass
 
@@ -221,8 +220,6 @@ app.ws('/registercheck', function(ws, req) {
 
 //app.use('/resources', isUserLogged, express.static('resources'))
 app.use('/audioresources', isUserLogged, express.static('audioresources'))
-
-
 
 app.use("/api",isUserLogged,apiroute);
 
