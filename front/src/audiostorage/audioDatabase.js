@@ -4,7 +4,7 @@ import { blobToBase64String, base64StringToBlob }  from 'blob-util'
 
 export async function getAudio(key) {
     let data = await get(key);
-    return base64StringToBlob(data)
+    return base64StringToBlob(data);
 }
 export async function storeAudio(key, val) {
     await set(key, await blobToBase64String(val));
@@ -21,5 +21,5 @@ export async function keysAudio() {
 
 export async function hasAudio(key) {
     let keyList = await keys();
-    return keyList.indexOf(key) !== -1
+    return keyList.indexOf(key) !== -1;
 }
