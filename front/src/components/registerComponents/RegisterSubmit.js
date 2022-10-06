@@ -1,5 +1,5 @@
 import { formString } from "./formString"
-import './registerCheck.css'
+import { Button } from '@chakra-ui/react'
 const RegisterSubmit = (props) => {
     let passSubmit = true;
     let checkmark = "𐄂";
@@ -14,14 +14,11 @@ const RegisterSubmit = (props) => {
         console.log("something wong");
     }
     passSubmit = (!passSubmit && checkmark === "✓") ? false: true;
-    let checkStyle = (checkmark === "✓") ? "check_pass" : "check_fail";
     return (
         <>
-            <label htmlFor="password_confirm" className={checkStyle}>{checkmark}</label>
-            <br/>
-            <input type="submit" value="Submit" disabled={passSubmit} onClick={props.onRegister}/>
+            <Button type="submit"  disabled={passSubmit} onClick={props.onRegister}>Submit</Button>
         </>
         
     )
 }
-export default RegisterSubmit
+export default RegisterSubmit;

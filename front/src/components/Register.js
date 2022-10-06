@@ -1,13 +1,25 @@
  
 import { useState, useEffect } from 'react'
-import './registerComponents/registerCheck.css'
+//import './registerComponents/registerCheck.css'
 import useWebSocket from 'react-use-websocket';
 import { formString } from './registerComponents/formString';
 import RegisterPasswordCheck from './registerComponents/RegisterPasswordCheck';
 import { wsURL } from './registerComponents/registerConst';
 import RegisterSubmit from './registerComponents/RegisterSubmit';
+import PasswordMatch from './registerComponents/PasswordMatch';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
+import { Input ,
+    InputGroup,
+    InputRightAddon,
+    FormControl,
+    FormLabel,
+    Button,
+    FormErrorMessage,
+    FormHelperText,
+    Box,
+    } from '@chakra-ui/react'
 
 
 const Register = (props) => {
@@ -27,7 +39,7 @@ const Register = (props) => {
         forms: {},
         current: {}
     });
-
+    //checkmark = (form.password.length >5 && form.password === form.password_confirm) ? "✓": "𐄂";
     const { sendMessage, lastMessage } = useWebSocket(wsURL);
   
     useEffect(() => {
@@ -122,54 +134,55 @@ const Register = (props) => {
     }
 
     const navigate = useNavigate()
+    
     return (
-        <form onSubmit={onSubmit}>
-            <label htmlFor="firstname">First name</label>
-            <input type="text"
+        <Box bg='lightgray' width="30em" margin="0 auto">
+        <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
+            <FormLabel htmlFor="firstname">First name (Optional)</FormLabel>
+            <Input type="text"
                 name="firstname"
                 id="firstname"
                 onChange={onChange}
                 value={formData.firstname}
             />
-            <label htmlFor='firstname'>(Optional)</label>
-            <br/>
-            <label htmlFor="lastname">Last name</label>
-            <input type="text"
+            <FormLabel htmlFor="lastname">Last name (Optional)</FormLabel>
+            <Input type="text"
                 name="lastname"
                 id="lastname"
                 onChange={onChange}
                 value={formData.lastname}
             />
-            <label htmlFor='lastname'>(Optional)</label>
-            <br/>
-            <label htmlFor="email">Email</label>
-            <input type="email"
+            <FormLabel htmlFor="email">Email (Required)</FormLabel>
+            <Input type="email"
                 name="email"
                 id="email"
                 onChange={onChange}
                 value={formData.email}
             />
-            <label htmlFor='email'>(Required)</label>
-            <br/>
-            <label htmlFor='password'>Password</label>
-            <input type="password"
-                name="password"
-                id="password"
-                onChange= {(e) => {onPassWordChange(e) ; onChange(e)}}
-                value={formData.password}
-            />
-            <RegisterPasswordCheck values={values} />
-            <br/>
-            <label htmlFor='password_confirm'>Confirm Password</label>
-            <input type="password"
-                name="password_confirm"
-                id="password_confirm"
-                onChange= {onChange}
-                value={formData.password_confirm}
-            />
+            <FormLabel htmlFor='password'>Password</FormLabel>
+            <InputGroup>
+                <Input type="password"
+                    name="password"
+                    id="password"
+                    onChange= {(e) => {onPassWordChange(e) ; onChange(e)}}
+                    value={formData.password}
+                />
+                <InputRightAddon children={<RegisterPasswordCheck values={values} />}/>
+            </InputGroup>
             
+            <FormLabel htmlFor='password_confirm'>Confirm Password</FormLabel>
+            <InputGroup>
+                <Input type="password"
+                    name="password_confirm"
+                    id="password_confirm"
+                    onChange= {onChange}
+                    value={formData.password_confirm}
+                />
+                <InputRightAddon children={<PasswordMatch values={values}/>}/>
+            </InputGroup>
             <RegisterSubmit values={values} onRegister={onRegister} />
-        </form> 
+        </FormControl> 
+        </Box>
     )
 }
 

@@ -1,75 +1,78 @@
-import { formString } from "./formString"
-import './registerCheck.css'
-
+import { formString } from "./formString";
+import { Tooltip, Text, UnorderedList, ListItem } from '@chakra-ui/react';
+import { CheckCircleIcon, WarningTwoIcon } from '@chakra-ui/icons';
 
 const ShowSignal = (props) => {
-    let signal = "failSign"
+    let signal = <WarningTwoIcon/>;
     if(props.pass){
-        signal = "passSign"
+        signal = <CheckCircleIcon/>;
     }
+    let info = <Text>{signal} {props.score}</Text> ;
+    let messageItems = props.message.map((message) =>  <ListItem>{message}</ListItem>);
+    let message = <UnorderedList>{messageItems}</UnorderedList>;
+
     return (
         <>
-        <span className="hovertext" data-hover={props.message}>
-            <span htmlFor='password' className={signal} />
-            <label htmlFor='password'> {props.score}</label>
-        </span>
+        <Tooltip label={message}>
+            {info}
+        </Tooltip>        
         </>
     )
 }
 
 
 const RegisterPasswordCheck = (props) => {
-    let pass = false
-    let message = ""
-    let score = "0/4"
-    let form = props.values.current 
-    let password =  (form.password) ? form.password: ""
+    let pass = false;
+    let message = [];
+    let score = "0/4";
+    let form = props.values.current;
+    let password =  (form.password) ? form.password: "";
 
-    let passwords = props.values.passwords //props.passwordCheck
-    let forms = props.values.forms
+    let passwords = props.values.passwords; //props.passwordCheck
+    let forms = props.values.forms;
     if (password.length < 6){
-        message = `Password too short.`
+        message.push(`Password too short.`);
     }
     let passwordData = {}
     try{
-        passwordData = passwords.get(password)
-        score = `${passwordData.score}/4`
+        passwordData = passwords.get(password);
+        score = `${passwordData.score}/4`;
     } catch(err){}
-    let formCheck = false
+    let formCheck = false;
     try{
-        formCheck = forms.get(formString(form))
-        console.log("Form found")
+        formCheck = forms.get(formString(form));
+        console.log("Form found");
     }catch(err){
-        console.log("Form not found")
+        console.log("Form not found");
     }
 
     
     if (passwordData === undefined|| passwordData.guesses < passwordData.server_minimum){
-        message = `${message}\nPassword too weak. `
+        message.push("Password too weak.");
     }
     if (!formCheck) {
-        message = `${message}\nPassword might be guessable based on personal data.` 
+        message.push("Password might be guessable based on personal data.");
     }
-    let passwordCheck = false
+    let passwordCheck = false;
     try {
-        passwordCheck = passwords.has(password)
-        console.log("Password found")
+        passwordCheck = passwords.has(password);
+        console.log("Password found");
     }catch(err){}
 
     if(passwordCheck && formCheck){
-        console.log("yup...")
+        console.log("yup...");
         if (passwordData !== undefined && formCheck && passwordData.guesses >= passwordData.server_minimum){
-            pass = true
+            pass = true;
         }
     }
-    console.log(score, pass,message)
-    console.log(props.values)
+    console.log(score, pass,message);
+    console.log(props.values);
     if(message === ""){
-        message = "Checks"
+        message = ["Checks"];
     }
     return (
         <ShowSignal score={score} pass={pass} message={message}/>
     )
 }
 
-export default RegisterPasswordCheck
+export default RegisterPasswordCheck;

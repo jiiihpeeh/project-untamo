@@ -1,3 +1,5 @@
+
+//import 'fomantic-ui-css/semantic.css';
 import { useState } from 'react';
 import {Routes,Route,Link} from 'react-router-dom';
 import Alarms from './components/Alarms';
@@ -5,7 +7,7 @@ import About from './components/About';
 import LogIn from './components/LogIn';
 import Register from './components/Register'
 import Welcome from './components/Welcome';
-
+import './App.css'
 
 function App() {
 

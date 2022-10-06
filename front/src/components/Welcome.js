@@ -4,6 +4,19 @@ import { useNavigate } from "react-router-dom";
 import playAudio from './playAudio'
 
 import { fetchAudioFiles } from '../audiostorage/audioDatabase' 
+import DeviceSelector from "./DeviceSelector";
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+    PopoverHeader,
+    PopoverBody,
+    PopoverFooter,
+    PopoverArrow,
+    PopoverCloseButton,
+    PopoverAnchor,
+  } from '@chakra-ui/react'
+
 
 
 const Welcome = () => {
@@ -30,6 +43,9 @@ const Welcome = () => {
         <>
             <div>
                 <h2>Tere tere, {user.screenname}!</h2>
+            </div>
+            <div>
+                <DeviceSelector/>
             </div>
         </>
     )

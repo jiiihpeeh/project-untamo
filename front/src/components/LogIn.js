@@ -1,10 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
-
+import { Input ,
+    InputGroup,
+    InputRightAddon,
+    FormControl,
+    FormLabel,
+    Button,
+    FormErrorMessage,
+    FormHelperText,
+    Box,
+    } from '@chakra-ui/react'
 const LogInSubmit = (props) => {
     return (
-        <input type="submit" value="LogIn" id="submit"/>
+        <Button type="submit" id="submit">Log In </Button>
     )
 };
 
@@ -40,17 +49,18 @@ const LogIn = () => {
     }
     const navigate = useNavigate()
     return (
-        <form onSubmit={onSubmit}>
-            <label htmlFor="user">Email</label>
-            <input type="email"
+        <Box bg='lightgray' width="30em" margin="0 auto">
+        <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
+            <FormLabel htmlFor="user">Email</FormLabel>
+            <Input type="email"
                 name="user"
                 id="user"
                 onChange={onChange}
                 value={formData.user}
             />
             <br/>
-            <label htmlFor='password'>Password</label>
-            <input type="password"
+            <FormLabel htmlFor='password'>Password</FormLabel>
+            <Input type="password"
                 name="password"
                 id="password"
                 onChange= {onChange}
@@ -58,7 +68,8 @@ const LogIn = () => {
             />
             <br/>
             <LogInSubmit />
-        </form> 
+        </FormControl> 
+        </Box>
     )
 }
 
