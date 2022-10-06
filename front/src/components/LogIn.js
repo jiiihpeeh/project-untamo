@@ -49,7 +49,7 @@ const LogIn = () => {
     }
     const navigate = useNavigate()
     return (
-        <Box bg='lightgray' width="30em" margin="0 auto">
+        <Box bg='lightgray' width="30em" margin="0 auto"  borderRadius='lg'>
         <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
             <FormLabel htmlFor="user">Email</FormLabel>
             <Input type="email"
