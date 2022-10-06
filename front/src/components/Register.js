@@ -125,7 +125,7 @@ const Register = (props) => {
 
     const onRegister = async (event) => {
         try {
-            const res = await axios.post('http://localhost:3001/register',formData );
+            const res = await axios.post('/register',formData );
             console.log(res.data);
             navigate('/login')
         } catch (err){

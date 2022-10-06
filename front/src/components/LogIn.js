@@ -34,7 +34,7 @@ const LogIn = () => {
     const onSubmit = async (event) => {
         try{
             event.preventDefault();
-            let res = await axios.post('http://localhost:3001/login', formData);
+            let res = await axios.post('/login', formData);
             console.log(res.data)
             localStorage.setItem("token", res.data.token)
             localStorage.setItem("user", res.data.user)
