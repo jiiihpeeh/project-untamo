@@ -103,4 +103,74 @@ router.put("/alarm/:id",function(req,res) {
 	})
 })
 
+//devices No idea if it works
+
+
+router.get("/devices",function(req,res) {
+	let query={"user":req.session.user}
+	deviceModel.find(query,function(err,devices) {
+		if(err) {
+			console.log("Failed to find devices. Reason",err);
+			return res.status(500).json({message:"Internal server error"})
+		}
+		return res.status(200).json(devices);
+	})
+});
+
+
+
+router.post("/device",function(req,res) {
+	if(!req.body) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	if(!req.body.deviceID) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	let device = new deviceModel({
+		deviceID:req.body.deviceID,
+		deviceName:req.body.devicename,
+        user:req.session.user
+	})
+	device.save(function(err) {
+		if(err) {
+			console.log("Failed to add a device. Reason",err);
+			return res.status(500).json({message:"Internal server error"})
+		}
+		return res.status(201).json({message:"New Device Created"});
+	})
+})
+
+router.delete("/device/:id",function(req,res) {
+	deviceModel.deleteOne({"_id":req.params.id,"user":req.session.user},
+	function(err) {
+		if(err) {
+			console.log("Failed to remove device. Reason",err);
+			return res.status(500).json({message:"Internal server error"})
+		}
+		return res.status(200).json({message:"Success"});
+	})
+})
+
+router.put("/device/:id",function(req,res) {
+	if(!req.body) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	if(!req.body.alarmID) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	let device = {
+		deviceID:req.body.deviceID,
+		devicenName:req.body.devicename,
+        user:req.session.user
+	}
+	deviceModel.replaceOne({"_id":req.params.id,"user":req.session.user},device,function(err) {
+		if(err) {
+			console.log("Failed to update a device. Reason",err);
+			return res.status(500).json({message:"Internal server error"});
+		}
+		return res.status(200).json({message:"Success"});
+	})
+})
+
+
 module.exports = router;
