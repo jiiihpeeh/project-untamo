@@ -11,12 +11,12 @@ import { Input ,
     FormHelperText,
     Box,
     } from '@chakra-ui/react'
-const LogInSubmit = (props) => {
+/* const LogInSubmit = (props) => {
     return (
         <Button type="submit" id="submit">Log In </Button>
     )
 };
-
+ */
 const LogIn = () => {
 
     const [formData, setFormData] = useState({
@@ -58,7 +58,6 @@ const LogIn = () => {
                 onChange={onChange}
                 value={formData.user}
             />
-            <br/>
             <FormLabel htmlFor='password'>Password</FormLabel>
             <Input type="password"
                 name="password"
@@ -66,8 +65,8 @@ const LogIn = () => {
                 onChange= {onChange}
                 value={formData.password}
             />
-            <br/>
-            <LogInSubmit />
+            <Button type="submit" id="submit" onClick={onSubmit}>Log In </Button>
+            {/* <LogInSubmit /> */}
         </FormControl> 
         </Box>
     )
