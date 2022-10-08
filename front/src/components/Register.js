@@ -166,6 +166,7 @@ const Register = (props) => {
                     id="password"
                     onChange= {(e) => {onPassWordChange(e) ; onChange(e)}}
                     value={formData.password}
+                    backgroundColor='LightGreen' 
                 />
                 <InputRightAddon children={<RegisterPasswordCheck values={values} />}/>
             </InputGroup>

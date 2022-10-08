@@ -1,50 +1,68 @@
-import { get, set, del, clear, keys } from './audioDatabaseHandler'
-import { blobToBase64String, base64StringToBlob }  from 'blob-util'
+import { get, set, del, clear, keys } from './audioDatabaseHandler';
+import { blobToBase64String, base64StringToBlob }  from 'blob-util';
 import axios from 'axios';
 
+const token = localStorage['token'];
 
-export async function getAudio(key) {
+export const getAudio = async (key) => {
     let data = await get(key);
     return base64StringToBlob(data);
-}
-export async function storeAudio(key, val) {
+};
+export const storeAudio = async (key, val) => {
     await set(key, await blobToBase64String(val));
-}
-export async function delAudio(key) {
+};
+export const delAudio = async (key) => {
     await del(key);
-}
-export async function clearAudio() {
+};
+export const clearAudio = async () => {
     await clear();
-}
-export async function keysAudio() {
+};
+export const keysAudio = async () => {
     return await keys();
-}
+};
 
-export async function hasAudio(key) {
+export const hasAudio = async (key)  => {
     let keyList = await keys();
     return keyList.indexOf(key) !== -1;
-}
+};
 
-export async function fetchAudio(audio) {
+export const fetchAudio = async (audio) => {
     //console.log(audio)
-    let res = await axios.get(`/audioresources/${audio}.opus`,{
-        responseType: 'blob', 
-        headers: {'token': localStorage['token']}
-    })
-    await storeAudio(audio, res.data);
-}
+    try {
+        let res = await axios.get(`/audioresources/${audio}.opus`,{
+            responseType: 'blob', 
+            headers: {'token': token}
+        });
+        await storeAudio(audio, res.data);
+        console.log(`Dowloaded audio: ${audio}`)
+    } catch(err){
+        console.log(`Couldn't fetch audio ${audio}`);
+    }
+};
 
-export async function hasOrFetchAudio(audio){
+export const hasOrFetchAudio = async (audio) => {
     if (! await hasAudio(audio)){
         await fetchAudio(audio);
     }
-}
+};
 
-export async function fetchAudioFiles(){
-    let res = await axios.get(`/audioresources/resource_list.json`,{
-        headers: {'token': localStorage['token']}
-    });
-    for (const audio of res.data){
-        hasOrFetchAudio(audio);
+export const fetchAudioFiles = async () => {
+    try {
+        let res = await axios.get(`/audioresources/resource_list.json`,{
+            headers: {'token': token}
+        });
+        for (const audio of res.data){
+            hasOrFetchAudio(audio);
+        }
+    } catch(err){
+        console.log(`Couldn't fetch resources listing`);
     }
-}
+};
+
+// export const clearAudioFiles = async () => {
+//     let audioKeys = await keysAudio();
+//     for (const audio of audioKeys){
+
+//     }
+
+// };

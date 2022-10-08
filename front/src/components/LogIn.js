@@ -10,7 +10,11 @@ import { Input ,
     FormErrorMessage,
     FormHelperText,
     Box,
-    } from '@chakra-ui/react'
+    } from '@chakra-ui/react';
+import React, { useContext } from "react";
+import { SessionContext } from "../contexts/SessionContext"
+    
+        
 /* const LogInSubmit = (props) => {
     return (
         <Button type="submit" id="submit">Log In </Button>
@@ -18,6 +22,7 @@ import { Input ,
 };
  */
 const LogIn = () => {
+    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
 
     const [formData, setFormData] = useState({
         user: "",
@@ -41,6 +46,11 @@ const LogIn = () => {
             localStorage.setItem("screenname", res.data.screenname)
             localStorage.setItem("firstname", res.data.firstname)
             localStorage.setItem("lastname", res.data.lastname)
+            let userRes = Object.assign({}, res.data)
+            delete userRes.token
+            setUserInfo(userRes)
+            setToken(res.data.token)
+            setSessionStatus(true)
             return navigate('/welcome')
         }catch(err){
             console.error(err)
