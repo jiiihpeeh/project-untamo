@@ -66,6 +66,7 @@ isUserLogged = (req,res,next) => {
 		} else {
 			req.session = {};
 			req.session.user = session.user;
+			req.session.userID = session.userID;
 			session.ttl = now+time_to_live_diff;
 			session.save(function(err) {
 				if(err) {
@@ -147,6 +148,7 @@ app.post("/login",function(req,res) {
 		if(!user) {
 			return res.status(401).json({message:"Unathorized"})
 		}
+		//console.log(user)
 		bcrypt.compare(req.body.password,user.password,function(err,success) {
 			if(err) {
 				console.log("Comparing passwords failed. Reason",err);
@@ -160,7 +162,8 @@ app.post("/login",function(req,res) {
 			let session= new sessionModel({
 				user:req.body.user,
 				ttl:now + time_to_live_diff,
-				token:token
+				token:token,
+				userID: user._id
 			})
 			session.save(function(err) {
 				if(err) {
@@ -173,6 +176,8 @@ app.post("/login",function(req,res) {
 		})
 	})
 });
+
+
 
 app.post("/logout",function(req,res) {
 	console.log("/logout");

@@ -8,6 +8,10 @@ let Schema = mongoose.Schema({
     screenname: String
 });
 
+Schema.virtual("id").get(function() {
+    return this._id;
+});
+
 module.exports=mongoose.model("User",Schema);
 
 /*

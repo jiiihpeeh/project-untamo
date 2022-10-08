@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 let Schema = mongoose.Schema({
-    deviceID:{type:String,index:true, unique:true},
     deviceName:String,
     user:String,
+    userID: String,
+    type: String,
     userDevice:{type:String, unique:true},
 });
 

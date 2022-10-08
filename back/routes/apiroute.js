@@ -2,6 +2,7 @@ const express = require("express");
 const alarm = require("../models/alarm");
 const alarmModel = require("../models/alarm");
 const userModel = require("../models/user");
+const deviceModel = require("../models/device");
 const router = express.Router();
 
 
@@ -107,41 +108,60 @@ router.put("/alarm/:id",function(req,res) {
 
 
 router.get("/devices",function(req,res) {
-	let query={"user":req.session.user}
+	let query={"userID":req.session.userID}
 	deviceModel.find(query,function(err,devices) {
 		if(err) {
 			console.log("Failed to find devices. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
-		return res.status(200).json(devices);
+		let devmap = []
+		console.log(devices)
+		for (let i =0; i<devices.length;i++){
+			let dobj = {deviceName: devices[i].deviceName, id: devices[i].id}
+			if(devices[i].type !== undefined){
+				dobj.type = devices[i].type
+			}
+			devmap.push(dobj)
+		}
+		return res.status(200).json(devmap);
 	})
 });
 
 
 
 router.post("/device",function(req,res) {
+	console.log('checking out new device')
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	if(!req.body.deviceID) {
+	console.log(req.body)
+	if(!req.body.deviceName) {
 		return res.status(400).json({message:"Bad request"});
 	}
+	let deviceType = undefined;
+	if(req.body.type){
+		deviceType = req.body.type
+	}
 	let device = new deviceModel({
-		deviceID:req.body.deviceID,
-		deviceName:req.body.devicename,
-        user:req.session.user
+		deviceName:req.body.deviceName,
+		userID: req.session.userID,
+		type: deviceType,
+		userDevice: `${req.session.userID}@${req.body.deviceName}`
 	})
-	device.save(function(err) {
+	device.save(function(err, saved) {
 		if(err) {
 			console.log("Failed to add a device. Reason",err);
-			return res.status(500).json({message:"Internal server error"})
+			return res.status(500).json({message:`Internal server error.`, code: err.code})
 		}
-		return res.status(201).json({message:"New Device Created"});
+		//return res.status(201).json({message:"New Device Created"});
+		console.log(saved)
+		return res.status(201).json({message: "Success. Device Created", device: saved.deviceName, id: saved._id});
 	})
 })
 
 router.delete("/device/:id",function(req,res) {
-	deviceModel.deleteOne({"_id":req.params.id,"user":req.session.user},
+	console.log("deleting")
+	deviceModel.deleteOne({"deviceName":req.params.id,"userID:":req.session.userID},
 	function(err) {
 		if(err) {
 			console.log("Failed to remove device. Reason",err);
@@ -155,15 +175,16 @@ router.put("/device/:id",function(req,res) {
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	if(!req.body.alarmID) {
+	if(!req.body.id || !req.body.deviceName) {
 		return res.status(400).json({message:"Bad request"});
 	}
 	let device = {
-		deviceID:req.body.deviceID,
-		devicenName:req.body.devicename,
-        user:req.session.user
+		devicenName:req.body.deviceName,
+        user:req.session.userID,
+		id:req.body.id,
+		userDevice: `${req.session.userID}@${req.body.deviceName}`
 	}
-	deviceModel.replaceOne({"_id":req.params.id,"user":req.session.user},device,function(err) {
+	deviceModel.replaceOne({"_id":req.params.id,"userID":req.session.userID},device,function(err) {
 		if(err) {
 			console.log("Failed to update a device. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
@@ -172,5 +193,9 @@ router.put("/device/:id",function(req,res) {
 	})
 })
 
+//session data
+router.get("/issessionvalid", function(req,res) {
+	return res.status(200).json({status: true})
+});
 
 module.exports = router;
