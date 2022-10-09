@@ -1,6 +1,7 @@
 import { get, set, del, clear, keys, deleteDataBase } from './audioDatabaseHandler';
 import { blobToBase64String, base64StringToBlob }  from 'blob-util';
 import axios from 'axios';
+import { notification } from '../components/notification';
 
 
 
@@ -29,7 +30,7 @@ export const hasAudio = async (key)  => {
 export const fetchAudio = async (audio, token) => {
     //console.log(audio)
     try {
-        let res = await axios.get(`/audioresources/${audio}.opus`,{
+        let res = await axios.get(`http://localhost:3001/audioresources/${audio}.opus`,{
             responseType: 'blob', 
             headers: {'token': token}
         });
@@ -37,18 +38,24 @@ export const fetchAudio = async (audio, token) => {
         console.log(`Dowloaded audio: ${audio}`)
     } catch(err){
         console.log(`Couldn't fetch audio ${audio}`);
+        notification("Audio File", "Couldn't download a file", "error")
     }
 };
 
 export const hasOrFetchAudio = async (audio, token) => {
     if (! await hasAudio(audio,token)){
-        await fetchAudio(audio,token);
+        try{
+            await fetchAudio(audio,token);
+        } catch(err){
+            return false
+        }
     }
+    return true
 };
 
 export const fetchAudioFiles = async (token) => {
     try {
-        let res = await axios.get(`/audioresources/resource_list.json`,{
+        let res = await axios.get(`http://localhost:3001/audioresources/resource_list.json`,{
             headers: {'token': token}
         });
         for (const audio of res.data){
@@ -56,6 +63,7 @@ export const fetchAudioFiles = async (token) => {
         }
     } catch(err){
         console.log(`Couldn't fetch resources listing`);
+        notification("Alarm sounds", "Failed to get a listing", "error")
     }
 };
 

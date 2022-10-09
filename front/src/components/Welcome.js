@@ -37,7 +37,7 @@ const Welcome = () => {
         } else {
             navigate('/login')
         }
-    },[sessionStatus])
+    },[])
 
     return(
         <>
