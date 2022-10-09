@@ -5,7 +5,7 @@ export const notification = (title, description, duration=2000, info='success', 
 //export const notification = (title, description ) => {
     const { toast } = createStandaloneToast();
     const statuses = ['success', 'error', 'warning', 'info']
-    let msgStatus = status
+    let msgStatus = info
     if (statuses.indexOf(msgStatus) === -1){
         msgStatus = 'success'
         console.error('Wrong status')

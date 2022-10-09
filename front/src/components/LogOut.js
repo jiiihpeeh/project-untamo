@@ -38,11 +38,8 @@ const LogOut = () => {
                 //navigate('/login');
             }catch(err){
                 notification("Logged out", "Failed to clear user info", 'error')
-<<<<<<< HEAD
                 console.error("Clearing userinfo failed")
-=======
-                console.log("Clearing userinfo failed")
->>>>>>> d0f08c371356a44279a6347707e76ca0024e2fa6
+
             }
 
         }catch(err){
