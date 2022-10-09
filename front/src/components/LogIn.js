@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
+import { notification } from "./notification";
+
 import { Input ,
     InputGroup,
     InputRightAddon,
@@ -51,6 +53,8 @@ const LogIn = () => {
             setUserInfo(userRes)
             setToken(res.data.token)
             setSessionStatus(true)
+            //notification()
+            notification("Logged In", "Successfully logged in")
             return navigate('/welcome')
         }catch(err){
             console.error(err)
