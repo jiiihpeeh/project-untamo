@@ -181,6 +181,7 @@ app.post("/login",function(req,res) {
 
 app.post("/logout",function(req,res) {
 	console.log("/logout");
+	//console.log(req.headers)
 	if(!req.headers.token) {
 		return res.status(404).json({message:"Not found"});
 	}

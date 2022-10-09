@@ -1,5 +1,5 @@
 
-import { openDB } from 'idb';
+import { openDB, deleteDB } from 'idb';
 
 
 const dbPromise = openDB('audio-store', 1, {
@@ -23,3 +23,7 @@ export async function clear() {
 export async function keys() {
   return (await dbPromise).getAllKeys('audio');
 }
+
+export async function deleteDataBase(name){
+  return await deleteDB(name)
+}  

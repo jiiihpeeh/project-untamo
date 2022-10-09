@@ -1,8 +1,8 @@
 import axios from "axios";
 import { SessionContext } from "../contexts/SessionContext";
 import { useContext, useRef} from "react";
-import { useNavigate } from "react-router-dom";
-import { clearAudio } from "../audiostorage/audioDatabase";
+//import { useNavigate } from "react-router-dom";
+import { deleteAudioDB } from "../audiostorage/audioDatabase";
 
 import {
     AlertDialog,
@@ -18,21 +18,29 @@ import {
   } from '@chakra-ui/react';
 
 const LogOut = () => {
-    const navigate = useNavigate()
+    //const navigate = useNavigate()
     const { token } = useContext(SessionContext);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef();
 
     const logOut = async() =>{
         try {
-            let res = await axios.get('http://localhost:3001/logout', {
+            let res = await axios.post('http://localhost:3001/logout', {msg: "smell you later"}, {
                 headers: {'token': token}
             });
             console.log(res.data);
-            localStorage.clear();
-            await clearAudio();
-            navigate('/login')
-        }catch(err){};
+            try{
+                localStorage.clear();
+                //await clearAudio();
+                await deleteAudioDB();
+                //navigate('/login');
+            }catch(err){
+                console.log("Clearing userinfo failed")
+            }
+
+        }catch(err){
+            console.log("Log out failed")
+        };
     }
 
   
@@ -62,7 +70,7 @@ const LogOut = () => {
                 <Button ref={cancelRef} onClick={onClose}>
                   Cancel
                 </Button>
-                <Button colorScheme='red' onClick={logOut} ml={3}>
+                <Button colorScheme='red' onClick= {() => {logOut() ; onClose()}} ml={3}>
                   OK
                 </Button>
               </AlertDialogFooter>

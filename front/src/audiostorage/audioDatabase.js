@@ -1,8 +1,8 @@
-import { get, set, del, clear, keys } from './audioDatabaseHandler';
+import { get, set, del, clear, keys, deleteDataBase } from './audioDatabaseHandler';
 import { blobToBase64String, base64StringToBlob }  from 'blob-util';
 import axios from 'axios';
 
-const token = localStorage['token'];
+
 
 export const getAudio = async (key) => {
     let data = await get(key);
@@ -26,7 +26,7 @@ export const hasAudio = async (key)  => {
     return keyList.indexOf(key) !== -1;
 };
 
-export const fetchAudio = async (audio) => {
+export const fetchAudio = async (audio, token) => {
     //console.log(audio)
     try {
         let res = await axios.get(`/audioresources/${audio}.opus`,{
@@ -40,29 +40,25 @@ export const fetchAudio = async (audio) => {
     }
 };
 
-export const hasOrFetchAudio = async (audio) => {
-    if (! await hasAudio(audio)){
-        await fetchAudio(audio);
+export const hasOrFetchAudio = async (audio, token) => {
+    if (! await hasAudio(audio,token)){
+        await fetchAudio(audio,token);
     }
 };
 
-export const fetchAudioFiles = async () => {
+export const fetchAudioFiles = async (token) => {
     try {
         let res = await axios.get(`/audioresources/resource_list.json`,{
             headers: {'token': token}
         });
         for (const audio of res.data){
-            hasOrFetchAudio(audio);
+            await hasOrFetchAudio(audio, token);
         }
     } catch(err){
         console.log(`Couldn't fetch resources listing`);
     }
 };
 
-// export const clearAudioFiles = async () => {
-//     let audioKeys = await keysAudio();
-//     for (const audio of audioKeys){
-
-//     }
-
-// };
+export const deleteAudioDB = async () => {
+    await deleteDataBase('audio-store')
+};
