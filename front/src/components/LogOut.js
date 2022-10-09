@@ -63,7 +63,7 @@ const LogOut = () => {
                   Cancel
                 </Button>
                 <Button colorScheme='red' onClick={logOut} ml={3}>
-                  Delete
+                  OK
                 </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
