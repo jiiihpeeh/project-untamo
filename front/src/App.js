@@ -6,12 +6,15 @@ import About from './components/About';
 import LogIn from './components/LogIn';
 import Register from './components/Register'
 import Welcome from './components/Welcome';
+import LogOut from './components/LogOut';
 import './App.css'
 import axios from 'axios';
 
 import { SessionContext }  from './contexts/SessionContext'
 import { DeviceContext } from './contexts/DeviceContext' 
-import { Grid, GridItem, Text, Link } from '@chakra-ui/react'
+import { Grid, GridItem, Text, Link, Button } from '@chakra-ui/react'
+
+
 
 function App() {
 
@@ -25,6 +28,8 @@ function App() {
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : undefined) ;
 	const [sessionStatus, setSessionStatus] = useState(undefined)
+
+
 	//const navigate = useNavigate()
 	useEffect(() => {
 		const checkSession = async () => {
@@ -63,13 +68,16 @@ function App() {
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices }}>
 			<Grid  h='80px'
 					templateRows='repeat(1, 1fr)'
-					templateColumns='repeat(5, 1fr)'
+					templateColumns='repeat(6, 1fr)'
 					gap={4}>
 				<Gridlink text="alarms"/>
 				<Gridlink text="about"/>
 				<Gridlink text="register"/>
 				<Gridlink text="login"/>
 				<Gridlink text="welcome"/>
+				<GridItem>
+					<LogOut/>
+				</GridItem>
 			</Grid>
 			
 			<Routes>
