@@ -16,6 +16,7 @@ import {
     Link,
     Text
   } from '@chakra-ui/react';
+  import { notification } from "./notification";
 
 const LogOut = () => {
     //const navigate = useNavigate()
@@ -29,16 +30,19 @@ const LogOut = () => {
                 headers: {'token': token}
             });
             console.log(res.data);
+            notification("Logged out", "Log out succcesful", 'info')
             try{
                 localStorage.clear();
                 //await clearAudio();
                 await deleteAudioDB();
                 //navigate('/login');
             }catch(err){
+                notification("Logged out", "Failed to clear user info", 'error')
                 console.log("Clearing userinfo failed")
             }
 
         }catch(err){
+            notification("Log out", "Log out failed", 'error')
             console.log("Log out failed")
         };
     }
