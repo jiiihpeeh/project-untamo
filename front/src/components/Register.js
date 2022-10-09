@@ -9,6 +9,7 @@ import RegisterSubmit from './registerComponents/RegisterSubmit';
 import PasswordMatch from './registerComponents/PasswordMatch';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { notification } from './notification';
 
 import { Input ,
     InputGroup,
@@ -127,9 +128,11 @@ const Register = (props) => {
         try {
             const res = await axios.post('/register',formData );
             console.log(res.data);
+            notification("Registration", "User was succesfully registered")
             navigate('/login')
         } catch (err){
             console.error(err)
+            notification("Registration", "Registration failed", "error")
         }
     }
 
