@@ -63,43 +63,17 @@ function App() {
 
 	};
 
-	//const navigate = useNavigate()
 	useEffect(() => {
 
 		checkSession();
 	},[]);
-	//console.log(token)
-
-	const Gridlink = (text) => {
-		let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1)
-		console.log(titled)
-		return (<>
-			<GridItem>
-				<Link as={ReachLink} to={`/${text.text}`}><Text as='b'>{titled}</Text></Link>
-			</GridItem>
-		</>)
-	}
+	
 	
 	return (
 		
 		<div className="App">
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices }}>
-			{/* {nav} */}
-			{/* <NavGrid/> */}
-			{/* <Grid  h='80px'
-					templateRows='repeat(1, 1fr)'
-					templateColumns='repeat(6, 1fr)'
-					gap={4}>
-				<Gridlink text="alarms"/>
-				<Gridlink text="about"/>
-				<Gridlink text="register"/>
-				<Gridlink text="login"/>
-				<Gridlink text="welcome"/>
-				<GridItem>
-					<LogOut/>
-				</GridItem>
-			</Grid> */}
 			<NavGrid/>
 			<Routes>
 				
