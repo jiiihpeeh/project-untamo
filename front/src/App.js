@@ -24,7 +24,7 @@ function App() {
 		screenname: localStorage['screenname'] ? localStorage['screenname'] : undefined,
 	});
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
-	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : undefined) ;
+	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;
 	const [sessionStatus, setSessionStatus] = useState(undefined);
 
 	const checkSession = async () => {

@@ -28,12 +28,12 @@ const Welcome = () => {
     const  navigate = useNavigate()
 
     useEffect(() => {
-        const alarmRources = async () => {
+        const alarmResources = async () => {
             await fetchAudioFiles(token)
             playAudio('rooster', token)
         }
         if(sessionStatus){
-            alarmRources()
+            alarmResources()
         } else {
             navigate('/login')
         }

@@ -24,10 +24,12 @@ import {
     MenuGroup,
     MenuOptionGroup,
     MenuDivider,
-    Input
+    Input,
+    Divider,
+    Stack
   } from '@chakra-ui/react'
-  import { ChevronDownIcon } from '@chakra-ui/icons'
-
+import { ChevronDownIcon } from '@chakra-ui/icons'
+import { notification } from "./notification";
 
 
 const AddDeviceDrawer = () => {
@@ -36,22 +38,51 @@ const AddDeviceDrawer = () => {
   const btnRef = useRef()
   const [ deviceName, setDeviceName ] = useState('')
   const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+  const [deviceType, setDeviceType] = useState('Browser')
 
-
+  const navigate = useNavigate()
   const onChange = (event) => {
       setDeviceName(event.target.value)
   }
+  const MenuActionItem = (text) => {
+    return(
+      <MenuItem  onClick={() => setDeviceType(text.text)} > {text.text} </MenuItem>
+    )
+  }
+
   const requestDevice = async () => {
-    try{
-      let res = await axios.post(`http://localhost:3001/api/device`, {"deviceName":deviceName}, {
-            headers: {'token': token}
-          });
-      console.log(res.data);
-      setCurrentDevice(res.data.id)
-      setDevices( () => {
-        return [ ...devices, res.data ]
-      })
-    }catch(err){}
+    if(deviceName.length > 0){
+      let dn = []
+      if(devices.length > 0){
+        for(const dname of devices){
+          dn.push(dname.deviceName)
+        }
+      }
+      if (dn.indexOf(deviceName) === -1){
+        try{
+        
+          let res = await axios.post(`/api/device`, {"deviceName":deviceName, type: deviceType}, {
+                headers: {'token': token}
+              });
+          console.log(res.data);
+          setCurrentDevice(res.data.id)
+          localStorage['currentDevice'] = res.data.id
+
+          let devicesUpdated =  Object.assign([],devices)
+          devicesUpdated.push({id: res.data.id, deviceName: res.data.device, type: res.data.type})
+          setDevices(devicesUpdated)
+          localStorage['devices'] = JSON.stringify(devicesUpdated)
+          notification("Device", "A new device was added")
+          navigate('/alarms')
+        }catch(err){
+          notification("Device", "Failed to add a device", 'error')
+        }
+      }else {
+        notification("Device", "Name taken", "error")
+      }
+    } else {
+      notification("Device", "Name too short", "error")
+    } 
   }
   return (
         <>
@@ -70,9 +101,25 @@ const AddDeviceDrawer = () => {
               <DrawerHeader>Insert Device Name</DrawerHeader>
     
               <DrawerBody>
-                <Input placeholder='Device name' text={navigator.userAgent}  value={deviceName} onChange={onChange}/>
+                <Stack>
+                <Input placeholder='Device name'  value={deviceName} onChange={onChange}/>
+                <Divider orientation='vertical'/>
+                <Menu>
+                  <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+                    Device type: {deviceType}
+                  </MenuButton>
+                  <MenuList>
+                    <MenuActionItem text="Browser"/>
+                    <MenuActionItem text="Phone"/>
+                    <MenuActionItem text="Desktop"/>
+                    <MenuActionItem text="Tablet"/>
+                    <MenuActionItem text="Other"/>
+                  </MenuList>
+                </Menu>
+                </Stack>
               </DrawerBody>
-    
+
+
               <DrawerFooter>
                 <Button variant='outline' mr={3} onClick={onClose}>
                   Cancel

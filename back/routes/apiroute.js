@@ -138,7 +138,7 @@ router.post("/device",function(req,res) {
 	if(!req.body.deviceName) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	let deviceType = undefined;
+	let deviceType = "Other";
 	if(req.body.type){
 		deviceType = req.body.type
 	}
@@ -155,7 +155,7 @@ router.post("/device",function(req,res) {
 		}
 		//return res.status(201).json({message:"New Device Created"});
 		console.log(saved)
-		return res.status(201).json({message: "Success. Device Created", device: saved.deviceName, id: saved._id});
+		return res.status(201).json({message: "Success. Device Created", device: saved.deviceName, id: saved._id, type: saved.type});
 	})
 })
 

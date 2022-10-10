@@ -1,5 +1,6 @@
 import axios from "axios";
 import { SessionContext } from "../contexts/SessionContext";
+import { DeviceContext } from "../contexts/DeviceContext";
 import { useContext, useRef} from "react";
 import { deleteAudioDB } from "../audiostorage/audioDatabase";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +20,7 @@ import {
   import { notification } from "./notification";
 
 const LogOut = () => {
-    //const navigate = useNavigate()
+    const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef();
@@ -35,7 +36,8 @@ const LogOut = () => {
             setToken(undefined);
             setSessionStatus(false);
             setUserInfo({});
-
+            setCurrentDevice(undefined)
+            setDevices({})
             try{
                 localStorage.clear();
                 //await clearAudio();
