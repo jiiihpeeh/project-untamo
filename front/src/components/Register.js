@@ -1,5 +1,5 @@
  
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 //import './registerComponents/registerCheck.css'
 import useWebSocket from 'react-use-websocket';
 import { formString } from './registerComponents/formString';
@@ -21,7 +21,7 @@ import { Input ,
     FormHelperText,
     Box,
     } from '@chakra-ui/react'
-
+import { SessionContext } from '../contexts/SessionContext';
 
 const Register = (props) => {
     
@@ -42,7 +42,8 @@ const Register = (props) => {
     });
     //checkmark = (form.password.length >5 && form.password === form.password_confirm) ? "✓": "𐄂";
     const { sendMessage, lastMessage } = useWebSocket(wsURL);
-  
+    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
+
     useEffect(() => {
         if(!formCheck.has(formString(formData))){
             let formmsg_part = Object.assign({},formData);
@@ -137,7 +138,11 @@ const Register = (props) => {
     }
 
     const navigate = useNavigate()
-    
+    useEffect(() =>{
+        if(sessionStatus){
+            navigate('/alarms')
+        }
+    },[sessionStatus])
     return (
         <Box bg='lightgray' width="30em" margin="0 auto"  borderRadius='lg'>
         <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >

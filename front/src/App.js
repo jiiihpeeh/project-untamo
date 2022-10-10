@@ -1,18 +1,16 @@
 
 import { useEffect, useState, useNavigate } from 'react';
-import {Routes,Route, Link as ReachLink } from 'react-router-dom';
+import { Routes,Route, Link as ReachLink, Navigate } from 'react-router-dom';
 import Alarms from './components/Alarms';
 import About from './components/About';
 import LogIn from './components/LogIn';
 import Register from './components/Register'
 import Welcome from './components/Welcome';
-import LogOut from './components/LogOut';
 import './App.css'
 import axios from 'axios';
 
 import { SessionContext }  from './contexts/SessionContext'
 import { DeviceContext } from './contexts/DeviceContext' 
-import { Grid, GridItem, Text, Link, Button } from '@chakra-ui/react'
 import { notification } from './components/notification';
 import NavGrid from './components/NavGrid';
 
@@ -27,7 +25,7 @@ function App() {
 	});
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : undefined) ;
-	const [sessionStatus, setSessionStatus] = useState(undefined)
+	const [sessionStatus, setSessionStatus] = useState(undefined);
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
@@ -39,12 +37,10 @@ function App() {
 				if(res.data.status){
 					console.log("session valid");
 					setSessionStatus(true);
-					notification("Session", "Continuing session.", 'info')
-					//navigate('/welcome');
+					notification("Session", "Continuing session.", 'info');
 				} else {
 					console.log(res.status);
 					setSessionStatus(false);
-					//navigate('/login');
 				}
 			} catch(err){
 				if(err.response.status === 403){
@@ -54,7 +50,7 @@ function App() {
 					
 				}else{
 					setSessionStatus(undefined);
-					notification("Session", "Can not contact server.", 'warning')
+					notification("Session", "Can not contact server.", 'warning');
 				}
 			}
 		} else {
@@ -82,7 +78,7 @@ function App() {
 					<Route path="/login" element={<LogIn/>}/>
 					<Route path="/register" element={<Register/>}/>
 					<Route path="/welcome" element={<Welcome/>}/>
-				
+					<Route path="*" element={<Navigate to="/about" /> } />
 			</Routes>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    

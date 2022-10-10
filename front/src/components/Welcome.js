@@ -38,7 +38,11 @@ const Welcome = () => {
             navigate('/login')
         }
     },[])
-
+	useEffect(() =>{
+		if(!sessionStatus){
+			navigate('/login')
+		}
+	},[token, sessionStatus])
     return(
         <>
             <div>

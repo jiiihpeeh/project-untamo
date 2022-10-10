@@ -23,7 +23,7 @@ const LogOut = () => {
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const logOut = async() =>{
         try {
             let res = await axios.post('http://localhost:3001/logout', {msg: "smell you later"}, {
@@ -31,23 +31,25 @@ const LogOut = () => {
             });
             console.log(res.data);
             
-            notification("Logged out", "Log out succcesful", 'info')
-            setToken(null)
-            setSessionStatus(false)
+            notification("Logged out", "Log out succcesful", 'info');
+            setToken(undefined);
+            setSessionStatus(false);
+            setUserInfo({});
+
             try{
                 localStorage.clear();
                 //await clearAudio();
                 await deleteAudioDB();
                 
             }catch(err){
-                notification("Logged out", "Failed to clear user info", 'error')
-                console.error("Clearing userinfo failed")
+                notification("Logged out", "Failed to clear user info", 'error');
+                console.error("Clearing userinfo failed");
 
             }
             navigate('/login');
         }catch(err){
-            notification("Log out", "Log out failed", 'error')
-            console.log("Log out failed")
+            notification("Log out", "Log out failed", 'error');
+            console.log("Log out failed");
         };
     }
 

@@ -1,7 +1,7 @@
-import { SessionContext} from '../contexts/SessionContext'
-import { DeviceContext } from '../contexts/DeviceContext' 
-import {Link as ReachLink} from 'react-router-dom'
-import { Grid, GridItem, Text, Link, Button } from '@chakra-ui/react'
+import { SessionContext} from '../contexts/SessionContext';
+import { DeviceContext } from '../contexts/DeviceContext';
+import {Link as ReachLink} from 'react-router-dom';
+import { Grid, GridItem, Text, Link, Button } from '@chakra-ui/react';
 import { notification } from './notification';
 import LogOut from './LogOut';
 import { useState, useEffect, useContext } from "react";
@@ -14,25 +14,25 @@ const NavGrid = () => {
     const [gridItems, setGridItems] = useState();
     const [columnCount, setColumnCount] = useState(`repeat(5, 1fr)`);
     const Gridlink = (text) => {
-        let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1)
+        let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1);
         return (<>
             <GridItem>
                 <Link as={ReachLink} to={`/${text.text}`}><Text as='b'>{titled}</Text></Link>
             </GridItem>
-        </>)
+        </>);
     }
     const constructGrid = () => {
-        let validItems = []
+        let validItems = [];
         if(sessionStatus){
-            validItems = ["alarms", "logout", "about"]
+            validItems = ["alarms", "logout", "about"];
         } else {
-            validItems = ["login", "register", "about"]            
+            validItems = ["login", "register", "about"];        
         }
-        let validLinks = []
+        let validLinks = [];
         for (const item of validItems){
             switch(item){
                 case "logout":
-                    validLinks.push(<GridItem><LogOut/></GridItem>)
+                    validLinks.push(<GridItem><LogOut/></GridItem>);
                     break;
                 default:
                     validLinks.push(<Gridlink text={item}/>);
@@ -40,11 +40,11 @@ const NavGrid = () => {
             }
         }
         setGridItems(validLinks);
-        setColumnCount( `repeat(${validLinks.length}, 1fr)`)
+        setColumnCount( `repeat(${validLinks.length}, 1fr)`);
     }
     useEffect(()=>{
-        constructGrid()
-    },[token, sessionStatus])
+        constructGrid();
+    },[token, sessionStatus]);
     return (
         <Grid  h='80px'
             templateRows='repeat(1, 1fr)'
