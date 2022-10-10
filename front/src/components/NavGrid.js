@@ -33,18 +33,15 @@ const NavGrid = () => {
         for (const item of validItems){
             switch(item){
                 case "logout":
-                    console.log(item);
                     validLinks.push(<GridItem><LogOut/></GridItem>)
                     break;
                 default:
-                    console.log(item);
                     validLinks.push(<Gridlink text={item}/>);
                     break;
             }
         }
         setGridItems(validLinks);
         setColumnCount( `repeat(${validLinks.length}, 1fr)`)
-        console.log(gridItems)
     }
     useEffect(()=>{
         constructGrid()
