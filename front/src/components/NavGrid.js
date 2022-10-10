@@ -15,7 +15,6 @@ const NavGrid = () => {
     const [columnCount, setColumnCount] = useState(`repeat(5, 1fr)`);
     const Gridlink = (text) => {
         let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1)
-        console.log(titled)
         return (<>
             <GridItem>
                 <Link as={ReachLink} to={`/${text.text}`}><Text as='b'>{titled}</Text></Link>
