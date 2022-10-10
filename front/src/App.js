@@ -13,8 +13,8 @@ import axios from 'axios';
 import { SessionContext }  from './contexts/SessionContext'
 import { DeviceContext } from './contexts/DeviceContext' 
 import { Grid, GridItem, Text, Link, Button } from '@chakra-ui/react'
-
-
+import { notification } from './components/notification';
+import NavGrid from './components/NavGrid';
 
 function App() {
 
@@ -29,25 +29,43 @@ function App() {
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : undefined) ;
 	const [sessionStatus, setSessionStatus] = useState(undefined)
 
-
-	//const navigate = useNavigate()
-	useEffect(() => {
-		const checkSession = async () => {
+	const checkSession = async () => {
+		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
+		if (sessionToken !== undefined){
 			try {
-				let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
 				let res = await axios.get('http://localhost:3001/api/issessionvalid',  {
 					headers: {'token': sessionToken}
 				});
 				if(res.data.status){
 					console.log("session valid");
 					setSessionStatus(true);
+					notification("Session", "Continuing session.", 'info')
 					//navigate('/welcome');
-				} else{
+				} else {
+					console.log(res.status);
 					setSessionStatus(false);
 					//navigate('/login');
 				}
-			} catch(err){}
-		};
+			} catch(err){
+				if(err.response.status === 403){
+					setSessionStatus(false);
+					console.log("session invalid");
+					notification("Session", "Session invalid.", 'error');
+					
+				}else{
+					setSessionStatus(undefined);
+					notification("Session", "Can not contact server.", 'warning')
+				}
+			}
+		} else {
+			setSessionStatus(false);
+		}
+
+	};
+
+	//const navigate = useNavigate()
+	useEffect(() => {
+
 		checkSession();
 	},[]);
 	//console.log(token)
@@ -61,12 +79,15 @@ function App() {
 			</GridItem>
 		</>)
 	}
+	
 	return (
 		
 		<div className="App">
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices }}>
-			<Grid  h='80px'
+			{/* {nav} */}
+			{/* <NavGrid/> */}
+			{/* <Grid  h='80px'
 					templateRows='repeat(1, 1fr)'
 					templateColumns='repeat(6, 1fr)'
 					gap={4}>
@@ -78,8 +99,8 @@ function App() {
 				<GridItem>
 					<LogOut/>
 				</GridItem>
-			</Grid>
-			
+			</Grid> */}
+			<NavGrid/>
 			<Routes>
 				
 					<Route exact path="/alarms" element={<Alarms/>}/>

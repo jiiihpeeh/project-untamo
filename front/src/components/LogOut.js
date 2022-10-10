@@ -1,8 +1,8 @@
 import axios from "axios";
 import { SessionContext } from "../contexts/SessionContext";
 import { useContext, useRef} from "react";
-//import { useNavigate } from "react-router-dom";
 import { deleteAudioDB } from "../audiostorage/audioDatabase";
+import { useNavigate } from "react-router-dom";
 
 import {
     AlertDialog,
@@ -20,28 +20,31 @@ import {
 
 const LogOut = () => {
     //const navigate = useNavigate()
-    const { token } = useContext(SessionContext);
+    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef();
-
+    const navigate = useNavigate()
     const logOut = async() =>{
         try {
             let res = await axios.post('http://localhost:3001/logout', {msg: "smell you later"}, {
                 headers: {'token': token}
             });
             console.log(res.data);
+            
             notification("Logged out", "Log out succcesful", 'info')
+            setToken(null)
+            setSessionStatus(false)
             try{
                 localStorage.clear();
                 //await clearAudio();
                 await deleteAudioDB();
-                //navigate('/login');
+                
             }catch(err){
                 notification("Logged out", "Failed to clear user info", 'error')
                 console.error("Clearing userinfo failed")
 
             }
-
+            navigate('/login');
         }catch(err){
             notification("Log out", "Log out failed", 'error')
             console.log("Log out failed")
