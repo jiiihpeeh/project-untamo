@@ -50,6 +50,7 @@ const NavGrid = () => {
             templateRows='repeat(1, 1fr)'
             templateColumns={columnCount}
             gap={4}
+            key="navgrid-assembled"
         >
             {gridItems}
         </Grid>

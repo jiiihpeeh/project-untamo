@@ -151,13 +151,13 @@ const DeviceSelector = () => {
           localStorage['devices'] = JSON.stringify(res.data);
           fetchedDevices = res.data;
         }catch(err){
-          console.log("Cannot fetch devices online");
+          console.log("Cannot fetch devices");
           if (localStorage.getItem('devices') !== null){
             fetchedDevices = JSON.parse(localStorage['devices']);
           }
         }
       }else{
-        console.log("Cannot fetch devices online");
+        console.log("Cannot fetch devices");
         if (localStorage.getItem('devices') !== null){
           fetchedDevices = JSON.parse(localStorage['devices']);
         }

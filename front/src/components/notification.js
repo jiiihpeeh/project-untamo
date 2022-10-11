@@ -1,7 +1,7 @@
 //import { useToast, Button } from '@chakra-ui/react'
 import { createStandaloneToast } from "@chakra-ui/react";
 
-export const notification = (title, description, info='success', duration=2000, isClosable=true ) => {
+export const notification = (title, description, info='success', duration=2500, isClosable=true ) => {
 //export const notification = (title, description ) => {
     const { toast } = createStandaloneToast();
     const statuses = ['success', 'error', 'warning', 'info']
