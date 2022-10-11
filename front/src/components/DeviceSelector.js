@@ -46,7 +46,7 @@ const AddDeviceDrawer = () => {
   }
   const MenuActionItem = (text) => {
     return(
-      <MenuItem  onClick={() => setDeviceType(text.text)} > {text.text} </MenuItem>
+      <MenuItem  onClick={() => setDeviceType(text.text)} id={`type ${text.text}`} > {text.text} </MenuItem>
     )
   }
 
@@ -112,7 +112,7 @@ const AddDeviceDrawer = () => {
                     <MenuActionItem text="Browser"/>
                     <MenuActionItem text="Phone"/>
                     <MenuActionItem text="Desktop"/>
-                    <MenuActionItem text="Tablet"/>
+                    <MenuActionItem text="Tablet" />
                     <MenuActionItem text="Other"/>
                   </MenuList>
                 </Menu>
@@ -138,18 +138,25 @@ const DeviceSelector = () => {
     const [devices, setDevices] = useState([]) 
     const [menuDevices, setMenuDevices] = useState()
     const navigate =  useNavigate()
-    const { token } = useContext(SessionContext);
+    const { token,  sessionStatus} = useContext(SessionContext);
     const { currentDevice, setCurrentDevice} = useContext(DeviceContext);
 
     const fetchDevices = async () => {
       let fetchedDevices = []
-      try{
-        let res = await axios.get(`/api/devices`,{
-        headers: {'token': token}
-        });
-        localStorage['devices'] = JSON.stringify(res.data);
-        fetchedDevices = res.data;
-      }catch(err){
+      if(sessionStatus){
+        try{
+          let res = await axios.get(`/api/devices`,{
+          headers: {'token': token}
+          });
+          localStorage['devices'] = JSON.stringify(res.data);
+          fetchedDevices = res.data;
+        }catch(err){
+          console.log("Cannot fetch devices online");
+          if (localStorage.getItem('devices') !== null){
+            fetchedDevices = JSON.parse(localStorage['devices']);
+          }
+        }
+      }else{
         console.log("Cannot fetch devices online");
         if (localStorage.getItem('devices') !== null){
           fetchedDevices = JSON.parse(localStorage['devices']);
@@ -158,12 +165,11 @@ const DeviceSelector = () => {
       
       setDevices(fetchedDevices);
       setMenuDevices( fetchedDevices.map((device) => 
-          <MenuItem onClick={() => deviceSelected(device.id)}> {device.deviceName}</MenuItem>)
+          <MenuItem onClick={() => deviceSelected(device.id)} id ={`device ${device.id}`} > {device.deviceName}</MenuItem>)
       );
     };
     useEffect(() => {
-      fetchDevices();
-
+        fetchDevices();
     },[]);
     
     const deviceSelected = (deviceName) => {
