@@ -16,8 +16,8 @@ const NavGrid = () => {
     const GridLink = (text) => {
         let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1);
         return (<>
-            <GridItem>
-                <Link as={ReachLink} to={`/${text.text}`} id={`link-${text.text}`} key={`link-${text.text}`} ><Text as='b'>{titled}</Text></Link>
+            <GridItem key={`navgridlink-${text.text}`} >
+                <Link as={ReachLink} to={`/${text.text}`} id={`link-${text.text}`} ><Text as='b'>{titled}</Text></Link>
             </GridItem>
         </>);
     }
@@ -32,10 +32,10 @@ const NavGrid = () => {
         for (const item of validItems){
             switch(item){
                 case "logout":
-                    validLinks.push(<GridItem><LogOut/></GridItem>);
+                    validLinks.push(<GridItem key="navgridlogout"><LogOut/></GridItem>);
                     break;
                 default:
-                    validLinks.push(<GridLink text={item}/>);
+                    validLinks.push(<GridLink text={item} key={item}/>);
                     break;
             }
         }
