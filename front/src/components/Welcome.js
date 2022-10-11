@@ -50,13 +50,14 @@ const Welcome = () => {
 	},[sessionStatus])
     const SelectLayout = () => {
         if(!devices || devices.length === 0){
-            return <Grid>
+            return (<Grid>
                     <GridItem>
                         <AddDevice/> 
                     </GridItem>
                 </Grid>
+            )
         }else {
-            return <Grid>
+            return (<Grid>
                         <GridItem>
                             <DeviceSelector/>
                         </GridItem>
@@ -68,12 +69,18 @@ const Welcome = () => {
                         <GridItem>
                             <AddDevice/>
                         </GridItem>
-                </Grid>
+                    </Grid>
+            )
         }
     }
     useEffect(() => {
         SelectLayout()
     },[devices])
+    useEffect(() =>{
+        if(currentDevice){
+            navigate('/alarms')
+        }
+    },[currentDevice])
     return(
         <>
             <div>

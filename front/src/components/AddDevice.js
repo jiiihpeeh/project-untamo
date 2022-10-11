@@ -1,5 +1,4 @@
 import { useState, useRef, useContext } from "react";
-import { useNavigate } from "react-router-dom";
 import { useDisclosure } from '@chakra-ui/react'
 import axios from "axios";
 import { SessionContext } from "../contexts/SessionContext"
@@ -40,7 +39,6 @@ const AddDevice = () => {
   const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
   const [deviceType, setDeviceType] = useState('Browser');
 
-  const navigate = useNavigate();
   const onChange = (event) => {
       setDeviceName(event.target.value);
   }
@@ -73,7 +71,6 @@ const AddDevice = () => {
           setDevices(devicesUpdated);
           localStorage['devices'] = JSON.stringify(devicesUpdated);
           notification("Device", "A new device was added");
-          navigate('/alarms');
         }catch(err){
           notification("Device", "Failed to add a device", 'error');
         }
