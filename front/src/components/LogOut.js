@@ -37,7 +37,7 @@ const LogOut = () => {
             setSessionStatus(false);
             setUserInfo({});
             setCurrentDevice(undefined)
-            setDevices({})
+            setDevices([])
             try{
                 localStorage.clear();
                 //await clearAudio();

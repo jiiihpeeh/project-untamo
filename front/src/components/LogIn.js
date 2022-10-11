@@ -15,11 +15,13 @@ import { Input ,
     } from '@chakra-ui/react';
 import React, { useContext } from "react";
 import { SessionContext } from "../contexts/SessionContext"
-    
+import { DeviceContext } from "../contexts/DeviceContext";
+import fetchDevices from "./fetchDevices";
         
 
 const LogIn = () => {
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
+    const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
 
     const [formData, setFormData] = useState({
         user: "",
@@ -49,6 +51,7 @@ const LogIn = () => {
             setUserInfo(userRes);
             setToken(res.data.token);
             setSessionStatus(true);
+            setDevices(await fetchDevices(res.data.token));
             notification("Logged In", "Successfully logged in");
             return navigate('/welcome');
         }catch(err){
@@ -57,7 +60,7 @@ const LogIn = () => {
         }
 
     }
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     useEffect(() =>{
         if(sessionStatus){

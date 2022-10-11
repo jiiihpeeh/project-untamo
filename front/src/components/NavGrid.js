@@ -24,7 +24,12 @@ const NavGrid = () => {
     const constructGrid = () => {
         let validItems = [];
         if(sessionStatus){
-            validItems = ["alarms", "logout", "about"];
+            if(currentDevice !== undefined){
+                validItems = ["alarms", "devices", "user",  "logout", "about"];
+            }else {
+                validItems = ["alarms", "user","logout", "about"];
+            }
+            
         } else {
             validItems = ["login", "register", "about"];        
         }
