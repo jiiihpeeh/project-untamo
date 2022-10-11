@@ -58,7 +58,7 @@ const LogOut = () => {
   
     return (
       <>
-        <Link  onClick={onOpen}>
+        <Link  onClick={onOpen} id="logout-button" key="logout-button" >
             <Text as='b'>
                 Log Out
             </Text>

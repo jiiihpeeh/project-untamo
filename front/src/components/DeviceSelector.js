@@ -46,7 +46,7 @@ const AddDeviceDrawer = () => {
   }
   const MenuActionItem = (text) => {
     return(
-      <MenuItem  onClick={() => setDeviceType(text.text)} id={`type-${text.text}`} > {text.text} </MenuItem>
+      <MenuItem  onClick={() => setDeviceType(text.text)} key={`type-${text.text}`}> {text.text} </MenuItem>
     )
   }
 
@@ -86,7 +86,7 @@ const AddDeviceDrawer = () => {
   }
   return (
         <>
-          <Button ref={btnRef} colorScheme='teal' onClick={onOpen}>
+          <Button ref={btnRef} colorScheme='teal' onClick={onOpen} id="add-device-button" >
             Add a device
           </Button>
           <Drawer
@@ -165,7 +165,7 @@ const DeviceSelector = () => {
       
       setDevices(fetchedDevices);
       setMenuDevices( fetchedDevices.map((device) => 
-          <MenuItem onClick={() => deviceSelected(device.id)} id ={`device-${device.id}`} > {device.deviceName}</MenuItem>)
+          <MenuItem onClick={() => deviceSelected(device.id)}   key={`device-${device.id}`}> {device.deviceName}</MenuItem>)
       );
     };
     useEffect(() => {
@@ -189,7 +189,7 @@ const DeviceSelector = () => {
               {menuDevices}
           </MenuGroup>
           <MenuDivider/>
-          <MenuItem><AddDeviceDrawer/></MenuItem>
+          <MenuItem key="device-drawer"><AddDeviceDrawer/></MenuItem>
         </MenuList>
         </Menu>
     )
