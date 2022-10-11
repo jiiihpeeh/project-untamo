@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
 import { notification } from "./notification";
+import { alarmResources } from "./alarmResources";
 import { Input ,
     InputGroup,
     InputRightAddon,
