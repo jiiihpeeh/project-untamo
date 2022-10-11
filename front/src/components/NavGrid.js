@@ -13,11 +13,11 @@ const NavGrid = () => {
 
     const [gridItems, setGridItems] = useState();
     const [columnCount, setColumnCount] = useState(`repeat(5, 1fr)`);
-    const Gridlink = (text) => {
+    const GridLink = (text) => {
         let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1);
         return (<>
             <GridItem>
-                <Link as={ReachLink} to={`/${text.text}`} id= {`link ${text.text}`} ><Text as='b'>{titled}</Text></Link>
+                <Link as={ReachLink} to={`/${text.text}`} id= {`link-${text.text}`} ><Text as='b'>{titled}</Text></Link>
             </GridItem>
         </>);
     }
@@ -35,7 +35,7 @@ const NavGrid = () => {
                     validLinks.push(<GridItem><LogOut/></GridItem>);
                     break;
                 default:
-                    validLinks.push(<Gridlink text={item}/>);
+                    validLinks.push(<GridLink text={item}/>);
                     break;
             }
         }

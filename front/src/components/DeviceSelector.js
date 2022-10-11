@@ -46,7 +46,7 @@ const AddDeviceDrawer = () => {
   }
   const MenuActionItem = (text) => {
     return(
-      <MenuItem  onClick={() => setDeviceType(text.text)} id={`type ${text.text}`} > {text.text} </MenuItem>
+      <MenuItem  onClick={() => setDeviceType(text.text)} id={`type-${text.text}`} > {text.text} </MenuItem>
     )
   }
 
@@ -165,7 +165,7 @@ const DeviceSelector = () => {
       
       setDevices(fetchedDevices);
       setMenuDevices( fetchedDevices.map((device) => 
-          <MenuItem onClick={() => deviceSelected(device.id)} id ={`device ${device.id}`} > {device.deviceName}</MenuItem>)
+          <MenuItem onClick={() => deviceSelected(device.id)} id ={`device-${device.id}`} > {device.deviceName}</MenuItem>)
       );
     };
     useEffect(() => {
