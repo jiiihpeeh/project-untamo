@@ -38,9 +38,11 @@ const DeviceSelector = () => {
     const { devices, setDevices, currentDevice, setCurrentDevice} = useContext(DeviceContext);
 
     const MenuDevices = async () => {
-      setMenuDevices( devices.map((device) => 
-          <MenuItem onClick={() => deviceSelected(device.id)}   key={`device-${device.id}`}> {device.deviceName}</MenuItem>)
-      );
+      if(devices.constructor === Array){
+        setMenuDevices( devices.map((device) => 
+            <MenuItem onClick={() => deviceSelected(device.id)}   key={`device-${device.id}`}> {device.deviceName}</MenuItem>)
+        );
+      }
     };
     useEffect(() => {
       MenuDevices();

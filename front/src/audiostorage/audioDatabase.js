@@ -2,8 +2,7 @@ import { get, set, del, clear, keys, deleteDataBase } from './audioDatabaseHandl
 import { blobToBase64String, base64StringToBlob }  from 'blob-util';
 import axios from 'axios';
 import { notification } from '../components/notification';
-
-
+import rooster from './rooster.json'
 
 export const getAudio = async (key) => {
     let data = await get(key);
@@ -70,3 +69,7 @@ export const fetchAudioFiles = async (token) => {
 export const deleteAudioDB = async () => {
     await deleteDataBase('audio-store')
 };
+
+export const initAudioDB = async () => {
+    await set('rooster', rooster.data64);
+} 

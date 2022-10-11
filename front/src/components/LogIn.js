@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
 import { notification } from "./notification";
-
+import { alarmResources } from "./alarmResources";
 import { Input ,
     InputGroup,
     InputRightAddon,
@@ -17,7 +17,7 @@ import React, { useContext } from "react";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import fetchDevices from "./fetchDevices";
-        
+import { initAudioDB } from "../audiostorage/audioDatabase";
 
 const LogIn = () => {
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
@@ -40,6 +40,7 @@ const LogIn = () => {
         try{
             event.preventDefault();
             let res = await axios.post('/login', formData);
+            await initAudioDB()
             console.log(res.data);
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", res.data.user);
@@ -50,10 +51,12 @@ const LogIn = () => {
             delete userRes.token;
             setUserInfo(userRes);
             setToken(res.data.token);
-            setSessionStatus(true);
+            alarmResources(res.data.token)
             setDevices(await fetchDevices(res.data.token));
             notification("Logged In", "Successfully logged in");
-            return navigate('/welcome');
+            setSessionStatus(true);
+            navigate('/welcome');
+            
         }catch(err){
             notification("Log In", "Log In Failed", "error");
             console.error(err);

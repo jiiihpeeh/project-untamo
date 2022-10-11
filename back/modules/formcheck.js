@@ -24,11 +24,12 @@ const formCheckcer = (msg) => {
                         ]
 
         const password =  msg.password.toLowerCase()
-        let  threshold = { threshold: 7 }
+        let  threshold = { threshold: 4 }
         for (let i =0; i<forbidden.length; i++){
             let cmp = forbidden[i].toLowerCase()
             if(cmp === password || compare(password, cmp, threshold) || compare(password, cmp.replace(/[^a-z0-9]/gi,''), threshold) ){
                 pass = false
+                console.log(forbidden[i])
                 break
             }
         }

@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 let Schema = mongoose.Schema({
+    userDevice:{type:String, unique:true},
     deviceName:String,
     user:String,
     userID: String,
-    type: String,
-    userDevice:{type:String, unique:true},
+    type: String
 });
 
 Schema.virtual("id").get(function() {
