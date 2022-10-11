@@ -19,7 +19,9 @@ import {
     PopoverArrow,
     PopoverCloseButton,
     PopoverAnchor,
-    Text
+    Text,
+    Grid,
+    GridItem
   } from '@chakra-ui/react'
 import AddDevice from "./AddDevice";
 
@@ -48,9 +50,25 @@ const Welcome = () => {
 	},[sessionStatus])
     const SelectLayout = () => {
         if(!devices || devices.length === 0){
-            return <Text><AddDevice/> </Text>
+            return <Grid>
+                    <GridItem>
+                        <AddDevice/> 
+                    </GridItem>
+                </Grid>
         }else {
-            return <Text><DeviceSelector/> or <AddDevice/> </Text>
+            return <Grid>
+                        <GridItem>
+                            <DeviceSelector/>
+                        </GridItem>
+                        <GridItem>
+                            <Text>
+                                or 
+                            </Text>
+                        </GridItem>
+                        <GridItem>
+                            <AddDevice/>
+                        </GridItem>
+                </Grid>
         }
     }
     useEffect(() => {
