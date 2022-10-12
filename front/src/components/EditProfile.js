@@ -17,9 +17,6 @@ import { SessionContext } from "../contexts/SessionContext";
 import axios from 'axios';
 import { notification } from './notification';
 
-
-
-
 // Option for Profile picture? (not necessary)
 
 function EditProfile() {
@@ -36,8 +33,6 @@ function EditProfile() {
         firstname: userInfo.firstname,
         lastname: userInfo.lastname,
         user: userInfo.user
-        // password: "",
-        // password_confirm: ""
     });
 	console.log("UI:")
 	console.log(userInfo)
@@ -56,7 +51,6 @@ const onChange = (event) => {
 
 const onRegister = async (event) => {
 	console.log("onRegister triggered")
-//tokenin lisäys
 	try {
 		const res = await axios.put('/api/editUser/'+formData.user,formData );
 		console.log(res.data);
@@ -87,10 +81,6 @@ const onRegister = async (event) => {
 			<form 
 				id='edit-profile-form'
 				onSubmit={onRegister}
-				// onSubmit={(e) => {
-                // e.preventDefault()
-                // console.log('submitted')
-				// }}
             >
 
 			<p>
@@ -122,37 +112,5 @@ const onRegister = async (event) => {
 	</>
 	)
 }
-
-//PUT:
-// /api/editUser:changedemail
-//{
-//	"firstname":"kaija",
-//	"lastname":"korppu",
-//	"user":"terska@gmail.com"
-//}
-//
-
-
-// const onSubmit = (event) => {
-// 	event.preventDefault();
-// 	console.log("pushed");
-// }
-// const onChange = (event) => {
-// 	setFormData((formData) => {
-// 		return {
-// 			...formData,
-// 			[event.target.name] : event.target.value
-// 		};
-// 	})
-// }
-
-// <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
-//             <FormLabel htmlFor="firstname">First name (Optional)</FormLabel>
-//             <Input type="text"
-//                 name="firstname"
-//                 id="firstname"
-//                 onChange={onChange}
-//                 value={formData.firstname}
-//             />
 
 export default EditProfile;
