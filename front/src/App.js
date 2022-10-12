@@ -27,6 +27,7 @@ function App() {
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;
 	const [sessionStatus, setSessionStatus] = useState(undefined);
+	const [viewableDevices, setViewableDevices] = useState([])
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
@@ -70,7 +71,7 @@ function App() {
 		
 		<div className="App">
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus }}>
-		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices }}>
+		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
 			<NavGrid/>
 			<Routes>
 				

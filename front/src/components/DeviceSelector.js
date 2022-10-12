@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import { useDisclosure } from '@chakra-ui/react'
 import axios from "axios";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
@@ -18,18 +17,21 @@ import {
     MenuDivider,
     Input,
     Divider,
-    Stack
+    Stack,
+    useDisclosure,
+    Icon,
   } from '@chakra-ui/react'
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { notification } from "./notification";
 
 
-const DeviceSelector = () => {
+const DeviceSelector = (props) => {
 
     const [menuDevices, setMenuDevices] = useState()
     const { token,  sessionStatus} = useContext(SessionContext);
     const { devices, setDevices, currentDevice, setCurrentDevice} = useContext(DeviceContext);
-
+    let menuIcon = (props.type === "submenu")? <ChevronRightIcon/> :<ChevronDownIcon/>
+    let offset = (props.type === "submenu") ? [200,0]: [0,0]
     const MenuDevices = async () => {
       if(devices.constructor === Array){
         setMenuDevices( devices.map((device) => 
@@ -45,11 +47,11 @@ const DeviceSelector = () => {
       localStorage['currentDevice'] = deviceName;
       setCurrentDevice(deviceName);
     } 
-
-
+ 
+    const {onClick, onOpen} = useDisclosure()
     return (
-        <Menu>
-        <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+        <Menu offset={offset}>
+        <MenuButton as={Button} rightIcon={menuIcon}  >
             Select a Device
         </MenuButton>
         <MenuList>

@@ -6,6 +6,7 @@ import { notification } from './notification';
 import { useState, useEffect, useContext } from "react";
 import UserMenu from './UserMenu';
 import About from './About';
+import DeviceMenu from './DeviceMenu';
 
 const NavGrid = () => {
     const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -32,10 +33,13 @@ const NavGrid = () => {
         for (const item of validItems){
             switch(item){
                 case 'user':
-                    validLinks.push(<GridItem key="navgriduser"><UserMenu/></GridItem>);
+                    validLinks.push(<GridItem key="navgrid-user"><UserMenu/></GridItem>);
                     break;
                 case 'about':
-                    validLinks.push(<GridItem key="navgridabout"><About/></GridItem>);
+                    validLinks.push(<GridItem key="navgrid-about"><About/></GridItem>);
+                    break;
+                case 'devices':
+                    validLinks.push(<GridItem key="navgrid-device"><DeviceMenu/></GridItem>);
                     break;
                 default:
                     validLinks.push(<GridLink text={item} key={item}/>);
