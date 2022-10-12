@@ -1,11 +1,4 @@
 import {
-	Modal,
-	ModalOverlay,
-	ModalContent,
-	ModalHeader,
-	ModalFooter,
-	ModalBody,
-	ModalCloseButton,
 	useDisclosure,
 	Text,
 	Link,
@@ -20,6 +13,7 @@ import {
 	} from '@chakra-ui/react'
 import React from 'react';
 
+// Option for Profile picture? (not necessary)
 
 function EditProfile() {
 	const { isOpen, onOpen, onClose } = useDisclosure()
@@ -27,9 +21,9 @@ function EditProfile() {
 
 	return (
 		<>
-		<Button ref={btnRef} colorScheme='teal' onClick={onOpen}>
+		<Link onClick={onOpen}><Text as='b'>
 		Edit Profile
-		</Button>
+		</Text></Link>
 		<Drawer
 			isOpen={isOpen}
 			placement='right'
@@ -57,28 +51,4 @@ function EditProfile() {
 	)
   }
 
-/*
-const About = () => {
-	const { isOpen, onOpen, onClose } = useDisclosure()	
-	return (<>
-		<Link onClick={onOpen}><Text as='b'>Edit Profile</Text></Link>
-		<Modal isOpen={isOpen} onClose={onClose}>
-			<ModalOverlay />
-			<ModalContent>
-				<ModalHeader>About</ModalHeader>
-				<ModalCloseButton />
-				<ModalBody>
-				<Text>This project aimsgrdgrdrg to implement a syncronizable cross device alarm clock implementation.  </Text>
-				</ModalBody>
-
-				<ModalFooter>
-				<Button colorScheme='blue' mr={3} onClick={onClose}>
-					OK
-				</Button>
-				</ModalFooter>
-			</ModalContent>
-		</Modal>
-	</>)
-}
-*/
 export default EditProfile;
