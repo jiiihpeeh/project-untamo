@@ -9,8 +9,9 @@ const sessionModel = require("./models/session");
 const user = require("./models/user");
 const formScreenName = require('./modules/form_screenname')
 const zxcvbn = require('zxcvbn');
-const formChecker  = require('./modules/formcheck')
-
+const formChecker  = require('./modules/formcheck');
+const session = require("./models/session");
+const tStamppi = require("./modules/tstamppi");
 
 let app = express();
 
@@ -26,7 +27,7 @@ const mongo_user=process.env.MONGODB_USERNAME;
 const mongo_password=process.env.MONGODB_PASSWORD;
 const mongo_url=process.env.MONGODB_URL;
 
-mongoose.connect ("mongodb+srv://"+mongo_user+":"+mongo_password+"@"+mongo_url+"/untamodatabase?retryWrites=true&w=majority").then( () => console.log("Connected to mongodb"),(err) => console.log("Failed to connect. Reason",err));
+mongoose.connect ("mongodb+srv://"+mongo_user+":"+mongo_password+"@"+mongo_url+"/untamodatabase?retryWrites=true&w=majority").then( () => console.log(tStamppi(),"Connected to mongodb"),(err) => console.log(tStamppi(),"Failed to connect. Reason",err));
 
 mongoose.set("toJSON",{virtuals:true});
 
@@ -36,6 +37,7 @@ const time_to_live_diff = 365*24*60*60*1000//3600000;
 const time_to_live_diff_admin = 10*60*1000
 
 const guessCount =  1000000000
+
 //MIDDLEWARE
 
 createToken = () => {
@@ -49,7 +51,7 @@ isUserLogged = (req,res,next) => {
 	}
 	sessionModel.findOne({"token":req.headers.token},function(err,session) {
 		if(err) {
-			console.log("Failed to find session. Reason",err);
+			console.log(tStamppi(),"Failed to find session. Reason",err);
 			return res.status(403).json({message:"Forbidden"})
 		}
 		if(!session) {
@@ -59,7 +61,7 @@ isUserLogged = (req,res,next) => {
 		if(now>session.ttl) {
 			sessionModel.deleteOne({"_id":session._id},function(err) {
 				if(err) {
-					console.log("Failed to remove session. Reason",err)
+					console.log(tStamppi(),"Failed to remove session. Reason",err)
 				}
 				return res.status(403).json({message:"Forbidden"})
 			})
@@ -70,7 +72,7 @@ isUserLogged = (req,res,next) => {
 			session.ttl = now+time_to_live_diff;
 			session.save(function(err) {
 				if(err) {
-					console.log("Failed to resave session. Reason",err);
+					console.log(tStamppi(),"Failed to resave session. Reason",err);
 				}
 				return next()
 			})
@@ -79,19 +81,17 @@ isUserLogged = (req,res,next) => {
 }
 
 
-
-
 // LOGIN API:
 
 app.post("/register",function(req,res) {
-	console.log("/register");
-	if(!req.body) {														// jos POSTissa ei bodyä:
+	console.log(tStamppi(),"/register");
+	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(!req.body.email || !req.body.password) {						// jos POSTissa ei 'username'a tai 'password'ia:
+	if(!req.body.email || !req.body.password) {
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(req.body.email.length < 4 || req.body.password.length < 6) {	// jos username alle 4 tai password alle 6 merkkiä:
+	if(req.body.email.length < 4 || req.body.password.length < 6) {
 		return res.status(400).json({message:"Bad Request"}); 
 	}
 	if (!formChecker(req.body)){
@@ -101,7 +101,7 @@ app.post("/register",function(req,res) {
 		return res.status(400).json({message:"Bad Request. Password is too obvious"}); 
 	}
 	
-	bcrypt.hash(req.body.password,14,function(err,hash) { 				// hashaa salasana
+	bcrypt.hash(req.body.password,14,function(err,hash) {
 		if(err) {
 			return res.status(400).json({message:"Bad Request"}); 
 		}
@@ -115,7 +115,7 @@ app.post("/register",function(req,res) {
 		})
 		user.save(function(err,user) {
 			if(err) {
-				console.log("Failed to create user. Reason",err);
+				console.log(tStamppi(),"Failed to create user. Reason",err);
 				if(err.code === 11000) {
 					return res.status(409).json({message:"Username already in use"})
 				}
@@ -130,7 +130,7 @@ app.post("/register",function(req,res) {
 })
 
 app.post("/login",function(req,res) {
-	console.log("/login");
+	console.log(tStamppi(),"/login");
 	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
 	}
@@ -142,7 +142,7 @@ app.post("/login",function(req,res) {
 	}
 	userModel.findOne({"user":req.body.user},function(err,user) {
 		if(err) {
-			console.log("Failed to login. Reason",err);
+			console.log(tStamppi(),"Failed to login. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
 		if(!user) {
@@ -151,7 +151,7 @@ app.post("/login",function(req,res) {
 		//console.log(user)
 		bcrypt.compare(req.body.password,user.password,function(err,success) {
 			if(err) {
-				console.log("Comparing passwords failed. Reason",err);
+				console.log(tStamppi(),"Comparing passwords failed. Reason",err);
 				return res.status(500).json({message:"Internal server error"})
 			}
 			if(!success) {
@@ -167,7 +167,7 @@ app.post("/login",function(req,res) {
 			})
 			session.save(function(err) {
 				if(err) {
-					console.log("Saving session failed. Reason",err);
+					console.log(tStamppi(),"Saving session failed. Reason",err);
 					return res.status(500).json({message:"Internal server error"})
 				}
 				return res.status(200).json({token:token, user: user.user, 
@@ -180,14 +180,14 @@ app.post("/login",function(req,res) {
 
 
 app.post("/logout",function(req,res) {
-	console.log("/logout");
+	console.log(tStamppi(),"/logout");
 	//console.log(req.headers)
 	if(!req.headers.token) {
 		return res.status(404).json({message:"Not found"});
 	}
 	sessionModel.deleteOne({"token":req.headers.token}, function(err) {
 		if(err) {
-			console.log("Failed to logout user. Reason",err)
+			console.log(tStamppi(),"Failed to logout user. Reason",err)
 		}
 		return res.status(200).json({message:"Logged out"});
 	})
@@ -216,11 +216,11 @@ app.ws('/registercheck', function(ws, req) {
             default:
                 break
         }
-        console.log(report)
+        console.log(tStamppi(),report)
         delete report.original.query
         ws.send(JSON.stringify(report))
     });
-    console.log('socket', req.testing)
+    console.log(tStamppi(),'socket', req.testing)
 });
 
 
@@ -235,5 +235,5 @@ console.log("***************************");
 console.log("* PROJECT UNTAMO: BACKEND *");
 console.log("***************************");
 console.log("");
-console.log("Running in port",port);
+console.log(tStamppi(),"Running in port",port);
 console.log("");

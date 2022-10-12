@@ -4,32 +4,32 @@ const alarmModel = require("../models/alarm");
 const userModel = require("../models/user");
 const deviceModel = require("../models/device");
 const router = express.Router();
-
+const tStamppi = require("../modules/tstamppi");
 
 router.get("/alarm",function(req,res) {
-	console.log("GET /api/alarm");
+	console.log(tStamppi(),"GET /api/alarm");
 	let query={"user":req.session.user}
 	alarmModel.find(query,function(err,alarms) {
 		if(err) {
-			console.log("Failed to find alarms. Reason",err);
+			console.log(tStamppi(),"Failed to find alarms. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
-		console.log("   GET /api/alarm/ SUCCESS")
+		console.log(tStamppi(),"   GET /api/alarm/ SUCCESS")
 		return res.status(200).json(alarms);
 	})
 });
 
 router.get("/admin",function(req,res) {
-	console.log("GET /api/admin");
+	console.log(tStamppi(),"GET /api/admin");
 	var usercreds = new Array();
 	
 	userModel.find({},function(err,usersList) {
 		if(err) {
-			console.log("Failed to find users. Reason",err);
+			console.log(tStamppi(),"Failed to find users. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
-		console.log("   GET /api/admin/ SUCCESS")
-		console.log("User list length: "+usersList.length)
+		console.log(tStamppi(),"   GET /api/admin/ SUCCESS")
+		console.log(tStamppi(),"User list length: "+usersList.length)
 		
 		for (let i = 0; i < usersList.length; i++) {
 			var tempusercreds1 = JSON.parse('{"screenname":"'+usersList[i].screenname+'"}');
@@ -44,7 +44,7 @@ router.get("/admin",function(req,res) {
 
 
 router.post("/alarm",function(req,res) {
-	console.log("POST /api/alarm")
+	console.log(tStamppi(),"POST /api/alarm")
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
@@ -59,29 +59,29 @@ router.post("/alarm",function(req,res) {
 	})
 	alarm.save(function(err) {
 		if(err) {
-			console.log("Failed to create alarm. Reason",err);
+			console.log(tStamppi(),"Failed to create alarm. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
-		console.log("   POST /api/alarm SUCCESS")
+		console.log(tStamppi(),"   POST /api/alarm SUCCESS")
 		return res.status(201).json({message:"New Alarm Created"});
 	})
 })
 
 router.delete("/alarm/:id",function(req,res) {
-	console.log("DELETE /api/alarm:"+req.params.id)
+	console.log(tStamppi(),"DELETE /api/alarm:"+req.params.id)
 	alarmModel.deleteOne({"_id":req.params.id,"user":req.session.user},
 	function(err) {
 		if(err) {
-			console.log("Failed to remove alarm. Reason",err);
+			console.log(tStamppi(),"Failed to remove alarm. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
-		console.log("   DELETE /api/alarm SUCCESS")
+		console.log(tStamppi(),"   DELETE /api/alarm SUCCESS")
 		return res.status(200).json({message:"Success"});
 	})
 })
 
 router.put("/alarm/:id",function(req,res) {
-	console.log("PUT /api/alarm:"+req.params.id)
+	console.log(tStamppi(),"PUT /api/alarm:"+req.params.id)
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
@@ -96,10 +96,10 @@ router.put("/alarm/:id",function(req,res) {
 	}
 	alarmModel.replaceOne({"_id":req.params.id,"user":req.session.user},alarm,function(err) {
 		if(err) {
-			console.log("Failed to update alarm. Reason",err);
+			console.log(tStamppi(),"Failed to update alarm. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
 		}
-		console.log("   PUT /api/alarms SUCCESS");
+		console.log(tStamppi(),"   PUT /api/alarms SUCCESS");
 		return res.status(200).json({message:"Success"});
 	})
 })
@@ -111,7 +111,7 @@ router.get("/devices",function(req,res) {
 	let query={"userID":req.session.userID};
 	deviceModel.find(query,function(err,devices) {
 		if(err) {
-			console.log("Failed to find devices. Reason",err);
+			console.log(tStamppi(),"Failed to find devices. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
 		}
 		let devmap = [];
@@ -150,7 +150,7 @@ router.post("/device",function(req,res) {
 	});
 	device.save(function(err, saved) {
 		if(err) {
-			console.log("Failed to add a device. Reason",err);
+			console.log(tStamppi(),"Failed to add a device. Reason",err);
 			return res.status(500).json({message:`Internal server error.`, code: err.code});
 		}
 		//return res.status(201).json({message:"New Device Created"});
@@ -160,11 +160,11 @@ router.post("/device",function(req,res) {
 })
 
 router.delete("/device/:id",function(req,res) {
-	console.log("deleting")
+	console.log(tStamppi(),"deleting")
 	deviceModel.deleteOne({"deviceName":req.params.id,"userID:":req.session.userID},
 	function(err) {
 		if(err) {
-			console.log("Failed to remove device. Reason",err);
+			console.log(tStamppi(),"Failed to remove device. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
 		}
 		return res.status(200).json({message:"Success"});
@@ -186,7 +186,7 @@ router.put("/device/:id",function(req,res) {
 	};
 	deviceModel.replaceOne({"_id":req.params.id,"userID":req.session.userID},device,function(err) {
 		if(err) {
-			console.log("Failed to update a device. Reason",err);
+			console.log(tStamppi(),"Failed to update a device. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
 		}
 		return res.status(200).json({message:"Success"});
@@ -197,5 +197,38 @@ router.put("/device/:id",function(req,res) {
 router.get("/issessionvalid", function(req,res) {
 	return res.status(200).json({status: true});
 });
+
+
+// EDIT USER
+router.put("/editUser/:user",function(req,res) {
+	console.log(tStamppi(),"PUT /api/editUser:"+req.params.user)
+	if(!req.body) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	if(!req.body.firstname) {	
+		return res.status(400).json({message:"Bad request"});	
+	}
+	if(!req.body.lastname) {	
+		return res.status(400).json({message:"Bad request"});	
+	}
+	if(!req.body.user) {	
+		return res.status(400).json({message:"Bad request"});	
+	}
+	let tempScrnName = req.body.firstname+" "+req.body.lastname
+	let tempUser = {
+		firstname:req.body.firstname,
+		lastname:req.body.lastname,
+		user:req.params.user,
+		screenname:tempScrnName
+		}
+	userModel.replaceOne({"user":req.body.user},tempUser,function(err) {
+		if(err) {
+			console.log(tStamppi(),"Failed to update user. Reason",err);
+			return res.status(500).json({message:"Internal server error"});
+		}
+		return res.status(200).json({message:"Success"});
+	})
+})
+
 
 module.exports = router;
