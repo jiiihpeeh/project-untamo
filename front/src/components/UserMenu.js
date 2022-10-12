@@ -11,6 +11,7 @@ import { Avatar,
 		 MenuDivider} from '@chakra-ui/react';
 import LogOut from './LogOut';
 import About from "./About";
+import EditProfile from "./EditProfile";
 
 
 const UserMenu = () => {
@@ -26,7 +27,7 @@ const UserMenu = () => {
 		
 		<MenuList>
 			<MenuGroup title='Profile'>
-				<MenuItem>Edit Profile</MenuItem>
+				<MenuItem><EditProfile/></MenuItem>
 				<MenuDivider />
 				<MenuItem><LogOut/></MenuItem>
 			</MenuGroup>
