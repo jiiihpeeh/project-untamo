@@ -3,8 +3,6 @@ import { useDisclosure } from '@chakra-ui/react'
 import axios from "axios";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
-	
-
 import {
     Drawer,
     DrawerBody,
@@ -14,7 +12,6 @@ import {
     DrawerContent,
     DrawerCloseButton,
     Button, 
-    Text,   
     Menu,
     MenuButton,
     MenuList,
@@ -48,7 +45,8 @@ const AddDevice = () => {
     )
   };
 
-  const requestDevice = async () => {
+  const requestDevice = async (event) => {
+    event.currentTarget.disabled = true;
     if(deviceName.length > 0){
       let dn = [];
       if(devices.length > 0){
@@ -58,7 +56,6 @@ const AddDevice = () => {
       }
       if (dn.indexOf(deviceName) === -1){
         try{
-        
           let res = await axios.post(`/api/device`, {"deviceName":deviceName, type: deviceType}, {
                 headers: {'token': token}
               });
@@ -79,7 +76,7 @@ const AddDevice = () => {
       }
     } else {
       notification("Device", "Name too short", "error");
-    } 
+    }
   }
   return (
         <>
@@ -91,6 +88,7 @@ const AddDevice = () => {
             placement='right'
             onClose={onClose}
             finalFocusRef={btnRef}
+            key='xs'
           >
             <DrawerOverlay />
             <DrawerContent>

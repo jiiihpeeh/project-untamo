@@ -3,9 +3,9 @@ import { DeviceContext } from '../contexts/DeviceContext';
 import {Link as ReachLink} from 'react-router-dom';
 import { Grid, GridItem, Text, Link, Button } from '@chakra-ui/react';
 import { notification } from './notification';
-import LogOut from './LogOut';
 import { useState, useEffect, useContext } from "react";
-
+import UserMenu from './UserMenu';
+import About from './About';
 
 const NavGrid = () => {
     const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -24,20 +24,18 @@ const NavGrid = () => {
     const constructGrid = () => {
         let validItems = [];
         if(sessionStatus){
-            if(currentDevice !== undefined){
-                validItems = ["alarms", "devices", "user",  "logout", "about"];
-            }else {
-                validItems = ["alarms", "user","logout", "about"];
-            }
-            
+            validItems = ["alarms", "devices", 'user'];
         } else {
             validItems = ["login", "register", "about"];        
         }
         let validLinks = [];
         for (const item of validItems){
             switch(item){
-                case "logout":
-                    validLinks.push(<GridItem key="navgridlogout"><LogOut/></GridItem>);
+                case 'user':
+                    validLinks.push(<GridItem key="navgriduser"><UserMenu/></GridItem>);
+                    break;
+                case 'about':
+                    validLinks.push(<GridItem key="navgridabout"><About/></GridItem>);
                     break;
                 default:
                     validLinks.push(<GridLink text={item} key={item}/>);

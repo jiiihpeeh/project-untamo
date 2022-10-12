@@ -13,6 +13,7 @@ import { SessionContext }  from './contexts/SessionContext'
 import { DeviceContext } from './contexts/DeviceContext' 
 import { notification } from './components/notification';
 import NavGrid from './components/NavGrid';
+import Clueless from './components/Clueless';
 
 function App() {
 
@@ -78,7 +79,8 @@ function App() {
 					<Route path="/login" element={<LogIn/>}/>
 					<Route path="/register" element={<Register/>}/>
 					<Route path="/welcome" element={<Welcome/>}/>
-					<Route path="*" element={<Navigate to="/about" /> } />
+					<Route path="/clueless" element={<Clueless/>}/>
+					<Route path="*" element={<Navigate to="/clueless" /> } />
 			</Routes>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    

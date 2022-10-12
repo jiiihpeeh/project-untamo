@@ -6,13 +6,6 @@ import { DeviceContext } from "../contexts/DeviceContext";
 import AddDevice from "./AddDevice";
 
 import {
-    Drawer,
-    DrawerBody,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerOverlay,
-    DrawerContent,
-    DrawerCloseButton,
     Button, 
     Text,   
     Menu,
