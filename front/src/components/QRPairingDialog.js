@@ -20,12 +20,12 @@ const QRPairingDialog = () => {
   const {setFetchQR} = useContext(SessionContext);
 
   const openWindow = () => {
-    onOpen()
-    setFetchQR(true)
+    onOpen();
+    setFetchQR(true);
   } 
   const closeWindow = () => {
-    setFetchQR(false)
-    onClose()
+    setFetchQR(false);
+    onClose();
   }
   return (
       <>

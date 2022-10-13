@@ -3,15 +3,10 @@ import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
 import { SessionContext } from '../contexts/SessionContext';
 
-
-const sleep = ms => new Promise(
-  resolve => setTimeout(resolve, ms)
-);
-
-
 const GenerateQRPairingKey = () => {
   const { token, fetchQR } = useContext(SessionContext);
   const [qrKey, setQrKey] = useState('');
+  const [instances, setInstances] = useState(0)
 
   const fetchKey = async () => {
     if(fetchQR){
@@ -35,23 +30,24 @@ const GenerateQRPairingKey = () => {
       }
     };
   };
+  const fetcher = async () => {
+       if (fetchQR) {
+          await fetchKey();
+        }
+        if (fetchQR){
+          setTimeout(fetcher, 50000);
+        }
+  }
+  
 
 
   useEffect(() => {
     renderQrKey();
   },[qrKey]);
 
-  const fetcher = async () => {
-    if(fetchQR){
-      while(fetchQR === true){
-        fetchKey();
-        await sleep(50000);
-      };
-    };
-  };
   useEffect(() => {
-    if(fetchQR){
-      fetcher()
+    if (fetchQR){
+      fetcher();
     }
   },[fetchQR]);
  
