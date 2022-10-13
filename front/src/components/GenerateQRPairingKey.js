@@ -23,7 +23,7 @@ const GenerateQRPairingKey = () => {
   const[timeStamp, setTimeStamp] = useState(0);
 
   const fetchKey = async () => {
-    if(fetchState && !Number.isNaN(timeStamp) &&(Date.now() - timeStamp > 50000 )){
+    if(fetchState === true && !Number.isNaN(timeStamp) &&(Date.now() - timeStamp > 50000 )){
       try {
         let res = await axios.post('http://localhost:3001/api/qrToken', {msg: "Generate a qr token for me, please... No hurry."}, {
             headers: {'token': token}});
@@ -55,7 +55,7 @@ const GenerateQRPairingKey = () => {
   useEffect(() => {
 
     const fetcher = async () => {
-      if(fetchState){
+      if(fetchState === true){
         await fetchKey();
       }
     }
