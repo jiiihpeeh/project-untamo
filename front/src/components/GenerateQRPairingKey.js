@@ -11,6 +11,7 @@ import {
   ModalCloseButton,
   Link,
   Box,
+  Center,
   useDisclosure
 } from '@chakra-ui/react';
 
@@ -22,7 +23,7 @@ const GenerateQRPairingKey = () => {
   const[timeStamp, setTimeStamp] = useState(0);
 
   const fetchKey = async () => {
-    if(fetchState && (Date.now() - timeStamp > 30000 )){
+    if(fetchState && (Date.now() - timeStamp > 50000 )){
       try {
         let res = await axios.post('http://localhost:3001/api/qrToken', {msg: "Generate a qr token for me, please... No hurry."}, {
             headers: {'token': token}});
@@ -33,7 +34,7 @@ const GenerateQRPairingKey = () => {
         console.log("qr: hmm..");
       };
     };
-    setInterval(fetchKey,35000);
+    setInterval(fetchKey,55000);
   };
   
 
@@ -74,9 +75,9 @@ const GenerateQRPairingKey = () => {
           <ModalHeader>Scan QR code</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Box>
+            <Center>
               <canvas id="qrpaircanvas" width="228" height="228"></canvas>
-            </Box>
+            </Center>
           </ModalBody>
         </ModalContent>
       </Modal>
