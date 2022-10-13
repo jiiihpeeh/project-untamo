@@ -69,7 +69,7 @@ const GenerateQRPairingKey = () => {
       <>
       <Link onClick={() => {onOpen(); setTimeStamp(0); setFetchState(true)}}>Pair a device (QR code)</Link>
 
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={() => {setFetchState(false); onClose()}} size="sm">
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={() => {setFetchState(false); setTimeStamp('hyss'); onClose()}} size="sm">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Scan QR code</ModalHeader>
