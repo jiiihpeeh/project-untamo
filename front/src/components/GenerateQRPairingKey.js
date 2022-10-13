@@ -10,9 +10,11 @@ const GenerateQRPairingKey = () => {
 
   const fetchKey = async () => {
     if(fetchQR){
-      await axios.post('http://localhost:3001/api/qrToken', {msg: "Generate a qr token for me, please... No hurry."}, {
-        headers: {'token': token}}).then( (res) =>
-          setQrKey(JSON.stringify(res.data.key)));
+      try{
+        let res = await axios.post('http://localhost:3001/api/qrToken', {msg: "Generate a qr token for me, please... No hurry."}, {
+          headers: {'token': token}});
+        setQrKey(JSON.stringify(res.data.key));
+      }catch(err){}
     };
   };
   
@@ -30,9 +32,9 @@ const GenerateQRPairingKey = () => {
       }
     };
   };
-  const fetcher = async () => {
+  const fetcher = () => {
        if (fetchQR) {
-          await fetchKey();
+           fetchKey();
         }
         if (fetchQR){
           setTimeout(fetcher, 50000);
