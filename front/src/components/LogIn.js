@@ -17,12 +17,14 @@ import React, { useContext } from "react";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import fetchDevices from "./fetchDevices";
+import fetchAlarms from "./fetchAlarms";
 import { initAudioDB } from "../audiostorage/audioDatabase";
+import { AlarmContext } from "../contexts/AlarmContext";
 
 const LogIn = () => {
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
     const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
-
+    const { setAlarms}=useContext(AlarmContext)
     const [formData, setFormData] = useState({
         user: "",
         password: ""
@@ -53,6 +55,7 @@ const LogIn = () => {
             setToken(res.data.token);
             alarmResources(res.data.token)
             setDevices(await fetchDevices(res.data.token));
+            setAlarms(await fetchAlarms(res.data.token));
             notification("Logged In", "Successfully logged in");
             setSessionStatus(true);
             navigate('/welcome');

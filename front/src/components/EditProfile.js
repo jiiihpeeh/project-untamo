@@ -34,10 +34,6 @@ function EditProfile() {
         lastname: userInfo.lastname,
         user: userInfo.user
     });
-	console.log("UI:")
-	console.log(userInfo)
-	console.log("FD:")
-	console.log(formData)
 
 
 const onChange = (event) => {

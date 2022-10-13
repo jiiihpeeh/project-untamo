@@ -8,7 +8,7 @@ import Register from './components/Register'
 import Welcome from './components/Welcome';
 import './App.css'
 import axios from 'axios';
-
+import { AlarmContext} from './contexts/AlarmContext'
 import { SessionContext }  from './contexts/SessionContext'
 import { DeviceContext } from './contexts/DeviceContext' 
 import { notification } from './components/notification';
@@ -29,7 +29,7 @@ function App() {
 	const [sessionStatus, setSessionStatus] = useState(undefined);
 	const [viewableDevices, setViewableDevices] = useState([]);
 	const [fetchQR, setFetchQR] = useState(false);
-
+	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
@@ -74,6 +74,7 @@ function App() {
 		<div className="App">
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
+		<AlarmContext.Provider value={{ alarms, setAlarms }}>
 			<NavGrid/>
 
 			<Routes>
@@ -88,11 +89,12 @@ function App() {
 					<Route path="*" element={<Navigate to="/clueless" /> } />
 			</Routes>
 		<GenerateQRPairingKey/>
+		</AlarmContext.Provider>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    
     </div>
 	
-  );
+	);
 }
 
 export default App;
