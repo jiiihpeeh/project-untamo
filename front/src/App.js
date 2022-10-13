@@ -14,7 +14,7 @@ import { DeviceContext } from './contexts/DeviceContext'
 import { notification } from './components/notification';
 import NavGrid from './components/NavGrid';
 import Clueless from './components/Clueless';
-
+import GenerateQRPairingKey from './components/GenerateQRPairingKey';
 function App() {
 
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
@@ -27,7 +27,8 @@ function App() {
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;
 	const [sessionStatus, setSessionStatus] = useState(undefined);
-	const [viewableDevices, setViewableDevices] = useState([])
+	const [viewableDevices, setViewableDevices] = useState([]);
+	const [fetchQR, setFetchQR] = useState(false);
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
@@ -70,9 +71,10 @@ function App() {
 	return (
 		
 		<div className="App">
-		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus }}>
+		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
 			<NavGrid/>
+
 			<Routes>
 				
 					<Route exact path="/alarms" element={<Alarms/>}/>
@@ -83,6 +85,7 @@ function App() {
 					<Route path="/clueless" element={<Clueless/>}/>
 					<Route path="*" element={<Navigate to="/clueless" /> } />
 			</Routes>
+		<GenerateQRPairingKey/>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    
     </div>

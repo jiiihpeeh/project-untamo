@@ -16,7 +16,7 @@ import {
 import DeviceSelector from './DeviceSelector';
 import { DeviceContext } from '../contexts/DeviceContext';
 import { useContext, useEffect, useState } from 'react';
-import GenerateQRPairingKey from './GenerateQRPairingKey';
+import QRPairingDialog from './QRPairingDialog';
 const DeviceMenu = () => {
     const [menuDeviceItems, setMenuDeviceItems] = useState([])
 
@@ -49,7 +49,7 @@ const DeviceMenu = () => {
             </MenuOptionGroup>
             <MenuDivider />
             <MenuGroup title="Add a device">
-                <MenuItem><GenerateQRPairingKey/></MenuItem>
+                <MenuItem><QRPairingDialog/></MenuItem>
                 <MenuItem>Add a device</MenuItem>
             </MenuGroup>
         </MenuList>
