@@ -30,7 +30,7 @@ const GenerateQRPairingKey = () => {
         setQrKey(JSON.stringify(res.data.key));
         setTimeStamp(Date.now());
       } catch(err){
-        console.log("hmm..");
+        console.log("qr: hmm..");
       };
     };
     setInterval(fetchKey,35000);
@@ -46,7 +46,7 @@ const GenerateQRPairingKey = () => {
         if (error) { 
           console.error(error)
         }
-        console.log('success!');
+        console.log('qr: success!');
         })
       }
     };
