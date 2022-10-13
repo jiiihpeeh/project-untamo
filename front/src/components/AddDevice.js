@@ -41,7 +41,7 @@ const AddDevice = () => {
   }
   const MenuActionItem = (text) => {
     return(
-      <MenuItem  onClick={() => setDeviceType(text.text)} key={`type-${text.text}`}> {text.text} </MenuItem>
+      <MenuItem  onClick={() => setDeviceType(text.text)} key={`type-${text.text}`}> {text.text}</MenuItem>
     )
   };
 

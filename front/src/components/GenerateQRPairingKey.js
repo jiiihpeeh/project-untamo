@@ -13,7 +13,9 @@ const GenerateQRPairingKey = () => {
         let res = await axios.post('http://localhost:3001/api/qrToken', {msg: "Generate a qr token for me, please... No hurry."}, {
           headers: {'token': token}});
         setQrKey(JSON.stringify(res.data.key));
-      }catch(err){}
+      }catch(err){
+        console.log(err)
+      }
     };
   };
   
@@ -24,7 +26,7 @@ const GenerateQRPairingKey = () => {
       if(qrcanvas){
         QRCode.toCanvas(qrcanvas, qrKey, function (error) {
         if (error) { 
-          console.error(error)
+          console.error('qr',error)
         }
         console.log('qr: success!');
         })
@@ -32,17 +34,14 @@ const GenerateQRPairingKey = () => {
     };
   };
   const fetcher = async () => {
-    let qrcanvas = document.getElementById('qrpaircanvas');
     if (fetchQR) {
       await fetchKey();
     }
+    let qrcanvas = document.getElementById('qrpaircanvas');
     if (qrcanvas){
       setTimeout(fetcher, 50000);
     }
   }
-  
-
-
   useEffect(() => {
     renderQrKey();
   },[qrKey]);

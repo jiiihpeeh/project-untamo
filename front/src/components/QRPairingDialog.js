@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { useState, useEffect, useContext } from 'react';
+import { useContext } from 'react';
 import { SessionContext } from '../contexts/SessionContext';
 import {
   Modal,

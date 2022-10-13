@@ -84,6 +84,7 @@ function App() {
 					<Route path="/register" element={<Register/>}/>
 					<Route path="/welcome" element={<Welcome/>}/>
 					<Route path="/clueless" element={<Clueless/>}/>
+					<Route path="/" element={<Navigate to="/login" /> } />
 					<Route path="*" element={<Navigate to="/clueless" /> } />
 			</Routes>
 		<GenerateQRPairingKey/>

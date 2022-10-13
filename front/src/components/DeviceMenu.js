@@ -12,7 +12,12 @@ import {
     Input,
     Divider,
     Stack,
+    IconButton,
+    Spacer,
+    Flex,
+    Checkbox
   } from '@chakra-ui/react';
+import { EditIcon} from '@chakra-ui/icons';
 import DeviceSelector from './DeviceSelector';
 import { DeviceContext } from '../contexts/DeviceContext';
 import { useContext, useEffect, useState } from 'react';
@@ -21,15 +26,22 @@ const DeviceMenu = () => {
     const [menuDeviceItems, setMenuDeviceItems] = useState([])
 
     const { currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices} = useContext(DeviceContext);
-
+    const EditDevice = (device) =>{
+        console.log(device)
+    }
     const MenuDeviceView = (deviceItem) => {
-        //console.log(deviceItem)
-        return (<MenuItemOption value={deviceItem.children.id} key={`dev-id-${deviceItem.children.id}`}>{deviceItem.children.deviceName}</MenuItemOption>)
+        return (<MenuItemOption value={deviceItem.id} id={`dev-id-${deviceItem.id}`} key={`dev-id-${deviceItem.id}`} onClick={(event) => {console.log(event)}} >
+                    <Flex>
+                        {deviceItem.deviceName} 
+                        <Spacer/>
+                        <IconButton size='xs' onClick={() => {EditDevice(deviceItem.id)}} icon={<EditIcon/>}/>
+                    </Flex>
+                </MenuItemOption>)
     }
     const menuDeviceOptions = () =>{
         let items = [];
         for (const item of devices){
-            items.push(<MenuDeviceView>{item}</MenuDeviceView>);
+            items.push(MenuDeviceView(item));
         }
         setMenuDeviceItems(items)
     } 
@@ -42,7 +54,7 @@ const DeviceMenu = () => {
             <Text as='b'>Devices</Text>
         </MenuButton>
         <MenuList>
-            <MenuItem><DeviceSelector type="submenu"/></MenuItem>
+            <MenuItem><Flex><DeviceSelector type="submenu"/></Flex></MenuItem>
             <MenuDivider />
             <MenuOptionGroup title='Viewable devices' type='checkbox'>
                 {menuDeviceItems}
