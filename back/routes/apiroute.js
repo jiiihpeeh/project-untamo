@@ -3,8 +3,12 @@ const alarm = require("../models/alarm");
 const alarmModel = require("../models/alarm");
 const userModel = require("../models/user");
 const deviceModel = require("../models/device");
+const qrModel = require("../models/qrpair");
 const router = express.Router();
+const crypto = require("crypto");
+const QRCode = require('qrcode');
 const tStamppi = require("../modules/tstamppi");
+
 
 router.get("/alarm",function(req,res) {
 	console.log(tStamppi(),"GET /api/alarm");
@@ -231,4 +235,29 @@ router.put("/editUser/:user",function(req,res) {
 })
 
 
+//qrpairing
+
+router.post("/qrToken",function(req,res) {
+	console.log('checking out new qrpost');
+	if(!req.body) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	let qrToken = crypto.randomBytes(64).toString("hex");;
+
+	let now=Date.now()
+	let qrKey = new qrModel({
+		qrToken: qrToken,
+		userID: req.session.userID,
+		ttl: now + 60000
+	});
+	qrKey.save(function(err, saved) {
+		if(err) {
+			console.log("Failed to generate QRToken. Reason",err);
+			return res.status(500).json({message:`Internal server error.`, code: err.code});
+		}
+		//return res.status(201).json({message:"New Device Created"});
+		console.log(saved)
+		return res.status(201).json({message: "Success. QRToken Created", key: saved.qrToken});
+	})
+})
 module.exports = router;
