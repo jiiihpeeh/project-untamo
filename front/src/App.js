@@ -30,6 +30,7 @@ function App() {
 	const [viewableDevices, setViewableDevices] = useState([]);
 	const [fetchQR, setFetchQR] = useState(false);
 
+
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
 		if (sessionToken !== undefined){

@@ -6,7 +6,6 @@ import { SessionContext } from '../contexts/SessionContext';
 const GenerateQRPairingKey = () => {
   const { token, fetchQR } = useContext(SessionContext);
   const [qrKey, setQrKey] = useState('');
-  const [instances, setInstances] = useState(0)
 
   const fetchKey = async () => {
     if(fetchQR){
@@ -32,13 +31,14 @@ const GenerateQRPairingKey = () => {
       }
     };
   };
-  const fetcher = () => {
-       if (fetchQR) {
-           fetchKey();
-        }
-        if (fetchQR){
-          setTimeout(fetcher, 50000);
-        }
+  const fetcher = async () => {
+    let qrcanvas = document.getElementById('qrpaircanvas');
+    if (fetchQR) {
+      await fetchKey();
+    }
+    if (qrcanvas){
+      setTimeout(fetcher, 50000);
+    }
   }
   
 
