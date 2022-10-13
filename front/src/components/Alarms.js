@@ -65,8 +65,31 @@ const Alarms = () => {
 		<Td>Browser, Mobile</Td>
 		<Td><Button size='xs'>Edit</Button></Td>
 		<Td><Button colorScheme='red' size='xs'>Delete</Button></Td>
-		
-	</Tr>
+		</Tr>
+
+		<Tr>
+		<Td>132</Td>
+        <Td>Daily</Td>
+        <Td isNumeric>09:00</Td>
+		<Td></Td>
+		<Td></Td>
+		<Td>Wake up</Td>
+		<Td>IoT-Clock, Mobile</Td>
+		<Td><Button size='xs'>Edit</Button></Td>
+		<Td><Button colorScheme='red' size='xs'>Delete</Button></Td>
+		</Tr>
+
+		<Tr>
+		<Td>24</Td>
+        <Td>Weekly</Td>
+        <Td isNumeric>16:00</Td>
+		<Td>Friday</Td>
+		<Td></Td>
+		<Td>Alko</Td>
+		<Td>Browser, Mobile</Td>
+		<Td><Button size='xs'>Edit</Button></Td>
+		<Td><Button colorScheme='red' size='xs'>Delete</Button></Td>
+		</Tr>
 
     </Tbody>
 	</Table>
