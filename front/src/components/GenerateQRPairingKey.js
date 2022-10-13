@@ -38,7 +38,6 @@ const GenerateQRPairingKey = () => {
   
 
   const renderQrKey = () => {
-    console.log(qrKey);
     if(qrKey && qrKey !== ''){
       let qrcanvas = document.getElementById('qrpaircanvas');
       if(qrcanvas){
