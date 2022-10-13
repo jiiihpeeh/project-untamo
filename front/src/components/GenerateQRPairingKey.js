@@ -21,6 +21,7 @@ const GenerateQRPairingKey = () => {
   const [qrKey, setQrKey] = useState('');
   const [fetchState, setFetchState] = useState(false);
   const[timeStamp, setTimeStamp] = useState(0);
+  const [recursion, setRecursion] = useState(true)
 
   const fetchKey = async () => {
     if(fetchState === true && !Number.isNaN(timeStamp) &&(Date.now() - timeStamp > 50000 )){
@@ -30,11 +31,15 @@ const GenerateQRPairingKey = () => {
         //console.log(res.data);
         setQrKey(JSON.stringify(res.data.key));
         setTimeStamp(Date.now());
+        if(recursion === true){
+          setInterval(fetchKey,55000);
+          setRecursion(false);
+        }
+        
       } catch(err){
         console.log("qr: hmm..");
       };
     };
-    setInterval(fetchKey,55000);
   };
   
 
@@ -69,7 +74,7 @@ const GenerateQRPairingKey = () => {
       <>
       <Link onClick={() => {onOpen(); setTimeStamp(0); setFetchState(true)}}>Pair a device (QR code)</Link>
 
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={() => {setFetchState(false); setTimeStamp('hyss'); onClose()}} size="sm">
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} onClose={() => {setFetchState(false);; setTimeStamp(''); onClose()}} size="sm">
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Scan QR code</ModalHeader>
