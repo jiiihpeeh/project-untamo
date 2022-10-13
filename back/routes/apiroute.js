@@ -6,7 +6,6 @@ const deviceModel = require("../models/device");
 const qrModel = require("../models/qrpair");
 const router = express.Router();
 const crypto = require("crypto");
-const QRCode = require('qrcode');
 const tStamppi = require("../modules/tstamppi");
 
 
@@ -242,9 +241,9 @@ router.post("/qrToken",function(req,res) {
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	let qrToken = crypto.randomBytes(64).toString("hex");;
+	let qrToken = crypto.randomBytes(64).toString("hex");
 
-	let now=Date.now()
+	let now=Date.now();
 	let qrKey = new qrModel({
 		qrToken: qrToken,
 		userID: req.session.userID,
