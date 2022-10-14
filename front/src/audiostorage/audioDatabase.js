@@ -71,5 +71,13 @@ export const deleteAudioDB = async () => {
 };
 
 export const initAudioDB = async () => {
-    await set('rooster', rooster.data64);
+    try{
+        await set('rooster', rooster.data64);
+        
+    } catch(err){
+        await deleteDataBase('audio-store');
+        await set('rooster', rooster.data64);
+        console.log('audio...')
+    }
+    
 } 
