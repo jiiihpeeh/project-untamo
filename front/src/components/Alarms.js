@@ -15,14 +15,16 @@ import {
 import { useState } from 'react'
 
 const Alarms = () => {
-	const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
-	const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+	const { token, sessionStatus } = useContext(SessionContext);
+	const { currentDevice } = useContext(DeviceContext);
     const navigate = useNavigate();
+
 	useEffect(() =>{
 		if(!sessionStatus){
 			navigate('/login');
 		}
 	},[token, sessionStatus])
+
 	useEffect(() =>{
 		if(!currentDevice){
 			navigate('/welcome');
@@ -30,49 +32,54 @@ const Alarms = () => {
 	},[currentDevice])
 
 	var alarmlist = JSON.parse(localStorage['alarms'])
-
 	const [alarms] = useState(alarmlist)
+
+	const onEdit = (event) => {
+		var radios = document.getElementsByName('radjo');
+		for (var i = 0, length = radios.length; i < length; i++) {
+			if (radios[i].checked) {
+			console.log("selected: "+radios[i].value);
+			break;
+			}
+		}
+	}
+	
 
 	const renderAlarms = () => {
 		return alarms.map(({ _id, occurence, time, wday, date, label, devices }) => {
 		return <Tr key={_id}>
-		<Td>{_id}</Td>
+		<Td><input type='radio' name="radjo" value={_id}></input></Td>
 		<Td>{occurence}</Td>
 		<Td>{time}</Td>
 		<Td>{wday}</Td>
 		<Td>{date}</Td>
 		<Td>{label}</Td>
 		<Td>{devices}</Td>
-		<Td><Button size='xs'>Edit</Button></Td>
-		<Td><Button colorScheme='red' size='xs'>Delete</Button></Td>
 		</Tr>
 		})
 	}
-
-
+	
 	return (
 		<Container bg='blue.200' maxW='fit-content'>
 			<Heading size='sm'>List of Alarms for {localStorage.getItem('screenname')}</Heading>
 			<TableContainer>
-				<Table variant='striped' colorScheme='teal' size='sm' className="table-tiny">
+				<Table variant='striped' colorScheme='teal' size='sm' className="table-tiny" id='tabell'>
 					<Thead>
 						<Tr>
-							<Th>ID</Th>
+							<Th></Th>
 							<Th>Occurence</Th>
 							<Th isNumeric>Time</Th>
 							<Th>Weekday</Th>
 							<Th>date</Th>
 							<Th>Label</Th>
 							<Th>Devices</Th>
-							<Th></Th>
-							<Th></Th>
 						</Tr>
 					</Thead>
-				<Tbody id="grable"> 
+				<Tbody> 
 					{renderAlarms()} 
 				</Tbody>
 				</Table>
-			</TableContainer><Button size='sm' margin="3px">Add alarm</Button> 
+			</TableContainer><Button size='sm' margin="3px" colorScheme='blue'>Add alarm</Button> <Button size='sm' margin="3px" onClick={onEdit}>Edit alarm</Button> <Button size='sm' margin="3px" colorScheme="red">Delete alarm</Button> 
 		</Container>
 	)
 }
