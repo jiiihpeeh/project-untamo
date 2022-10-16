@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useNavigate } from 'react';
 import { Routes,Route, Link as ReachLink, Navigate } from 'react-router-dom';
 import Alarms from './components/Alarms';
@@ -15,6 +14,7 @@ import { notification } from './components/notification';
 import NavGrid from './components/NavGrid';
 import Clueless from './components/Clueless';
 import GenerateQRPairingKey from './components/GenerateQRPairingKey';
+import PlayAlarm from './components/PlayAlarm';
 function App() {
 
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
@@ -84,6 +84,7 @@ function App() {
 					<Route path="/login" element={<LogIn/>}/>
 					<Route path="/register" element={<Register/>}/>
 					<Route path="/welcome" element={<Welcome/>}/>
+					<Route path="/playalarm" element={<PlayAlarm/>}/>
 					<Route path="/clueless" element={<Clueless/>}/>
 					<Route path="/" element={<Navigate to="/login" /> } />
 					<Route path="*" element={<Navigate to="/clueless" /> } />
