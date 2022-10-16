@@ -27,6 +27,7 @@ import { notification } from "./notification";
 
 const DeviceSelector = (props) => {
 
+    const [openMenu, setOpenMenu] = useState(false)
     const [menuDevices, setMenuDevices] = useState()
     const { token,  sessionStatus} = useContext(SessionContext);
     const { devices, setDevices, currentDevice, setCurrentDevice} = useContext(DeviceContext);
@@ -35,7 +36,11 @@ const DeviceSelector = (props) => {
     const MenuDevices = async () => {
       if(devices.constructor === Array){
         setMenuDevices( devices.map((device) => 
-            <MenuItem onClick={() => deviceSelected(device.id)}   key={`device-${device.id}`}> {device.deviceName}</MenuItem>)
+            <MenuItemOption onClick={() => deviceSelected(device.id)}   
+                            key={`device-${device.id}`}
+                            closeOnSelect={true}>
+                      {device.deviceName}
+            </MenuItemOption>)
         );
       }
     };
@@ -46,20 +51,38 @@ const DeviceSelector = (props) => {
     const deviceSelected = (deviceName) => {
       localStorage['currentDevice'] = deviceName;
       setCurrentDevice(deviceName);
+      setOpenMenu(false);
     } 
- 
-    const {onClick, onOpen} = useDisclosure()
+    const openIt = () => {
+      if(openMenu){
+        setOpenMenu(false);
+      }else{
+        setOpenMenu(true);
+      }
+    }
+
+    const MenuOpener = () => {
+      if(props.type==="submenu"){
+        return (
+          <MenuButton as={Text} rightIcon={menuIcon}  onClick={openIt} >
+            Select a Device <ChevronRightIcon/>
+          </MenuButton>
+        )
+      }
+      return(
+            <MenuButton as={Button} rightIcon={menuIcon} onClick={openIt} >
+              Select a Device
+            </MenuButton>
+      )
+    }
+    
     return (
-        <Menu offset={offset}>
-        <MenuButton as={Button} rightIcon={menuIcon}  >
-            Select a Device
-        </MenuButton>
+        <Menu offset={offset} isOpen={openMenu} closeOnBlur={openMenu}>
+        <MenuOpener/>
         <MenuList>
-          <MenuGroup title='Devices'>
+          <MenuOptionGroup title='Devices'>
               {menuDevices}
-          </MenuGroup>
-          {/* <MenuDivider/>
-          <MenuItem key="device-drawer"><AddDevice/></MenuItem> */}
+          </MenuOptionGroup>
         </MenuList>
         </Menu>
     )

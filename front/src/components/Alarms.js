@@ -26,7 +26,7 @@ const Alarms = () => {
 		if(!sessionStatus){
 			navigate('/login');
 		}
-	},[token, sessionStatus])
+	},[sessionStatus])
 
 	useEffect(() =>{
 		if(!currentDevice){

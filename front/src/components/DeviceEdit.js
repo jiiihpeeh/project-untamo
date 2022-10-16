@@ -26,16 +26,19 @@ const DeviceEdit = (props) => {
     const { token } = useContext(SessionContext);
     const { onClose } = useDisclosure();
     const btnRef = useRef();
-    const [ deviceName, setDeviceName ] = useState('');
+    const [ deviceName, setDeviceName ] = useState(props.device.deviceName);
     const { devices, setDevices } = useContext(DeviceContext);
-    const [deviceType, setDeviceType] = useState('Browser');
+    const [deviceType, setDeviceType] = useState(props.device.type);
   
     const onChange = (event) => {
         setDeviceName(event.target.value);
     }
     const MenuActionItem = (text) => {
       return(
-        <MenuItem  onClick={() => setDeviceType(text.text)} key={`type-${text.text}`}> {text.text}</MenuItem>
+        <MenuItem  onClick={() => setDeviceType(text.text)} 
+                   key={`type-${text.text}`}> 
+                   {text.text}
+        </MenuItem>
       )
     };
     const cancelEdit = () => {
@@ -58,6 +61,7 @@ const DeviceEdit = (props) => {
             setDevices(devicesUpdated);
             localStorage['devices'] = JSON.stringify(devicesUpdated);
             notification("Device", "A device was updated");
+            
           }catch(err){
             notification("Device", "Failed to update a device", 'error');
           };
@@ -67,6 +71,8 @@ const DeviceEdit = (props) => {
       } else {
         notification("Device", "Name too short", "error");
       };
+      props.setEditDialogState(false);
+      onClose();
     };
     return (
           <>
