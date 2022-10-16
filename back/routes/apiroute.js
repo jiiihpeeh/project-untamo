@@ -164,7 +164,7 @@ router.post("/device",function(req,res) {
 
 router.delete("/device/:id",function(req,res) {
 	console.log(tStamppi(),"deleting")
-	deviceModel.deleteOne({"deviceName":req.params.id,"userID:":req.session.userID},
+	deviceModel.deleteOne({"_id":req.params.id},
 	function(err) {
 		if(err) {
 			console.log(tStamppi(),"Failed to remove device. Reason",err);
@@ -185,9 +185,10 @@ router.put("/device/:id",function(req,res) {
 		userDevice: `${req.session.userID}@${req.body.deviceName}`,
 		deviceName:req.body.deviceName,
         user:req.session.userID,
-		id:req.body.id
+		id:req.body.id,
+		type: req.body.type
 	};
-	deviceModel.replaceOne({"_id":req.params.id,"userID":req.session.userID},device,function(err) {
+	deviceModel.replaceOne({"_id":req.params.id},device,function(err) {
 		if(err) {
 			console.log(tStamppi(),"Failed to update a device. Reason",err);
 			return res.status(500).json({message:"Internal server error"});

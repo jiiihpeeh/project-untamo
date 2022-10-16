@@ -16,24 +16,21 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
-    MenuItemOption,
-    MenuGroup,
-    MenuOptionGroup,
-    MenuDivider,
     Input,
     Divider,
-    Stack
+    Stack,
+    Text
   } from '@chakra-ui/react'
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { notification } from "./notification";
 
 
-const AddDevice = () => {
+const AddDevice = (props) => {
   const { token } = useContext(SessionContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const [ deviceName, setDeviceName ] = useState('');
-  const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+  const { setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
   const [deviceType, setDeviceType] = useState('Browser');
 
   const onChange = (event) => {
@@ -78,11 +75,25 @@ const AddDevice = () => {
       notification("Device", "Name too short", "error");
     }
   }
+
+  const AddItem = () => {
+    if(props.open !== "menu"){
+      return(
+        <Button ref={btnRef} colorScheme='teal' onClick={onOpen} id="add-device-button" >
+          Add a device
+        </Button>
+      )}
+      return(
+          <>
+            <Text ref={btnRef} colorScheme='teal' onClick={onOpen} id="add-device-button" >
+            Add a device
+            </Text>
+          </>
+      )
+  }
   return (
         <>
-          <Button ref={btnRef} colorScheme='teal' onClick={onOpen} id="add-device-button" >
-            Add a device
-          </Button>
+          <AddItem/>
           <Drawer
             isOpen={isOpen}
             placement='right'
@@ -108,6 +119,7 @@ const AddDevice = () => {
                     <MenuActionItem text="Phone"/>
                     <MenuActionItem text="Desktop"/>
                     <MenuActionItem text="Tablet" />
+                    <MenuActionItem text="IoT"/>
                     <MenuActionItem text="Other"/>
                   </MenuList>
                 </Menu>

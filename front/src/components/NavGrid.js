@@ -53,7 +53,7 @@ const NavGrid = () => {
         constructGrid();
     },[token, sessionStatus]);
     return (
-        <Grid  h='80px'
+        <Grid  h='4%'mt='0.5%'
             templateRows='repeat(1, 1fr)'
             templateColumns={columnCount}
             gap={4}
