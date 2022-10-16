@@ -48,3 +48,29 @@ input[type="text"], textarea {
     transform: rotate(360deg);
   }
 }
+.AlarmMessage{
+  animation: changetext 6s infinite linear
+  }
+
+  @keyframes changetext {
+    50% {
+      transform: scale(.92);
+    }
+}
+
+.AlarmClock {
+  animation: rotation 1s infinite linear
+  }
+
+  @keyframes rotation {
+
+    25% {
+      transform: rotate(-25deg);
+    }
+    50% {
+      transform: scale(.85);
+    }
+    75% {
+      transform: rotate(25deg);
+    }
+  }
