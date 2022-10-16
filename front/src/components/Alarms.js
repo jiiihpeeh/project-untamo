@@ -22,6 +22,9 @@ const Alarms = () => {
 	
     const navigate = useNavigate();
 
+
+
+
 	useEffect(() =>{
 		if(!sessionStatus){
 			navigate('/login');

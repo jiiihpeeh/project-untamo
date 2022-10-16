@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
 import { notification } from "./notification";
-import { alarmResources } from "./alarmResources";
+
 import { Input ,
     InputGroup,
     InputRightAddon,
@@ -20,6 +20,7 @@ import fetchDevices from "./fetchDevices";
 import fetchAlarms from "./fetchAlarms";
 import { initAudioDB } from "../audiostorage/audioDatabase";
 import { AlarmContext } from "../contexts/AlarmContext";
+
 
 const LogIn = () => {
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
@@ -43,6 +44,7 @@ const LogIn = () => {
             event.preventDefault();
             let res = await axios.post('/login', formData);
             await initAudioDB()
+
             console.log(res.data);
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", res.data.user);
@@ -53,11 +55,12 @@ const LogIn = () => {
             delete userRes.token;
             setUserInfo(userRes);
             setToken(res.data.token);
-            alarmResources(res.data.token)
+
             setDevices(await fetchDevices(res.data.token));
             setAlarms(await fetchAlarms(res.data.token));
             notification("Logged In", "Successfully logged in");
             setSessionStatus(true);
+            
             navigate('/welcome');
             
         }catch(err){

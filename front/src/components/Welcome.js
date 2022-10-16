@@ -3,17 +3,8 @@ import { useNavigate } from "react-router-dom";
 import DeviceSelector from "./DeviceSelector";
 import { SessionContext } from "../contexts/SessionContext";
 import { DeviceContext } from "../contexts/DeviceContext";
-
+import AudioPlayer from "./AudioPlayer";
 import {
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-    PopoverHeader,
-    PopoverBody,
-    PopoverFooter,
-    PopoverArrow,
-    PopoverCloseButton,
-    PopoverAnchor,
     Text,
     Grid,
     GridItem
@@ -31,7 +22,9 @@ const Welcome = () => {
 	useEffect(() =>{
 		if(!sessionStatus){
 			navigate('/login');
-		}
+		} else{
+            new AudioPlayer('rooster', token).playOnce()
+        }
 	},[sessionStatus])
     const SelectLayout = () => {
         if(!devices || devices.length === 0){

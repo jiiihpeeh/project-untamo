@@ -8,7 +8,7 @@ const GenerateQRPairingKey = () => {
   const [qrKey, setQrKey] = useState('');
 
   const fetchKey = async () => {
-    if(fetchQR){
+    if(fetchQR === true){
       try{
         let res = await axios.post('http://localhost:3001/api/qrToken', {msg: "Generate a qr token for me, please... No hurry."}, {
           headers: {'token': token}});
@@ -34,11 +34,14 @@ const GenerateQRPairingKey = () => {
     };
   };
   const fetcher = async () => {
-    if (fetchQR) {
+    if (fetchQR === true) {
       await fetchKey();
     }
+    
     let qrcanvas = document.getElementById('qrpaircanvas');
+
     if (qrcanvas){
+    //if(fetchQR === true){
       setTimeout(fetcher, 50000);
     }
   }
@@ -47,7 +50,7 @@ const GenerateQRPairingKey = () => {
   },[qrKey]);
 
   useEffect(() => {
-    if (fetchQR){
+    if (fetchQR === true){
       fetcher();
     }
   },[fetchQR]);
