@@ -184,7 +184,7 @@ router.put("/device/:id",function(req,res) {
 	let device = {
 		userDevice: `${req.session.userID}@${req.body.deviceName}`,
 		deviceName:req.body.deviceName,
-        user:req.session.userID,
+        userID:req.session.userID,
 		id:req.body.id,
 		type: req.body.type
 	};
