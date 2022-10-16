@@ -27,7 +27,7 @@ function App() {
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;
 	const [sessionStatus, setSessionStatus] = useState(undefined);
-	const [viewableDevices, setViewableDevices] = useState([]);
+	const [viewableDevices, setViewableDevices] = useState(localStorage['viewableDevices'] ? localStorage['viewableDevices'] : []);
 	const [fetchQR, setFetchQR] = useState(false);
 	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
 

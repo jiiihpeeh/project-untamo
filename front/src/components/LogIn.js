@@ -24,7 +24,7 @@ import { AlarmContext } from "../contexts/AlarmContext";
 
 const LogIn = () => {
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
-    const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+    const { currentDevice, setCurrentDevice, devices, setDevices, setViewableDevices } = useContext(DeviceContext);
     const { setAlarms}=useContext(AlarmContext)
     const [formData, setFormData] = useState({
         user: "",
@@ -43,7 +43,7 @@ const LogIn = () => {
         try{
             event.preventDefault();
             let res = await axios.post('/login', formData);
-            initAudioDB()
+            await initAudioDB()
 
             console.log(res.data);
             localStorage.setItem("token", res.data.token);
@@ -55,8 +55,15 @@ const LogIn = () => {
             delete userRes.token;
             setUserInfo(userRes);
             setToken(res.data.token);
-
-            setDevices(await fetchDevices(res.data.token));
+            let devices = await fetchDevices(res.data.token);
+            setDevices(devices);
+            let viewable = []
+            for(const item of devices){
+                viewable.push(item.id)
+            }
+            setViewableDevices(viewable);
+            localStorage.setItem("devices", JSON.stringify(devices));
+            localStorage.setItem("viewableDevices", JSON.stringify(viewable));
             setAlarms(await fetchAlarms(res.data.token));
             notification("Logged In", "Successfully logged in");
             setSessionStatus(true);

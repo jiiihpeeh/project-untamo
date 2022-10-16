@@ -22,6 +22,7 @@ import {
         useDisclosure
         } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
+
 const DeviceEdit = (props) => {
     const { token } = useContext(SessionContext);
     const { onClose } = useDisclosure();

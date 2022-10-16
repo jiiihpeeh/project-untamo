@@ -125,8 +125,6 @@ const AddDevice = (props) => {
                 </Menu>
                 </Stack>
               </DrawerBody>
-
-
               <DrawerFooter>
                 <Button variant='outline' mr={3} onClick={onClose}>
                   Cancel
