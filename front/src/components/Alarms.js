@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from "react";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import { useNavigate } from "react-router-dom";
-import { Container, Button, Heading} from '@chakra-ui/react';
+import { Container, Heading} from '@chakra-ui/react';
 import {
 	Table,
 	Thead,
@@ -13,14 +13,12 @@ import {
 	TableContainer,
 	} from '@chakra-ui/react'
 import { useState } from 'react'
+import EditAlarm from "./EditAlarm";
 
 const Alarms = () => {
 	const { token, sessionStatus } = useContext(SessionContext);
 	const { currentDevice } = useContext(DeviceContext);
     const navigate = useNavigate();
-
-
-
 
 	useEffect(() =>{
 		if(!sessionStatus){
@@ -36,17 +34,6 @@ const Alarms = () => {
 
 	var alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms] = useState(alarmlist)
-
-	const onEdit = (event) => {
-		var radios = document.getElementsByName('radjo');
-		for (var i = 0, length = radios.length; i < length; i++) {
-			if (radios[i].checked) {
-			console.log("selected: "+radios[i].value);
-			break;
-			}
-		}
-	}
-	
 
 	const renderAlarms = () => {
 		return alarms.map(({ _id, occurence, time, wday, date, label, devices }) => {
@@ -82,7 +69,8 @@ const Alarms = () => {
 					{renderAlarms()} 
 				</Tbody>
 				</Table>
-			</TableContainer><Button size='sm' margin="3px" colorScheme='blue'>Add alarm</Button> <Button size='sm' margin="3px" onClick={onEdit}>Edit alarm</Button> <Button size='sm' margin="3px" colorScheme="red">Delete alarm</Button> 
+			</TableContainer>
+			<EditAlarm/>
 		</Container>
 	)
 }
