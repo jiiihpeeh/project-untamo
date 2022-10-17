@@ -2,7 +2,7 @@
 import { blobToBase64String, base64StringToBlob }  from 'blob-util';
 import axios from 'axios';
 import { notification } from '../components/notification';
-import rooster from './rooster.json'
+import rooster from './rooster.json';
 import localForage from 'localforage';
 
 localForage.config({
@@ -67,7 +67,7 @@ export const fetchAudioFiles = async (token) => {
         }
     } catch(err){
         console.log(`Couldn't fetch resources listing`);
-        notification("Alarm sounds", "Failed to get a listing", "error")
+        notification("Alarm sounds", "Failed to get a listing", "error");
     }
 };
 
