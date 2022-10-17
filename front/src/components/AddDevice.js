@@ -69,6 +69,7 @@ const AddDevice = (props) => {
           localStorage['devices'] = JSON.stringify(devicesUpdated);
           localStorage['viewableDevices'] = JSON.stringify(viewableDevicesAdd);
           notification("Device", "A new device was added");
+          onClose();
         }catch(err){
           notification("Device", "Failed to add a device", 'error');
         }
