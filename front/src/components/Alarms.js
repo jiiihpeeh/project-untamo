@@ -11,9 +11,11 @@ import {
 	Th,
 	Td,
 	TableContainer,
+	HStack
 	} from '@chakra-ui/react'
 import { useState } from 'react'
 import EditAlarm from "./EditAlarm";
+import AddAlarm from "./AddAlarm";
 
 const Alarms = () => {
 	const { token, sessionStatus } = useContext(SessionContext);
@@ -70,7 +72,8 @@ const Alarms = () => {
 				</Tbody>
 				</Table>
 			</TableContainer>
-			<EditAlarm/>
+			<HStack spacing='30px'>
+			<AddAlarm/><EditAlarm/></HStack>
 		</Container>
 	)
 }
