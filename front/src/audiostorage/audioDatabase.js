@@ -1,29 +1,34 @@
-import { get, set, del, clear, keys, deleteDataBase } from './audioDatabaseHandler';
+
 import { blobToBase64String, base64StringToBlob }  from 'blob-util';
 import axios from 'axios';
 import { notification } from '../components/notification';
 import rooster from './rooster.json'
+import localForage from 'localforage';
+
+localForage.config({
+    name        : 'untamo',
+    storeName   : 'audio', 
+    description : 'audiofiles for offline use'
+})
 
 export const getAudio = async (key) => {
-    let data = await get(key);
+    let data = await localForage.getItem(key)
     return base64StringToBlob(data);
 };
 export const storeAudio = async (key, val) => {
-    await set(key, await blobToBase64String(val));
+    localForage.setItem(key, await blobToBase64String(val))
 };
 export const delAudio = async (key) => {
-    await del(key);
+    await localForage.removeItem(key);
 };
-export const clearAudio = async () => {
-    await clear();
-};
+
 export const keysAudio = async () => {
-    return await keys();
+    return await localForage.keys()
 };
 
 export const hasAudio = async (key)  => {
-    let keyList = await keys();
-    return keyList.indexOf(key) !== -1;
+    let existing = await keysAudio()
+    return existing.indexOf(key) !== -1;
 };
 
 export const fetchAudio = async (audio, token) => {
@@ -67,17 +72,9 @@ export const fetchAudioFiles = async (token) => {
 };
 
 export const deleteAudioDB = async () => {
-    await deleteDataBase('audio-store')
+    await localForage.clear()
 };
 
 export const initAudioDB = async () => {
-    // try{
-        await set('rooster', rooster.data64);
-        
-    // } catch(err){
-    //     await deleteDataBase('audio-store');
-    //     await set('rooster', rooster.data64);
-    //     console.log('audio...')
-    // }
-    
+    await localForage.setItem('rooster', rooster.data64)
 } 
