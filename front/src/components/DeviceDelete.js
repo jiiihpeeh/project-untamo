@@ -34,7 +34,7 @@ const DeviceDelete = (props) => {
                 setCurrentDevice('');
                 localStorage['currentDevice'] = undefined;
             }
-            if (viewableDevices.indexOf(props.device.id)){
+            if (viewableDevices.indexOf(props.device.id) !== -1){
               let viewableDevicesFilt = viewableDevices.filter(device => device !== props.device.id);
               setViewableDevices(viewableDevicesFilt);
               localStorage['viewableDevices'] = JSON.stringify(viewableDevicesFilt);
