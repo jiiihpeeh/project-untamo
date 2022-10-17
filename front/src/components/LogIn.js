@@ -4,13 +4,9 @@ import axios from "axios";
 import { notification } from "./notification";
 
 import { Input ,
-    InputGroup,
-    InputRightAddon,
     FormControl,
     FormLabel,
     Button,
-    FormErrorMessage,
-    FormHelperText,
     Box,
     } from '@chakra-ui/react';
 import React, { useContext } from "react";
@@ -18,7 +14,7 @@ import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import fetchDevices from "./fetchDevices";
 import fetchAlarms from "./fetchAlarms";
-import { initAudioDB } from "../audiostorage/audioDatabase";
+import { initAudioDB, fetchAudioFiles } from "../audiostorage/audioDatabase";
 import { AlarmContext } from "../contexts/AlarmContext";
 
 
@@ -44,7 +40,7 @@ const LogIn = () => {
             event.preventDefault();
             let res = await axios.post('/login', formData);
             await initAudioDB()
-
+            fetchAudioFiles(res.data.token)
             console.log(res.data);
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", res.data.user);
