@@ -97,12 +97,12 @@ function EditAlarm() {
 					<Table variant='striped' colorScheme='teal' size='sm' className="table-editalarm">
 					<Tbody> 
 						<Tr><Td><label htmlFor="id">ID: </label></Td><Td><input name="id" readOnly value={Selected_alarm._id} size="30"/></Td></Tr>
-						<Tr><Td><label htmlFor="occu">Occurence: </label></Td><Td><input name="occu" readOnly value={Selected_alarm.occurence} size="30"/></Td></Tr>
-						<Tr><Td><label htmlFor="time">Time: </label></Td><Td><input name="time" readOnly value={Selected_alarm.time} size="30"/></Td></Tr>
-						<Tr><Td><label htmlFor="wday">Weekday: </label></Td><Td><input name="wday" readOnly value={Selected_alarm.wday} size="30"/></Td></Tr>
-						<Tr><Td><label htmlFor="date">Date: </label></Td><Td><input name="date" readOnly value={Selected_alarm.date} size="30"/></Td></Tr>
+						<Tr><Td><label htmlFor="occu">Occurence: </label></Td><Td><select id="occu" name="occu" onChange={onChange}><option value={Selected_alarm.occurence}>{Selected_alarm.occurence}</option><option value="once">once</option><option value="weekly">weekly</option><option value="yearly">yearly</option></select></Td></Tr>
+						<Tr><Td><label htmlFor="time">Time: </label></Td><Td><input type="time" id="time" name="time" value={Selected_alarm.time} onChange={onChange}/></Td></Tr>
+						<Tr><Td><label htmlFor="wday">Weekday: </label></Td><Td><input name="wday" placeholder={Selected_alarm.wday} size="30" onChange={onChange}/></Td></Tr>
+						<Tr><Td><label htmlFor="date">Date: </label></Td><Td><input name="date" placeholder={Selected_alarm.date} size="30" onChange={onChange}/></Td></Tr>
 						<Tr><Td><label htmlFor="label">Label: </label></Td><Td><input name="label" placeholder={Selected_alarm.label} size="30" onChange={onChange}/></Td></Tr>
-						<Tr><Td><label htmlFor="devices">Devices: </label></Td><Td><input name="devices" readOnly value={Selected_alarm.devices} size="30"/></Td></Tr>
+						<Tr><Td><label htmlFor="devices">Devices: </label></Td><Td><input name="devices" readOnly placeholder={Selected_alarm.devices} size="30"/></Td></Tr>
 					</Tbody>
 					</Table>
 				</TableContainer>
@@ -118,3 +118,7 @@ function EditAlarm() {
 	}
 
 export default EditAlarm;
+/*
+<input name="occu" placeholder={Selected_alarm.occurence} size="30" onChange={onChange}/>
+<input name="time" placeholder={Selected_alarm.time} size="30" onChange={onChange}/>
+*/
