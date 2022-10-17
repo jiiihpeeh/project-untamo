@@ -9,21 +9,21 @@ localForage.config({
     name        : 'untamo',
     storeName   : 'audio', 
     description : 'audiofiles for offline use'
-})
+});
 
 export const getAudio = async (key) => {
-    let data = await localForage.getItem(key)
+    let data = await localForage.getItem(key);
     return base64StringToBlob(data);
 };
 export const storeAudio = async (key, val) => {
-    localForage.setItem(key, await blobToBase64String(val))
+    localForage.setItem(key, await blobToBase64String(val));
 };
 export const delAudio = async (key) => {
     await localForage.removeItem(key);
 };
 
 export const keysAudio = async () => {
-    return await localForage.keys()
+    return await localForage.keys();
 };
 
 export const hasAudio = async (key)  => {
@@ -39,10 +39,10 @@ export const fetchAudio = async (audio, token) => {
             headers: {'token': token}
         });
         await storeAudio(audio, res.data);
-        console.log(`Dowloaded audio: ${audio}`)
+        console.log(`Dowloaded audio: ${audio}`);
     } catch(err){
         console.log(`Couldn't fetch audio ${audio}`);
-        notification("Audio File", "Couldn't download a file", "error")
+        notification("Audio File", "Couldn't download a file", "error");
     }
 };
 
@@ -51,10 +51,10 @@ export const hasOrFetchAudio = async (audio, token) => {
         try{
             await fetchAudio(audio,token);
         } catch(err){
-            return false
+            return false;
         }
     }
-    return true
+    return true;
 };
 
 export const fetchAudioFiles = async (token) => {
@@ -72,9 +72,9 @@ export const fetchAudioFiles = async (token) => {
 };
 
 export const deleteAudioDB = async () => {
-    await localForage.clear()
+    await localForage.clear();
 };
 
 export const initAudioDB = async () => {
-    await localForage.setItem('rooster', rooster.data64)
+    await localForage.setItem('rooster', rooster.data64);
 } 
