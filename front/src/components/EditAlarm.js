@@ -118,7 +118,3 @@ function EditAlarm() {
 	}
 
 export default EditAlarm;
-/*
-<input name="occu" placeholder={Selected_alarm.occurence} size="30" onChange={onChange}/>
-<input name="time" placeholder={Selected_alarm.time} size="30" onChange={onChange}/>
-*/
