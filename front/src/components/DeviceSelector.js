@@ -14,12 +14,15 @@ import {
     MenuItemOption,
     MenuGroup,
     MenuOptionGroup,
+    Center,
+    Spacer,
     MenuDivider,
     Input,
     Divider,
     Stack,
     useDisclosure,
     Icon,
+    HStack,
   } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { notification } from "./notification";
@@ -31,14 +34,14 @@ const DeviceSelector = (props) => {
     const [menuDevices, setMenuDevices] = useState()
     const { token,  sessionStatus} = useContext(SessionContext);
     const { devices, setDevices, currentDevice, setCurrentDevice} = useContext(DeviceContext);
-    let menuIcon = (props.type === "submenu")? <ChevronRightIcon/> :<ChevronDownIcon/>
-    let offset = (props.type === "submenu") ? [200,0]: [0,0]
+    let offset = (props.type === "submenu") ? [200,0]: [0,0];
     const MenuDevices = async () => {
       if(devices.constructor === Array){
         setMenuDevices( devices.map((device) => 
             <MenuItemOption onClick={() => deviceSelected(device.id)}   
                             key={`device-${device.id}`}
-                            closeOnSelect={true}>
+                            closeOnSelect={true}
+                            value={device.id}>
                       {device.deviceName}
             </MenuItemOption>)
         );
@@ -64,13 +67,13 @@ const DeviceSelector = (props) => {
     const MenuOpener = () => {
       if(props.type==="submenu"){
         return (
-          <MenuButton as={Text} rightIcon={menuIcon}  onClick={openIt} >
-            Select a Device <ChevronRightIcon/>
+          <MenuButton as={Text} onClick={openIt} >
+              Select a Device        <ChevronRightIcon/>
           </MenuButton>
         )
       }
       return(
-            <MenuButton as={Button} rightIcon={menuIcon} onClick={openIt} >
+            <MenuButton as={Button} rightIcon={<ChevronDownIcon/>} onClick={openIt} >
               Select a Device
             </MenuButton>
       )
@@ -80,7 +83,7 @@ const DeviceSelector = (props) => {
         <Menu offset={offset} isOpen={openMenu} closeOnBlur={openMenu}>
         <MenuOpener/>
         <MenuList>
-          <MenuOptionGroup title='Devices'>
+          <MenuOptionGroup title='Devices' type='radio' defaultValue={currentDevice} >
               {menuDevices}
           </MenuOptionGroup>
         </MenuList>

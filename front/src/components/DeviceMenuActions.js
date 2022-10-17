@@ -37,8 +37,6 @@ const DeviceMenuActions = (props) => {
       }
     };
     const checkViewState = (id) => {
-      console.log(id)
-      console.log(viewableDevices.indexOf(id) !== -1)
       return viewableDevices.indexOf(id) !== -1;
     };
     return (
@@ -47,7 +45,7 @@ const DeviceMenuActions = (props) => {
           <Link  onClick={flipState} onDoubleClick={()=>{}} >
           <Checkbox isChecked={checkViewState(props.device.id)}>
               <Text>
-                {props.device.deviceName}
+                {props.device.deviceName} 
               </Text>
           </Checkbox>
           </Link>
