@@ -16,7 +16,7 @@ const RegisterSubmit = (props) => {
     passSubmit = (!passSubmit && checkmark === "✓") ? false: true;
     return (
         <>
-            <Button type="submit"  disabled={passSubmit} onClick={props.onRegister}>Submit</Button>
+            <Button type="submit"  disabled={passSubmit} onClick={props.onRegister} mt="1%" mb="1%" >Submit</Button>
         </>
         
     )

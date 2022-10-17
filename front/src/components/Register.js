@@ -152,6 +152,7 @@ const Register = (props) => {
                 id="firstname"
                 onChange={onChange}
                 value={formData.firstname}
+                bgColor="GhostWhite"
             />
             <FormLabel htmlFor="lastname">Last name (Optional)</FormLabel>
             <Input type="text"
@@ -159,6 +160,7 @@ const Register = (props) => {
                 id="lastname"
                 onChange={onChange}
                 value={formData.lastname}
+                bgColor="GhostWhite"
             />
             <FormLabel htmlFor="email">Email (Required)</FormLabel>
             <Input type="email"
@@ -166,6 +168,7 @@ const Register = (props) => {
                 id="email"
                 onChange={onChange}
                 value={formData.email}
+                bgColor="GhostWhite"
             />
             <FormLabel htmlFor='password'>Password</FormLabel>
             <InputGroup>
@@ -174,7 +177,7 @@ const Register = (props) => {
                     id="password"
                     onChange= {(e) => {onPassWordChange(e) ; onChange(e)}}
                     value={formData.password}
-                    backgroundColor='LightGreen' 
+                    bgColor="GhostWhite"
                 />
                 <InputRightAddon children={<RegisterPasswordCheck values={values} />}/>
             </InputGroup>
@@ -186,6 +189,7 @@ const Register = (props) => {
                     id="password_confirm"
                     onChange= {onChange}
                     value={formData.password_confirm}
+                    bgColor="GhostWhite"
                 />
                 <InputRightAddon children={<PasswordMatch values={values}/>}/>
             </InputGroup>

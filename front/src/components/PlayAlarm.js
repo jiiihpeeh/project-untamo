@@ -56,7 +56,7 @@ const PlayAlarm = () =>{
                          className="AlarmClock"
                          bgGradient="radial-gradient(circle, rgba(145,201,179,1) 0%, rgba(9,9,121,1) 0%, rgba(108,27,160,0.7945378835127801) 0%, rgba(136,32,171,1) 30%, rgba(16,23,135,1) 73%, rgba(50,96,210,1) 99%, rgba(148,182,155,1) 100%, rgba(51,175,32,0.5312325613839286) 100%)"
                          onClick={snoozer}>
-                <Image src='http://localhost:3000/alarm-clock.svg'  width='60%'/>
+                <Image src='/alarm-clock.svg'  width='60%'/>
             </IconButton>
             <Spacer />
             <FormLabel mb='0'>

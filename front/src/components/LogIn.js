@@ -8,6 +8,7 @@ import { Input ,
     FormLabel,
     Button,
     Box,
+    Divider
     } from '@chakra-ui/react';
 import React, { useContext } from "react";
 import { SessionContext } from "../contexts/SessionContext"
@@ -81,6 +82,7 @@ const LogIn = () => {
         }
     },[sessionStatus])
     return (
+        <form>
         <Box bg='lightgray' width="30em" margin="0 auto"  borderRadius='lg'>
         <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
             <FormLabel htmlFor="user">Email</FormLabel>
@@ -89,6 +91,7 @@ const LogIn = () => {
                 id="user"
                 onChange={onChange}
                 value={formData.user}
+                bgColor="GhostWhite"
             />
             <FormLabel htmlFor='password'>Password</FormLabel>
             <Input type="password"
@@ -96,10 +99,13 @@ const LogIn = () => {
                 id="password"
                 onChange= {onChange}
                 value={formData.password}
+                bgColor="GhostWhite"
             />
-            <Button type="submit" id="submit" onClick={onSubmit}>Log In </Button>
+            <Divider />
+            <Button type="submit" id="submit" onClick={onSubmit} mt="1%" mb="1%" >Log In </Button>
         </FormControl> 
         </Box>
+        </form>
     )
 };
 
