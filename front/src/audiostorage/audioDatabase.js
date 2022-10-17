@@ -27,7 +27,7 @@ export const keysAudio = async () => {
 };
 
 export const hasAudio = async (key)  => {
-    let existing = await keysAudio()
+    let existing = await keysAudio();
     return existing.indexOf(key) !== -1;
 };
 
