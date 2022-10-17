@@ -17,7 +17,7 @@ import { notification } from "./notification";
 const DeviceDelete = (props) => {
     const { onClose } = useDisclosure();
     const cancelRef = useRef();
-    const { devices, setDevices, currentDevice, setCurrentDevice } = useContext(DeviceContext);
+    const { devices, setDevices, currentDevice, setCurrentDevice,viewableDevices, setViewableDevices  } = useContext(DeviceContext);
     const { token } = useContext(SessionContext);
     const cancel = () => {
         props.setDeleteDialogState(false); 
@@ -33,6 +33,11 @@ const DeviceDelete = (props) => {
             if(currentDevice === props.device.id){
                 setCurrentDevice('')
                 localStorage['currentDevice'] = undefined;
+            }
+            if (viewableDevices.indexOf(props.device.id)){
+              let viewableDevicesFilt = viewableDevices.filter(device => device !== props.device.id)
+              setViewableDevices(viewableDevicesFilt)
+              localStorage['viewableDevices'] = JSON.stringify(viewableDevicesFilt)
             }
             localStorage['devices'] = JSON.stringify(devicesupdated);
             cancel();

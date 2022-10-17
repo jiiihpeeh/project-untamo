@@ -30,7 +30,7 @@ const AddDevice = (props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const [ deviceName, setDeviceName ] = useState('');
-  const { setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+  const { setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices  } = useContext(DeviceContext);
   const [deviceType, setDeviceType] = useState('Browser');
 
   const onChange = (event) => {
@@ -63,7 +63,11 @@ const AddDevice = (props) => {
           let devicesUpdated =  Object.assign([],devices);
           devicesUpdated.push({id: res.data.id, deviceName: res.data.device, type: res.data.type});
           setDevices(devicesUpdated);
+          let viewableDevicesAdd = viewableDevices;
+          viewableDevicesAdd.push(res.data.id);
+          setViewableDevices(viewableDevicesAdd);
           localStorage['devices'] = JSON.stringify(devicesUpdated);
+          localStorage['viewableDevices'] = JSON.stringify(viewableDevicesAdd);
           notification("Device", "A new device was added");
         }catch(err){
           notification("Device", "Failed to add a device", 'error');
