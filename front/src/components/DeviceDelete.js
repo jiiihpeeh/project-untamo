@@ -31,13 +31,13 @@ const DeviceDelete = (props) => {
             let devicesupdated = devices.filter(device => device.id !== props.device.id) ;
             setDevices(devicesupdated);
             if(currentDevice === props.device.id){
-                setCurrentDevice('')
+                setCurrentDevice('');
                 localStorage['currentDevice'] = undefined;
             }
             if (viewableDevices.indexOf(props.device.id)){
-              let viewableDevicesFilt = viewableDevices.filter(device => device !== props.device.id)
-              setViewableDevices(viewableDevicesFilt)
-              localStorage['viewableDevices'] = JSON.stringify(viewableDevicesFilt)
+              let viewableDevicesFilt = viewableDevices.filter(device => device !== props.device.id);
+              setViewableDevices(viewableDevicesFilt);
+              localStorage['viewableDevices'] = JSON.stringify(viewableDevicesFilt);
             }
             localStorage['devices'] = JSON.stringify(devicesupdated);
             cancel();
