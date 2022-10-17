@@ -43,7 +43,7 @@ const LogIn = () => {
         try{
             event.preventDefault();
             let res = await axios.post('/login', formData);
-            initAudioDB()
+            await initAudioDB()
 
             console.log(res.data);
             localStorage.setItem("token", res.data.token);
