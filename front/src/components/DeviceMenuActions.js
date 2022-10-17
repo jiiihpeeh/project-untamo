@@ -6,6 +6,7 @@ import {
         Checkbox, 
         Flex,
         IconButton,
+        Tooltip
         } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon} from '@chakra-ui/icons';
 import DeviceDelete from "./DeviceDelete";
@@ -49,10 +50,12 @@ const DeviceMenuActions = (props) => {
               </Text>
           </Checkbox>
           </Link>
-         
-          <IconButton size='xs' onClick={openEdit} icon={<EditIcon/>} ml="5.5%"/>
-          
-          <IconButton size='xs' onClick={openDelete} icon={<DeleteIcon/>} ml="5.5%"/>
+          <Tooltip label='Edit device' fontSize='md'>
+            <IconButton size='xs' onClick={openEdit} icon={<EditIcon/>} ml="5.5%"/>
+          </Tooltip>
+          <Tooltip label='Delete device' fontSize='md'>
+            <IconButton size='xs' onClick={openDelete} icon={<DeleteIcon/>} ml="5.5%"/>
+          </Tooltip>
         </Flex>
         <DeviceDelete device={props.device} 
                       deleteDialogState={deleteDialogState} 
