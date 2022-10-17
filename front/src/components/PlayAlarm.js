@@ -29,9 +29,9 @@ const PlayAlarm = () =>{
     const {token} = useContext(SessionContext);
     const navigate = useNavigate()
     const playAudio = new AudioPlayer('rooster', token);
-    const snoozer = () =>{
+    const snoozer = async () =>{
         console.log("clicked");
-        playAudio.playLoop();
+        await playAudio.playLoop();
     }
     
     const tellme = (event) => {

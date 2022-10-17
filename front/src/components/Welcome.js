@@ -22,8 +22,11 @@ const Welcome = () => {
 		if(!sessionStatus){
 			navigate('/login');
 		}
-        let audiotrack = new AudioPlayer('rooster', token)
-        audiotrack.playOnce()
+        const welcome = async () => {
+            let audiotrack = new AudioPlayer('rooster', token)
+            await audiotrack.playOnce()
+        }
+        welcome()
 	},[sessionStatus])
     const SelectLayout = () => {
         if(!devices || devices.length === 0){

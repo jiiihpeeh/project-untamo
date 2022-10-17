@@ -9,8 +9,6 @@ class AudioPlayer {
         this.audioelem.setAttribute("id","audioplayer");
         this.token = token;
         this.instances = 0;
-        this.fetched = false;
-        this.setTrack();
     };
     async setTrack (){
         let tracked = await hasOrFetchAudio(this.track, this.token);
@@ -23,11 +21,13 @@ class AudioPlayer {
             notification("Audio", "Can not play track", "error");
         };
     };
-    playOnce (){
+    async playOnce (){
         //this.audioelem.setAttribute('loop', false);
+        await this.setTrack();
         this.audioelem.play();
     };
-    playLoop (){
+    async playLoop (){
+        await this.setTrack();
         this.audioelem.setAttribute('loop', true);
         if(this.fetched){
             if(this.instances === 0){
