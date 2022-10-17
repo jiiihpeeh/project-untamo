@@ -20,8 +20,8 @@ import {
   import { notification } from "./notification";
 
 const LogOut = () => {
-    const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
-    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
+    const {  setCurrentDevice, setDevices } = useContext(DeviceContext);
+    const { token, setToken,  setUserInfo,  setSessionStatus } = useContext(SessionContext);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef();
     const navigate = useNavigate();
@@ -36,8 +36,8 @@ const LogOut = () => {
             setToken(undefined);
             setSessionStatus(false);
             setUserInfo({});
-            setCurrentDevice(undefined)
-            setDevices([])
+            setCurrentDevice(undefined);
+            setDevices([]);
             try{
                 localStorage.clear();
                 //await clearAudio();
@@ -64,9 +64,9 @@ const LogOut = () => {
             </Text>
         </Link>
         <AlertDialog
-          isOpen={isOpen}
-          leastDestructiveRef={cancelRef}
-          onClose={onClose}
+            isOpen={isOpen}
+            leastDestructiveRef={cancelRef}
+            onClose={onClose}
         >
           <AlertDialogOverlay>
             <AlertDialogContent>
