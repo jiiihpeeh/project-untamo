@@ -23,10 +23,11 @@ import {
     useDisclosure,
     Icon,
     HStack,
+    Tooltip
   } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { notification } from "./notification";
-
+import deviceIcons from "./DeviceIcons";
 
 const DeviceSelector = (props) => {
 
@@ -38,12 +39,17 @@ const DeviceSelector = (props) => {
     const MenuDevices = async () => {
       if(devices.constructor === Array){
         setMenuDevices( devices.map((device) => 
+          <Tooltip label={device.type}>
             <MenuItemOption onClick={() => deviceSelected(device.id)}   
                             key={`device-${device.id}`}
                             closeOnSelect={true}
                             value={device.id}>
-                      {device.deviceName}
-            </MenuItemOption>)
+                      <HStack spacing='24px'>
+                        <Text>{device.deviceName}</Text> <Icon as={deviceIcons(device.type)}/> 
+                      </HStack>
+                      
+            </MenuItemOption>
+            </Tooltip>)
         );
       }
     };

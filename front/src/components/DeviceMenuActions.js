@@ -4,21 +4,21 @@ import {
         Link,
         Text,
         Checkbox, 
-        Flex,
+        HStack,
         IconButton,
         Tooltip
         } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon} from '@chakra-ui/icons';
 import DeviceDelete from "./DeviceDelete";
 import DeviceEdit from "./DeviceEdit";
-
+import { Icon } from "@chakra-ui/react";
 import { DeviceContext } from "../contexts/DeviceContext";
-
-
+import deviceIcons from "./DeviceIcons";
 const DeviceMenuActions = (props) => {
     const [ editDialogState, setEditDialogState ] = useState(false);
     const [ deleteDialogState, setDeleteDialogState ] = useState(false);
     const { viewableDevices, setViewableDevices } = useContext(DeviceContext);
+
     const openDelete = () => {
       setDeleteDialogState(true);
     };
@@ -42,12 +42,14 @@ const DeviceMenuActions = (props) => {
     };
     return (
       <>                    
-        <Flex id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`}>
+        <HStack spacing='24px'> id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`}>
           <Link  onClick={flipState} onDoubleClick={()=>{}} >
           <Checkbox isChecked={checkViewState(props.device.id)}>
+          <Tooltip label={props.device.type} fontSize='md'>
               <Text>
-                {props.device.deviceName} 
+                {props.device.deviceName} <Icon as={deviceIcons(props.device.type)}></Icon>
               </Text>
+          </Tooltip>
           </Checkbox>
           </Link>
           <Tooltip label='Edit device' fontSize='md'>
@@ -56,7 +58,7 @@ const DeviceMenuActions = (props) => {
           <Tooltip label='Delete device' fontSize='md'>
             <IconButton size='xs' onClick={openDelete} icon={<DeleteIcon/>} ml="5.5%"/>
           </Tooltip>
-        </Flex>
+        </HStack>
         <DeviceDelete device={props.device} 
                       deleteDialogState={deleteDialogState} 
                       setDeleteDialogState={setDeleteDialogState} />
