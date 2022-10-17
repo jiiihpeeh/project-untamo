@@ -144,7 +144,7 @@ const Register = (props) => {
         }
     },[sessionStatus])
     return (
-        <Box bg='lightgray' width="30em" margin="0 auto"  borderRadius='lg'>
+        <Box bg='lightgray' width="30em" margin="0 auto"  borderRadius='lg' >
         <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
             <FormLabel htmlFor="firstname">First name (Optional)</FormLabel>
             <Input type="text"
@@ -152,15 +152,16 @@ const Register = (props) => {
                 id="firstname"
                 onChange={onChange}
                 value={formData.firstname}
-                bgColor="GhostWhite"
+                className='Register'
             />
             <FormLabel htmlFor="lastname">Last name (Optional)</FormLabel>
             <Input type="text"
+                bgColor="GhostWhite"
                 name="lastname"
                 id="lastname"
                 onChange={onChange}
                 value={formData.lastname}
-                bgColor="GhostWhite"
+                className='Register'
             />
             <FormLabel htmlFor="email">Email (Required)</FormLabel>
             <Input type="email"
@@ -168,7 +169,7 @@ const Register = (props) => {
                 id="email"
                 onChange={onChange}
                 value={formData.email}
-                bgColor="GhostWhite"
+                className='Register'
             />
             <FormLabel htmlFor='password'>Password</FormLabel>
             <InputGroup>
@@ -177,7 +178,7 @@ const Register = (props) => {
                     id="password"
                     onChange= {(e) => {onPassWordChange(e) ; onChange(e)}}
                     value={formData.password}
-                    bgColor="GhostWhite"
+                    className='Register'
                 />
                 <InputRightAddon children={<RegisterPasswordCheck values={values} />}/>
             </InputGroup>
@@ -189,7 +190,7 @@ const Register = (props) => {
                     id="password_confirm"
                     onChange= {onChange}
                     value={formData.password_confirm}
-                    bgColor="GhostWhite"
+                    className='Register'
                 />
                 <InputRightAddon children={<PasswordMatch values={values}/>}/>
             </InputGroup>

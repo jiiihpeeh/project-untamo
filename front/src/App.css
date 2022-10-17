@@ -14,16 +14,20 @@
 }
 
 input[type="text"], textarea {
-
   background-color : #d1d1d1; 
-
 }
+
+input.Register, textarea {
+  background-color : ghostwhite; 
+}
+
 
 .table-tiny th,
 .table-tiny td {
   padding-left: 10px;
   padding-right: 10px;
 }
+
 
 .App-header {
   background-color: #282c34;
