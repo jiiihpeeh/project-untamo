@@ -32,17 +32,18 @@ export const hasAudio = async (key)  => {
 };
 
 export const fetchAudio = async (audio, token) => {
-    //console.log(audio)
-    try {
-        let res = await axios.get(`http://localhost:3001/audioresources/${audio}.opus`,{
-            responseType: 'blob', 
-            headers: {'token': token}
-        });
-        await storeAudio(audio, res.data);
-        console.log(`Dowloaded audio: ${audio}`);
-    } catch(err){
-        console.log(`Couldn't fetch audio ${audio}`);
-        notification("Audio File", "Couldn't download a file", "error");
+    if(token){
+        try {
+            let res = await axios.get(`http://localhost:3001/audioresources/${audio}.opus`,{
+                responseType: 'blob', 
+                headers: {'token': token}
+            });
+            await storeAudio(audio, res.data);
+            console.log(`Dowloaded audio: ${audio}`);
+        } catch(err){
+            console.log(`Couldn't fetch audio ${audio}`);
+            notification("Audio File", "Couldn't download a file", "error");
+        }
     }
 };
 
@@ -58,17 +59,19 @@ export const hasOrFetchAudio = async (audio, token) => {
 };
 
 export const fetchAudioFiles = async (token) => {
-    try {
-        let res = await axios.get(`http://localhost:3001/audioresources/resource_list.json`,{
-            headers: {'token': token}
-        });
-        for (const audio of res.data){
-            await hasOrFetchAudio(audio, token);
+    if(token){
+        try {
+            let res = await axios.get(`http://localhost:3001/audioresources/resource_list.json`,{
+                headers: {'token': token}
+            });
+            for (const audio of res.data){
+                await hasOrFetchAudio(audio, token);
+            }
+        } catch(err){
+            console.log(`Couldn't fetch resources listing`);
+            notification("Alarm sounds", "Failed to get a listing", "error");
         }
-    } catch(err){
-        console.log(`Couldn't fetch resources listing`);
-        notification("Alarm sounds", "Failed to get a listing", "error");
-    }
+    }   
 };
 
 export const deleteAudioDB = async () => {

@@ -3,28 +3,27 @@ import { useNavigate } from "react-router-dom";
 import DeviceSelector from "./DeviceSelector";
 import { SessionContext } from "../contexts/SessionContext";
 import { DeviceContext } from "../contexts/DeviceContext";
-import AudioPlayer from "./AudioPlayer";
 import {
     Text,
     Grid,
     GridItem
   } from '@chakra-ui/react';
 import AddDevice from "./AddDevice";
-
+import AudioPlayer from "./AudioPlayer";
 
 
 const Welcome = () => {
-    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
-    const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+    const { token, userInfo, sessionStatus} = useContext(SessionContext);
+    const { currentDevice, devices } = useContext(DeviceContext);
     const  navigate = useNavigate()
-
+    
 
 	useEffect(() =>{
 		if(!sessionStatus){
 			navigate('/login');
-		} else{
-            new AudioPlayer('rooster', token).playOnce()
-        }
+		}
+        let audiotrack = new AudioPlayer('rooster', token)
+        audiotrack.playOnce()
 	},[sessionStatus])
     const SelectLayout = () => {
         if(!devices || devices.length === 0){

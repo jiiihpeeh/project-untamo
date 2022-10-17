@@ -25,9 +25,7 @@ class AudioPlayer {
     };
     playOnce (){
         //this.audioelem.setAttribute('loop', false);
-        if(this.fetched){
-            this.audioelem.play();
-        }
+        this.audioelem.play();
     };
     playLoop (){
         this.audioelem.setAttribute('loop', true);

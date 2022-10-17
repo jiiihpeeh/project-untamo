@@ -58,11 +58,11 @@ const LogOut = () => {
   
     return (
       <>
-        <Link  onClick={onOpen} id="logout-button" key="logout-button" >
+        <Text  onClick={onOpen} id="logout-button" key="logout-button" >
             <Text as='b'>
                 Log Out
             </Text>
-        </Link>
+        </Text>
         <AlertDialog
             isOpen={isOpen}
             leastDestructiveRef={cancelRef}
