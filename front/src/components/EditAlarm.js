@@ -68,7 +68,6 @@ function EditAlarm() {
 			const res = await axios.put('/api/editAlarm/'+Selected_alarm._id,Selected_alarm );
 			console.log(res.data);
 			notification("Edit Alarm", "Alarm succesfully modified")
-			//navigate('/login')
 		} catch (err){
 			console.error(err)
 			notification("Edit Alarm", "Alarm edit save failed", "error")
@@ -77,22 +76,6 @@ function EditAlarm() {
 	}
 	
 	
-/*
-
-const onRegister = async (event) => {
-	console.log("onRegister triggered")
-	try {
-		const res = await axios.put('/api/editUser/'+formData.user,formData );
-		console.log(res.data);
-		notification("Edit Profile", "User information succesfully modified")
-		//navigate('/login')
-	} catch (err){
-		console.error(err)
-		notification("Edit Profile", "Profile save failed", "error")
-	}
-}
-
-*/
 	return (
 		<>
 		<Link onClick={onOpen}><Text as='b'>
