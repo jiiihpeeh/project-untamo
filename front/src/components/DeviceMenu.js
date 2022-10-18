@@ -5,16 +5,11 @@ import {
     MenuButton,
     MenuList,
     MenuItem,
-    MenuItemOption,
     MenuGroup,
-    MenuOptionGroup,
     MenuDivider,
-    IconButton,
-    Spacer,
     Flex,
-    Checkbox,
   } from '@chakra-ui/react';
-import { EditIcon, DeleteIcon} from '@chakra-ui/icons';
+//import { EditIcon, DeleteIcon} from '@chakra-ui/icons';
 import DeviceSelector from './DeviceSelector';
 import { DeviceContext } from '../contexts/DeviceContext';
 import { useContext, useEffect, useState } from 'react';
@@ -25,27 +20,22 @@ import AddDevice from './AddDevice';
 const DeviceMenu = () => {
     const [menuDeviceItems, setMenuDeviceItems] = useState([])
 
-    const { currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices} = useContext(DeviceContext);
-    const EditDevice = (device) =>{
-        console.log('edit',device)
-    }
-    const deleter = () => {
-        console.log('hello')
+    const { devices, } = useContext(DeviceContext);
 
-    }
     const MenuDeviceView = (deviceItem) => {
         return (<MenuItem value={deviceItem.id} id={`dev-id-${deviceItem.id}`} key={`dev-id-${deviceItem.id}`}  >
                 <DeviceMenuActions device={deviceItem}/>
                 </MenuItem>)
     }
-    const menuDeviceOptions = () =>{
-        let items = [];
-        for (const item of devices){
-            items.push(MenuDeviceView(item));
-        }
-        setMenuDeviceItems(items)
-    } 
-    useEffect(() => {
+
+    useEffect(() => {    
+        const menuDeviceOptions = () =>{
+            let items = [];
+            for (const item of devices){
+                items.push(MenuDeviceView(item));
+            }
+            setMenuDeviceItems(items)
+        } 
         menuDeviceOptions()
     },[devices])
     return(
