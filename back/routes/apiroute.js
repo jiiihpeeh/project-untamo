@@ -8,7 +8,8 @@ const router = express.Router();
 const crypto = require("crypto");
 const tStamppi = require("../modules/tstamppi");
 const bcrypt = require('bcrypt')
-const zxcvbn = require("zxcvbn")
+const zxcvbn = require("zxcvbn");
+const e = require("express");
 
 const guessCount =  1000000000;
 
@@ -245,21 +246,29 @@ router.put("/editUser/:user",function(req,res) {
 				return res.status(401).json({message:"Original password did not match"});
 			}
 			let input_password = req.body.current_password;
+			let tempUser = {
+				user:req.body.user,
+				password:user.password,
+				firstname: req.body.firstname,
+				lastname: req.body.lastname,
+				screenname: req.body.screenname,
+			}
 			if ('change_password' in req.body){
 				input_password = req.body.change_password;
-			}
-			bcrypt.hash(input_password,14,function(err,hash) {
-				if(err) {
-					return res.status(400).json({message:"Failed to hash password"}); 
-				}
-				
-				let tempUser = {
-					user:req.body.user,
-					password:hash,
-					firstname: req.body.firstname,
-					lastname: req.body.lastname,
-					screenname: req.body.screenname,
-				}
+				bcrypt.hash(input_password,14,function(err,hash) {
+					if(err) {
+						return res.status(400).json({message:"Failed to hash password"}); 
+					}
+					tempUser.password = hash;
+					userModel.replaceOne({"_id":req.session.userID},tempUser,function(err) {
+						if(err) {
+							console.log(tStamppi(),"Failed to update user. Reason",err);
+							return res.status(500).json({message:"Failed to update user"});
+						}
+						return res.status(200).json({message:"Success"});
+					})
+				})
+			}else {
 				userModel.replaceOne({"_id":req.session.userID},tempUser,function(err) {
 					if(err) {
 						console.log(tStamppi(),"Failed to update user. Reason",err);
@@ -267,7 +276,8 @@ router.put("/editUser/:user",function(req,res) {
 					}
 					return res.status(200).json({message:"Success"});
 				})
-			})
+			}
+
 
 		})
 
