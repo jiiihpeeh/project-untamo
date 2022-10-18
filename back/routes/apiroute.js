@@ -7,7 +7,10 @@ const qrModel = require("../models/qrpair");
 const router = express.Router();
 const crypto = require("crypto");
 const tStamppi = require("../modules/tstamppi");
+const bcrypt = require('bcrypt')
+const zxcvbn = require("zxcvbn")
 
+const guessCount =  1000000000;
 
 router.get("/alarm",function(req,res) {
 	console.log(tStamppi(),"GET /api/alarm");
@@ -209,29 +212,69 @@ router.put("/editUser/:user",function(req,res) {
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	if(!req.body.firstname) {	
-		return res.status(400).json({message:"Bad request"});	
-	}
-	if(!req.body.lastname) {	
-		return res.status(400).json({message:"Bad request"});	
-	}
+
 	if(!req.body.user) {	
 		return res.status(400).json({message:"Bad request"});	
 	}
-	let tempScrnName = req.body.firstname+" "+req.body.lastname
-	let tempUser = {
-		firstname:req.body.firstname,
-		lastname:req.body.lastname,
-		user:req.params.user,
-		screenname:tempScrnName
-		}
-	userModel.replaceOne({"user":req.body.user},tempUser,function(err) {
+	if(!req.body.screenname) {	
+		return res.status(400).json({message:"Bad request"});	
+	}
+	if(!req.body.current_password) {	
+		return res.status(400).json({message:"Bad request"});	
+	}
+	//let tempScrnName = req.body.firstname+" "+req.body.lastname
+
+	let query={"_id":req.session.userID}
+	userModel.findOne(query,function(err,user) {
 		if(err) {
-			console.log(tStamppi(),"Failed to update user. Reason",err);
+			console.log(tStamppi(),"Failed to find devices. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
 		}
-		return res.status(200).json({message:"Success"});
+		console.log(user);
+		console.log(req.body.current_password)
+		bcrypt.compare(req.body.current_password,user.password,function(err,success) {
+			if(err) {
+				console.log(tStamppi(),"Comparing passwords failed. Reason",err);
+				console.log(err)
+				return res.status(500).json({message:"Original password did not match"});
+			}
+			if(!success) {
+				return res.status(401).json({message:"Original password did not match"});
+			}
+			let input_password = req.body.current_password;
+			if ('change_password' in req.body){
+				if(zxcvbn(req.body.change_password).guesses < guessCount){
+					console.log(tStamppi(),"Password too weak");
+					return res.status(400).json({message:"Bad Request. Password is too obvious"}); 
+				}
+				input_password = req.body.change_password;
+			}
+			bcrypt.hash(input_password,14,function(err,hash) {
+				if(err) {
+					return res.status(400).json({message:"Failed to hash password"}); 
+				}
+				
+				let tempUser = {
+					user:req.body.user,
+					password:hash,
+					firstname: req.body.firstname,
+					lastname: req.body.lastname,
+					screenname: req.body.screenname,
+				}
+				console.log(tempUser)
+				userModel.replaceOne({"_id":req.session.userID},tempUser,function(err) {
+					if(err) {
+						console.log(tStamppi(),"Failed to update user. Reason",err);
+						return res.status(500).json({message:"Failed to update user"});
+					}
+					return res.status(200).json({message:"Success"});
+				})
+			})
+
+		})
+
 	})
+
 })
 
 
