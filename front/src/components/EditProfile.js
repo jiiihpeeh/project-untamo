@@ -92,8 +92,8 @@ function EditProfile() {
 			const res = await axios.put('/api/editUser/'+formData.user,reqFormData );
 			console.log(res.data);
 			notification("Edit Profile", "User information succesfully modified");
-			//setUserInfo()
-			//navigate('/login')
+			setUserInfo({ firstname : formData.firstname, lastname: formData.lastname, user: formData.user, screenname: formData.screenname })
+			
 		} catch (err){
 			console.error(err);
 			notification("Edit Profile", "Profile save failed", "error");
