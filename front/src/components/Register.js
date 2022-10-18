@@ -10,7 +10,7 @@ import PasswordMatch from './registerComponents/PasswordMatch';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { notification } from './notification';
-
+import '../App.css'
 import { Input ,
     InputGroup,
     InputRightAddon,
@@ -144,7 +144,7 @@ const Register = (props) => {
         }
     },[sessionStatus])
     return (
-        <Box bg='lightgray' width="30em" margin="0 auto"  borderRadius='lg' >
+        <Box bg='lightgray' className='UserForm' >
         <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
             <FormLabel htmlFor="firstname">First name (Optional)</FormLabel>
             <Input type="text"

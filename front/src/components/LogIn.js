@@ -17,7 +17,7 @@ import fetchDevices from "./fetchDevices";
 import fetchAlarms from "./fetchAlarms";
 import { initAudioDB, fetchAudioFiles } from "../audiostorage/audioDatabase";
 import { AlarmContext } from "../contexts/AlarmContext";
-
+import '../App.css'
 
 const LogIn = () => {
     const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
@@ -83,23 +83,23 @@ const LogIn = () => {
     },[sessionStatus])
     return (
         <form>
-        <Box bg='lightgray' width="30em" margin="0 auto"  borderRadius='lg'>
-        <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >
-            <FormLabel htmlFor="user">Email</FormLabel>
+        <Box className='UserForm'>
+        <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" mt="1%">
+            <FormLabel htmlFor="user" className="FormLabel"  mt="1%" mb="1%" >Email</FormLabel>
             <Input type="email"
                 name="user"
                 id="user"
                 onChange={onChange}
                 value={formData.user}
-                bgColor="GhostWhite"
+                className="Register"
             />
-            <FormLabel htmlFor='password'>Password</FormLabel>
+            <FormLabel htmlFor='password' className="FormLabel">Password</FormLabel>
             <Input type="password"
                 name="password"
                 id="password"
                 onChange= {onChange}
                 value={formData.password}
-                bgColor="GhostWhite"
+                className="Register"
             />
             <Divider />
             <Button type="submit" id="submit" onClick={onSubmit} mt="1%" mb="1%" >Log In </Button>

@@ -10,6 +10,9 @@ import {
 	DrawerOverlay,
 	DrawerContent,
 	DrawerCloseButton,
+	FormLabel,
+	FormControl,
+	Input
 	} from '@chakra-ui/react'
 import React from 'react';
 import { useState, useEffect, useContext } from 'react'
@@ -32,7 +35,8 @@ function EditProfile() {
     const [formData, setFormData] = useState({
         firstname: userInfo.firstname,
         lastname: userInfo.lastname,
-        user: userInfo.user
+        user: userInfo.user,
+		screenname: userInfo.screenname,
     });
 
 
@@ -78,22 +82,20 @@ const onRegister = async (event) => {
 				id='edit-profile-form'
 				onSubmit={onRegister}
             >
-
-			<p>
-				<label htmlFor="firstname">First Name</label></p><p>
-				<input name='firstname' onChange={onChange} placeholder={formData.firstname} />
-			</p>
-
-			<p>
-				<label htmlFor="lastname">Last Name</label></p><p>
-				<input name='lastname' onChange={onChange} placeholder={formData.lastname} />
-			</p>
+			<FormControl>
+				<FormLabel htmlFor="firstname">First Name</FormLabel>
+				<Input name='firstname' onChange={onChange} placeholder={formData.firstname} />
 			
-			<p>
-				<label htmlFor="user">E-mail</label></p><p>
-				<input name='user' onChange={onChange} placeholder={formData.user} />
-			</p>
+				<FormLabel htmlFor="lastname">Last Name</FormLabel>
+				<Input name='lastname' onChange={onChange} placeholder={formData.lastname} />
 
+				<FormLabel htmlFor="screenname">Profile name</FormLabel>
+				<Input name='screenname' onChange={onChange} placeholder={formData.screenname} />
+
+				<FormLabel htmlFor="user">E-mail</FormLabel>
+				<Input name='user' onChange={onChange} placeholder={formData.user} />
+			
+			</FormControl>
             
 			</form>
 			</DrawerBody>

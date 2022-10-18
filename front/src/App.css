@@ -78,3 +78,16 @@ input.Register, textarea {
       transform: rotate(25deg);
     }
   }
+
+  .UserForm {
+    background-color: lightgray;
+    width: 30em;
+    margin: 0 auto;
+    border-radius: 18px;
+    margin-top: 5%;
+  }
+
+  .FormLabel{
+    margin-top: 0.5%;
+    margin-bottom: 0.5%;
+  }

@@ -16,7 +16,7 @@ export const getAudio = async (key) => {
     return base64StringToBlob(data);
 };
 export const storeAudio = async (key, val) => {
-    localForage.setItem(key, await blobToBase64String(val));
+    await localForage.setItem(key, await blobToBase64String(val));
 };
 export const delAudio = async (key) => {
     await localForage.removeItem(key);
