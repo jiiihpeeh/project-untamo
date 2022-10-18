@@ -1,6 +1,5 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { SessionContext } from "../contexts/SessionContext"
-import { DeviceContext } from "../contexts/DeviceContext";
 import { Avatar,
          Menu,
          MenuButton,
@@ -15,8 +14,7 @@ import EditProfile from "./EditProfile";
 
 
 const UserMenu = () => {
-	const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
-	const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+	const { userInfo } = useContext(SessionContext);
 	
 
 	return (

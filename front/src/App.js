@@ -1,5 +1,5 @@
-import { useEffect, useState, useNavigate } from 'react';
-import { Routes,Route, Link as ReachLink, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Routes,Route,  Navigate } from 'react-router-dom';
 import Alarms from './components/Alarms';
 import About from './components/About';
 import LogIn from './components/LogIn';

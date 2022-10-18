@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import DeviceSelector from "./DeviceSelector";
 import { SessionContext } from "../contexts/SessionContext";
@@ -15,29 +15,19 @@ import AudioPlayer from "./AudioPlayer";
 const Welcome = () => {
     const { token, userInfo, sessionStatus} = useContext(SessionContext);
     const { currentDevice, devices } = useContext(DeviceContext);
-    const  navigate = useNavigate()
+    const  navigate = useNavigate();
     
-
-	useEffect(() =>{
-		if(!sessionStatus){
-			navigate('/login');
-		}
-        const welcome = async () => {
-            let audiotrack = new AudioPlayer('rooster', token)
-            await audiotrack.playOnce()
-        }
-        welcome()
-	},[sessionStatus])
-    const SelectLayout = () => {
+    const DeviceLayout = () => {
         if(!devices || devices.length === 0){
-            return (<Grid>
+            return(<Grid>
                     <GridItem>
                         <AddDevice/> 
                     </GridItem>
                 </Grid>
             );
         }else {
-            return (<Grid>
+            return(
+                    <Grid>
                         <GridItem>
                             <DeviceSelector/>
                         </GridItem>
@@ -51,24 +41,32 @@ const Welcome = () => {
                         </GridItem>
                     </Grid>
             );
-        }
+        };
     };
+	useEffect(() =>{
+		if(!sessionStatus){
+			navigate('/login');
+		}
+        const welcome = async () => {
+            let audiotrack = new AudioPlayer('rooster', token);
+            await audiotrack.playOnce();
+        }
+        welcome()
+	},[sessionStatus, navigate, token]);
+
     useEffect(() => {
-        SelectLayout();
+
     },[devices]);
     useEffect(() =>{
         if(currentDevice){
             navigate('/alarms');
         }
-    },[currentDevice]);
+    },[currentDevice, navigate]);
     return(
         <>
-            <div>
                 <Text>Tere tere, <Text as='b'>{userInfo.screenname}</Text> !</Text>
-            </div>
-            <div>
-                <SelectLayout/>
-            </div>
+
+                <DeviceLayout/>
         </>
     )
 }

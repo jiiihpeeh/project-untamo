@@ -20,8 +20,8 @@ import { AlarmContext } from "../contexts/AlarmContext";
 import '../App.css'
 
 const LogIn = () => {
-    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
-    const { currentDevice, setCurrentDevice, devices, setDevices, setViewableDevices } = useContext(DeviceContext);
+    const {  setToken, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
+    const { setDevices, setViewableDevices } = useContext(DeviceContext);
     const { setAlarms}=useContext(AlarmContext)
     const [formData, setFormData] = useState({
         user: "",
@@ -80,7 +80,7 @@ const LogIn = () => {
         if(sessionStatus){
             navigate('/alarms')
         }
-    },[sessionStatus])
+    },[sessionStatus, navigate])
     return (
         <form>
         <Box className='UserForm'>

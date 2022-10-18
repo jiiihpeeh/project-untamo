@@ -1,16 +1,16 @@
 import { SessionContext} from '../contexts/SessionContext';
-import { DeviceContext } from '../contexts/DeviceContext';
+//import { DeviceContext } from '../contexts/DeviceContext';
 import {Link as ReachLink} from 'react-router-dom';
-import { Grid, GridItem, Text, Link, Button } from '@chakra-ui/react';
-import { notification } from './notification';
+import { Grid, GridItem, Text, Link } from '@chakra-ui/react';
+//import { notification } from './notification';
 import { useState, useEffect, useContext } from "react";
 import UserMenu from './UserMenu';
 import About from './About';
 import DeviceMenu from './DeviceMenu';
 
 const NavGrid = () => {
-    const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
-    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
+    //const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+    const { token, sessionStatus } = useContext(SessionContext);
 
     const [gridItems, setGridItems] = useState();
     const [columnCount, setColumnCount] = useState(`repeat(5, 1fr)`);
@@ -22,34 +22,35 @@ const NavGrid = () => {
             </GridItem>
         </>);
     }
-    const constructGrid = () => {
-        let validItems = [];
-        if(sessionStatus){
-            validItems = ["alarms", "devices", 'user'];
-        } else {
-            validItems = ["login", "register", "about"];        
-        }
-        let validLinks = [];
-        for (const item of validItems){
-            switch(item){
-                case 'user':
-                    validLinks.push(<GridItem key="navgrid-user"><UserMenu/></GridItem>);
-                    break;
-                case 'about':
-                    validLinks.push(<GridItem key="navgrid-about"><About/></GridItem>);
-                    break;
-                case 'devices':
-                    validLinks.push(<GridItem key="navgrid-device"><DeviceMenu/></GridItem>);
-                    break;
-                default:
-                    validLinks.push(<GridLink text={item} key={item}/>);
-                    break;
-            }
-        }
-        setGridItems(validLinks);
-        setColumnCount( `repeat(${validLinks.length}, 1fr)`);
-    }
+
     useEffect(()=>{
+        const constructGrid = () => {
+            let validItems = [];
+            if(sessionStatus){
+                validItems = ["alarms", "devices", 'user'];
+            } else {
+                validItems = ["login", "register", "about"];        
+            }
+            let validLinks = [];
+            for (const item of validItems){
+                switch(item){
+                    case 'user':
+                        validLinks.push(<GridItem key="navgrid-user"><UserMenu/></GridItem>);
+                        break;
+                    case 'about':
+                        validLinks.push(<GridItem key="navgrid-about"><About/></GridItem>);
+                        break;
+                    case 'devices':
+                        validLinks.push(<GridItem key="navgrid-device"><DeviceMenu/></GridItem>);
+                        break;
+                    default:
+                        validLinks.push(<GridLink text={item} key={item}/>);
+                        break;
+                }
+            }
+            setGridItems(validLinks);
+            setColumnCount( `repeat(${validLinks.length}, 1fr)`);
+        }
         constructGrid();
     },[token, sessionStatus]);
     return (
@@ -65,4 +66,4 @@ const NavGrid = () => {
     
 };
 
-export default NavGrid
+export default NavGrid;

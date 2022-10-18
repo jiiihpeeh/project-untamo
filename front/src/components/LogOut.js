@@ -14,7 +14,6 @@ import {
     AlertDialogOverlay,
     Button,
     useDisclosure,
-    Link,
     Text
   } from '@chakra-ui/react';
   import { notification } from "./notification";

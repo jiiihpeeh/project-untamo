@@ -1,8 +1,6 @@
-import { useState, useEffect, useRef, useContext } from "react";
-import axios from "axios";
-import { SessionContext } from "../contexts/SessionContext"
+import { useState, useEffect, useContext } from "react";
+//import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
-import AddDevice from "./AddDevice";
 
 import {
     Button, 
@@ -10,62 +8,53 @@ import {
     Menu,
     MenuButton,
     MenuList,
-    MenuItem,
     MenuItemOption,
-    MenuGroup,
     MenuOptionGroup,
-    Center,
-    Spacer,
-    MenuDivider,
-    Input,
-    Divider,
-    Stack,
-    useDisclosure,
     Icon,
     HStack,
     Tooltip
   } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons'
-import { notification } from "./notification";
 import deviceIcons from "./DeviceIcons";
 
 const DeviceSelector = (props) => {
 
     const [openMenu, setOpenMenu] = useState(false)
     const [menuDevices, setMenuDevices] = useState()
-    const { token,  sessionStatus} = useContext(SessionContext);
-    const { devices, setDevices, currentDevice, setCurrentDevice} = useContext(DeviceContext);
+    const { devices, currentDevice, setCurrentDevice} = useContext(DeviceContext);
     let offset = (props.type === "submenu") ? [200,0]: [0,0];
-    const MenuDevices = async () => {
-      if(devices.constructor === Array){
-        setMenuDevices( devices.map((device) => 
-          <Tooltip label={device.type}>
-            <MenuItemOption onClick={() => deviceSelected(device.id)}   
-                            key={`device-${device.id}`}
-                            closeOnSelect={true}
-                            value={device.id}>
-                      
-                      <HStack spacing='24px'>
-                      
-                        <Text>{device.deviceName}</Text> <Tooltip label={device.type}><Icon as={deviceIcons(device.type)}/></Tooltip>
-                      
-                      </HStack>
-                      
-                      
-            </MenuItemOption>
-            </Tooltip>)
-        );
-      }
-    };
+
     useEffect(() => {
+      const deviceSelected = (deviceName) => {
+        localStorage['currentDevice'] = deviceName;
+        setCurrentDevice(deviceName);
+        setOpenMenu(false);
+      } 
+      const MenuDevices = async () => {
+        if(devices.constructor === Array){
+          setMenuDevices( devices.map((device) => 
+            <Tooltip label={device.type}>
+              <MenuItemOption onClick={() => deviceSelected(device.id)}   
+                              key={`device-${device.id}`}
+                              closeOnSelect={true}
+                              value={device.id}>
+                        
+                        <HStack spacing='24px'>
+                        
+                          <Text>{device.deviceName}</Text> <Tooltip label={device.type}><Icon as={deviceIcons(device.type)}/></Tooltip>
+                        
+                        </HStack>
+                        
+                        
+              </MenuItemOption>
+              </Tooltip>)
+          );
+        }
+      };
       MenuDevices();
-    },[devices]);
+    },[devices, setCurrentDevice]);
     
-    const deviceSelected = (deviceName) => {
-      localStorage['currentDevice'] = deviceName;
-      setCurrentDevice(deviceName);
-      setOpenMenu(false);
-    } 
+
     const openIt = () => {
       if(openMenu){
         setOpenMenu(false);

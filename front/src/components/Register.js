@@ -16,9 +16,6 @@ import { Input ,
     InputRightAddon,
     FormControl,
     FormLabel,
-    Button,
-    FormErrorMessage,
-    FormHelperText,
     Box,
     } from '@chakra-ui/react'
 import { SessionContext } from '../contexts/SessionContext';
@@ -42,7 +39,7 @@ const Register = (props) => {
     });
     //checkmark = (form.password.length >5 && form.password === form.password_confirm) ? "✓": "𐄂";
     const { sendMessage, lastMessage } = useWebSocket(wsURL);
-    const { token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
+    const {  sessionStatus } = useContext(SessionContext);
 
     useEffect(() => {
         if(!formCheck.has(formString(formData))){
@@ -142,7 +139,7 @@ const Register = (props) => {
         if(sessionStatus){
             navigate('/alarms')
         }
-    },[sessionStatus])
+    },[sessionStatus, navigate])
     return (
         <Box bg='lightgray' className='UserForm' >
         <FormControl onSubmit={onSubmit} width="95%" margin="0 auto" >

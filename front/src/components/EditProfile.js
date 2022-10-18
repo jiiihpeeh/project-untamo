@@ -60,26 +60,7 @@ function EditProfile() {
 			};
 		})
 	}
-	const passwordChecker = () => {
-		if(formData.current_password.length < 6){
-			setFormChecks(false);
-			return;
-		}
-		if(changePassword){
-			if (formData.change_password.length > 5 && 
-				(formData.change_password === formData.confirm_password) && 
-				(formData.change_password !== formData.current_password)){
-				setFormChecks(true);
-				return;
-			}else{
-				setFormChecks(false);
-				return;
-			}
-		}else{
-			setFormChecks(true);
-			return;
-		}
-	}
+
 	const onRegister = async (event) => {
 		console.log("onRegister triggered");
 		let reqFormData = Object.assign({}, formData);
@@ -104,6 +85,26 @@ function EditProfile() {
 		onClose();
 	}
 	useEffect(() => {
+		const passwordChecker = () => {
+			if(formData.current_password.length < 6){
+				setFormChecks(false);
+				return;
+			}
+			if(changePassword){
+				if (formData.change_password.length > 5 && 
+					(formData.change_password === formData.confirm_password) && 
+					(formData.change_password !== formData.current_password)){
+					setFormChecks(true);
+					return;
+				}else{
+					setFormChecks(false);
+					return;
+				}
+			}else{
+				setFormChecks(true);
+				return;
+			}
+		}
 		passwordChecker()
 	},[formData,changePassword])
 
