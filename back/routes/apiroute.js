@@ -214,24 +214,23 @@ router.put("/editUser/:user",function(req,res) {
 	}
 
 	if(!req.body.user) {	
-		return res.status(400).json({message:"Bad request"});	
+		return res.status(400).json({message:"No username/email"});	
 	}
 	if(!req.body.screenname) {	
-		return res.status(400).json({message:"Bad request"});	
+		return res.status(400).json({message:"You should have profile name"});	
 	}
 	if(!req.body.current_password) {	
-		return res.status(400).json({message:"Bad request"});	
+		return res.status(400).json({message:"No password was given"});	
 	}
 	//let tempScrnName = req.body.firstname+" "+req.body.lastname
 
 	let query={"_id":req.session.userID}
 	userModel.findOne(query,function(err,user) {
 		if(err) {
-			console.log(tStamppi(),"Failed to find devices. Reason",err);
-			return res.status(500).json({message:"Internal server error"});
+			console.log(tStamppi(),"Failed to find user. Reason",err);
+			return res.status(500).json({message:"Couldn't find the user!!! This might be critical. Please log out and log in."});
 		}
-		console.log(user);
-		console.log(req.body.current_password)
+
 		bcrypt.compare(req.body.current_password,user.password,function(err,success) {
 			if(err) {
 				console.log(tStamppi(),"Comparing passwords failed. Reason",err);
@@ -245,7 +244,7 @@ router.put("/editUser/:user",function(req,res) {
 			if ('change_password' in req.body){
 				if(zxcvbn(req.body.change_password).guesses < guessCount){
 					console.log(tStamppi(),"Password too weak");
-					return res.status(400).json({message:"Bad Request. Password is too obvious"}); 
+					return res.status(400).json({message:"Password is too obvious"}); 
 				}
 				input_password = req.body.change_password;
 			}
@@ -261,7 +260,6 @@ router.put("/editUser/:user",function(req,res) {
 					lastname: req.body.lastname,
 					screenname: req.body.screenname,
 				}
-				console.log(tempUser)
 				userModel.replaceOne({"_id":req.session.userID},tempUser,function(err) {
 					if(err) {
 						console.log(tStamppi(),"Failed to update user. Reason",err);

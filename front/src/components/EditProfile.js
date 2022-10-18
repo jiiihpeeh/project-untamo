@@ -94,8 +94,8 @@ function EditProfile() {
 			setUserInfo({ firstname : formData.firstname, lastname: formData.lastname, user: formData.user, screenname: formData.screenname })
 			
 		} catch (err){
-			console.error(err);
-			notification("Edit Profile", "Profile save failed", "error");
+			console.error(err.response.data.message);
+			notification("Edit Profile", `Profile save failed: ${err.response.data.message}`, "error");
 		}
 	}
 
