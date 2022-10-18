@@ -222,8 +222,12 @@ router.put("/editUser/:user",function(req,res) {
 	if(!req.body.current_password) {	
 		return res.status(400).json({message:"No password was given"});	
 	}
-	//let tempScrnName = req.body.firstname+" "+req.body.lastname
-
+	if ('change_password' in req.body){
+		if(zxcvbn(req.body.change_password).guesses < guessCount){
+			console.log(tStamppi(),"Password too weak");
+			return res.status(400).json({message:"Password is too obvious"}); 
+		}
+	}
 	let query={"_id":req.session.userID}
 	userModel.findOne(query,function(err,user) {
 		if(err) {
@@ -242,10 +246,6 @@ router.put("/editUser/:user",function(req,res) {
 			}
 			let input_password = req.body.current_password;
 			if ('change_password' in req.body){
-				if(zxcvbn(req.body.change_password).guesses < guessCount){
-					console.log(tStamppi(),"Password too weak");
-					return res.status(400).json({message:"Password is too obvious"}); 
-				}
 				input_password = req.body.change_password;
 			}
 			bcrypt.hash(input_password,14,function(err,hash) {
