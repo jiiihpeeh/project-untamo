@@ -44,11 +44,13 @@ const DeviceSelector = (props) => {
                             key={`device-${device.id}`}
                             closeOnSelect={true}
                             value={device.id}>
-                      <Tooltip label={device.type}>
+                      
                       <HStack spacing='24px'>
-                        <Text>{device.deviceName}</Text> <Icon as={deviceIcons(device.type)}/> 
+                      
+                        <Text>{device.deviceName}</Text> <Tooltip label={device.type}><Icon as={deviceIcons(device.type)}/></Tooltip>
+                      
                       </HStack>
-                      </Tooltip>
+                      
                       
             </MenuItemOption>
             </Tooltip>)

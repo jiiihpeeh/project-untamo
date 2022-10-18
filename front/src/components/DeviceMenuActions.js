@@ -42,7 +42,7 @@ const DeviceMenuActions = (props) => {
     };
     return (
       <>                    
-        <HStack spacing='24px'> id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`}>
+        <HStack spacing='24px' id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`} >
           <Link  onClick={flipState} onDoubleClick={()=>{}} >
           <Checkbox isChecked={checkViewState(props.device.id)}>
           <Tooltip label={props.device.type} fontSize='md'>
