@@ -19,7 +19,6 @@ import {
 	AccordionItem,
 	AccordionButton,
 	AccordionPanel,
-	AccordionIcon
 	} from '@chakra-ui/react'
 import React from 'react';
 import { useState, useEffect, useContext } from 'react'
@@ -99,6 +98,11 @@ function EditProfile() {
 			notification("Edit Profile", "Profile save failed", "error");
 		}
 	}
+
+	const onCloseFixed = () => {
+		setChangePassword(false);
+		onClose();
+	}
 	useEffect(() => {
 		passwordChecker()
 	},[formData,changePassword])
@@ -114,7 +118,7 @@ function EditProfile() {
 		<Drawer
 			isOpen={isOpen}
 			placement='right'
-			onClose={onClose}
+			onClose={onCloseFixed}
 			finalFocusRef={btnRef}
 		>
 		<DrawerOverlay />
@@ -185,7 +189,7 @@ function EditProfile() {
 
 			</DrawerBody>
 			<DrawerFooter>
-				<Button variant='outline' mr={3} onClick={onClose} colorScheme="red">
+				<Button variant='outline' mr={3} onClick={onCloseFixed} colorScheme="red">
 					Cancel
 				</Button>
 				<Button colorScheme='green' onClick={onRegister} isDisabled={!formChecks}>Save</Button>
