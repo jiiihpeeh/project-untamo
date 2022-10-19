@@ -1,8 +1,11 @@
 const mongoose = require("mongoose");
 let Schema = mongoose.Schema({
-    alarmID:String,
-    deviceID:String,
-    basetime:Date,
+    occurence:String,
+    time:String,
+    wday:String,
+    date:String,
+    label:String,
+    devices:Array,
     user:{type:String,index:true}
 });
 

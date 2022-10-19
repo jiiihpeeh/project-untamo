@@ -50,33 +50,38 @@ router.get("/admin",function(req,res) {
 });
 
 
-router.post("/alarm",function(req,res) {
+router.post("/alarm/:id",function(req,res) {
 	console.log(tStamppi(),"POST /api/alarm")
+	console.log(tStamppi(),"POST "+req.params.id)
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	if(!req.body.alarmID) {
+	if(!req.body.occurence) {
 		return res.status(400).json({message:"Bad request"});
 	}
 	let alarm = new alarmModel({
-		alarmID:req.body.alarmID,
-		deviceID:req.body.deviceID,
-		basetime:req.body.basetime,
-        user:req.session.user
+		user:req.session.user,
+		occurence:req.body.occurence,
+		time:req.body.time,
+		wday:req.body.wday,
+        date:req.body.date,
+		label:req.body.label,
+		devices:req.body.devices,
 	})
+	console.log("ALARMID:"+alarm._id)
 	alarm.save(function(err) {
 		if(err) {
 			console.log(tStamppi(),"Failed to create alarm. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
 		}
 		console.log(tStamppi(),"   POST /api/alarm SUCCESS")
-		return res.status(201).json({message:"New Alarm Created"});
+		return res.status(201).json({message:"Alarm creation success",id:alarm._id});
 	})
 })
 
 router.delete("/alarm/:id",function(req,res) {
-	console.log(tStamppi(),"DELETE /api/alarm:"+req.params.id)
-	alarmModel.deleteOne({"_id":req.params.id,"user":req.session.user},
+	console.log(tStamppi(),"DELETE /api/alarm: ID:"+req.params.id)
+	alarmModel.deleteOne({"_id":req.params.id},
 	function(err) {
 		if(err) {
 			console.log(tStamppi(),"Failed to remove alarm. Reason",err);
