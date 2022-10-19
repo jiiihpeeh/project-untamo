@@ -27,6 +27,7 @@ const LogIn = () => {
         user: "",
         password: ""
     });
+    const [ canSubmit, setCanSubmit ] = useState(false)
     const onChange = (event) => {
         setFormData((formData) => {
             return {
@@ -35,7 +36,7 @@ const LogIn = () => {
             };
         })
     }
-
+    
     const onSubmit = async (event) => {
         try{
             event.preventDefault();
@@ -74,6 +75,8 @@ const LogIn = () => {
         }
 
     }
+
+
     const navigate = useNavigate();
 
     useEffect(() =>{
@@ -81,6 +84,18 @@ const LogIn = () => {
             navigate('/alarms')
         }
     },[sessionStatus, navigate])
+
+    useEffect(()=>{
+        const isOK = () => {
+            if(formData.password.length > 5 && emailPattern.test(formData.user)){
+                setCanSubmit(true);
+            }else {
+                setCanSubmit(false);
+            }
+        };
+        const emailPattern = new RegExp(".+@.+..+");
+        isOK();
+    },[formData])
     return (
         <form>
         <Box className='UserForm'>
@@ -102,7 +117,7 @@ const LogIn = () => {
                 className="Register"
             />
             <Divider />
-            <Button type="submit" id="submit" onClick={onSubmit} mt="1%" mb="1%" >Log In </Button>
+            <Button type="submit" id="submit" onClick={onSubmit} mt="1%" mb="1%" isDisabled={!canSubmit}>Log In </Button>
         </FormControl> 
         </Box>
         </form>

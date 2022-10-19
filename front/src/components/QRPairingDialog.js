@@ -16,7 +16,7 @@ import {
 
 const QRPairingDialog = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const {setFetchQR, fetchQR} = useContext(SessionContext);
+  const {setFetchQR} = useContext(SessionContext);
 
   const openWindow = () => {
     //console.log(fetchQR)
