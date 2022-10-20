@@ -210,7 +210,6 @@ if(selType=='yearly'){
 			<FormControl>
 			<FormLabel htmlFor="occu_row">Occurence</FormLabel>
 				<Select name="occurence" onChange={onChange}>
-					<option value={NewAlarm.occurence}>{NewAlarm.occurence}</option>
 					<option value="once">once</option>
 					<option value="daily">daily</option>
 					<option value="weekly">weekly</option>

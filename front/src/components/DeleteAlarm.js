@@ -3,19 +3,17 @@ import {
 	Text,
 	Link,
 	Button,
-	} from '@chakra-ui/react'
-import React from 'react';
-import { useState, useContext, useRef } from 'react'
-import { SessionContext } from "../contexts/SessionContext";
-import axios from 'axios';
-import {
-    AlertDialog,
+	AlertDialog,
     AlertDialogBody,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogContent,
     AlertDialogOverlay,
-  } from '@chakra-ui/react';
+	} from '@chakra-ui/react'
+import React from 'react';
+import { useState, useContext, useRef } from 'react'
+import { SessionContext } from "../contexts/SessionContext";
+import axios from 'axios';
 import { notification } from './notification';
 
 function DeleteAlarm(props) {
@@ -50,7 +48,6 @@ function DeleteAlarm(props) {
 			//Delete Selected_alarm._id from mongodb
 			const res = await axios.delete('/api/alarm/'+Selected_alarm._id);
 			console.log("res.data:"+JSON.stringify(res.data));
-			console.log(res.data.id)
 			//Delete Selected_alarm._id from localstorage
 			var oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
 			for (var i =0; i< oldAlarms.length; i++) {
