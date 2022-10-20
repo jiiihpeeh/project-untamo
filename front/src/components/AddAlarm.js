@@ -84,63 +84,6 @@ function AddAlarm(props) {
 		}
 	}
 
-if(typeof time_row !== 'undefined'){
-if(selType){
-	}
-	if(selType=='once'){
-		document.getElementById('time_row').hidden=false
-		document.getElementById('timerow').hidden=false
-		document.getElementById('wday_row').hidden=true
-		document.getElementById('date_row').hidden=false
-		document.getElementById('label_row').hidden=false
-		document.getElementById('devices_row').hidden=false
-		document.getElementById('wdayrow').hidden=true
-		document.getElementById('daterow').hidden=false
-		document.getElementById('labelrow').hidden=false
-		document.getElementById('devicesrow').hidden=false
-		NewAlarm.wday=''
-	} 
-	if(selType=='daily'){
-		document.getElementById('time_row').hidden=false
-		document.getElementById('date_row').hidden=true
-		document.getElementById('label_row').hidden=false
-		document.getElementById('devices_row').hidden=false
-		document.getElementById('timerow').hidden=false
-		document.getElementById('daterow').hidden=true
-		document.getElementById('labelrow').hidden=false
-		document.getElementById('devicesrow').hidden=false
-		document.getElementById('wdayrow').hidden=true
-		document.getElementById('wday_row').hidden=true
-		NewAlarm.wday=''
-		NewAlarm.date=''
-	} 
-	if(selType=='weekly'){
-		document.getElementById('time_row').hidden=false
-		document.getElementById('wday_row').hidden=false
-		document.getElementById('date_row').hidden=true
-		document.getElementById('label_row').hidden=false
-		document.getElementById('devices_row').hidden=false
-		document.getElementById('timerow').hidden=false
-		document.getElementById('wdayrow').hidden=false
-		document.getElementById('daterow').hidden=true
-		document.getElementById('labelrow').hidden=false
-		document.getElementById('devicesrow').hidden=false
-		NewAlarm.date=''
-	}
-	if(selType=='yearly'){
-		document.getElementById('time_row').hidden=false
-		document.getElementById('wday_row').hidden=true
-		document.getElementById('date_row').hidden=false
-		document.getElementById('label_row').hidden=false
-		document.getElementById('devices_row').hidden=false
-		document.getElementById('timerow').hidden=false
-		document.getElementById('wdayrow').hidden=true
-		document.getElementById('daterow').hidden=false
-		document.getElementById('labelrow').hidden=false
-		document.getElementById('devicesrow').hidden=false
-		NewAlarm.wday=''
-	} 
-}
 var devicelist = JSON.parse(localStorage['devices'])
 	const [deviges] = useState(devicelist)
 const renderDevices = () => {
@@ -153,8 +96,73 @@ const renderDevices = () => {
 	})
 }
 
-let kikkeli=<FormLabel htmlFor="occu_row">Occurence</FormLabel>
-if(NewAlarm.occurence=='daily'){kikkeli=<FormLabel htmlFor="occu_row">kikkeli</FormLabel>}
+//Conditional Add Alarm Rows:
+//timeRow
+let timeRow_hidden=<></>
+let timeRow_show=<><FormLabel hidden  id='time_row' htmlFor="time_row">Time</FormLabel>
+	<Input  name='time' hidden id='timerow' type='time'onChange={onChange} placeholder={NewAlarm.time} value={NewAlarm.time}/></>
+let timeRow=timeRow_show
+//wdayRow
+let wdayRow_hidden=<></>
+let wdayRow_show=<><FormLabel id='wday_row' htmlFor="wday_row">Weekday</FormLabel>
+		<div id='wdayrow'>
+		<Select name="wday" onChange={onChange}>
+			<option value={NewAlarm.occurence}>{NewAlarm.occurence}</option>
+			<option value="once">once</option>
+			<option value="daily">daily</option>
+			<option value="weekly">weekly</option>
+			<option value="yearly">yearly</option>
+		</Select></div></>
+let wdayRow=wdayRow_hidden
+//dateRow
+let dateRow_hidden=<></>
+let dateRow_show=<><FormLabel id='date_row' htmlFor="date_row">Date</FormLabel>
+<Input  name='date' id='daterow' type='date' onChange={onChange} placeholder={NewAlarm.date} value={NewAlarm.date}/></>
+let dateRow=dateRow_hidden
+//labelRow
+let labelRow_hidden=<></>
+let labelRow_show=<><FormLabel id='label_row' htmlFor="label_row">Label</FormLabel>
+<Input name='label' id='labelrow' onChange={onChange} placeholder={NewAlarm.label} value={NewAlarm.label}/></>
+let labelRow=labelRow_hidden
+//devicesRow
+let devicesRow_hidden=<></>
+let devicesRow_show=<><FormLabel id='devices_row' htmlFor="devices_row">Devices</FormLabel>
+<span id='devicesrow'>{renderDevices()}</span></>
+let devicesRow=devicesRow_hidden
+
+//Conditions based on occurence-selection:
+
+if(selType){
+	devicesRow=devicesRow_show;
+	labelRow=labelRow_show;
+	timeRow=timeRow_show;
+	}
+
+if(selType=='once'){
+	wdayRow=wdayRow_hidden
+	NewAlarm.wday=''
+	dateRow=dateRow_show
+	}
+
+if(selType=='daily'){
+	wdayRow=wdayRow_hidden
+	NewAlarm.wday=''
+	dateRow=dateRow_hidden
+	NewAlarm.date=''
+}
+
+if(selType=='weekly'){
+	wdayRow=wdayRow_show
+	dateRow=dateRow_hidden
+	NewAlarm.date=''
+}
+
+if(selType=='yearly'){
+	wdayRow=wdayRow_hidden
+	NewAlarm.wday=''
+	dateRow=dateRow_show
+}
+
 	return (
 		<>
 		<Link onClick={onOpen}><Text as='b'>
@@ -177,7 +185,7 @@ if(NewAlarm.occurence=='daily'){kikkeli=<FormLabel htmlFor="occu_row">kikkeli</F
 				onSubmit={onRegister}
             >
 			<FormControl>
-				{kikkeli}
+			<FormLabel htmlFor="occu_row">Occurence</FormLabel>
 				<Select name="occurence" onChange={onChange}>
 					<option value={NewAlarm.occurence}>{NewAlarm.occurence}</option>
 					<option value="once">once</option>
@@ -185,23 +193,11 @@ if(NewAlarm.occurence=='daily'){kikkeli=<FormLabel htmlFor="occu_row">kikkeli</F
 					<option value="weekly">weekly</option>
 					<option value="yearly">yearly</option>
 				</Select>
-				<FormLabel hidden  id='time_row' htmlFor="time_row">Time</FormLabel>
-				<Input  name='time' hidden id='timerow' type='time'onChange={onChange} placeholder={NewAlarm.time} value={NewAlarm.time}/>
-				<FormLabel  hidden id='wday_row' htmlFor="wday_row">Weekday</FormLabel>
-				<div id='wdayrow' hidden>
-				<Select name="wday" onChange={onChange}>
-					<option value={NewAlarm.occurence}>{NewAlarm.occurence}</option>
-					<option value="once">once</option>
-					<option value="daily">daily</option>
-					<option value="weekly">weekly</option>
-					<option value="yearly">yearly</option>
-				</Select></div>
-				<FormLabel  hidden id='date_row' htmlFor="date_row">Date</FormLabel>
-				<Input  name='date' hidden id='daterow' type='date' onChange={onChange} placeholder={NewAlarm.date} value={NewAlarm.date}/>
-				<FormLabel  hidden id='label_row' htmlFor="label_row">Label</FormLabel>
-				<Input name='label' hidden id='labelrow' onChange={onChange} placeholder={NewAlarm.label} value={NewAlarm.label}/>
-				<FormLabel  hidden id='devices_row' htmlFor="devices_row">Devices</FormLabel>
-				<span id='devicesrow' hidden>{renderDevices()}</span>
+				{timeRow}
+				{wdayRow}
+				{dateRow}
+				{labelRow}
+				{devicesRow}
 				</FormControl>
 				</form>
 				</DrawerBody>
