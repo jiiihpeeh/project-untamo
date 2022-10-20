@@ -24,7 +24,7 @@ import { notification } from './notification';
 var selType=''
 var device_ids=new Array();
 var TempAlarm= new Array();
-function AddAlarm() {
+function AddAlarm(props) {
 	var [Selected_devices, setSelected_alarm] = useState({
 		id: 0,
 	});
@@ -77,6 +77,7 @@ function AddAlarm() {
 			var oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
 			oldAlarms.push(NewAlarm)
 			localStorage.setItem('alarms', JSON.stringify(oldAlarms))
+			props.updateAlarms(oldAlarms)
 		} catch (err){
 			console.error(err)
 			notification("Add Alarm", "Alarm save failed", "error")	
@@ -125,7 +126,7 @@ if(selType){
 		document.getElementById('labelrow').hidden=false
 		document.getElementById('devicesrow').hidden=false
 		NewAlarm.date=''
-	} 
+	}
 	if(selType=='yearly'){
 		document.getElementById('time_row').hidden=false
 		document.getElementById('wday_row').hidden=true
@@ -152,6 +153,8 @@ const renderDevices = () => {
 	})
 }
 
+let kikkeli=<FormLabel htmlFor="occu_row">Occurence</FormLabel>
+if(NewAlarm.occurence=='daily'){kikkeli=<FormLabel htmlFor="occu_row">kikkeli</FormLabel>}
 	return (
 		<>
 		<Link onClick={onOpen}><Text as='b'>
@@ -174,7 +177,7 @@ const renderDevices = () => {
 				onSubmit={onRegister}
             >
 			<FormControl>
-				<FormLabel htmlFor="occu_row">Occurence</FormLabel>
+				{kikkeli}
 				<Select name="occurence" onChange={onChange}>
 					<option value={NewAlarm.occurence}>{NewAlarm.occurence}</option>
 					<option value="once">once</option>

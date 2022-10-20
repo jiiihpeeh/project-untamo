@@ -36,9 +36,8 @@ const Alarms = () => {
 		}
 	},[currentDevice])
 
-	var alarmlist = JSON.parse(localStorage['alarms'])
-	const [alarms] = useState(alarmlist)
-
+	let alarmlist = JSON.parse(localStorage['alarms'])
+	const [alarms, setAlarms] = useState(alarmlist)
 	const renderAlarms = () => {
 		return alarms.map(({ _id, occurence, time, wday, date, label, devices }) => {
 		return <Tr key={_id}>
@@ -52,7 +51,8 @@ const Alarms = () => {
 		</Tr>
 		})
 	}
-	
+const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
+
 	return (
 		<Container bg='blue.200' maxW='fit-content'>
 			<Heading size='sm'>List of Alarms for {localStorage.getItem('screenname')}</Heading>
@@ -76,7 +76,7 @@ const Alarms = () => {
 			</TableContainer>
 			<Center>
 			<HStack spacing='30px'>
-			<AddAlarm/><EditAlarm/><DeleteAlarm/></HStack></Center>
+			<AddAlarm updateAlarms={updateAlarms}/><EditAlarm/><DeleteAlarm updateAlarms={updateAlarms}/></HStack></Center>
 		</Container>
 	)
 }
