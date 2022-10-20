@@ -99,19 +99,22 @@ const renderDevices = () => {
 //Conditional Add Alarm Rows:
 //timeRow
 let timeRow_hidden=<></>
-let timeRow_show=<><FormLabel hidden  id='time_row' htmlFor="time_row">Time</FormLabel>
-	<Input  name='time' hidden id='timerow' type='time'onChange={onChange} placeholder={NewAlarm.time} value={NewAlarm.time}/></>
-let timeRow=timeRow_show
+let timeRow_show=<><FormLabel id='time_row' htmlFor="time_row">Time</FormLabel>
+	<Input  name='time' id='timerow' type='time'onChange={onChange} placeholder={NewAlarm.time} value={NewAlarm.time}/></>
+let timeRow=timeRow_hidden
 //wdayRow
 let wdayRow_hidden=<></>
 let wdayRow_show=<><FormLabel id='wday_row' htmlFor="wday_row">Weekday</FormLabel>
 		<div id='wdayrow'>
 		<Select name="wday" onChange={onChange}>
-			<option value={NewAlarm.occurence}>{NewAlarm.occurence}</option>
-			<option value="once">once</option>
-			<option value="daily">daily</option>
-			<option value="weekly">weekly</option>
-			<option value="yearly">yearly</option>
+			<option value={NewAlarm.wday}>{NewAlarm.wday}</option>
+			<option value="Monday">Monday</option>
+			<option value="Tuesday">Tuesday</option>
+			<option value="Wednesday">Wednesday</option>
+			<option value="Thursday">Thursday</option>
+			<option value="Friday">Friday</option>
+			<option value="Saturday">Saturday</option>
+			<option value="Sunday">Sunday</option>
 		</Select></div></>
 let wdayRow=wdayRow_hidden
 //dateRow
