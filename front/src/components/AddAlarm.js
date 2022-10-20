@@ -160,7 +160,13 @@ if(selType){
 	labelRow=labelRow_show;
 	timeRow=timeRow_show;
 	}
-
+if(selType=='Select Occurence'){
+	devicesRow=devicesRow_hidden;
+	labelRow=labelRow_hidden;
+	timeRow=timeRow_hidden;
+	wdayRow=wdayRow_hidden;
+	dateRow=dateRow_hidden;
+	}
 if(selType=='once'){
 	wdayRow=wdayRow_hidden
 	NewAlarm.wday=''
@@ -178,6 +184,7 @@ if(selType=='weekly'){
 	wdayRow=wdayRow_show
 	dateRow=dateRow_hidden
 	NewAlarm.date=''
+	NewAlarm.wday='Monday'
 }
 
 if(selType=='yearly'){
@@ -210,6 +217,7 @@ if(selType=='yearly'){
 			<FormControl>
 			<FormLabel htmlFor="occu_row">Occurence</FormLabel>
 				<Select name="occurence" onChange={onChange}>
+					<option value="Select Occurence">Select Occurence</option>
 					<option value="once">once</option>
 					<option value="daily">daily</option>
 					<option value="weekly">weekly</option>

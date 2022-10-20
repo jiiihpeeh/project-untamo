@@ -10,22 +10,20 @@ import {
 	DrawerOverlay,
 	DrawerContent,
 	DrawerCloseButton,
+	FormLabel,
+	Input,
+	Select,
+	FormControl,
+	HStack,
+	Box,
 	} from '@chakra-ui/react'
 import React from 'react';
 import { useState, useContext } from 'react'
 import { SessionContext } from "../contexts/SessionContext";
 import axios from 'axios';
-import {
-	Table,
-	Tbody,
-	Tr,
-	Td,
-	TableContainer,
-	} from '@chakra-ui/react'
 import { notification } from './notification';
 
-
-function EditAlarm() {
+function EditAlarm(props) {
 	var [Selected_alarm, setSelected_alarm] = useState({
 		_id: 0,
 		occurence: 0,
@@ -33,9 +31,11 @@ function EditAlarm() {
 		wday: 0,
 		date: 0,
 		label: 0,
-		devices: 0
+		devices: 0,
+		device_ids: 0
 	});
-	var checked_radio
+	var devicelist = JSON.parse(localStorage['devices'])
+	const [deviges] = useState(devicelist)
 	let toukeni = localStorage.getItem("token");
 	axios.defaults.headers.common['token'] = toukeni;
 	const { isOpen, onOpen, onClose } = useDisclosure()
@@ -43,14 +43,46 @@ function EditAlarm() {
 	const { userInfo, setUserInfo } = useContext(SessionContext);
 	var alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms] = useState(alarmlist)
-	var radios = document.getElementsByName('radjo');
-	for (var i = 0, length = radios.length; i < length; i++) {
-		if (radios[i].checked) {
-			checked_radio=radios[i].value
-			Selected_alarm = alarms[i]
-		}
+
+	// Check if no row selected:
+	if(typeof props.lollo._id=='undefined'){
+		console.log("NO selection made")
+		return<Text as='b'>
+	Edit Alarm
+	</Text>
 	}
-	
+
+// Values to selected alarm:
+Selected_alarm._id=props.lollo._id;
+Selected_alarm.occurence=props.lollo.occurence;
+Selected_alarm.time=props.lollo.time;
+Selected_alarm.wday=props.lollo.wday;
+Selected_alarm.date=props.lollo.date;
+Selected_alarm.label=props.lollo.label;
+Selected_alarm.devices=props.lollo.devices;
+Selected_alarm.device_ids=props.lollo.device_ids;
+
+	const renderDevices = () => {
+		return deviges.map(({ id, deviceName, type }) => {
+			for (let i = 0; i < Selected_alarm.device_ids.length; i++) {
+				if(id==Selected_alarm.device_ids[i]){
+					return <HStack spacing='10px' key={id}>
+					<Box w='20px' h='6'>
+				<input type='checkbox' name="tickbox" value={id} defaultChecked></input></Box>
+				<Box w='170px' h='6'>{deviceName}</Box>
+				<Box w='170px' h='6'>{type}</Box>
+				</HStack>
+				}
+			}
+		return <HStack spacing='10px' key={id}>
+			<Box w='20px' h='6'>
+		<input type='checkbox' name="tickbox" value={id} ></input></Box>
+		<Box w='170px' h='6'>{deviceName}</Box>
+		<Box w='170px' h='6'>{type}</Box>
+		</HStack>
+		})
+	}
+
 	const onChange = (event) => {
 		console.log(event.target.name+":"+event.target.value)
 		setSelected_alarm((Selected_alarm) => {
@@ -59,23 +91,104 @@ function EditAlarm() {
 				[event.target.name] : event.target.value
 			};
 		})
+		
 	}
-	
+
+
 	const onRegister = async (event) => {
 		try {
 			console.log("Try: /api/editAlarm/"+Selected_alarm._id,Selected_alarm)
-			
 			const res = await axios.put('/api/editAlarm/'+Selected_alarm._id,Selected_alarm );
 			console.log(res.data);
 			notification("Edit Alarm", "Alarm succesfully modified")
 		} catch (err){
 			console.error(err)
 			notification("Edit Alarm", "Alarm edit save failed", "error")
-			
 		}
 	}
-	
-	
+
+let idRow=<><FormLabel>ID: {Selected_alarm._id}</FormLabel></>
+
+let occurenceRow=<><FormLabel htmlFor="occu_row">Occurence</FormLabel>
+<Select name="occurence" onChange={onChange}>
+	<option value={Selected_alarm.occurence}>{Selected_alarm.occurence}</option>
+	<option value="once">once</option>
+	<option value="daily">daily</option>
+	<option value="weekly">weekly</option>
+	<option value="yearly">yearly</option>
+</Select></>
+
+let timeRow_hidden=<></>
+let timeRow_show=<><FormLabel id='time_row' htmlFor="time_row">Time</FormLabel>
+	<Input  name='time' id='timerow' type='time'onChange={onChange} placeholder={Selected_alarm.time} value={Selected_alarm.time}/></>
+let timeRow=timeRow_hidden
+
+let wdayRow_hidden=<></>
+let wdayRow_show=<><FormLabel id='wday_row' htmlFor="wday_row">Weekday</FormLabel>
+		<div id='wdayrow'>
+		<Select name="wday" onChange={onChange}>
+			<option value={Selected_alarm.wday}>{Selected_alarm.wday}</option>
+			<option value="Monday">Monday</option>
+			<option value="Tuesday">Tuesday</option>
+			<option value="Wednesday">Wednesday</option>
+			<option value="Thursday">Thursday</option>
+			<option value="Friday">Friday</option>
+			<option value="Saturday">Saturday</option>
+			<option value="Sunday">Sunday</option>
+		</Select></div></>
+let wdayRow=wdayRow_hidden
+
+
+let dateRow_hidden=<></>
+let dateRow_show=<><FormLabel id='date_row' htmlFor="date_row">Date</FormLabel>
+<Input  name='date' id='daterow' type='date' onChange={onChange} placeholder={Selected_alarm.date} value={Selected_alarm.date}/></>
+let dateRow=dateRow_hidden
+
+let labelRow_hidden=<></>
+let labelRow_show=<><FormLabel id='label_row' htmlFor="label_row">Label</FormLabel>
+<Input name='label' id='labelrow' onChange={onChange} placeholder={Selected_alarm.label} value={Selected_alarm.label}/></>
+let labelRow=labelRow_hidden
+
+let devicesRow_hidden=<></>
+let devicesRow_show=<><FormLabel id='devices_row' htmlFor="devices_row">Devices</FormLabel>
+<span id='devicesrow'>{renderDevices()}</span></>
+let devicesRow=devicesRow_hidden
+
+if(Selected_alarm.occurence){
+	devicesRow=devicesRow_show;
+	labelRow=labelRow_show;
+	timeRow=timeRow_show;
+	}
+if(Selected_alarm.occurence=='Select Occurence'){
+	devicesRow=devicesRow_hidden;
+	labelRow=labelRow_hidden;
+	timeRow=timeRow_hidden;
+	wdayRow=wdayRow_hidden;
+	dateRow=dateRow_hidden;
+	}
+if(Selected_alarm.occurence=='once'){
+	wdayRow=wdayRow_hidden
+	Selected_alarm.wday=''
+	dateRow=dateRow_show
+	}
+if(Selected_alarm.occurence=='daily'){
+	wdayRow=wdayRow_hidden
+	Selected_alarm.wday=''
+	dateRow=dateRow_hidden
+	Selected_alarm.date=''
+}
+if(Selected_alarm.occurence=='weekly'){
+	wdayRow=wdayRow_show
+	dateRow=dateRow_hidden
+	Selected_alarm.date=''
+	Selected_alarm.wday=Selected_alarm.wday
+}
+if(Selected_alarm.occurence=='yearly'){
+	wdayRow=wdayRow_hidden
+	Selected_alarm.wday=''
+	dateRow=dateRow_show
+}
+
 	return (
 		<>
 		<Link onClick={onOpen}><Text as='b'>
@@ -93,19 +206,17 @@ function EditAlarm() {
 			<DrawerCloseButton />
 			<DrawerHeader>Edit Alarm</DrawerHeader>
 			<DrawerBody>
-				<TableContainer>
-					<Table variant='striped' colorScheme='teal' size='sm' className="table-editalarm">
-					<Tbody> 
-						<Tr><Td><label htmlFor="id">ID: </label></Td><Td><input name="id" readOnly value={Selected_alarm._id} size="30"/></Td></Tr>
-						<Tr><Td><label htmlFor="occu">Occurence: </label></Td><Td><select id="occu" name="occu" onChange={onChange}><option value={Selected_alarm.occurence}>{Selected_alarm.occurence}</option><option value="once">once</option><option value="weekly">weekly</option><option value="yearly">yearly</option></select></Td></Tr>
-						<Tr><Td><label htmlFor="time">Time: </label></Td><Td><input type="time" id="time" name="time" value={Selected_alarm.time} onChange={onChange}/></Td></Tr>
-						<Tr><Td><label htmlFor="wday">Weekday: </label></Td><Td><input name="wday" placeholder={Selected_alarm.wday} size="30" onChange={onChange}/></Td></Tr>
-						<Tr><Td><label htmlFor="date">Date: </label></Td><Td><input name="date" placeholder={Selected_alarm.date} size="30" onChange={onChange}/></Td></Tr>
-						<Tr><Td><label htmlFor="label">Label: </label></Td><Td><input name="label" placeholder={Selected_alarm.label} size="30" onChange={onChange}/></Td></Tr>
-						<Tr><Td><label htmlFor="devices">Devices: </label></Td><Td><input name="devices" readOnly placeholder={Selected_alarm.devices} size="30"/></Td></Tr>
-					</Tbody>
-					</Table>
-				</TableContainer>
+			<form id='edit-alarm-form' onSubmit={onRegister}>
+			<FormControl>
+						{idRow}
+						{occurenceRow}
+						{timeRow}
+						{wdayRow}
+						{dateRow}
+						{labelRow}
+						{devicesRow}
+						</FormControl>
+				</form>
 				</DrawerBody>
 				<DrawerFooter>
 					<Button variant='outline' mr={3} onClick={onClose} colorScheme="red">Cancel</Button>

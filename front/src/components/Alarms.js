@@ -20,6 +20,20 @@ import AddAlarm from "./AddAlarm";
 import DeleteAlarm from "./DeleteAlarm";
 
 const Alarms = () => {
+
+	let [Selected_alarm, setSelected_alarm] = useState({
+		_id: 0,
+		occurence: 0,
+		time: 0,
+		wday: 0,
+		date: 0,
+		label: 0,
+		devices: 0
+	});
+	let [buttonStat, setButtonStat]=useState(0)
+	let lollo
+	const [ealarm, setEalarm] = useState({})
+	//let buttonStat
 	const { token, sessionStatus } = useContext(SessionContext);
 	const { currentDevice } = useContext(DeviceContext);
     const navigate = useNavigate();
@@ -36,12 +50,22 @@ const Alarms = () => {
 		}
 	},[currentDevice])
 
+	const radioOnChange=()=>{
+		var radios = document.getElementsByName('radjo');
+		for (var i = 0, length = radios.length; i < length; i++) {
+			if (radios[i].checked) {
+				Selected_alarm = alarms[i]
+				setEalarm(Selected_alarm)
+			}	
+		}
+	}
+
 	let alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms, setAlarms] = useState(alarmlist)
 	const renderAlarms = () => {
 		return alarms.map(({ _id, occurence, time, wday, date, label, devices }) => {
 		return <Tr key={_id}>
-		<Td><input type='radio' name="radjo" value={_id}></input></Td>
+		<Td><input type='radio' name="radjo" value={_id} onChange={radioOnChange}></input></Td>
 		<Td>{occurence}</Td>
 		<Td>{time}</Td>
 		<Td>{wday}</Td>
@@ -51,7 +75,8 @@ const Alarms = () => {
 		</Tr>
 		})
 	}
-const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
+	const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
+	//const updateButtons = (buttonStat) => setChecked_radio(buttonStat)
 
 	return (
 		<Container bg='blue.200' maxW='fit-content'>
@@ -76,7 +101,7 @@ const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
 			</TableContainer>
 			<Center>
 			<HStack spacing='30px'>
-			<AddAlarm updateAlarms={updateAlarms}/><EditAlarm/><DeleteAlarm updateAlarms={updateAlarms}/></HStack></Center>
+			<AddAlarm updateAlarms={updateAlarms}/><EditAlarm lollo={ealarm}/><DeleteAlarm updateAlarms={updateAlarms}/></HStack></Center>
 		</Container>
 	)
 }
