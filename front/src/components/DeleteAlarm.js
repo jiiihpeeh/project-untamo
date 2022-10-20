@@ -17,10 +17,9 @@ import {
     AlertDialogOverlay,
   } from '@chakra-ui/react';
 import { notification } from './notification';
-import { useNavigate } from "react-router-dom";
 
-function DeleteAlarm() {
-	var [Selected_alarm, setSelected_alarm] = useState({
+function DeleteAlarm(props) {
+	let [Selected_alarm] = useState({
 		_id: 0,
 		occurence: 0,
 		time: 0,
@@ -35,7 +34,6 @@ function DeleteAlarm() {
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const btnRef = React.useRef()
 	const cancelRef = useRef();
-	const  navigate = useNavigate();
 	const { userInfo, setUserInfo } = useContext(SessionContext);
 	var alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms] = useState(alarmlist)
@@ -46,7 +44,7 @@ function DeleteAlarm() {
 			Selected_alarm = alarms[i]
 		}
 	}
-	
+
 	const deleteAlarm = async(event) =>{
         try {
 			//Delete Selected_alarm._id from mongodb
@@ -59,6 +57,7 @@ function DeleteAlarm() {
 				if (oldAlarms[i]._id == Selected_alarm._id) {
 					oldAlarms.splice([i], 1);
 					localStorage.setItem('alarms',JSON.stringify(oldAlarms))
+					props.updateAlarms(oldAlarms)
 				}
 			}
         }catch(err){
@@ -66,7 +65,7 @@ function DeleteAlarm() {
             console.log("Delete alarm failed");
         };
     }
-	
+
 	return (
 		<>
 		<Link onClick={onOpen}><Text as='b'>
