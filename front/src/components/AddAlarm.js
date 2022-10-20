@@ -22,10 +22,10 @@ import { useState, useContext } from 'react'
 import { SessionContext } from "../contexts/SessionContext";
 import axios from 'axios';
 import { notification } from './notification';
-var selType=''
-var device_ids=new Array();
-var sel_dev=new Array();
-var TempAlarm= new Array();
+let selType=''
+let device_ids=new Array();
+let sel_dev=new Array();
+let TempAlarm= new Array();
 function AddAlarm(props) {
 	var [Selected_devices, setSelected_alarm] = useState({
 		id: 0,
@@ -89,6 +89,19 @@ function AddAlarm(props) {
 		}
 	}
 
+	const onCloseMod = () => {
+		NewAlarm.occurence='Select Occurence';
+		NewAlarm.time='12:00';
+		NewAlarm.wday="0";
+		NewAlarm.date='2022-12-24';
+		NewAlarm.label='NewAlarm';
+		NewAlarm.device_ids="0";
+		NewAlarm.devices="0";
+		selType=''
+		device_ids=new Array();
+		sel_dev=new Array();
+		onClose();
+	}
 // Add Alarm Device selection:
 
 var devicelist = JSON.parse(localStorage['devices'])
@@ -115,7 +128,6 @@ let wdayRow_hidden=<></>
 let wdayRow_show=<><FormLabel id='wday_row' htmlFor="wday_row">Weekday</FormLabel>
 		<div id='wdayrow'>
 		<Select name="wday" onChange={onChange}>
-			<option value={NewAlarm.wday}>{NewAlarm.wday}</option>
 			<option value="Monday">Monday</option>
 			<option value="Tuesday">Tuesday</option>
 			<option value="Wednesday">Wednesday</option>
@@ -182,7 +194,7 @@ if(selType=='yearly'){
 		<Drawer
 			isOpen={isOpen}
 			placement='left'
-			onClose={onClose}
+			onClose={onCloseMod}
 			finalFocusRef={btnRef}
 			size={'md'}
 		>
