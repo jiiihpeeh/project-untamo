@@ -25,14 +25,14 @@ import { notification } from './notification';
 
 function EditAlarm(props) {
 	var [Selected_alarm, setSelected_alarm] = useState({
-		_id: 0,
-		occurence: 0,
-		time: 0,
-		wday: 0,
-		date: 0,
-		label: 0,
-		devices: 0,
-		device_ids: 0
+		_id: props.lollo._id,
+		occurence: props.lollo.occurence,
+		time: props.lollo.time,
+		wday: props.lollo.wday,
+		date: props.lollo.date,
+		label: props.lollo.label,
+		devices: props.lollo.devices,
+		device_ids: props.lollo.device_ids
 	});
 	var devicelist = JSON.parse(localStorage['devices'])
 	const [deviges] = useState(devicelist)
@@ -51,16 +51,6 @@ function EditAlarm(props) {
 	Edit Alarm
 	</Text>
 	}
-
-// Values to selected alarm:
-Selected_alarm._id=props.lollo._id;
-Selected_alarm.occurence=props.lollo.occurence;
-Selected_alarm.time=props.lollo.time;
-Selected_alarm.wday=props.lollo.wday;
-Selected_alarm.date=props.lollo.date;
-Selected_alarm.label=props.lollo.label;
-Selected_alarm.devices=props.lollo.devices;
-Selected_alarm.device_ids=props.lollo.device_ids;
 
 	const renderDevices = () => {
 		return deviges.map(({ id, deviceName, type }) => {
@@ -97,8 +87,8 @@ Selected_alarm.device_ids=props.lollo.device_ids;
 
 	const onRegister = async (event) => {
 		try {
-			console.log("Try: /api/editAlarm/"+Selected_alarm._id,Selected_alarm)
-			const res = await axios.put('/api/editAlarm/'+Selected_alarm._id,Selected_alarm );
+			console.log("Try: /api/alarm/"+Selected_alarm._id,Selected_alarm)
+			const res = await axios.put('/api/alarm/'+Selected_alarm._id,Selected_alarm );
 			console.log(res.data);
 			notification("Edit Alarm", "Alarm succesfully modified")
 		} catch (err){

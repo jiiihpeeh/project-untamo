@@ -98,13 +98,18 @@ router.put("/alarm/:id",function(req,res) {
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	if(!req.body.alarmID) {
+	if(!req.body._id) {
 		return res.status(400).json({message:"Bad request"});
 	}
 	let alarm = {
-		alarmID:req.body.alarmID,
-		deviceID:req.body.deviceID,
-		basetime:req.body.basetime,
+		_id:req.body._id,
+		date:req.body.date,
+		device_ids:req.body.device_ids,
+		devices:req.body.devices,
+		label:req.body.label,
+		occurence:req.body.occurence,
+		time:req.body.time,
+		wday:req.body.wday,
         user:req.session.user
 	}
 	alarmModel.replaceOne({"_id":req.params.id,"user":req.session.user},alarm,function(err) {
