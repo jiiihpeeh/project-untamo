@@ -14,7 +14,8 @@ import {
 	FormLabel,
 	Select,
 	Input,
-	Container
+	Box,
+	HStack
 	} from '@chakra-ui/react'
 import React from 'react';
 import { useState, useContext } from 'react'
@@ -23,6 +24,7 @@ import axios from 'axios';
 import { notification } from './notification';
 var selType=''
 var device_ids=new Array();
+var sel_dev=new Array();
 var TempAlarm= new Array();
 function AddAlarm(props) {
 	var [Selected_devices, setSelected_alarm] = useState({
@@ -35,7 +37,8 @@ function AddAlarm(props) {
 		wday: 0,
 		date: '2022-12-24',
 		label: 'NewAlarm',
-		devices: 0
+		device_ids: 0,
+		devices:0
 	});
 
 	let toukeni = localStorage.getItem("token");
@@ -65,9 +68,11 @@ function AddAlarm(props) {
 				if (checks[i].checked) {
 					checked_radio=checks[i].value
 					device_ids.push(checked_radio)
+					sel_dev.push(deviges[i].deviceName)
 				}
 			}
-			NewAlarm.devices=device_ids;
+			NewAlarm.device_ids=device_ids;
+			NewAlarm.devices=sel_dev;
 			const res = await axios.post('/api/alarm/'+localStorage.getItem('user'),NewAlarm );
 			console.log("res.data:"+JSON.stringify(res.data));
 			console.log(res.data.id)
@@ -84,15 +89,18 @@ function AddAlarm(props) {
 		}
 	}
 
+// Add Alarm Device selection:
+
 var devicelist = JSON.parse(localStorage['devices'])
 	const [deviges] = useState(devicelist)
 const renderDevices = () => {
 	return deviges.map(({ id, deviceName, type }) => {
-	return <Container key={id} >
-	<input type='checkbox' name="tickbox" value={id} ></input>
-	{deviceName}
-	{type}
-	</Container>
+	return <HStack spacing='10px' key={id}>
+		<Box w='20px' h='6'>
+	<input type='checkbox' name="tickbox" value={id} ></input></Box>
+	<Box w='170px' h='6'>{deviceName}</Box>
+	<Box w='170px' h='6'>{type}</Box>
+	</HStack>
 	})
 }
 
@@ -133,7 +141,7 @@ let devicesRow_show=<><FormLabel id='devices_row' htmlFor="devices_row">Devices<
 <span id='devicesrow'>{renderDevices()}</span></>
 let devicesRow=devicesRow_hidden
 
-//Conditions based on occurence-selection:
+//Conditions based on occurence selection:
 
 if(selType){
 	devicesRow=devicesRow_show;

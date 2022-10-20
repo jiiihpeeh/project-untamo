@@ -67,6 +67,7 @@ router.post("/alarm/:id",function(req,res) {
         date:req.body.date,
 		label:req.body.label,
 		devices:req.body.devices,
+		device_ids:req.body.device_ids
 	})
 	console.log("ALARMID:"+alarm._id)
 	alarm.save(function(err) {

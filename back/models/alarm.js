@@ -6,6 +6,7 @@ let Schema = mongoose.Schema({
     date:String,
     label:String,
     devices:Array,
+    device_ids:Array,
     user:{type:String,index:true}
 });
 
