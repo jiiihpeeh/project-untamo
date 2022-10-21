@@ -26,16 +26,16 @@ function DeleteAlarm(props) {
 		label: 0,
 		devices: 0
 	});
-	var checked_radio
+	let checked_radio
 	let toukeni = localStorage.getItem("token");
 	axios.defaults.headers.common['token'] = toukeni;
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const btnRef = React.useRef()
 	const cancelRef = useRef();
 	const { userInfo, setUserInfo } = useContext(SessionContext);
-	var alarmlist = JSON.parse(localStorage['alarms'])
+	let alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms] = useState(alarmlist)
-	var radios = document.getElementsByName('radjo');
+	let radios = document.getElementsByName('radjo');
 	for (var i = 0, length = radios.length; i < length; i++) {
 		if (radios[i].checked) {
 			checked_radio=radios[i].value
@@ -43,7 +43,7 @@ function DeleteAlarm(props) {
 		}
 	}
 
-	const deleteAlarm = async(event) =>{
+	const deleteAlarm = async() =>{
         try {
 			//Delete Selected_alarm._id from mongodb
 			const res = await axios.delete('/api/alarm/'+Selected_alarm._id);
@@ -76,7 +76,7 @@ function DeleteAlarm(props) {
 			<AlertDialogOverlay>
 				<AlertDialogContent>
 					<AlertDialogHeader fontSize='lg' fontWeight='bold'>
-						Delete alarm?
+						Delete alarm: {Selected_alarm.label}
 					</AlertDialogHeader>
 					<AlertDialogBody>
 					Are you sure?
