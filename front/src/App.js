@@ -15,6 +15,8 @@ import NavGrid from './components/NavGrid';
 import Clueless from './components/Clueless';
 import GenerateQRPairingKey from './components/GenerateQRPairingKey';
 import PlayAlarm from './components/PlayAlarm';
+import AlarmChecker from './components/AlarmChecker';
+
 function App() {
 
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
@@ -90,6 +92,7 @@ function App() {
 					<Route path="*" element={<Navigate to="/clueless" /> } />
 			</Routes>
 		<GenerateQRPairingKey/>
+		<AlarmChecker/>
 		</AlarmContext.Provider>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    
