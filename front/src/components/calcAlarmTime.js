@@ -69,7 +69,7 @@ export const nextAlarmWeekly = (timeString, weekday) => {
     return timeCompare;
 };
 
-export const timeToNextAlarm = (alarm) => {
+export const timeForNextAlarm = (alarm) => {
     switch(alarm.occurence){
         case 'once':
             break;
@@ -83,3 +83,8 @@ export const timeToNextAlarm = (alarm) => {
             break;
     }
 } 
+
+export const timeToNextAlarm = (alarm) => {
+    let date = new Date();
+    return timeForNextAlarm(alarm) - date;
+}
