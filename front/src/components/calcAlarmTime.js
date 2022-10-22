@@ -33,7 +33,20 @@ const initAlarmDate = (timeString) => {
     return timeCompare;
 };
 
+export const nextAlarmOnce = (timeString, dateString) => {
+    let timeNow = new Date();
+    let timeCompare = initAlarmDate(timeString);
+    let dateArr = dateString.split('-')
 
+    timeCompare.setDate(Number.parseInt(dateArr[1]) -1);
+    timeCompare.setMonth(Number.parseInt(dateArr[2]) -1);
+    timeCompare.setFullYear(Number.parseInt(dateArr[0]));
+    if(timeCompare > timeNow){
+        return timeCompare;
+    }
+    return NaN;
+    
+};
 
 export const nextAlarmDaily = (timeString) => {
     let timeNow = new Date();
@@ -72,7 +85,7 @@ export const nextAlarmWeekly = (timeString, weekday) => {
 export const timeForNextAlarm = (alarm) => {
     switch(alarm.occurence){
         case 'once':
-            break;
+            return nextAlarmDaily(alarm.time, alarm.date)
         case 'daily':
             return nextAlarmDaily(alarm.time)
         case 'weekly':
