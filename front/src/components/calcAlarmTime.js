@@ -68,3 +68,18 @@ export const nextAlarmWeekly = (timeString, weekday) => {
     //console.log(timeCompare);
     return timeCompare;
 };
+
+export const timeToNextAlarm = (alarm) => {
+    switch(alarm.occurence){
+        case 'once':
+            break;
+        case 'daily':
+            return nextAlarmDaily(alarm.time)
+        case 'weekly':
+            return nextAlarmDaily(alarm.time,alarm.wday)
+        case 'yearly':
+            break;
+        default:
+            break;
+    }
+} 
