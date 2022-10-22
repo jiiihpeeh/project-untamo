@@ -86,5 +86,5 @@ export const timeForNextAlarm = (alarm) => {
 
 export const timeToNextAlarm = (alarm) => {
     let date = new Date();
-    return timeForNextAlarm(alarm) - date;
+    return Math.max( timeForNextAlarm(alarm) - date, 0);
 }
