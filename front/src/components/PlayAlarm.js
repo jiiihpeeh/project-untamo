@@ -45,16 +45,7 @@ const PlayAlarm = () =>{
         playAudio.stopLoop();
         navigate('/alarms');
     }
-    useEffect (() => {
-        const loadContent = () => {
-            if(alarms && runAlarm !== undefined){
-                let currentAlarm = alarms.filter(alarm => alarm.id === runAlarm);
-                console.log('Current alarm ', currentAlarm)
-                //setAlarmItem(currentAlarm);
-            }
-        }
-        loadContent();
-    },[alarms,runAlarm])
+
     useEffect(() =>{
         if(!sessionStatus){
             navigate('/login')
@@ -64,7 +55,7 @@ const PlayAlarm = () =>{
         <>
         <Stack align='center'>
             <Heading as="h1" size='4xl' color='tomato'  textShadow='2px 4px #ff0000' className='AlarmMessage'>
-                {alarmItem.label}
+                {runAlarm.label}
             </Heading>
             <Heading as='h3' size='md'>
                 Snooze the Alarm by clicking the clock below

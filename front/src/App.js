@@ -33,7 +33,7 @@ function App() {
 	const [fetchQR, setFetchQR] = useState(false);
 	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
 	// This one is id when set when set it is string see AlarmWatcher. Meaning: to Trigger PlayAlarm. 
-	const [runAlarm, setRunAlarm] = useState(undefined);
+	const [runAlarm, setRunAlarm] = useState({});
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
@@ -78,7 +78,7 @@ function App() {
 		<div className="App">
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
-		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm}}>
+		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm }}>
 			<NavGrid/>
 
 			<Routes>
