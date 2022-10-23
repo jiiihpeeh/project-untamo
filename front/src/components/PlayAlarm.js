@@ -1,8 +1,8 @@
-import React, { useLayoutEffect, useState, useContext } from 'react';
+import React, { useLayoutEffect, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SessionContext } from '../contexts/SessionContext';
 import AudioPlayer from './AudioPlayer';
-
+import { AlarmContext } from '../contexts/AlarmContext';
 import { 
          Text, 
          Image, 
@@ -18,6 +18,10 @@ import '../App.css'
 
 const PlayAlarm = () =>{
     const [clockSize, setClockSize] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35);
+    const { runAlarm, alarms } = useContext(AlarmContext);
+    const {sessionStatus} = useContext(SessionContext);
+    const [ alarmItem, setAlarmItem ] = useState({label:'Alarm'});
+    
     useLayoutEffect(() => {
         function updateSize() {
             setClockSize(Math.min(window.innerWidth, window.innerHeight) * 0.35);
@@ -26,25 +30,41 @@ const PlayAlarm = () =>{
         updateSize();
         return () => window.removeEventListener('resize', updateSize);
     }, []);
-    const {token} = useContext(SessionContext);
+    const { token } = useContext(SessionContext);
     const navigate = useNavigate()
     const playAudio = new AudioPlayer('rooster', token);
+    //playAudio.playLoop();
     const snoozer = async () =>{
         console.log("clicked");
         await playAudio.playLoop();
     }
     
+ 
     const tellme = (event) => {
-        console.log(event)
+        console.log(event);
         playAudio.stopLoop();
-        navigate('/alarms')
+        navigate('/alarms');
     }
-
+    useEffect (() => {
+        const loadContent = () => {
+            if(alarms && runAlarm !== undefined){
+                let currentAlarm = alarms.filter(alarm => alarm.id === runAlarm);
+                console.log('Current alarm ', currentAlarm)
+                //setAlarmItem(currentAlarm);
+            }
+        }
+        loadContent();
+    },[alarms,runAlarm])
+    useEffect(() =>{
+        if(!sessionStatus){
+            navigate('/login')
+        }
+    })
     return(
         <>
         <Stack align='center'>
             <Heading as="h1" size='4xl' color='tomato'  textShadow='2px 4px #ff0000' className='AlarmMessage'>
-                Alarm
+                {alarmItem.label}
             </Heading>
             <Heading as='h3' size='md'>
                 Snooze the Alarm by clicking the clock below

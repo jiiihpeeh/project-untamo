@@ -12,7 +12,8 @@ import {
     MenuOptionGroup,
     Icon,
     HStack,
-    Tooltip
+    Tooltip,
+    Checkbox
   } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import deviceIcons from "./DeviceIcons";
@@ -24,7 +25,14 @@ const DeviceSelector = (props) => {
     const { devices, currentDevice, setCurrentDevice} = useContext(DeviceContext);
     let offset = (props.type === "submenu") ? [200,0]: [0,0];
 
+
     useEffect(() => {
+      const isCurrentDevice = (id) =>{
+        if(currentDevice){
+          return currentDevice === id;
+        }
+        return false;
+      }
       const deviceSelected = (deviceName) => {
         localStorage['currentDevice'] = deviceName;
         setCurrentDevice(deviceName);
@@ -33,7 +41,7 @@ const DeviceSelector = (props) => {
       const MenuDevices = async () => {
         if(devices.constructor === Array){
           setMenuDevices( devices.map((device) => 
-            <Tooltip label={device.type}>
+            <Tooltip label={device.type} key={`tooltip-${device.id}`}>
               <MenuItemOption onClick={() => deviceSelected(device.id)}   
                               key={`device-${device.id}`}
                               closeOnSelect={true}
@@ -41,7 +49,7 @@ const DeviceSelector = (props) => {
                         
                         <HStack spacing='24px'>
                         
-                          <Text>{device.deviceName}</Text> <Tooltip label={device.type}><Icon as={deviceIcons(device.type)}/></Tooltip>
+                          <Checkbox  isChecked={isCurrentDevice(device.id)} /><Text>{device.deviceName}</Text> <Tooltip label={device.type}><Icon as={deviceIcons(device.type)}/></Tooltip>
                         
                         </HStack>
                         
@@ -52,7 +60,7 @@ const DeviceSelector = (props) => {
         }
       };
       MenuDevices();
-    },[devices, setCurrentDevice]);
+    },[devices, setCurrentDevice, currentDevice]);
     
 
     const openIt = () => {
