@@ -1,4 +1,4 @@
-import { useEffect, useContext, useState,useRef } from "react";
+import { useEffect, useContext } from "react";
 import { AlarmContext } from "../contexts/AlarmContext";
 import { DeviceContext } from "../contexts/DeviceContext";
 import { timeToNextAlarm } from "./calcAlarmTime";
@@ -8,8 +8,8 @@ const AlarmWatcher  = () => {
     const { currentDevice } = useContext(DeviceContext);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        let delTimeOut = JSON.parse(sessionStorage.getItem('timeOutID'))
+    useEffect(() => {            
+        let delTimeOut = JSON.parse(sessionStorage.getItem('timeOutID'));
         if(delTimeOut){
             try {
                 clearTimeout(delTimeOut);
@@ -20,13 +20,14 @@ const AlarmWatcher  = () => {
         if(runAlarm.id){
             let timed = timeToNextAlarm(runAlarm);
             if(timed > 0){
+                
                 let timeOutID = setTimeout(() => { navigate('/playalarm/') }, timed);
-                sessionStorage.setItem('timeOutID', JSON.stringify(timeOutID))
+                sessionStorage.setItem('timeOutID', JSON.stringify(timeOutID));
                 console.log("upcoming alarm ", runAlarm);
                 console.log('launching in: ', timed);
             }
         }
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps 
     },[runAlarm]);
 
     useEffect(() => {
@@ -45,6 +46,7 @@ const AlarmWatcher  = () => {
                     setRunAlarm(runThis);
                 }
             }
+        
         } 
         filterAlarms();
     },[alarms, currentDevice, setRunAlarm])
