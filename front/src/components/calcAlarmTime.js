@@ -97,28 +97,38 @@ export const nextAlarmWeekly = (timeString, weekday) => {
 };
 
 export const timeForNextAlarm = (alarm) => {
+    let snoozer = Infinity
     if(alarm.hasOwnProperty('snooze')){
-        let snoozed = alarm.snooze
+        let snoozed = alarm.snooze;
         let timeStamp = Date.now();
-        let snoozeMax = timeStamp + (30 * 60 * 1000);
+        
+        let snoozeMax = Math.min(...snoozed) + (30 * 60 * 1000);
         let snoozeMin = timeStamp - (30 * 60 * 1000);
-        if ((snoozed < snoozeMax) && (snoozed > snoozeMin)){
-            let nextNotification = snoozed + (5 * 60 * 1000);
-            return new Date(nextNotification);
+        if ((Math.max(...snoozed) < snoozeMax) && (Math.min(...snoozed) > snoozeMin)){
+            let nextNotification = Math.max(...snoozed) + (5 * 60 * 1000);
+            snoozer = new Date(nextNotification);
         }
     }
+    let occurence
     switch(alarm.occurence){
         case 'once':
-            return nextAlarmDaily(alarm.time, alarm.date);
+            occurence = nextAlarmDaily(alarm.time, alarm.date);
+            break;
         case 'daily':
-            return nextAlarmDaily(alarm.time);
+            occurence = nextAlarmDaily(alarm.time);
+            break;
         case 'weekly':
-            return  nextAlarmDaily(alarm.time,alarm.wday);
+            occurence = nextAlarmDaily(alarm.time,alarm.wday);
+            break;
         case 'yearly':
-            return nextAlarmYearly(alarm.time, alarm.date);
+            occurence = nextAlarmYearly(alarm.time, alarm.date);
+            break;
         default:
-            return NaN;
+            occurence = NaN;
+            break;
     };
+    return Math.min(occurence, snoozer);
+
 };
 
 export const timeToNextAlarm = (alarm) => {

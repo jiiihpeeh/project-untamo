@@ -47,7 +47,14 @@ const PlayAlarm = () =>{
             }
         }
         let currentAlarm = Object.assign({},runAlarm);
-        currentAlarm.snooze = Date.now();
+        let currentMoment = Date.now();
+        if(currentAlarm.hasOwnProperty('snooze')){
+            currentAlarm.snooze = currentAlarm.snooze.filter(snooze => snooze > (currentMoment - (60 * 60 * 1000)));
+            currentAlarm.snooze.push(currentMoment);
+        }else{
+            currentAlarm.snooze = [ currentMoment ];
+        }
+        
         let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
         filterAlarms.push(currentAlarm);
         setAlarms(filterAlarms);
@@ -62,7 +69,7 @@ const PlayAlarm = () =>{
         if(aElem){
             aElem.pause();
             let currentAlarm = Object.assign({},runAlarm);
-            currentAlarm.snooze = 0;
+            currentAlarm.snooze = [0];
             let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
             filterAlarms.push(currentAlarm);
             setAlarms(filterAlarms);
