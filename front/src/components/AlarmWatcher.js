@@ -1,26 +1,38 @@
-import { useEffect, useContext, useState } from "react";
+import { useEffect, useContext, useState,useRef } from "react";
 import { AlarmContext } from "../contexts/AlarmContext";
 import { DeviceContext } from "../contexts/DeviceContext";
 import { timeToNextAlarm } from "./calcAlarmTime";
 import { useNavigate } from "react-router-dom";
 const AlarmWatcher  = () => {
-    const [ alarmIDTimeout, setAlarmIDTimeout ] = useState(undefined);
-    const { alarms, setRunAlarm } = useContext(AlarmContext);
+    const { alarms, setRunAlarm, runAlarm } = useContext(AlarmContext);
     const { currentDevice } = useContext(DeviceContext);
     const navigate = useNavigate();
-    useEffect(() => {
 
-        const goToAlarm = () => {
-            navigate('/playalarm/');
+
+
+    useEffect(() => {
+        let delTimeOut = JSON.parse(sessionStorage.getItem('timeOutID'))
+        if(delTimeOut){
+            try {
+                clearTimeout(delTimeOut);
+            }catch(err){
+                console.log(err)
+            }
+        }
+        if(runAlarm.id){
+            let timed = timeToNextAlarm(runAlarm);
+            if(timed > 0){
+                let timeOutID = setTimeout(() => { navigate('/playalarm/') }, timed);
+                sessionStorage.setItem('timeOutID', JSON.stringify(timeOutID))
+                console.log("upcoming alarm ", runAlarm);
+            }
         }
 
+    },[runAlarm]);
+
+    useEffect(() => {
         const filterAlarms = () => {
             if(alarms && alarms.length > 0){
-                if(alarmIDTimeout){
-                    try{
-                        clearTimeout(alarmIDTimeout);
-                    } catch(err) {};
-                }
                 let filteredAlarms = alarms.filter(alarm => alarm.device_ids.indexOf(currentDevice) !== -1 );
                 console.log('alarms for this device: ', filteredAlarms);
                 let idTimeOutMap = new Map();
@@ -32,15 +44,14 @@ const AlarmWatcher  = () => {
                 if(minTime && (!isNaN(minTime)) && (minTime !== Infinity) ){
                     console.log('launching in: ', minTime);
                     let runThis =  idTimeOutMap.get(minTime);
-                    console.log("upcoming alarm ", runThis)
+                   
+                    
                     setRunAlarm(runThis);
-                    let timeOutID = setTimeout(goToAlarm, minTime);
-                    setAlarmIDTimeout(timeOutID);
                 }
             }
         } 
         filterAlarms();
-    },[alarms, currentDevice])
+    },[alarms, currentDevice, setRunAlarm])
 };
 
 export default AlarmWatcher;
