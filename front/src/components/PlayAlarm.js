@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { SessionContext } from '../contexts/SessionContext';
 import { AlarmContext } from '../contexts/AlarmContext';
 import { hasOrFetchAudio, getAudio } from '../audiostorage/audioDatabase';
+import axios from 'axios';
 
 import { 
          Text, 
@@ -23,7 +24,7 @@ const PlayAlarm = () =>{
     const { token } = useContext(SessionContext);
     const {sessionStatus} = useContext(SessionContext);
     const [ audioURL, setAudioURL ] = useState(undefined);
-
+    axios.defaults.headers.common['token'] = token;
     
     useLayoutEffect(() => {
         function updateSize() {
@@ -54,7 +55,12 @@ const PlayAlarm = () =>{
         }else{
             currentAlarm.snooze = [ currentMoment ];
         }
-        
+        try {
+            let res = await axios.put('/api/alarm/'+currentAlarm.id, currentAlarm);
+            console.log(res.data)
+        }catch(err){
+            console.log("Couldn't update alarm info ", err)
+        }
         let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
         filterAlarms.push(currentAlarm);
         setAlarms(filterAlarms);
@@ -63,13 +69,19 @@ const PlayAlarm = () =>{
      }
     
  
-    const turnOff = (event) => {
+    const turnOff = async (event) => {
         console.log(event);
         let aElem = document.getElementById('playAudioAlarm');
         if(aElem){
             aElem.pause();
             let currentAlarm = Object.assign({},runAlarm);
             currentAlarm.snooze = [0];
+            try {
+                let res = await axios.put('/api/alarm/'+currentAlarm.id, currentAlarm);
+                console.log(res.data)
+            }catch(err){
+                console.log("Couldn't update alarm info ", err)
+            }
             let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
             filterAlarms.push(currentAlarm);
             setAlarms(filterAlarms);

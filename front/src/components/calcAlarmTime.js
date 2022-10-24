@@ -35,8 +35,8 @@ const initAlarmDate = (timeString) => {
 
 const insertDate = (dateObj, dateString) => {
     let dateArr = dateString.split('-');
-    dateObj.setDate(Number.parseInt(dateArr[1]) -1);
-    dateObj.setMonth(Number.parseInt(dateArr[2]) -1);
+    dateObj.setDate(Number.parseInt(dateArr[2]) -1);
+    dateObj.setMonth(Number.parseInt(dateArr[1]) -1);
     dateObj.setFullYear(Number.parseInt(dateArr[0]));
     return dateObj;
 }
@@ -97,6 +97,22 @@ export const nextAlarmWeekly = (timeString, weekday) => {
 };
 
 export const timeForNextAlarm = (alarm) => {
+
+    switch(alarm.occurence){
+        case 'once':
+            return nextAlarmOnce(alarm.time, alarm.date) ;
+        case 'daily':
+            return nextAlarmDaily(alarm.time);
+        case 'weekly':
+            return nextAlarmWeekly(alarm.time,alarm.wday) ;
+        case 'yearly':
+            return nextAlarmYearly(alarm.time, alarm.date);
+        default:
+            return NaN;
+    };
+};
+
+export const timeToNextAlarm = (alarm) => {    
     let snoozer = Infinity
     if(alarm.hasOwnProperty('snooze')){
         let snoozed = alarm.snooze;
@@ -106,32 +122,10 @@ export const timeForNextAlarm = (alarm) => {
         let snoozeMin = timeStamp - (30 * 60 * 1000);
         if ((Math.max(...snoozed) < snoozeMax) && (Math.min(...snoozed) > snoozeMin)){
             let nextNotification = Math.max(...snoozed) + (5 * 60 * 1000);
-            snoozer = new Date(nextNotification);
+            snoozer = nextNotification;
         }
     }
-    let occurence
-    switch(alarm.occurence){
-        case 'once':
-            occurence = nextAlarmDaily(alarm.time, alarm.date);
-            break;
-        case 'daily':
-            occurence = nextAlarmDaily(alarm.time);
-            break;
-        case 'weekly':
-            occurence = nextAlarmDaily(alarm.time,alarm.wday);
-            break;
-        case 'yearly':
-            occurence = nextAlarmYearly(alarm.time, alarm.date);
-            break;
-        default:
-            occurence = NaN;
-            break;
-    };
-    return Math.min(occurence, snoozer);
-
-};
-
-export const timeToNextAlarm = (alarm) => {
     let date = new Date();
-    return Math.max( timeForNextAlarm(alarm) - date, 0);
+    let preliminaryAlarm = Math.max( timeForNextAlarm(alarm) - date, 0)
+    return Math.min(snoozer, preliminaryAlarm)
 };
