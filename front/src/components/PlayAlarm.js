@@ -19,7 +19,8 @@ import '../App.css'
 
 const PlayAlarm = () =>{
     const [clockSize, setClockSize] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35);
-    const { runAlarm } = useContext(AlarmContext);
+    const { runAlarm, alarms, setAlarms } = useContext(AlarmContext);
+    const { token } = useContext(SessionContext);
     const {sessionStatus} = useContext(SessionContext);
     const [ audioURL, setAudioURL ] = useState(undefined);
 
@@ -32,8 +33,8 @@ const PlayAlarm = () =>{
         updateSize();
         return () => window.removeEventListener('resize', updateSize);
     }, []);
+
     
-    const { token } = useContext(SessionContext);
     const navigate = useNavigate()
 
     const snoozer = async () =>{
@@ -45,6 +46,12 @@ const PlayAlarm = () =>{
                 setAudioURL(undefined);
             }
         }
+        let currentAlarm = Object.assign({},runAlarm);
+        currentAlarm.snooze = Date.now();
+        let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
+        filterAlarms.push(currentAlarm);
+        setAlarms(filterAlarms);
+        localStorage.setItem('alarms', JSON.stringify(filterAlarms));
         navigate('/alarms');   
      }
     
@@ -54,6 +61,13 @@ const PlayAlarm = () =>{
         let aElem = document.getElementById('playAudioAlarm');
         if(aElem){
             aElem.pause();
+            let currentAlarm = Object.assign({},runAlarm);
+            currentAlarm.snooze = 0;
+            let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
+            filterAlarms.push(currentAlarm);
+            setAlarms(filterAlarms);
+            localStorage.setItem('alarms', JSON.stringify(filterAlarms));
+            navigate('/alarms');   
             if(audioURL){
                 URL.revokeObjectURL(audioURL);
                 setAudioURL(undefined);
