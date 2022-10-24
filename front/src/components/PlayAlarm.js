@@ -56,12 +56,12 @@ const PlayAlarm = () =>{
             currentAlarm.snooze = [ currentMoment ];
         }
         try {
-            let res = await axios.put('/api/alarm/'+currentAlarm.id, currentAlarm);
+            let res = await axios.put('/api/alarm/'+currentAlarm._id, currentAlarm);
             console.log(res.data)
         }catch(err){
             console.log("Couldn't update alarm info ", err)
         }
-        let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
+        let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm._id);
         filterAlarms.push(currentAlarm);
         setAlarms(filterAlarms);
         localStorage.setItem('alarms', JSON.stringify(filterAlarms));
@@ -77,12 +77,12 @@ const PlayAlarm = () =>{
             let currentAlarm = Object.assign({},runAlarm);
             currentAlarm.snooze = [0];
             try {
-                let res = await axios.put('/api/alarm/'+currentAlarm.id, currentAlarm);
+                let res = await axios.put('/api/alarm/'+currentAlarm._id, currentAlarm);
                 console.log(res.data)
             }catch(err){
                 console.log("Couldn't update alarm info ", err)
             }
-            let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id);
+            let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm._id);
             filterAlarms.push(currentAlarm);
             setAlarms(filterAlarms);
             localStorage.setItem('alarms', JSON.stringify(filterAlarms));
