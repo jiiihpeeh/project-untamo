@@ -91,7 +91,7 @@ const AddDevice = (props) => {
       return(
           <>
             <Text ref={btnRef} colorScheme='teal' onClick={onOpen} id="add-device-button" >
-            Add a device
+              Add a device
             </Text>
           </>
       )

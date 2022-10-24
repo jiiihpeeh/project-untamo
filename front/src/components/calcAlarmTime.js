@@ -76,24 +76,39 @@ export const nextAlarmDaily = (timeString) => {
 export const nextAlarmWeekly = (timeString, weekday) => {
     let timeNow = new Date();
     let timeCompare = initAlarmDate(timeString);
-    let dayNumber = weekDayToNumber(weekday);
+    let dayNumbers =  [];
+    for(const item of weekday){
+        dayNumbers.push( weekDayToNumber(item));
+    };
+    dayNumbers.sort();
+    let dayDifferences = [];
     let dayNumberNow = timeNow.getDay();
-    let dayDifference = dayNumber - dayNumberNow;
-    if(dayDifference < 0){
-        dayDifference = 7 + dayDifference
+    for(const dayNumber of dayNumbers){
+        let dayDifference = dayNumber - dayNumberNow;
+        if(dayDifference < 0){
+            dayDifference = 7 + dayDifference
+        }
+        dayDifferences.push(dayDifference);
     }
-    switch (dayDifference){
-        case 0:        
-            if (timeCompare < timeNow){
-                timeCompare = addDays(timeCompare, 7);
-            };
-            break;
-        default:
-            timeCompare = addDays(timeCompare, dayDifference);
-            break;
+    let timeComparisons = [];
+    for(const dayDifference of dayDifferences){
+        let timeComparison;
+        switch (dayDifference){
+            case 0:        
+                if (timeCompare < timeNow){
+                    timeComparison = addDays(timeCompare, 7);
+                }else{
+                    timeComparison = timeCompare;
+                }
+                break;
+            default:
+                timeComparison = addDays(timeCompare, dayDifference);
+                break;
+        };
+        timeComparisons.push(timeComparison);
     };
     //console.log(timeCompare);
-    return timeCompare;
+    return new Date(Math.min(...timeComparisons));
 };
 
 export const timeForNextAlarm = (alarm) => {
