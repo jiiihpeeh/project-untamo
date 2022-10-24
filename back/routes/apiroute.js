@@ -112,6 +112,9 @@ router.put("/alarm/:id",function(req,res) {
 		wday:req.body.wday,
         user:req.session.user
 	}
+	if(req.body.snooze && Array.isArray(req.body.snooze)) {
+		alarm.snooze = req.body.snooze
+	}
 	alarmModel.replaceOne({"_id":req.params.id,"user":req.session.user},alarm,function(err) {
 		if(err) {
 			console.log(tStamppi(),"Failed to update alarm. Reason",err);
