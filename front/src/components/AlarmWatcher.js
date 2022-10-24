@@ -8,8 +8,6 @@ const AlarmWatcher  = () => {
     const { currentDevice } = useContext(DeviceContext);
     const navigate = useNavigate();
 
-
-
     useEffect(() => {
         let delTimeOut = JSON.parse(sessionStorage.getItem('timeOutID'))
         if(delTimeOut){
@@ -43,10 +41,7 @@ const AlarmWatcher  = () => {
                 }
                 let minTime = Math.min(...idTimeOutMap.keys());
                 if(minTime && (!isNaN(minTime)) && (minTime !== Infinity) ){
-                    
                     let runThis =  idTimeOutMap.get(minTime);
-                   
-                    
                     setRunAlarm(runThis);
                 }
             }
