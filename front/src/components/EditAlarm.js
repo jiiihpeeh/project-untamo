@@ -23,7 +23,6 @@ import { useState, useContext } from 'react'
 import { SessionContext } from "../contexts/SessionContext";
 import axios from 'axios';
 import { notification } from './notification';
-import { joinPaths } from '@remix-run/router';
 
 function EditAlarm(props) {
 	const [Selected_larm, setSelected_larm] = useState({
@@ -71,13 +70,11 @@ let wday_result
 	let TempWday=new Array();
 
 	const onOpenMod = () => {
-		//console.log("OnOpenMod/Selected_wdays: "+selected_wday.Monday+", "+selected_wday.Tuesday+", "+selected_wday.Wednesday+", "+selected_wday.Thursday+", "+selected_wday.Friday+", "+selected_wday.Saturday+", "+selected_wday.Sunday )
 		var radios = document.getElementsByName('radjo');
 		for (var i = 0, length = radios.length; i < length; i++) {
 			if (radios[i].checked) {
 				checked_radio=radios[i].value
 				let rokko=JSON.parse(checked_radio)
-				//console.log('EALoop/Checked_radio_id:'+rokko._id)
 				for (let i = 0; i < rokko.wday.length; i++) {
 					if(rokko.wday[i]=='Monday'){mon_state=1}
 					if(rokko.wday[i]=='Tuesday'){tue_state=1}
@@ -87,7 +84,6 @@ let wday_result
 					if(rokko.wday[i]=='Saturday'){sat_state=1}
 					if(rokko.wday[i]=='Sunday'){sun_state=1}
 				}
-				//console.log('wed_satet:'+wed_state)
 				temp_states.Monday=mon_state
 				temp_states.Tuesday=tue_state
 				temp_states.Wednesday=wed_state
@@ -95,20 +91,17 @@ let wday_result
 				temp_states.Friday=fri_state
 				temp_states.Saturday=sat_state
 				temp_states.Sunday=sun_state
-//console.log("OnOpenMod/rokko.wday:"+JSON.stringify(rokko.wday))
-//console.log("OnOpenMod/rokko:"+JSON.stringify(rokko))
-
 				setSelected_larm(rokko)
-				console.log("OnLOADBUTTONSTATES: "+JSON.stringify(buttonstate)+" - Tempstates: "+JSON.stringify(temp_states))
-			//	console.log("mon_state: "+mon_state)
 				setButtonstate(temp_states)
-		//		setSelected_wday(temp_states)
-
 			} else {
 				console.log("No radio selected")
 			}
 		}
 		onOpen()
+	}
+
+	const onCloseMod = () => {
+		onClose();
 	}
 
 	const renderDevices = () => {
@@ -117,33 +110,28 @@ let wday_result
 				if(id==Selected_larm.device_ids[i]){
 					return <HStack spacing='10px' key={id}>
 					<Box w='20px' h='6'>
-				<input type='checkbox' name="tickbox" value={id} defaultChecked></input></Box>
-				<Box w='170px' h='6'>{deviceName}</Box>
-				<Box w='170px' h='6'>{type}</Box>
-				</HStack>
+					<input type='checkbox' name="tickbox" value={id} defaultChecked></input></Box>
+					<Box w='170px' h='6'>{deviceName}</Box>
+					<Box w='170px' h='6'>{type}</Box>
+					</HStack>
 				}
 			}
-		return <HStack spacing='10px' key={id}>
-			<Box w='20px' h='6'>
-		<input type='checkbox' name="tickbox" value={id} ></input></Box>
-		<Box w='170px' h='6'>{deviceName}</Box>
-		<Box w='170px' h='6'>{type}</Box>
-		</HStack>
+			return <HStack spacing='10px' key={id}>
+				<Box w='20px' h='6'>
+			<input type='checkbox' name="tickbox" value={id} ></input></Box>
+			<Box w='170px' h='6'>{deviceName}</Box>
+			<Box w='170px' h='6'>{type}</Box>
+			</HStack>
 		})
 	}
 	const renderWdays =() => {
-		//console.log("renderWdaysBUttonstates: "+JSON.stringify(buttonstate)+" - Tempstates: "+JSON.stringify(temp_states))
-		//console.log("RenderWdays/Selected_wdays: "+JSON.stringify(selected_wday))
-		//console.log("RenderWDays/mon_state: "+mon_state)
-
 		//MO
 		if(buttonstate.Monday==0){
-		wday_mon=<><Button w='40px' h='40px' bg='gray.200' onClick={() => wdaySelect('Monday')} borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
-		Mon
-		</Center>
-		</Button></>
-
-	}
+			wday_mon=<><Button w='40px' h='40px' bg='gray.200' onClick={() => wdaySelect('Monday')} borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
+			Mon
+			</Center>
+			</Button></>
+		}
 		if(buttonstate.Monday==1){
 			wday_mon=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Monday')} borderWidth='2px' borderColor='black' borderRadius='md'>
 			<Center h='36px'>
@@ -154,10 +142,10 @@ let wday_result
 		//TU
 		if(buttonstate.Tuesday==0){
 			wday_tue=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Tuesday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
-		<Center h='36px'>
-		Tue
-		</Center>
-		</Button>
+			<Center h='36px'>
+			Tue
+			</Center>
+			</Button>
 		}
 		if(buttonstate.Tuesday==1){
 			wday_tue=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Tuesday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
@@ -179,65 +167,63 @@ let wday_result
 			</Center>
 			</Button>
 		}
-				//TH
-				if(buttonstate.Thursday==0){
-					wday_thu=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Thursday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
-					<Center h='36px'>
-					Thu
-					</Center>
-					</Button>
-				}
-				if(buttonstate.Thursday==1){
-					wday_thu=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Thursday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
-					Thu
-					</Center>
-					</Button>
-				}
-//FR
-if(buttonstate.Friday==0){
-	wday_fri=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Friday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
-	<Center h='36px'>
-	Fri
-	</Center>
-	</Button>
-}
-if(buttonstate.Friday==1){
-	wday_fri=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Friday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
-	Fri
-	</Center>
-	</Button>
-}
-//SA
-if(buttonstate.Saturday==0){
-	wday_sat=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
-	<Center h='36px'>
-	Sat
-	</Center>
-	</Button>
-}
-if(buttonstate.Saturday==1){
-	wday_sat=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
-	Sat
-	</Center>
-	</Button>
-}
-//Su
-if(buttonstate.Sunday==0){
-	wday_sun=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Sunday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
-	<Center h='36px'>
-	Sun
-	</Center>
-	</Button>
-}
-if(buttonstate.Sunday==1){
-	wday_sun=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Sunday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
-	Sun
-	</Center>
-	</Button>
-}
+		//TH
+		if(buttonstate.Thursday==0){
+			wday_thu=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Thursday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
+			<Center h='36px'>
+			Thu
+			</Center>
+			</Button>
+		}
+		if(buttonstate.Thursday==1){
+			wday_thu=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Thursday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
+			Thu
+			</Center>
+			</Button>
+		}
+		//FR
+		if(buttonstate.Friday==0){
+			wday_fri=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Friday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
+			<Center h='36px'>
+			Fri
+			</Center>
+			</Button>
+		}		
+		if(buttonstate.Friday==1){
+			wday_fri=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Friday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
+			Fri
+			</Center>
+			</Button>
+		}
+		//SA
+		if(buttonstate.Saturday==0){
+			wday_sat=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
+			<Center h='36px'>
+			Sat
+			</Center>
+			</Button>
+		}
+		if(buttonstate.Saturday==1){
+			wday_sat=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
+			Sat
+			</Center>
+			</Button>
+		}
+		//Su
+		if(buttonstate.Sunday==0){
+			wday_sun=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Sunday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
+			<Center h='36px'>
+			Sun
+			</Center>
+			</Button>
+		}
+		if(buttonstate.Sunday==1){
+			wday_sun=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Sunday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
+			Sun
+			</Center>
+			</Button>
+		}
 		return[wday_mon,wday_tue,wday_wed,wday_thu,wday_fri,wday_sat,wday_sun]
-		
-		
 	}
 
 	const onChange = (event) => {
@@ -252,7 +238,6 @@ if(buttonstate.Sunday==1){
 
 	const onRegister = async () => {
 		try {
-			
 			if(buttonstate.Monday==1){TempWday.push('Monday')}
 			if(buttonstate.Tuesday==1){TempWday.push('Tuesday')}
 			if(buttonstate.Wednesday==1){TempWday.push('Wednesday')}
@@ -260,10 +245,7 @@ if(buttonstate.Sunday==1){
 			if(buttonstate.Friday==1){TempWday.push('Friday')}
 			if(buttonstate.Saturday==1){TempWday.push('Saturday')}
 			if(buttonstate.Sunday==1){TempWday.push('Sunday')}
-			console.log("REGISTER: "+TempWday)
 			Selected_larm.wday=TempWday;
-			console.log("PERKELE=?: "+JSON.stringify(Selected_larm))
-			
 			console.log("Try: /api/alarm/"+Selected_larm._id,Selected_larm)
 			const res = await axios.put('/api/alarm/'+Selected_larm._id,Selected_larm );
 			console.log(res.data);
@@ -295,8 +277,6 @@ const wdaySelect = (wdayid) => {
 		if(temp_states.Monday==0){temp_states.Monday=1}
 		else if(temp_states.Monday==1){temp_states.Monday=0}
 		mon_state=temp_states.Monday
-		console.log("WDaySelect/mon_state: "+mon_state)
-		console.log("WDaySelect/temp_states: "+JSON.stringify(temp_states))
 	setButtonstate(temp_states)
 	} 
 	if(wdayid=='Tuesday'){
@@ -338,13 +318,13 @@ const wdaySelect = (wdayid) => {
 	}
 let idRow=<><FormLabel>ID: {Selected_larm._id}</FormLabel></>
 let occurenceRow=<><FormLabel htmlFor="occu_row">Occurence</FormLabel>
-<Select name="occurence" onChange={onChange}>
-	<option value={Selected_larm.occurence}>{Selected_larm.occurence}</option>
-	<option value="once">once</option>
-	<option value="daily">daily</option>
-	<option value="weekly">weekly</option>
-	<option value="yearly">yearly</option>
-</Select></>
+		<Select name="occurence" onChange={onChange}>
+			<option value={Selected_larm.occurence}>{Selected_larm.occurence}</option>
+			<option value="once">once</option>
+			<option value="daily">daily</option>
+			<option value="weekly">weekly</option>
+			<option value="yearly">yearly</option>
+		</Select></>
 
 let timeRow_hidden=<></>
 let timeRow_show=<><FormLabel htmlFor="time">Time</FormLabel>
@@ -416,7 +396,7 @@ renderWdays();
 		<Drawer
 			isOpen={isOpen}
 			placement='left'
-			onClose={onClose}
+			onClose={onCloseMod}
 			finalFocusRef={btnRef}
 			size={'md'}
 		>

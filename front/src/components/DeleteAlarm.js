@@ -11,34 +11,22 @@ import {
     AlertDialogOverlay,
 	} from '@chakra-ui/react'
 import React from 'react';
-import { useState, useContext, useRef } from 'react'
-import { SessionContext } from "../contexts/SessionContext";
+import { useState, useRef } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 
 function DeleteAlarm(props) {
 	let [Selected_alarm] = useState({
-		_id: 0,
-		occurence: 0,
-		time: 0,
-		wday: 0,
-		date: 0,
-		label: 0,
-		devices: 0
 	});
-	let checked_radio
 	let toukeni = localStorage.getItem("token");
 	axios.defaults.headers.common['token'] = toukeni;
 	const { isOpen, onOpen, onClose } = useDisclosure()
-	const btnRef = React.useRef()
 	const cancelRef = useRef();
-	const { userInfo, setUserInfo } = useContext(SessionContext);
 	let alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms] = useState(alarmlist)
 	let radios = document.getElementsByName('radjo');
 	for (var i = 0, length = radios.length; i < length; i++) {
 		if (radios[i].checked) {
-			checked_radio=radios[i].value
 			Selected_alarm = alarms[i]
 		}
 	}
@@ -51,7 +39,7 @@ function DeleteAlarm(props) {
 			//Delete Selected_alarm._id from localstorage
 			var oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
 			for (var i =0; i< oldAlarms.length; i++) {
-				if (oldAlarms[i]._id == Selected_alarm._id) {
+				if (oldAlarms[i]._id === Selected_alarm._id) {
 					oldAlarms.splice([i], 1);
 					localStorage.setItem('alarms',JSON.stringify(oldAlarms))
 					props.updateAlarms(oldAlarms)

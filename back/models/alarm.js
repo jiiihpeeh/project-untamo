@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 let Schema = mongoose.Schema({
     occurence:String,
     time:String,
-    wday:String,
+    wday:Array,
     date:String,
     label:String,
     devices:Array,

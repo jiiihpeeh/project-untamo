@@ -19,12 +19,11 @@ import {
 	Center
 	} from '@chakra-ui/react'
 import React from 'react';
-import { useState, useContext } from 'react'
-import { SessionContext } from "../contexts/SessionContext";
+import { useState } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 let selType=''
-let TempWday=new Array();
+let TempWday=[];
 let mon_state=0
 let tue_state=0
 let wed_state=0
@@ -33,14 +32,11 @@ let fri_state=0
 let sat_state=0
 let sun_state=0
 let wday_mon, wday_tue, wday_wed, wday_thu, wday_fri, wday_sat, wday_sun
-let device_ids=new Array();
-let sel_dev=new Array();
-let TempAlarm= new Array();
+let device_ids=[];
+let sel_dev=[];
+let TempAlarm=[];
 
 function AddAlarm(props) {
-	var [Selected_devices, setSelected_alarm] = useState({
-		id: 0,
-	});
 	var checked_radio
 		const [NewAlarm, setNewAlarm] = useState({
 		occurence: 'Select Occurence',
@@ -64,9 +60,8 @@ function AddAlarm(props) {
 	axios.defaults.headers.common['token'] = toukeni;
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const btnRef = React.useRef()
-	
 	const onChange = (event) => {
-		if(event.target.name=='occurence'){	
+		if(event.target.name==='occurence'){	
 			selType=event.target.value
 		}
 		console.log("Form: "+event.target.name+":"+event.target.value)
@@ -79,7 +74,7 @@ function AddAlarm(props) {
 		
 		})
 	}
-	
+
 	const onRegister = async (event) => {
 		try {
 			var checks = document.getElementsByName('tickbox');
@@ -92,13 +87,13 @@ function AddAlarm(props) {
 			}
 			NewAlarm.device_ids=device_ids;
 			NewAlarm.devices=sel_dev;
-			if(selected_wday.Monday==1){TempWday.push('Monday')}
-			if(selected_wday.Tuesday==1){TempWday.push('Tuesday')}
-			if(selected_wday.Wednesday==1){TempWday.push('Wednesday')}
-			if(selected_wday.Thursday==1){TempWday.push('Thursday')}
-			if(selected_wday.Friday==1){TempWday.push('Friday')}
-			if(selected_wday.Saturday==1){TempWday.push('Saturday')}
-			if(selected_wday.Sunday==1){TempWday.push('Sunday')}
+			if(selected_wday.Monday===1){TempWday.push('Monday')}
+			if(selected_wday.Tuesday===1){TempWday.push('Tuesday')}
+			if(selected_wday.Wednesday===1){TempWday.push('Wednesday')}
+			if(selected_wday.Thursday===1){TempWday.push('Thursday')}
+			if(selected_wday.Friday===1){TempWday.push('Friday')}
+			if(selected_wday.Saturday===1){TempWday.push('Saturday')}
+			if(selected_wday.Sunday===1){TempWday.push('Sunday')}
 			NewAlarm.wday=TempWday;
 			const res = await axios.post('/api/alarm/'+localStorage.getItem('user'),NewAlarm );
 			console.log("res.data:"+JSON.stringify(res.data));
@@ -127,19 +122,19 @@ function AddAlarm(props) {
 		fri_state=0;
 		sat_state=0;
 		sun_state=0;
-		TempWday='';
+		TempWday=[];
 		temp_states='';
 		NewAlarm.date='2022-12-24';
 		NewAlarm.label='NewAlarm';
 		NewAlarm.device_ids="0";
 		NewAlarm.devices="0";
 		selType=''
-		device_ids=new Array();
-		sel_dev=new Array();
+		device_ids=[];
+		sel_dev=[];
 		onClose();
 	}
-// Add Alarm Device selection:
 
+// Add Alarm Device selection:
 	var devicelist = JSON.parse(localStorage['devices'])
 	const [deviges] = useState(devicelist)
 	const renderDevices = () => {
@@ -154,27 +149,27 @@ function AddAlarm(props) {
 }
 
 const renderWdays =() => {
-	if(mon_state==1){
+	if(mon_state===1){
 		wday_mon=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Monday')} borderWidth='2px' borderColor='black' borderRadius='md'>
 		<Center h='36px'>
 		Mon
 		</Center>
 		</Button>
 	}
-	if(mon_state==0){
+	if(mon_state===0){
 		wday_mon=<Button w='40px' h='40px' bg='gray.200' onClick={() => wdaySelect('Monday')} borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
 		Mon
 		</Center>
 		</Button>
 	}
 
-	if(tue_state==1){
+	if(tue_state===1){
 		wday_tue=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Tuesday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
 		Tue
 		</Center>
 		</Button>
 	}
-	if(tue_state==0){
+	if(tue_state===0){
 		wday_tue=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Tuesday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
 		<Center h='36px'>
 		Tue
@@ -182,13 +177,13 @@ const renderWdays =() => {
 		</Button>
 	}
 
-	if(wed_state==1){
+	if(wed_state===1){
 		wday_wed=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Wednesday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
 		Wed
 		</Center>
 		</Button>
 	}
-	if(wed_state==0){
+	if(wed_state===0){
 		wday_wed=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Wednesday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
 		<Center h='36px'>
 		Wed
@@ -196,13 +191,13 @@ const renderWdays =() => {
 		</Button>
 	}
 
-	if(thu_state==1){
+	if(thu_state===1){
 		wday_thu=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Thursday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
 		Thu
 		</Center>
 		</Button>
 	}
-	if(thu_state==0){
+	if(thu_state===0){
 		wday_thu=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Thursday')} borderWidth='2px' borderColor='black' borderRadius='md' >
 		<Center h='36px'>
 		Thu
@@ -210,13 +205,13 @@ const renderWdays =() => {
 		</Button>
 	}
 
-	if(fri_state==1){
+	if(fri_state===1){
 		wday_fri=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Friday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
 		Fri
 		</Center>
 		</Button>
 	}
-	if(fri_state==0){
+	if(fri_state===0){
 		wday_fri=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Friday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
 		<Center h='36px'>
 		Fri
@@ -224,13 +219,13 @@ const renderWdays =() => {
 		</Button>
 	}
 
-	if(sat_state==1){
+	if(sat_state===1){
 		wday_sat=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
 		Sat
 		</Center>
 		</Button>
 	}
-	if(sat_state==0){
+	if(sat_state===0){
 		wday_sat=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
 		<Center h='36px'>
 		Sat
@@ -238,13 +233,13 @@ const renderWdays =() => {
 		</Button>
 	}
 
-	if(sun_state==1){
+	if(sun_state===1){
 		wday_sun=<Button w='40px' h='40px' bg='green' onClick={() => wdaySelect('Sunday')}  borderWidth='2px' borderColor='black' borderRadius='md'><Center h='36px'>
 		Sun
 		</Center>
 		</Button>
 	}
-	if(sun_state==0){
+	if(sun_state===0){
 		wday_sun=<Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Sunday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
 		<Center h='36px'>
 		Sun
@@ -261,45 +256,45 @@ const wdaySelect = (wdayid) => {
 	temp_states.Friday=fri_state
 	temp_states.Saturday=sat_state
 	temp_states.Sunday=sun_state
-	if(wdayid=='Monday'){
-		if(mon_state==1){mon_state=0}
-		else if(mon_state==0){mon_state=1}
+	if(wdayid==='Monday'){
+		if(mon_state===1){mon_state=0}
+		else if(mon_state===0){mon_state=1}
 		temp_states.Monday=mon_state
 		setSelected_wday(temp_states)
 	} 
-	if(wdayid=='Tuesday'){
-		if(tue_state==1){tue_state=0}
-		else if(tue_state==0){tue_state=1}
+	if(wdayid==='Tuesday'){
+		if(tue_state===1){tue_state=0}
+		else if(tue_state===0){tue_state=1}
 		temp_states.Tuesday=tue_state
 		setSelected_wday(temp_states)
 		}
-	if(wdayid=='Wednesday'){
-		if(wed_state==1){wed_state=0}
-		else if(wed_state==0){wed_state=1}
+	if(wdayid==='Wednesday'){
+		if(wed_state===1){wed_state=0}
+		else if(wed_state===0){wed_state=1}
 		temp_states.Wednesday=wed_state
 		setSelected_wday(temp_states)
 		}
-	if(wdayid=='Thursday'){
-		if(thu_state==1){thu_state=0}
-		else if(thu_state==0){thu_state=1}
+	if(wdayid==='Thursday'){
+		if(thu_state===1){thu_state=0}
+		else if(thu_state===0){thu_state=1}
 		temp_states.Thursday=thu_state
 		setSelected_wday(temp_states)
 	}
-	if(wdayid=='Friday'){
-		if(fri_state==1){fri_state=0}
-		else if(fri_state==0){fri_state=1}
+	if(wdayid==='Friday'){
+		if(fri_state===1){fri_state=0}
+		else if(fri_state===0){fri_state=1}
 		temp_states.Friday=fri_state
 		setSelected_wday(temp_states)
 	}
-	if(wdayid=='Saturday'){
-		if(sat_state==1){sat_state=0}
-		else if(sat_state==0){sat_state=1}
+	if(wdayid==='Saturday'){
+		if(sat_state===1){sat_state=0}
+		else if(sat_state===0){sat_state=1}
 		temp_states.Saturday=sat_state
 		setSelected_wday(temp_states)
 	}
-	if(wdayid=='Sunday'){
-		if(sun_state==1){sun_state=0}
-		else if(sun_state==0){sun_state=1}
+	if(wdayid==='Sunday'){
+		if(sun_state===1){sun_state=0}
+		else if(sun_state===0){sun_state=1}
 		temp_states.Sunday=sun_state
 		setSelected_wday(temp_states)
 	}
@@ -347,34 +342,34 @@ if(selType){
 	labelRow=labelRow_show;
 	timeRow=timeRow_show;
 	}
-if(selType=='Select Occurence'){
+if(selType==='Select Occurence'){
 	devicesRow=devicesRow_hidden;
 	labelRow=labelRow_hidden;
 	timeRow=timeRow_hidden;
 	wdayRow=wdayRow_hidden;
 	dateRow=dateRow_hidden;
 	}
-if(selType=='once'){
+if(selType==='once'){
 	wdayRow=wdayRow_hidden
 	NewAlarm.wday=''
 	dateRow=dateRow_show
 	}
 
-if(selType=='daily'){
+if(selType==='daily'){
 	wdayRow=wdayRow_hidden
 	NewAlarm.wday=''
 	dateRow=dateRow_hidden
 	NewAlarm.date=''
 }
 
-if(selType=='weekly'){
+if(selType==='weekly'){
 	wdayRow=wdayRow_show
 	dateRow=dateRow_hidden
 	NewAlarm.date=''
 	NewAlarm.wday='Monday'
 }
 
-if(selType=='yearly'){
+if(selType==='yearly'){
 	wdayRow=wdayRow_hidden
 	NewAlarm.wday=''
 	dateRow=dateRow_show
