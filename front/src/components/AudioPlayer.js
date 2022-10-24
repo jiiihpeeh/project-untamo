@@ -25,6 +25,7 @@ class AudioPlayer {
         //this.audioelem.setAttribute('loop', false);
         await this.setTrack();
         this.audioelem.play();
+        URL.revokeObjectURL(this.audioelem.src);
     };
     async playLoop (){
         await this.setTrack();

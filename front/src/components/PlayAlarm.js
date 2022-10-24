@@ -1,7 +1,9 @@
-import React, { useLayoutEffect, useState, useContext } from 'react';
+import React, { useLayoutEffect, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SessionContext } from '../contexts/SessionContext';
-import AudioPlayer from './AudioPlayer';
+import { AlarmContext } from '../contexts/AlarmContext';
+import { hasOrFetchAudio, getAudio } from '../audiostorage/audioDatabase';
+import axios from 'axios';
 
 import { 
          Text, 
@@ -18,6 +20,12 @@ import '../App.css'
 
 const PlayAlarm = () =>{
     const [clockSize, setClockSize] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35);
+    const { runAlarm, alarms, setAlarms } = useContext(AlarmContext);
+    const { token } = useContext(SessionContext);
+    const {sessionStatus} = useContext(SessionContext);
+    const [ audioURL, setAudioURL ] = useState(undefined);
+    axios.defaults.headers.common['token'] = token;
+    
     useLayoutEffect(() => {
         function updateSize() {
             setClockSize(Math.min(window.innerWidth, window.innerHeight) * 0.35);
@@ -26,25 +34,100 @@ const PlayAlarm = () =>{
         updateSize();
         return () => window.removeEventListener('resize', updateSize);
     }, []);
-    const {token} = useContext(SessionContext);
-    const navigate = useNavigate()
-    const playAudio = new AudioPlayer('rooster', token);
-    const snoozer = async () =>{
-        console.log("clicked");
-        await playAudio.playLoop();
-    }
+
     
-    const tellme = (event) => {
-        console.log(event)
-        playAudio.stopLoop();
-        navigate('/alarms')
+    const navigate = useNavigate()
+
+    const snoozer = async () =>{
+        let aElem = document.getElementById('playAudioAlarm');
+        if(aElem){
+            aElem.pause();
+            if(audioURL){
+                URL.revokeObjectURL(audioURL);
+                setAudioURL(undefined);
+            }
+        }
+        let currentAlarm = Object.assign({},runAlarm);
+        let currentMoment = Date.now();
+        if(currentAlarm.hasOwnProperty('snooze')){
+            currentAlarm.snooze = currentAlarm.snooze.filter(snooze => snooze > (currentMoment - (60 * 60 * 1000)));
+            currentAlarm.snooze.push(currentMoment);
+        }else{
+            currentAlarm.snooze = [ currentMoment ];
+        }
+        try {
+            let res = await axios.put('/api/alarm/'+currentAlarm._id, currentAlarm);
+            console.log(res.data)
+        }catch(err){
+            console.log("Couldn't update alarm info ", err)
+        }
+        let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm._id);
+        filterAlarms.push(currentAlarm);
+        setAlarms(filterAlarms);
+        localStorage.setItem('alarms', JSON.stringify(filterAlarms));
+        navigate('/alarms');   
+     }
+    
+ 
+    const turnOff = async (event) => {
+        console.log(event);
+        let aElem = document.getElementById('playAudioAlarm');
+        if(aElem){
+            aElem.pause();
+            let currentAlarm = Object.assign({},runAlarm);
+            currentAlarm.snooze = [0];
+            try {
+                let res = await axios.put('/api/alarm/'+currentAlarm._id, currentAlarm);
+                console.log(res.data)
+            }catch(err){
+                console.log("Couldn't update alarm info ", err)
+            }
+            let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm._id);
+            filterAlarms.push(currentAlarm);
+            setAlarms(filterAlarms);
+            localStorage.setItem('alarms', JSON.stringify(filterAlarms));
+            navigate('/alarms');   
+            if(audioURL){
+                URL.revokeObjectURL(audioURL);
+                setAudioURL(undefined);
+            }
+        }
+        setTimeout(() => {navigate('/alarms')},100);
     }
+
+    useEffect(() =>{
+        if(!sessionStatus){
+            navigate('/login');
+        }
+    })
+    useEffect(() => {
+        const setAudio = async () => {
+            let aElem = document.getElementById('playAudioAlarm');
+            if(aElem){
+                let tracked = await hasOrFetchAudio('rooster', token);
+                if(tracked){
+                    let data =  await getAudio('rooster');
+                    let aURL = URL.createObjectURL(data);
+                    setAudioURL(aURL);
+                }
+            }
+        }
+        setAudio();
+    },[runAlarm, setAudioURL, token]);
+
+    useEffect(() => {
+        let aElem = document.getElementById('playAudioAlarm');
+        if(aElem){
+            aElem.play();
+        };
+    }, [audioURL])
 
     return(
         <>
         <Stack align='center'>
+            <audio id="playAudioAlarm" loop={true} type='audio/ogg' src={audioURL}/>
             <Heading as="h1" size='4xl' color='tomato'  textShadow='2px 4px #ff0000' className='AlarmMessage'>
-                Alarm
+                {runAlarm.label}
             </Heading>
             <Heading as='h3' size='md'>
                 Snooze the Alarm by clicking the clock below
@@ -62,7 +145,7 @@ const PlayAlarm = () =>{
             <FormLabel mb='0'>
                     <Text as='b'>Turn alarm OFF</Text>
             </FormLabel>
-            <Switch size='lg' onChange={tellme}/>
+            <Switch size='lg' onChange={turnOff}/>
       
         </Stack>
         </> 

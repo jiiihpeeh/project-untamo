@@ -15,10 +15,9 @@ import NavGrid from './components/NavGrid';
 import Clueless from './components/Clueless';
 import GenerateQRPairingKey from './components/GenerateQRPairingKey';
 import PlayAlarm from './components/PlayAlarm';
-import AlarmChecker from './components/AlarmChecker';
+import AlarmWatcher from './components/AlarmWatcher';
 
 function App() {
-
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
 	const [userInfo, setUserInfo] = useState({
 		user: localStorage['user'] ? localStorage['user'] : undefined,
@@ -32,6 +31,8 @@ function App() {
 	const [viewableDevices, setViewableDevices] = useState(localStorage['viewableDevices'] ? JSON.parse(localStorage['viewableDevices']) : []);
 	const [fetchQR, setFetchQR] = useState(false);
 	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
+	const [ runAlarm, setRunAlarm ] = useState('');
+	// This one is id when set when set it is string see AlarmWatcher. Meaning: to Trigger PlayAlarm. 
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
@@ -76,11 +77,10 @@ function App() {
 		<div className="App">
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
-		<AlarmContext.Provider value={{ alarms, setAlarms }}>
+		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm }}>
 			<NavGrid/>
 
 			<Routes>
-				
 					<Route exact path="/alarms" element={<Alarms/>}/>
 					<Route path="/about" element={<About/>}/>
 					<Route path="/login" element={<LogIn/>}/>
@@ -92,7 +92,7 @@ function App() {
 					<Route path="*" element={<Navigate to="/clueless" /> } />
 			</Routes>
 		<GenerateQRPairingKey/>
-		<AlarmChecker/>
+		<AlarmWatcher/>
 		</AlarmContext.Provider>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    

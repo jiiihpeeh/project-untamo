@@ -32,7 +32,7 @@ export const hasAudio = async (key)  => {
 };
 
 export const fetchAudio = async (audio, token) => {
-    if(token){
+    if(token && audio.length > 0){
         try {
             let res = await axios.get(`http://localhost:3001/audioresources/${audio}.opus`,{
                 responseType: 'blob', 
@@ -64,8 +64,10 @@ export const fetchAudioFiles = async (token) => {
             let res = await axios.get(`http://localhost:3001/audioresources/resource_list.json`,{
                 headers: {'token': token}
             });
-            for (const audio of res.data){
-                await hasOrFetchAudio(audio, token);
+            if(res.data.length > 0){
+                for (const audio of res.data){
+                    await hasOrFetchAudio(audio, token);
+                }
             }
         } catch(err){
             console.log(`Couldn't fetch resources listing`);

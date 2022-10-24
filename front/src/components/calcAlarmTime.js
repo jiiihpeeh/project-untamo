@@ -33,7 +33,36 @@ const initAlarmDate = (timeString) => {
     return timeCompare;
 };
 
+const insertDate = (dateObj, dateString) => {
+    let dateArr = dateString.split('-');
+    dateObj.setDate(Number.parseInt(dateArr[2]) -1);
+    dateObj.setMonth(Number.parseInt(dateArr[1]) -1);
+    dateObj.setFullYear(Number.parseInt(dateArr[0]));
+    return dateObj;
+}
 
+export const nextAlarmOnce = (timeString, dateString) => {
+    let timeNow = new Date();
+    let timeCompare = initAlarmDate(timeString);
+    timeCompare = insertDate(timeCompare, dateString); 
+    if(timeCompare > timeNow){
+        return timeCompare;
+    }
+    return NaN;    
+};
+
+export const nextAlarmYearly = (timeString, dateString) => {
+    let timeNow = new Date();
+    let timeCompare = initAlarmDate(timeString);
+    timeCompare = insertDate(timeCompare, dateString);
+    let year = timeNow.getFullYear();
+    timeCompare.setFullYear(year);
+    if(timeCompare > timeNow){
+        return timeCompare;
+    }
+    timeCompare.setFullYear(year + 1);
+    return timeCompare;    
+};
 
 export const nextAlarmDaily = (timeString) => {
     let timeNow = new Date();
@@ -43,8 +72,6 @@ export const nextAlarmDaily = (timeString) => {
     };
     return timeCompare;
 };
-
-
 
 export const nextAlarmWeekly = (timeString, weekday) => {
     let timeNow = new Date();
@@ -67,4 +94,38 @@ export const nextAlarmWeekly = (timeString, weekday) => {
     };
     //console.log(timeCompare);
     return timeCompare;
+};
+
+export const timeForNextAlarm = (alarm) => {
+
+    switch(alarm.occurence){
+        case 'once':
+            return nextAlarmOnce(alarm.time, alarm.date) ;
+        case 'daily':
+            return nextAlarmDaily(alarm.time);
+        case 'weekly':
+            return nextAlarmWeekly(alarm.time,alarm.wday) ;
+        case 'yearly':
+            return nextAlarmYearly(alarm.time, alarm.date);
+        default:
+            return NaN;
+    };
+};
+
+export const timeToNextAlarm = (alarm) => {    
+    let snoozer = Infinity
+    if(alarm.hasOwnProperty('snooze')){
+        let snoozed = alarm.snooze;
+        let timeStamp = Date.now();
+        
+        let snoozeMax = Math.min(...snoozed) + (30 * 60 * 1000);
+        let snoozeMin = timeStamp - (30 * 60 * 1000);
+        if ((Math.max(...snoozed) < snoozeMax) && (Math.min(...snoozed) > snoozeMin)){
+            let nextNotification = Math.max(...snoozed) + (5 * 60 * 1000);
+            snoozer = nextNotification;
+        }
+    }
+    let date = new Date();
+    let preliminaryAlarm = Math.max( timeForNextAlarm(alarm) - date, 0)
+    return Math.min(snoozer, preliminaryAlarm)
 };
