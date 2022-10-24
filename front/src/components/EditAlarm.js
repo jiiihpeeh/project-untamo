@@ -245,7 +245,7 @@ let wday_result
 			if(buttonstate.Friday==1){TempWday.push('Friday')}
 			if(buttonstate.Saturday==1){TempWday.push('Saturday')}
 			if(buttonstate.Sunday==1){TempWday.push('Sunday')}
-			Selected_larm.wday=TempWday;
+			Selected_larm.wday= Array.from(new Set(TempWday));
 			console.log("Try: /api/alarm/"+Selected_larm._id,Selected_larm)
 			const res = await axios.put('/api/alarm/'+Selected_larm._id,Selected_larm );
 			console.log(res.data);

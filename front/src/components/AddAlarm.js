@@ -94,7 +94,7 @@ function AddAlarm(props) {
 			if(selected_wday.Friday===1){TempWday.push('Friday')}
 			if(selected_wday.Saturday===1){TempWday.push('Saturday')}
 			if(selected_wday.Sunday===1){TempWday.push('Sunday')}
-			NewAlarm.wday=TempWday;
+			NewAlarm.wday= Array.from(new Set(TempWday));
 			const res = await axios.post('/api/alarm/'+localStorage.getItem('user'),NewAlarm );
 			console.log("res.data:"+JSON.stringify(res.data));
 			console.log(res.data.id)
