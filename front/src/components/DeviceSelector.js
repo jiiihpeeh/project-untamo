@@ -13,7 +13,9 @@ import {
     Icon,
     HStack,
     Tooltip,
-    Checkbox
+    Radio,
+    Spacer,
+    Box
   } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import deviceIcons from "./DeviceIcons";
@@ -49,7 +51,7 @@ const DeviceSelector = (props) => {
                         
                         <HStack spacing='24px'>
                         
-                          <Checkbox  isChecked={isCurrentDevice(device.id)} /><Text>{device.deviceName}</Text> <Tooltip label={device.type}><Icon as={deviceIcons(device.type)}/></Tooltip>
+                          <Radio  isChecked={isCurrentDevice(device.id)}> {device.deviceName}</Radio> <Tooltip label={device.type}><Icon as={deviceIcons(device.type)}/></Tooltip>
                         
                         </HStack>
                         
@@ -75,7 +77,7 @@ const DeviceSelector = (props) => {
       if(props.type==="submenu"){
         return (
           <MenuButton as={Text} onClick={openIt} >
-              Select a Device        <ChevronRightIcon/>
+              <HStack spacing='36px' > <Box><Text>Select a Device </Text> </Box><Spacer /> <Box><ChevronRightIcon/></Box></HStack>
           </MenuButton>
         )
       }

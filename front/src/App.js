@@ -18,7 +18,6 @@ import PlayAlarm from './components/PlayAlarm';
 import AlarmWatcher from './components/AlarmWatcher';
 
 function App() {
-
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
 	const [userInfo, setUserInfo] = useState({
 		user: localStorage['user'] ? localStorage['user'] : undefined,
@@ -32,8 +31,8 @@ function App() {
 	const [viewableDevices, setViewableDevices] = useState(localStorage['viewableDevices'] ? JSON.parse(localStorage['viewableDevices']) : []);
 	const [fetchQR, setFetchQR] = useState(false);
 	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
+	const [ runAlarm, setRunAlarm ] = useState('');
 	// This one is id when set when set it is string see AlarmWatcher. Meaning: to Trigger PlayAlarm. 
-	const [runAlarm, setRunAlarm] = useState({});
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;

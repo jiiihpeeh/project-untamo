@@ -1,8 +1,9 @@
 import React, { useLayoutEffect, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SessionContext } from '../contexts/SessionContext';
-import AudioPlayer from './AudioPlayer';
 import { AlarmContext } from '../contexts/AlarmContext';
+import { hasOrFetchAudio, getAudio } from '../audiostorage/audioDatabase';
+
 import { 
          Text, 
          Image, 
@@ -18,9 +19,10 @@ import '../App.css'
 
 const PlayAlarm = () =>{
     const [clockSize, setClockSize] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35);
-    const { runAlarm, alarms } = useContext(AlarmContext);
+    const { runAlarm } = useContext(AlarmContext);
     const {sessionStatus} = useContext(SessionContext);
-    const [ alarmItem, setAlarmItem ] = useState({label:'Alarm'});
+    const [ audioURL, setAudioURL ] = useState(undefined);
+
     
     useLayoutEffect(() => {
         function updateSize() {
@@ -30,30 +32,67 @@ const PlayAlarm = () =>{
         updateSize();
         return () => window.removeEventListener('resize', updateSize);
     }, []);
+    
     const { token } = useContext(SessionContext);
     const navigate = useNavigate()
-    const playAudio = new AudioPlayer('rooster', token);
-    //playAudio.playLoop();
+
     const snoozer = async () =>{
-        console.log("clicked");
-        await playAudio.playLoop();
-    }
+        let aElem = document.getElementById('playAudioAlarm');
+        if(aElem){
+            aElem.pause();
+            if(audioURL){
+                URL.revokeObjectURL(audioURL);
+                setAudioURL(undefined);
+            }
+        }
+        navigate('/alarms');   
+     }
     
  
-    const tellme = (event) => {
+    const turnOff = (event) => {
         console.log(event);
-        playAudio.stopLoop();
-        navigate('/alarms');
+        let aElem = document.getElementById('playAudioAlarm');
+        if(aElem){
+            aElem.pause();
+            if(audioURL){
+                URL.revokeObjectURL(audioURL);
+                setAudioURL(undefined);
+            }
+        }
+        setTimeout(() => {navigate('/alarms')},100);
     }
 
     useEffect(() =>{
         if(!sessionStatus){
-            navigate('/login')
+            navigate('/login');
         }
     })
+    useEffect(() => {
+        const setAudio = async () => {
+            let aElem = document.getElementById('playAudioAlarm');
+            if(aElem){
+                let tracked = await hasOrFetchAudio('rooster', token);
+                if(tracked){
+                    let data =  await getAudio('rooster');
+                    let aURL = URL.createObjectURL(data);
+                    setAudioURL(aURL);
+                }
+            }
+        }
+        setAudio();
+    },[runAlarm, setAudioURL, token]);
+
+    useEffect(() => {
+        let aElem = document.getElementById('playAudioAlarm');
+        if(aElem){
+            aElem.play();
+        };
+    }, [audioURL])
+
     return(
         <>
         <Stack align='center'>
+            <audio id="playAudioAlarm" loop={true} type='audio/ogg' src={audioURL}/>
             <Heading as="h1" size='4xl' color='tomato'  textShadow='2px 4px #ff0000' className='AlarmMessage'>
                 {runAlarm.label}
             </Heading>
@@ -73,7 +112,7 @@ const PlayAlarm = () =>{
             <FormLabel mb='0'>
                     <Text as='b'>Turn alarm OFF</Text>
             </FormLabel>
-            <Switch size='lg' onChange={tellme}/>
+            <Switch size='lg' onChange={turnOff}/>
       
         </Stack>
         </> 

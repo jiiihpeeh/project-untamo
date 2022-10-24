@@ -36,12 +36,11 @@ const AlarmWatcher  = () => {
                     setRunAlarm(runThis);
                     let timeOutID = setTimeout(goToAlarm, minTime);
                     setAlarmIDTimeout(timeOutID);
-                    //setTimeOutIDs([...timeOutIDs, timeOutID]);
                 }
             }
         } 
         filterAlarms();
-    },[alarms, currentDevice, setRunAlarm])
+    },[alarms, currentDevice, setRunAlarm,alarmIDTimeout, navigate])
 };
 
 export default AlarmWatcher;
