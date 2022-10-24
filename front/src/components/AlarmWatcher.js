@@ -25,6 +25,7 @@ const AlarmWatcher  = () => {
                 let timeOutID = setTimeout(() => { navigate('/playalarm/') }, timed);
                 sessionStorage.setItem('timeOutID', JSON.stringify(timeOutID))
                 console.log("upcoming alarm ", runAlarm);
+                console.log('launching in: ', timed);
             }
         }
 
@@ -42,7 +43,7 @@ const AlarmWatcher  = () => {
                 }
                 let minTime = Math.min(...idTimeOutMap.keys());
                 if(minTime && (!isNaN(minTime)) && (minTime !== Infinity) ){
-                    console.log('launching in: ', minTime);
+                    
                     let runThis =  idTimeOutMap.get(minTime);
                    
                     
