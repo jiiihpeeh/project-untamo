@@ -40,7 +40,7 @@ const AlarmWatcher  = () => {
             }
         } 
         filterAlarms();
-    },[alarms, currentDevice, setRunAlarm,alarmIDTimeout, navigate])
+    },[alarms, currentDevice])
 };
 
 export default AlarmWatcher;
