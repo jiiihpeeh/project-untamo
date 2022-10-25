@@ -95,7 +95,7 @@ function EditAlarm(props) {
 		return deviges.map(({ id, deviceName, type }) => {
 			for (let i = 0; i < Selected_larm.device_ids.length; i++) {
 				if(id===Selected_larm.device_ids[i]){
-					return <HStack spacing='10px' key={id}>
+					return <HStack spacing='10px' key={id+i}>
 					<Box w='20px' h='6'>
 					<input type='checkbox' name="tickbox" value={id} defaultChecked></input></Box>
 					<Box w='170px' h='6'>{deviceName}</Box>
@@ -341,6 +341,10 @@ let devicesRow_hidden=<></>
 let devicesRow_show=<><FormLabel htmlFor="devices_row">Devices</FormLabel>
 {renderDevices()}</>
 let devicesRow=devicesRow_hidden
+//SaveButton
+let saveBut_hidden=<Button colorScheme='gray'>Save</Button>
+let saveBut_show=<Button colorScheme='green' onClick={onRegister}>Save</Button>
+let saveBut=saveBut_hidden
 
 if(Selected_larm.occurence){
 	devicesRow=devicesRow_show;
@@ -358,22 +362,29 @@ if(Selected_larm.occurence==='once'){
 	wdayRow=wdayRow_hidden
 	Selected_larm.wday=''
 	dateRow=dateRow_show
+	saveBut=saveBut_show
 	}
 if(Selected_larm.occurence==='daily'){
 	wdayRow=wdayRow_hidden
 	Selected_larm.wday=''
 	dateRow=dateRow_hidden
 	Selected_larm.date=''
+	saveBut=saveBut_show
 }
 if(Selected_larm.occurence==='weekly'){
 	wdayRow=wdayRow_show
 	dateRow=dateRow_hidden
 	Selected_larm.date=''
+	saveBut=saveBut_hidden
+	if(JSON.stringify(buttonstate).includes('1')){
+		saveBut=saveBut_show
+	}
 }
 if(Selected_larm.occurence==='yearly'){
 	wdayRow=wdayRow_hidden
 	Selected_larm.wday=''
 	dateRow=dateRow_show
+	saveBut=saveBut_show
 }
 renderWdays();
 	return (
@@ -407,7 +418,7 @@ renderWdays();
 				</DrawerBody>
 				<DrawerFooter>
 					<Button variant='outline' mr={3} onClick={onClose} colorScheme="red">Cancel</Button>
-					<Button colorScheme='green' onClick={onRegister}>Save</Button>
+					{saveBut}
 				</DrawerFooter>
 			</DrawerContent>
 			</Drawer>

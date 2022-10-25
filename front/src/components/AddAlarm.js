@@ -23,6 +23,7 @@ import { useState, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
+import { json } from 'react-router-dom';
 
 let selType=''
 let TempWday=[];
@@ -135,6 +136,7 @@ function AddAlarm(props) {
 		selType=''
 		device_ids=[];
 		sel_dev=[];
+		setSelected_wday('')
 		onClose();
 	}
 
@@ -378,7 +380,10 @@ if(selType==='weekly'){
 	wdayRow=wdayRow_show
 	dateRow=dateRow_hidden
 	NewAlarm.date=''
-	saveBut=saveBut_show
+	saveBut=saveBut_hidden
+	if(JSON.stringify(selected_wday).includes('1')){
+		saveBut=saveBut_show
+	}
 }
 
 if(selType==='yearly'){
