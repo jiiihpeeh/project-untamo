@@ -13,7 +13,7 @@ import {
          Stack, 
          Spacer,
          Heading,
-         FormLabel
+         FormLabel,
           } from "@chakra-ui/react"
 import '../App.css'
 
@@ -39,6 +39,10 @@ const PlayAlarm = () =>{
     const navigate = useNavigate()
 
     const snoozer = async () =>{
+        try{
+            clearTimeout(JSON.parse(sessionStorage.getItem('alarm-timeout')));
+        }catch(err){}
+        
         let aElem = document.getElementById('playAudioAlarm');
         if(aElem){
             aElem.pause();
@@ -71,6 +75,9 @@ const PlayAlarm = () =>{
  
     const turnOff = async (event) => {
         console.log(event);
+        try{
+            clearTimeout(JSON.parse(sessionStorage.getItem('alarm-timeout')));
+        }catch(err){}
         let aElem = document.getElementById('playAudioAlarm');
         if(aElem){
             aElem.pause();
@@ -99,7 +106,15 @@ const PlayAlarm = () =>{
         if(!sessionStatus){
             navigate('/login');
         }
-    })
+    },[])
+    useEffect(() =>{
+        const goAway = () =>{
+           snoozer();
+        }
+       let timeout = setTimeout(goAway, 10* 60* 1000);
+       sessionStorage.setItem('alarm-timeout', JSON.stringify(timeout));
+    },[])
+
     useEffect(() => {
         const setAudio = async () => {
             let aElem = document.getElementById('playAudioAlarm');
@@ -146,7 +161,6 @@ const PlayAlarm = () =>{
                     <Text as='b'>Turn alarm OFF</Text>
             </FormLabel>
             <Switch size='lg' onChange={turnOff}/>
-      
         </Stack>
         </> 
     )
