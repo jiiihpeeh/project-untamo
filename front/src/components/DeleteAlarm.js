@@ -17,8 +17,7 @@ import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
 
 function DeleteAlarm(props) {
-	let [Selected_alarm] = useState({
-	});
+	let valittu=JSON.parse(props.valinta)
 	let toukeni = localStorage.getItem("token");
 	axios.defaults.headers.common['token'] = toukeni;
 	const { isOpen, onOpen, onClose } = useDisclosure()
@@ -27,25 +26,22 @@ function DeleteAlarm(props) {
 	const [alarms] = useState(alarmlist)
 	let radios = document.getElementsByName('radjo');
 	const { setAlarms } = useContext(AlarmContext);
-	for (var i = 0, length = radios.length; i < length; i++) {
-		if (radios[i].checked) {
-			Selected_alarm = alarms[i]
-		}
-	}
 
 	const deleteAlarm = async() =>{
         try {
-			//Delete Selected_alarm._id from mongodb
-			const res = await axios.delete('/api/alarm/'+Selected_alarm._id);
+			//Delete selected alarm id from mongodb
+			const res = await axios.delete('/api/alarm/'+valittu._id);
 			console.log("res.data:"+JSON.stringify(res.data));
-			//Delete Selected_alarm._id from localstorage
-			var oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
-			for (var i =0; i< oldAlarms.length; i++) {
-				if (oldAlarms[i]._id === Selected_alarm._id) {
+			//Delete selected alarm id from localstorage
+			let oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
+			for (let i =0; i< oldAlarms.length; i++) {
+				if (oldAlarms[i]._id === valittu._id) {
 					oldAlarms.splice([i], 1);
 					localStorage.setItem('alarms',JSON.stringify(oldAlarms))
 					props.updateAlarms(oldAlarms)
 					setAlarms(oldAlarms);
+					console.log("ALARM DELETED")
+					props.updateNapit('hide')
 				}
 			}
         }catch(err){
@@ -67,7 +63,7 @@ function DeleteAlarm(props) {
 			<AlertDialogOverlay>
 				<AlertDialogContent>
 					<AlertDialogHeader fontSize='lg' fontWeight='bold'>
-						Delete alarm: {Selected_alarm.label}
+						Delete alarm: {valittu.label}
 					</AlertDialogHeader>
 					<AlertDialogBody>
 					Are you sure?

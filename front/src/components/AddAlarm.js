@@ -306,12 +306,12 @@ const wdaySelect = (wdayid) => {
 //Conditional Add Alarm Rows:
 //timeRow
 let timeRow_hidden=<></>
-let timeRow_show=<><FormLabel id='time_row' htmlFor="time_row">Time</FormLabel>
+let timeRow_show=<><FormLabel>Time</FormLabel>
 	<Input  name='time' id='timerow' type='time'onChange={onChange} placeholder={NewAlarm.time} value={NewAlarm.time}/></>
 let timeRow=timeRow_hidden
 //wdayRow
 let wdayRow_hidden=<></>
-let wdayRow_show=<><FormLabel id='wday_row' htmlFor="wday_row">Weekday</FormLabel>
+let wdayRow_show=<><FormLabel>Weekday</FormLabel>
 		<Center h='60px'><HStack spacing='12px'>
 		{wday_mon}
 		{wday_tue}
@@ -325,19 +325,23 @@ let wdayRow_show=<><FormLabel id='wday_row' htmlFor="wday_row">Weekday</FormLabe
 let wdayRow=wdayRow_hidden
 //dateRow
 let dateRow_hidden=<></>
-let dateRow_show=<><FormLabel id='date_row' htmlFor="date_row">Date</FormLabel>
+let dateRow_show=<><FormLabel>Date</FormLabel>
 <Input  name='date' id='daterow' type='date' onChange={onChange} placeholder={NewAlarm.date} value={NewAlarm.date}/></>
 let dateRow=dateRow_hidden
 //labelRow
 let labelRow_hidden=<></>
-let labelRow_show=<><FormLabel id='label_row' htmlFor="label_row">Label</FormLabel>
+let labelRow_show=<><FormLabel>Label</FormLabel>
 <Input name='label' id='labelrow' onChange={onChange} placeholder={NewAlarm.label} value={NewAlarm.label}/></>
 let labelRow=labelRow_hidden
 //devicesRow
 let devicesRow_hidden=<></>
-let devicesRow_show=<><FormLabel id='devices_row' htmlFor="devices_row">Devices</FormLabel>
-<span id='devicesrow'>{renderDevices()}</span></>
+let devicesRow_show=<><FormLabel>Devices</FormLabel>
+{renderDevices()}</>
 let devicesRow=devicesRow_hidden
+//SaveButton
+let saveBut_hidden=<Button colorScheme='gray'>Save</Button>
+let saveBut_show=<Button colorScheme='green' onClick={onRegister}>Save</Button>
+let saveBut=saveBut_hidden
 
 //Conditions based on occurence selection:
 
@@ -345,6 +349,8 @@ if(selType){
 	devicesRow=devicesRow_show;
 	labelRow=labelRow_show;
 	timeRow=timeRow_show;
+	saveBut=saveBut_hidden;
+
 	}
 if(selType==='Select Occurence'){
 	devicesRow=devicesRow_hidden;
@@ -357,6 +363,7 @@ if(selType==='once'){
 	wdayRow=wdayRow_hidden
 	NewAlarm.wday=''
 	dateRow=dateRow_show
+	saveBut=saveBut_show
 	}
 
 if(selType==='daily'){
@@ -364,19 +371,21 @@ if(selType==='daily'){
 	NewAlarm.wday=''
 	dateRow=dateRow_hidden
 	NewAlarm.date=''
+	saveBut=saveBut_show
 }
 
 if(selType==='weekly'){
 	wdayRow=wdayRow_show
 	dateRow=dateRow_hidden
 	NewAlarm.date=''
-	NewAlarm.wday='Monday'
+	saveBut=saveBut_show
 }
 
 if(selType==='yearly'){
 	wdayRow=wdayRow_hidden
 	NewAlarm.wday=''
 	dateRow=dateRow_show
+	saveBut=saveBut_show
 }
 renderWdays()
 	return (
@@ -391,9 +400,9 @@ renderWdays()
 			finalFocusRef={btnRef}
 			size={'md'}
 		>
-		<DrawerOverlay />
+		<DrawerOverlay/>
 		<DrawerContent>
-			<DrawerCloseButton />
+			<DrawerCloseButton/>
 			<DrawerHeader>Add Alarm</DrawerHeader>
 			<DrawerBody>
 			<form 
@@ -401,7 +410,7 @@ renderWdays()
 				onSubmit={onRegister}
             >
 			<FormControl>
-			<FormLabel htmlFor="occu_row">Occurence</FormLabel>
+			<FormLabel>Occurence</FormLabel>
 				<Select name="occurence" onChange={onChange}>
 					<option value="Select Occurence">Select Occurence</option>
 					<option value="once">once</option>
@@ -419,7 +428,7 @@ renderWdays()
 				</DrawerBody>
 				<DrawerFooter>
 					<Button variant='outline' mr={3} onClick={onClose} colorScheme="red">Cancel</Button>
-					<Button colorScheme='green' onClick={onRegister}>Save</Button>
+					{saveBut}
 				</DrawerFooter>
 			</DrawerContent>
 			</Drawer>

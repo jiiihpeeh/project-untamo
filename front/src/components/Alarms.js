@@ -12,7 +12,8 @@ import {
 	Td,
 	TableContainer,
 	HStack,
-	Center
+	Center,
+	Text
 	} from '@chakra-ui/react'
 import { useState } from 'react'
 import EditAlarm from "./EditAlarm";
@@ -20,20 +21,15 @@ import AddAlarm from "./AddAlarm";
 import DeleteAlarm from "./DeleteAlarm";
 
 const Alarms = () => {
-	let [Selected_alarm] = useState({
-		_id: 0,
-		occurence: 0,
-		time: 0,
-		wday: 0,
-		date: 0,
-		label: 0,
-		devices: 0
-	});
+	let [alarm_valinta, setAlarm_valinta] = useState('')
 	const [ealarm] = useState({})
-	const { token, sessionStatus } = useContext(SessionContext);
+	const [mod_nappi_tila, setMod_nappi_tila] = useState('hide')
+	const { sessionStatus } = useContext(SessionContext);
 	const { currentDevice } = useContext(DeviceContext);
-    const navigate = useNavigate();
 
+    const navigate = useNavigate();
+	let edit_nappi=''
+	let delete_nappi=''
 	useEffect(() =>{
 		if(!sessionStatus){
 			navigate('/login');
@@ -45,24 +41,14 @@ const Alarms = () => {
 			navigate('/welcome');
 		}
 	},[currentDevice])
-
-	const radioOnChange=()=>{
-		var radios = document.getElementsByName('radjo');
-		let kekke = radios[0].value
-		let selek = JSON.parse(kekke)
-		for (var i = 0, length = radios.length; i < length; i++) {
-			if (radios[i].checked) {
-				Selected_alarm = alarms[i]
-			}	
-		}
-	}
+	let radio_buttons = document.getElementsByName('radjo');
 
 	let alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms, setAlarms] = useState(alarmlist)
 	const renderAlarms = () => {
 		return alarms.map(({ _id, occurence, time, wday, date, label, devices },numero) => {
 		return <Tr key={_id}>
-		<Td><input type='radio' name="radjo" value={JSON.stringify(alarms[numero])} onChange={radioOnChange}/></Td>
+		<Td><input type='radio' name="radjo" value={JSON.stringify(alarms[numero])} onClick={bottunClick}/></Td>
 		<Td>{occurence}</Td>
 		<Td>{time}</Td>
 		<Td>{wday}</Td>
@@ -72,8 +58,33 @@ const Alarms = () => {
 		</Tr>
 		})
 	}
-	const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
 
+	const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
+	const updateNapit = (nappiChild) => setMod_nappi_tila(nappiChild)
+	let edit_nappi_hide=<Text>Edit Alarm</Text>
+	let edit_nappi_show=<EditAlarm updateAlarms={updateAlarms} valinta={alarm_valinta} updateNapit={updateNapit}/>
+	let delete_nappi_hide=<Text>Delete Alarm</Text>
+	let delete_nappi_show=<DeleteAlarm updateAlarms={updateAlarms} valinta={alarm_valinta} updateNapit={updateNapit}/>
+
+	if(mod_nappi_tila==='hide'){
+		edit_nappi=edit_nappi_hide
+		delete_nappi=delete_nappi_hide
+	}
+	if(mod_nappi_tila==='show'){
+		edit_nappi=edit_nappi_show
+		delete_nappi=delete_nappi_show
+	}
+
+	const bottunClick = () => {
+		let valittu_alarm=''
+		for (let i = 0, length = radio_buttons.length; i < length; i++) {
+			if (radio_buttons[i].checked) {
+				valittu_alarm = radio_buttons[i].value
+				setAlarm_valinta(valittu_alarm)
+				setMod_nappi_tila('show')
+			}
+		}
+	}
 	return (
 		<Container bg='blue.200' maxW='fit-content'>
 			<Heading size='sm'>List of Alarms for {localStorage.getItem('screenname')} {ealarm.label}</Heading>
@@ -97,7 +108,7 @@ const Alarms = () => {
 			</TableContainer>
 			<Center>
 			<HStack spacing='30px'>
-			<AddAlarm updateAlarms={updateAlarms}/><EditAlarm updateAlarms={updateAlarms}/><DeleteAlarm updateAlarms={updateAlarms}/></HStack></Center>
+			<AddAlarm updateAlarms={updateAlarms}/>{edit_nappi}{delete_nappi}</HStack></Center>
 		</Container>
 	)
 }
