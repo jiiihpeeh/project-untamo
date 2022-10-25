@@ -14,7 +14,7 @@ const AlarmWatcher  = () => {
             try {
                 clearTimeout(delTimeOut);
             }catch(err){
-                console.log(err)
+                console.log(err);
             }
         }
  
@@ -24,8 +24,8 @@ const AlarmWatcher  = () => {
                 
                 let timeOutID = setTimeout(() => { navigate('/playalarm/') }, timed);
                 sessionStorage.setItem('timeOutID', JSON.stringify(timeOutID));
-                console.log("upcoming alarm ", runAlarm);
-                console.log('launching in: ', timed);
+                console.log("upcoming alarm :", runAlarm);
+                console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, new Date(timed + Date.now()));
             }
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps 
@@ -44,11 +44,10 @@ const AlarmWatcher  = () => {
                 let minTime = Math.min(...idTimeOutMap.keys());
                 if(minTime && (!isNaN(minTime)) && (minTime !== Infinity) ){
                     let runThis =  idTimeOutMap.get(minTime);
-                    console.log(runThis)
+                    //console.log(runThis)
                     setRunAlarm(runThis);
                 }
             }
-        
         } 
         filterAlarms();
     },[alarms, currentDevice, setRunAlarm])

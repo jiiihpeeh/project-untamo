@@ -74,6 +74,7 @@ export const nextAlarmDaily = (timeString) => {
 };
 
 export const nextAlarmWeekly = (timeString, weekday) => {
+    //console.log(weekday)
     let timeNow = new Date();
     let timeCompare = initAlarmDate(timeString);
     let dayNumbers =  [];
@@ -81,6 +82,7 @@ export const nextAlarmWeekly = (timeString, weekday) => {
         dayNumbers.push( weekDayToNumber(item));
     };
     dayNumbers.sort();
+    //console.log(dayNumbers)
     let dayDifferences = [];
     let dayNumberNow = timeNow.getDay();
     for(const dayNumber of dayNumbers){
@@ -90,6 +92,7 @@ export const nextAlarmWeekly = (timeString, weekday) => {
         }
         dayDifferences.push(dayDifference);
     }
+    //console.log(dayDifferences)
     let timeComparisons = [];
     for(const dayDifference of dayDifferences){
         let timeComparison;
@@ -105,10 +108,14 @@ export const nextAlarmWeekly = (timeString, weekday) => {
                 timeComparison = addDays(timeCompare, dayDifference);
                 break;
         };
-        timeComparisons.push(timeComparison);
+        timeComparisons.push(timeComparison.getTime());
     };
-    //console.log(timeCompare);
-    return new Date(Math.min(...timeComparisons));
+    //console.log(timeComparisons);
+    let nextAlarm =  new Date(Math.min(...timeComparisons));
+    //
+    
+    //console.log('next alarm', nextAlarm)
+    return nextAlarm;
 };
 
 export const timeForNextAlarm = (alarm) => {
@@ -128,19 +135,22 @@ export const timeForNextAlarm = (alarm) => {
 };
 
 export const timeToNextAlarm = (alarm) => {    
-    let snoozer = Infinity
+    let snoozer = Infinity;
     if(alarm.hasOwnProperty('snooze')){
         let snoozed = alarm.snooze;
         let timeStamp = Date.now();
         
         let snoozeMax = Math.min(...snoozed) + (30 * 60 * 1000);
         let snoozeMin = timeStamp - (30 * 60 * 1000);
+        //console.log('snoozes',snoozeMax,snoozeMin,  Math.min(...snoozed));
         if ((Math.max(...snoozed) < snoozeMax) && (Math.min(...snoozed) > snoozeMin)){
-            let nextNotification = Math.max(...snoozed) + (5 * 60 * 1000);
-            snoozer = nextNotification;
+            snoozer = Math.max(...snoozed) + (5 * 60 * 1000);
         }
     }
-    let date = new Date();
-    let preliminaryAlarm = Math.max( timeForNextAlarm(alarm) - date, 0)
-    return Math.min(snoozer, preliminaryAlarm)
+    let preliminaryAlarm =  timeForNextAlarm(alarm);
+    //console.log('next snooze ', snoozer);
+    //console.log('premilinary alarm',preliminaryAlarm);
+    let launchTime = Math.min(snoozer, preliminaryAlarm.getTime()) - Date.now();
+    //console.log('launching in... ', new Date(launchTime))
+    return launchTime;
 };

@@ -127,7 +127,7 @@ const PlayAlarm = () =>{
         <Stack align='center'>
             <audio id="playAudioAlarm" loop={true} type='audio/ogg' src={audioURL}/>
             <Heading as="h1" size='4xl' color='tomato'  textShadow='2px 4px #ff0000' className='AlarmMessage'>
-                {runAlarm.label}
+                {runAlarm.label}  <Text fontSize='sm' textShadow='1px 1px #ff0000' >({runAlarm.time}) </Text>
             </Heading>
             <Heading as='h3' size='md'>
                 Snooze the Alarm by clicking the clock below

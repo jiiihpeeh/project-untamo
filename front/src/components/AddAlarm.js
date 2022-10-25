@@ -19,9 +19,11 @@ import {
 	Center
 	} from '@chakra-ui/react'
 import React from 'react';
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
+import { AlarmContext } from '../contexts/AlarmContext';
+
 let selType=''
 let TempWday=[];
 let mon_state=0
@@ -60,6 +62,7 @@ function AddAlarm(props) {
 	axios.defaults.headers.common['token'] = toukeni;
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const btnRef = React.useRef()
+	const { setAlarms } = useContext(AlarmContext);
 	const onChange = (event) => {
 		if(event.target.name==='occurence'){	
 			selType=event.target.value
@@ -105,6 +108,7 @@ function AddAlarm(props) {
 			oldAlarms.push(NewAlarm)
 			localStorage.setItem('alarms', JSON.stringify(oldAlarms))
 			props.updateAlarms(oldAlarms)
+			setAlarms(oldAlarms);
 		} catch (err){
 			console.error(err)
 			notification("Add Alarm", "Alarm save failed", "error")	

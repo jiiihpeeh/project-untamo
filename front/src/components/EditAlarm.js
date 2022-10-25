@@ -23,6 +23,7 @@ import { useState, useContext } from 'react'
 import { SessionContext } from "../contexts/SessionContext";
 import axios from 'axios';
 import { notification } from './notification';
+import { AlarmContext } from '../contexts/AlarmContext';
 
 function EditAlarm(props) {
 	const [Selected_larm, setSelected_larm] = useState({
@@ -63,6 +64,7 @@ let wday_result
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const btnRef = React.useRef()
 	const { userInfo, setUserInfo } = useContext(SessionContext);
+	const { setAlarms } = useContext(AlarmContext);
 	var alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms] = useState(alarmlist)
 	const [buttonstate, setButtonstate] = useState(temp_states)
@@ -259,6 +261,7 @@ let wday_result
 			}
 			oldAlarms.push(Selected_larm)
 			localStorage.setItem('alarms', JSON.stringify(oldAlarms))
+			setAlarms(oldAlarms);
 		} catch (err){
 			console.error(err)
 			notification("Edit Alarm", "Alarm edit save failed", "error")

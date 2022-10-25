@@ -11,9 +11,10 @@ import {
     AlertDialogOverlay,
 	} from '@chakra-ui/react'
 import React from 'react';
-import { useState, useRef } from 'react'
+import { useState, useRef, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
+import { AlarmContext } from '../contexts/AlarmContext';
 
 function DeleteAlarm(props) {
 	let [Selected_alarm] = useState({
@@ -25,6 +26,7 @@ function DeleteAlarm(props) {
 	let alarmlist = JSON.parse(localStorage['alarms'])
 	const [alarms] = useState(alarmlist)
 	let radios = document.getElementsByName('radjo');
+	const { setAlarms } = useContext(AlarmContext);
 	for (var i = 0, length = radios.length; i < length; i++) {
 		if (radios[i].checked) {
 			Selected_alarm = alarms[i]
@@ -43,6 +45,7 @@ function DeleteAlarm(props) {
 					oldAlarms.splice([i], 1);
 					localStorage.setItem('alarms',JSON.stringify(oldAlarms))
 					props.updateAlarms(oldAlarms)
+					setAlarms(oldAlarms);
 				}
 			}
         }catch(err){

@@ -25,7 +25,7 @@ class AudioPlayer {
         //this.audioelem.setAttribute('loop', false);
         await this.setTrack();
         this.audioelem.play();
-        URL.revokeObjectURL(this.audioelem.src);
+        //URL.revokeObjectURL(this.audioelem.src);
     };
     async playLoop (){
         await this.setTrack();
@@ -35,15 +35,16 @@ class AudioPlayer {
                 this.audioelem.play();
                 this.instances++;
             }else{
-                this.stopLoop();
+                this.stop();
             };
         };
     };
-    stopLoop(){
+    stop(){
         if(this.fetched){
             console.log("audio stopped")
             this.audioelem.pause();
             this.instances = 0;
+            URL.revokeObjectURL(this.audioelem.src);
         };
     };
 };
