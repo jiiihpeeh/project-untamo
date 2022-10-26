@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,6 @@ import {
 	Switch,
 	FormControl
 	} from '@chakra-ui/react'
-import { useState } from 'react'
 import EditAlarm from "./EditAlarm";
 import AddAlarm from "./AddAlarm";
 import DeleteAlarm from "./DeleteAlarm";
@@ -37,7 +36,7 @@ const Alarms = () => {
 	let delete_nappi=''
 	let toukeni = localStorage.getItem("token");
 	axios.defaults.headers.common['token'] = toukeni;
-	const { setBlarms } = useContext(AlarmContext);
+	const { setAlarms } = useContext(AlarmContext);
 
 	useEffect(() =>{
 		if(!sessionStatus){
@@ -50,10 +49,10 @@ const Alarms = () => {
 			navigate('/welcome');
 		}
 	},[currentDevice])
-	let radio_buttons = document.getElementsByName('radjo');
 
+	let radio_buttons = document.getElementsByName('radjo');
 	let alarmlist = JSON.parse(localStorage['alarms'])
-	const [alarms, setAlarms] = useState(alarmlist)
+	const [alarms, setClarms] = useState(alarmlist)
 	const renderAlarms = () => {
 		let activerow
 		let checkboxesChecked = [];
@@ -98,14 +97,14 @@ const Alarms = () => {
 			}
 			oldAlarms.push(props)
 			localStorage.setItem('alarms', JSON.stringify(oldAlarms));
-			setBlarms(oldAlarms)
+			setAlarms(oldAlarms)
 		} catch (err){
 			console.error(err)
 			notification("Edit Alarm", "Alarm edit save failed", "error")
 		}
 	}
 
-	const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
+	const updateAlarms = (alarmsChild) => setClarms(alarmsChild)
 	const updateNapit = (nappiChild) => setMod_nappi_tila(nappiChild)
 	let edit_nappi_hide=<Text>Edit Alarm</Text>
 	let edit_nappi_show=<EditAlarm updateAlarms={updateAlarms} valinta={alarm_valinta} updateNapit={updateNapit}/>
