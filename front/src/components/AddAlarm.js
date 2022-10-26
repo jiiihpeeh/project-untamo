@@ -23,7 +23,6 @@ import { useState, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
-import { json } from 'react-router-dom';
 
 let selType=''
 let TempWday=[];
@@ -39,17 +38,36 @@ let device_ids=[];
 let sel_dev=[];
 let TempAlarm=[];
 
+const numberPadding = (number, numbers = 2 ) => {
+    let numberStr = `${number}`
+    while (numberStr.length < numbers){
+        numberStr = `0${numberStr}`
+    }
+    return numberStr;
+}
+const defaultDate = () => {
+    let noSetDatetime = new Date (Date.now() + (12 * 60 * 60 * 1000));
+    let noSetHour = numberPadding(noSetDatetime.getHours());
+    let noSetMinutes = numberPadding(noSetDatetime.getMinutes());
+    let noSetDate = numberPadding(noSetDatetime.getDate());
+    let noSetMonth = numberPadding(noSetDatetime.getMonth() + 1);
+    let noSetYear = numberPadding(noSetDatetime.getFullYear(), 4);
+    return {date: `${noSetYear}-${noSetMonth}-${noSetDate}`, time: `${noSetHour}:${noSetMinutes}`}
+}
+
 function AddAlarm(props) {
-	var checked_radio
-		const [NewAlarm, setNewAlarm] = useState({
-		occurence: 'Select Occurence',
-		time: '12:00',
-		wday: 0,
-		date: '2022-12-24',
-		label: 'NewAlarm',
-		device_ids: 0,
-		devices:0
-	});
+    let defaultDateObj = defaultDate()
+    var checked_radio
+        const [NewAlarm, setNewAlarm] = useState({
+        occurence: 'Select Occurence',
+        time: defaultDateObj.time,
+        wday: 0,
+        date: defaultDateObj.date,
+        label: 'NewAlarm',
+        device_ids: 0,
+        devices:0
+    });
+
 	let temp_states={
 		Monday: 0,
 		Tuesday: 0,
@@ -91,6 +109,7 @@ function AddAlarm(props) {
 			}
 			NewAlarm.device_ids=device_ids;
 			NewAlarm.devices=sel_dev;
+			NewAlarm.active=1;
 			if(selected_wday.Monday===1){TempWday.push('Monday')}
 			if(selected_wday.Tuesday===1){TempWday.push('Tuesday')}
 			if(selected_wday.Wednesday===1){TempWday.push('Wednesday')}
@@ -136,6 +155,16 @@ function AddAlarm(props) {
 		selType=''
 		device_ids=[];
 		sel_dev=[];
+		let defaultDateObj = defaultDate()
+		setNewAlarm({
+			occurence: 'Select Occurence',
+			time: defaultDateObj.time,
+			wday: 0,
+			date: defaultDateObj.date,
+			label: 'NewAlarm',
+			device_ids: 0,
+			devices:0
+		});
 		setSelected_wday('')
 		onClose();
 	}
