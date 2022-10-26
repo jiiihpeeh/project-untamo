@@ -1,6 +1,15 @@
 const addDays = (date, count) => {
-    return new Date(date.getTime() + (count * (24 * 60 * 60 * 1000)));
+    let calculated = new Date(date.getTime() + (count * (24 * 60 * 60 * 1000)));
+    let calculatedHours = calculated.getHours();
+    let dateHours = date.getHours();
+    if(calculatedHours > dateHours){
+        calculated = new Date(calculated.getTime() - (60 * 60 * 1000));
+    }else if (calculatedHours < dateHours){
+        calculated = new Date(calculated.getTime() + (60 * 60 * 1000));
+    }
+    return calculated;
 };
+    
 
 const weekDayToNumber = (weekDay) => {
     switch(weekDay){
