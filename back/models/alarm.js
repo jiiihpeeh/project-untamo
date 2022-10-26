@@ -8,6 +8,7 @@ let Schema = mongoose.Schema({
     devices:Array,
     device_ids:Array,
     snooze:Array,
+    active:String,
     user:{type:String,index:true}
 });
 

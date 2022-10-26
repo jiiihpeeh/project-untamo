@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import { useNavigate } from "react-router-dom";
@@ -13,12 +13,17 @@ import {
 	TableContainer,
 	HStack,
 	Center,
-	Text
+	Text,
+	Switch,
+	FormControl
 	} from '@chakra-ui/react'
-import { useState } from 'react'
 import EditAlarm from "./EditAlarm";
 import AddAlarm from "./AddAlarm";
 import DeleteAlarm from "./DeleteAlarm";
+import { notification } from './notification';
+import axios from 'axios';
+import { AlarmContext } from '../contexts/AlarmContext';
+
 
 const Alarms = () => {
 	let [alarm_valinta, setAlarm_valinta] = useState('')
@@ -26,10 +31,13 @@ const Alarms = () => {
 	const [mod_nappi_tila, setMod_nappi_tila] = useState('hide')
 	const { sessionStatus } = useContext(SessionContext);
 	const { currentDevice } = useContext(DeviceContext);
-
     const navigate = useNavigate();
 	let edit_nappi=''
 	let delete_nappi=''
+	let toukeni = localStorage.getItem("token");
+	axios.defaults.headers.common['token'] = toukeni;
+	const { setAlarms } = useContext(AlarmContext);
+
 	useEffect(() =>{
 		if(!sessionStatus){
 			navigate('/login');
@@ -41,12 +49,25 @@ const Alarms = () => {
 			navigate('/welcome');
 		}
 	},[currentDevice])
-	let radio_buttons = document.getElementsByName('radjo');
 
+	let radio_buttons = document.getElementsByName('radjo');
 	let alarmlist = JSON.parse(localStorage['alarms'])
-	const [alarms, setAlarms] = useState(alarmlist)
+	const [alarms, setClarms] = useState(alarmlist)
 	const renderAlarms = () => {
-		return alarms.map(({ _id, occurence, time, wday, date, label, devices },numero) => {
+		let activerow
+		let checkboxesChecked = [];
+	
+		return alarms.map(({ _id, occurence, time, wday, date, label, devices, active },numero) => {
+			if(alarms[numero].active===1){
+				checkboxesChecked.push(alarms[numero].value);
+				activerow=<Td><FormControl display='flex' alignItems='center'>
+				<Switch name='swjtch' id='alarm-active' defaultChecked value={JSON.stringify(alarms[numero])} size='md' onChange={(e) => activityChange(alarms[numero], e)}/>
+				</FormControl></Td>
+			} else if(alarms[numero].active===0){
+				activerow=<Td><FormControl display='flex' alignItems='center'>
+				<Switch name='swjtch' id='alarm-active'  value={JSON.stringify(alarms[numero])} size='md' onChange={(e) => activityChange(alarms[numero], e)}/>
+				</FormControl></Td>
+			}
 		return <Tr key={_id}>
 		<Td><input type='radio' name="radjo" value={JSON.stringify(alarms[numero])} onClick={bottunClick}/></Td>
 		<Td>{occurence}</Td>
@@ -55,11 +76,35 @@ const Alarms = () => {
 		<Td>{date}</Td>
 		<Td>{label}</Td>
 		<Td>{devices}</Td>
+		{activerow}
 		</Tr>
 		})
 	}
 
-	const updateAlarms = (alarmsChild) => setAlarms(alarmsChild)
+	const activityChange = async (props) => {
+		if(props.active===1){props.active=0}
+		else if(props.active===0){props.active=1}
+		try {
+			console.log("Try: /api/alarm/"+props._id,props)
+			const res = await axios.put('/api/alarm/'+props._id,props );
+			console.log(res.data);
+			notification("Edit Alarm", "Alarm succesfully modified")
+			let oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
+			for (let i = 0; i < oldAlarms.length; i++) {
+				if(oldAlarms[i]._id===props._id) {
+					oldAlarms.splice(i,1)
+				}
+			}
+			oldAlarms.push(props)
+			localStorage.setItem('alarms', JSON.stringify(oldAlarms));
+			setAlarms(oldAlarms)
+		} catch (err){
+			console.error(err)
+			notification("Edit Alarm", "Alarm edit save failed", "error")
+		}
+	}
+
+	const updateAlarms = (alarmsChild) => setClarms(alarmsChild)
 	const updateNapit = (nappiChild) => setMod_nappi_tila(nappiChild)
 	let edit_nappi_hide=<Text>Edit Alarm</Text>
 	let edit_nappi_show=<EditAlarm updateAlarms={updateAlarms} valinta={alarm_valinta} updateNapit={updateNapit}/>
@@ -85,6 +130,7 @@ const Alarms = () => {
 			}
 		}
 	}
+
 	return (
 		<Container bg='blue.200' maxW='fit-content'>
 			<Heading size='sm'>List of Alarms for {localStorage.getItem('screenname')} {ealarm.label}</Heading>
@@ -99,6 +145,7 @@ const Alarms = () => {
 							<Th>date</Th>
 							<Th>Label</Th>
 							<Th>Devices</Th>
+							<Th>Active</Th>
 						</Tr>
 					</Thead>
 				<Tbody> 
