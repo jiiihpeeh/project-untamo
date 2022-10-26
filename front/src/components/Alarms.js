@@ -54,13 +54,10 @@ const Alarms = () => {
 	const [alarms, setAlarms] = useState(alarmlist)
 	const renderAlarms = () => {
 		let activerow
-		let temprow
 		let checkboxesChecked = [];
 	
 		return alarms.map(({ _id, occurence, time, wday, date, label, devices, active },numero) => {
 			if(alarms[numero].active===1){
-				temprow='paska';
-				console.log("ALARMSNUMEROVALUE: "+numero)
 				checkboxesChecked.push(alarms[numero].value);
 				activerow=<Td><FormControl display='flex' alignItems='center'>
 				<Switch name='swjtch' id='alarm-active' defaultChecked value={JSON.stringify(alarms[numero])} size='md' onChange={(e) => activityChange(alarms[numero], e)}/>
@@ -84,11 +81,8 @@ const Alarms = () => {
 	}
 
 	const activityChange = async (props) => {
-		console.log("ActivityChange: "+JSON.stringify(props)+", ")
-		console.log("ActivityChange: "+props._id+", active: "+props.active)
 		if(props.active===1){props.active=0}
 		else if(props.active===0){props.active=1}
-		console.log("ActivityChange_AFTERPLANT: "+props._id+", active: "+props.active)
 		try {
 			console.log("Try: /api/alarm/"+props._id,props)
 			const res = await axios.put('/api/alarm/'+props._id,props );
