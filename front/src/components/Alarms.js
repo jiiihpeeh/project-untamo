@@ -23,6 +23,7 @@ import AddAlarm from "./AddAlarm";
 import DeleteAlarm from "./DeleteAlarm";
 import { notification } from './notification';
 import axios from 'axios';
+import { AlarmContext } from '../contexts/AlarmContext';
 
 
 const Alarms = () => {
@@ -36,6 +37,7 @@ const Alarms = () => {
 	let delete_nappi=''
 	let toukeni = localStorage.getItem("token");
 	axios.defaults.headers.common['token'] = toukeni;
+	const { setBlarms } = useContext(AlarmContext);
 
 	useEffect(() =>{
 		if(!sessionStatus){
@@ -62,7 +64,7 @@ const Alarms = () => {
 				activerow=<Td><FormControl display='flex' alignItems='center'>
 				<Switch name='swjtch' id='alarm-active' defaultChecked value={JSON.stringify(alarms[numero])} size='md' onChange={(e) => activityChange(alarms[numero], e)}/>
 				</FormControl></Td>
-			} else {
+			} else if(alarms[numero].active===0){
 				activerow=<Td><FormControl display='flex' alignItems='center'>
 				<Switch name='swjtch' id='alarm-active'  value={JSON.stringify(alarms[numero])} size='md' onChange={(e) => activityChange(alarms[numero], e)}/>
 				</FormControl></Td>
@@ -95,7 +97,8 @@ const Alarms = () => {
 				}
 			}
 			oldAlarms.push(props)
-			localStorage.setItem('alarms', JSON.stringify(oldAlarms))
+			localStorage.setItem('alarms', JSON.stringify(oldAlarms));
+			setBlarms(oldAlarms)
 		} catch (err){
 			console.error(err)
 			notification("Edit Alarm", "Alarm edit save failed", "error")
