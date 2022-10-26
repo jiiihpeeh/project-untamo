@@ -67,7 +67,8 @@ router.post("/alarm/:id",function(req,res) {
         date:req.body.date,
 		label:req.body.label,
 		devices:req.body.devices,
-		device_ids:req.body.device_ids
+		device_ids:req.body.device_ids,
+		active:req.body.active
 	})
 	console.log("ALARMID:"+alarm._id)
 	alarm.save(function(err) {
@@ -110,7 +111,8 @@ router.put("/alarm/:id",function(req,res) {
 		occurence:req.body.occurence,
 		time:req.body.time,
 		wday:req.body.wday,
-        user:req.session.user
+        user:req.session.user,
+		active:req.body.active
 	}
 	if(req.body.snooze && Array.isArray(req.body.snooze)) {
 		alarm.snooze = req.body.snooze
