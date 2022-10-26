@@ -39,7 +39,9 @@ const AlarmWatcher  = () => {
                 let idTimeOutMap = new Map();
                 for(const alarm of filteredAlarms){
                     let timed = timeToNextAlarm(alarm);
-                    idTimeOutMap.set(timed, alarm);
+                    if(timed && (!isNaN(timed)) && (timed !== Infinity) ){
+                        idTimeOutMap.set(timed, alarm);
+                    }
                 }
                 let minTime = Math.min(...idTimeOutMap.keys());
                 if(minTime && (!isNaN(minTime)) && (minTime !== Infinity) ){

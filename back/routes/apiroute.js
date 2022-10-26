@@ -13,6 +13,8 @@ const e = require("express");
 
 const guessCount =  1000000000;
 
+
+
 router.get("/alarm",function(req,res) {
 	console.log(tStamppi(),"GET /api/alarm");
 	let query={"user":req.session.user}
@@ -325,4 +327,7 @@ router.post("/qrToken",function(req,res) {
 		return res.status(201).json({message: "Success. QRToken Created", key: saved.qrToken});
 	})
 })
+
+
+
 module.exports = router;

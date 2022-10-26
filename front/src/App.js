@@ -16,6 +16,7 @@ import Clueless from './components/Clueless';
 import GenerateQRPairingKey from './components/GenerateQRPairingKey';
 import PlayAlarm from './components/PlayAlarm';
 import AlarmWatcher from './components/AlarmWatcher';
+import UserWatcher from './components/UserWatcher';
 
 function App() {
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
@@ -93,6 +94,7 @@ function App() {
 			</Routes>
 		<GenerateQRPairingKey/>
 		<AlarmWatcher/>
+		<UserWatcher/>
 		</AlarmContext.Provider>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    

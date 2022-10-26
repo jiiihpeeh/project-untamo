@@ -12,15 +12,56 @@ const zxcvbn = require('zxcvbn');
 const formChecker  = require('./modules/formcheck');
 const session = require("./models/session");
 const tStamppi = require("./modules/tstamppi");
-
+const asyncHandler = require('express-async-handler')
 let app = express();
 
+
+
 const expressWs = require('express-ws')(app);
+
+
+
+
 
 
 app.use(express.json());
 app.use(cors())
 let port = process.env.PORT || 3001;
+
+
+const WebSocket = require('ws');
+//Internal Websocket
+let serverSocket = new WebSocket("ws://localhost:3001/action");
+
+serverSocket.onopen = function(e) {
+	//console.log(e)
+	//console.log(e.upgradeReq)
+	//console.log("[open] Connection established");
+	//console.log("Sending to server");
+	serverSocket.send(JSON.stringify("Message to websocket"));
+  };
+  
+  serverSocket.onmessage = function(event) {
+	console.log(`[message] Data received from server: ${event.data}`);
+  };
+  
+  serverSocket.onclose = function(event) {
+	if (event.wasClean) {
+		console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+	} else {
+	  // e.g. server process killed or network down
+	  // event.code is usually 1006 in this case
+	  console.log('[close] Connection died');
+	}
+  };
+  
+  serverSocket.onerror = function(error) {
+	console.log(`[error]`);
+  };
+
+
+
+
 
 //MONGOOSE CONNECTION
 const mongo_user=process.env.MONGODB_USERNAME;
@@ -49,6 +90,7 @@ isUserLogged = (req,res,next) => {
 	if(!req.headers.token) {
 		return res.status(403).json({message:"Forbidden!"});
 	}
+	
 	sessionModel.findOne({"token":req.headers.token},function(err,session) {
 		if(err) {
 			console.log(tStamppi(),"Failed to find session. Reason",err);
@@ -57,6 +99,7 @@ isUserLogged = (req,res,next) => {
 		if(!session) {
 			return res.status(403).json({message:"Forbidden"})
 		}
+		serverSocket.send(JSON.stringify({mode: 'api', url: req.originalUrl, token: req.headers.token, userID: session.userID }));
 		let now=Date.now();
 		if(now>session.ttl) {
 			sessionModel.deleteOne({"_id":session._id},function(err) {
@@ -222,6 +265,96 @@ app.ws('/registercheck', function(ws, req) {
     });
     console.log(tStamppi(),'socket', req.testing)
 });
+
+var headersSocketMap = new Map()
+var userHeadersMap = new Map()
+var headersUserMap = new Map()
+var tokenHeadersMap = new Map()
+var tokenUserMap = new Map()
+
+app.ws('/action', asyncHandler(async(ws, req) => {
+    //console.log(req.headers);
+    let headers = req.headers['sec-websocket-key']
+	//console.log(headers)
+    ws.on('message',asyncHandler(async (msgs) => {
+		let msg = {}
+		try{
+          msg = JSON.parse(msgs)
+		  //console.log(msg)
+		}catch(err){
+			console.log(err)
+		};
+		if(msg && msg.hasOwnProperty('mode') && msg.mode === 'client' && msg.hasOwnProperty('token')){
+			const getSession = async (token) => {
+				try{
+					const foundSession = await sessionModel.findOne({"token":token});
+					console.log(foundSession)
+					return foundSession;
+				}catch(err){
+					return null;
+				}
+			}
+
+			let session = await getSession(msg.token);
+			//console.log(session)
+
+		    if(!session) {
+					console.log('session invalid');
+			}else{
+				if(!userHeadersMap || !userHeadersMap.has(session.userID)){
+					userHeadersMap.set(session.userID, new Set([ headers ]));
+					//console.log('created headers map', userHeadersMap);
+				}else{
+					let existingHeaderSet = userHeadersMap.get(session.userID)//.add(headers))
+					userHeadersMap.set(session.userID, existingHeaderSet.add(headers));
+					//console.log(userHeadersMap);
+				}
+				headersUserMap.set(headers,session.userID);
+				tokenHeadersMap.set(msg.token, headers);					
+				tokenUserMap.set(msg.token, session.userID);
+				headersSocketMap.set(headers, ws);
+				//console.log(userHeadersMap)
+			}
+
+		}
+		if (msg && msg.hasOwnProperty('mode') && msg.mode === 'api' && msg.hasOwnProperty('token') && msg.hasOwnProperty('url')){
+			console.log(userHeadersMap);
+			let calledUser = tokenUserMap.get(msg.token);
+			console.log(calledUser)
+			let callingHeader = tokenHeadersMap.get(msg.token);
+			let availHeaders = null;
+			if(calledUser && userHeadersMap && callingHeader){
+				availHeaders = Array.from(userHeadersMap.get(calledUser));
+				availHeaders = availHeaders.filter(head => head !== callingHeader);
+			}
+			//console.log('avail ', availHeaders);
+
+			//availHeaders.delete(callingHeader);
+			if(availHeaders && headersSocketMap){
+				console.log("CALLER", callingHeader);
+				for(const client of availHeaders){
+					console.log("CALLING", client);
+					headersSocketMap.get(client).send(JSON.stringify({ url:msg.url}));
+				}
+			}
+
+		}
+    }));
+	ws.on('close', asyncHandler(async(msgs) => {
+		console.log('closing...')
+		let closingUser = (headersUserMap.has(headers)) ? headersUserMap.get(headers) : null;
+		if(closingUser){
+			let userHeaders = (userHeadersMap.has(closingUser))? userHeadersMap.get(closingUser): null;
+			if(userHeaders){
+				userHeaders.delete(headers)
+				userHeadersMap.set(closingUser, userHeaders);
+			}
+			headersUserMap.delete(headers);
+			headersSocketMap.delete(headers);
+
+		}
+	}))
+}));
 
 
 //app.use('/resources', isUserLogged, express.static('resources'))
