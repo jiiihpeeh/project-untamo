@@ -44,7 +44,7 @@ const initAlarmDate = (timeString) => {
 
 const insertDate = (dateObj, dateString) => {
     let dateArr = dateString.split('-');
-    dateObj.setDate(Number.parseInt(dateArr[2]) -1);
+    dateObj.setDate(Number.parseInt(dateArr[2]));
     dateObj.setMonth(Number.parseInt(dateArr[1]) -1);
     dateObj.setFullYear(Number.parseInt(dateArr[0]));
     return dateObj;
@@ -54,7 +54,9 @@ export const nextAlarmOnce = (timeString, dateString) => {
     let timeNow = new Date();
     let timeCompare = initAlarmDate(timeString);
     timeCompare = insertDate(timeCompare, dateString); 
+    
     if(timeCompare > timeNow){
+        //console.log(timeCompare)
         return timeCompare;
     }
     return NaN;    
@@ -158,10 +160,10 @@ export const timeToNextAlarm = (alarm) => {
     }
     let preliminaryAlarm =  timeForNextAlarm(alarm);
     //console.log('next snooze ', snoozer);
-    console.log('premilinary alarm',preliminaryAlarm);
+    
     if(!isNaN(preliminaryAlarm)){
         let launchTime = Math.min(snoozer, preliminaryAlarm.getTime()) - Date.now();
-    
+        console.log('premilinary alarm',preliminaryAlarm);
         //console.log('launching in... ', new Date(launchTime))
         return launchTime;
     } 
