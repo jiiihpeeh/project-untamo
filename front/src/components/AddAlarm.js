@@ -389,6 +389,7 @@ if(selType==='Select Occurence'){
 	timeRow=timeRow_hidden;
 	wdayRow=wdayRow_hidden;
 	dateRow=dateRow_hidden;
+	saveBut=saveBut_hidden;
 	}
 if(selType==='once'){
 	wdayRow=wdayRow_hidden
