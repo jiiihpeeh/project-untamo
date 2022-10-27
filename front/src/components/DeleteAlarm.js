@@ -1,6 +1,5 @@
 import {
 	useDisclosure,
-	Text,
 	Link,
 	Button,
 	AlertDialog,
@@ -9,22 +8,22 @@ import {
     AlertDialogHeader,
     AlertDialogContent,
     AlertDialogOverlay,
+	Tooltip,
+	IconButton
 	} from '@chakra-ui/react'
 import React from 'react';
-import { useState, useRef, useContext } from 'react'
+import { DeleteIcon} from '@chakra-ui/icons';
+import { useRef, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
 
 function DeleteAlarm(props) {
-	let valittu=JSON.parse(props.valinta)
-	let toukeni = localStorage.getItem("token");
-	axios.defaults.headers.common['token'] = toukeni;
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const cancelRef = useRef();
-	let alarmlist = JSON.parse(localStorage['alarms'])
-	const [alarms] = useState(alarmlist)
-	let radios = document.getElementsByName('radjo');
+	let valittu=props.valinta
+	let toukeni = localStorage.getItem("token");
+	axios.defaults.headers.common['token'] = toukeni;
 	const { setAlarms } = useContext(AlarmContext);
 
 	const deleteAlarm = async() =>{
@@ -40,21 +39,22 @@ function DeleteAlarm(props) {
 					localStorage.setItem('alarms',JSON.stringify(oldAlarms))
 					props.updateAlarms(oldAlarms)
 					setAlarms(oldAlarms);
-					console.log("ALARM DELETED")
-					props.updateNapit('hide')
+					notification("Delete Alarm", "Alarm succesfully removed")
 				}
 			}
         }catch(err){
             notification("Delete alarm", "Delete alarm failed", 'error');
             console.log("Delete alarm failed");
+			console.error(err)
         };
     }
-
 	return (
 		<>
-		<Link onClick={onOpen}><Text as='b'>
-			Delete Alarm
-		</Text></Link>
+		<Link onClick={onOpen}>
+			<Tooltip label='Delete device' fontSize='md'>
+			<IconButton size='xs' icon={<DeleteIcon/>} ml="5.5%" colorScheme='red'/>
+			</Tooltip>
+		</Link>
         <AlertDialog
             isOpen={isOpen}
             leastDestructiveRef={cancelRef}

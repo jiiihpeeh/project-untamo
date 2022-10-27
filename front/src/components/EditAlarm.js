@@ -1,6 +1,5 @@
 import {
 	useDisclosure,
-	Text,
 	Link,
 	Button,
 	Drawer,
@@ -16,10 +15,12 @@ import {
 	FormControl,
 	HStack,
 	Box,
-	Center
+	Center,
+	Tooltip,
+	IconButton
 	} from '@chakra-ui/react'
-import React from 'react';
-import { useState, useContext } from 'react'
+import { EditIcon } from '@chakra-ui/icons';
+import React, { useState, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
@@ -65,7 +66,7 @@ function EditAlarm(props) {
 	let TempWday=[];
 
 	const onOpenMod = () => {
-		let rokko=JSON.parse(props.valinta)
+		let rokko=props.valinta
 		for (let i = 0; i < rokko.wday.length; i++) {
 			if(rokko.wday[i]==='Monday'){mon_state=1}
 			if(rokko.wday[i]==='Tuesday'){tue_state=1}
@@ -86,10 +87,6 @@ function EditAlarm(props) {
 		setButtonstate(temp_states)
 		onOpen()
 	} 
-
-	const onCloseMod = () => {
-		onClose();
-	}
 
 	const renderDevices = () => {
 		return deviges.map(({ id, deviceName, type }) => {
@@ -389,13 +386,15 @@ if(Selected_larm.occurence==='yearly'){
 renderWdays();
 	return (
 		<>
-		<Link onClick={onOpenMod}><Text as='b'>
-		Edit Alarm
-		</Text></Link>
+		<Link onClick={onOpenMod}>
+			<Tooltip label='Edit alarm' fontSize='md'>
+            <IconButton size='xs' icon={<EditIcon/>} ml="5.5%"/>
+			</Tooltip>
+		</Link>
 		<Drawer
 			isOpen={isOpen}
 			placement='left'
-			onClose={onCloseMod}
+			onClose={onClose}
 			finalFocusRef={btnRef}
 			size={'md'}
 		>
