@@ -32,12 +32,13 @@ const SelectedWeekdays = (props) => {
 
     const WeekdayButton = (weekday) => {
         return(
-            <Button m="1px" 
+            <Button m="3px" 
+                    borderColor={'black'} 
                     bgColor={buttonColor.get(weekday[0])}
                     onClick={() => pushedButton(weekday[0])} 
                     id={`${weekday[0]}-button`}
-                    borderColor='black' 
-                    borderRadius='md'
+                    borderRadius={'md'}
+                    borderWidth={'2px'}
                     w='40px' 
                     h='40px' >
             {weekday[1]} 
@@ -64,3 +65,4 @@ const SelectedWeekdays = (props) => {
     )
 }
 export default SelectedWeekdays;
+    // <Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
