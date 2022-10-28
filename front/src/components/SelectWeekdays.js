@@ -1,4 +1,4 @@
-import { Button, Flex } from "@chakra-ui/react";   
+import { Button, Flex, Center } from "@chakra-ui/react";   
 import React from 'react';
 import { useState } from "react";
 
@@ -7,13 +7,13 @@ const SelectedWeekdays = (props) => {
             ["Wednesday","Wed"], ["Thursday","Thu"], ["Friday","Fri"], 
             ["Saturday", "Sat"], ["Sunday", "Sun"]];
     
-    const [buttonColor, setButtonColor ] = useState(() => {
+    const [ buttonColor ] = useState(() => {
         let colorMap = new Map()
         for(const day of weekdays){
             if(props.days.includes(day)){
-                colorMap.set(day[0], 'blue');
+                colorMap.set(day[0], 'green');
             }else{
-                colorMap.set(day[0], 'gray');
+                colorMap.set(day[0], 'gray.200');
             }
         }
         return colorMap;
@@ -21,10 +21,10 @@ const SelectedWeekdays = (props) => {
     const pushedButton = (day) => {
         if (props.days.includes(day)){
             props.setDays(props.days.filter(selectedDay => selectedDay !== day));
-            buttonColor.set(day,'gray')
+            buttonColor.set(day,'gray.200')
         }else{
             props.setDays([...props.days, day]); 
-            buttonColor.set(day,'blue')
+            buttonColor.set(day,'green')
         }
         console.log(buttonColor)
 
@@ -35,7 +35,11 @@ const SelectedWeekdays = (props) => {
             <Button m="1px" 
                     bgColor={buttonColor.get(weekday[0])}
                     onClick={() => pushedButton(weekday[0])} 
-                    id={`${weekday[0]}-button`} >
+                    id={`${weekday[0]}-button`}
+                    borderColor='black' 
+                    borderRadius='md'
+                    w='40px' 
+                    h='40px' >
             {weekday[1]} 
         </Button>
         )
@@ -53,8 +57,10 @@ const SelectedWeekdays = (props) => {
   
 
     return(
-        <WeekdayFlex/>
+        <Center>
+            <WeekdayFlex/>
+        </Center>
+        
     )
 }
 export default SelectedWeekdays;
-    // <Button w='40px' h='40px' bg='gray.200' onClick={()=>wdaySelect('Saturday')}  borderWidth='2px' borderColor='black' borderRadius='md'>
