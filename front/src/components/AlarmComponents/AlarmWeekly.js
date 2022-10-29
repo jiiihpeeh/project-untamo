@@ -10,7 +10,7 @@ const AlarmWeekly = (props) => {
         <Center>
             <Stack>
                 <Message label={props.label} setLabel={props.setLabel}/>
-                <TimeSelector setTime={props.setTime} />
+                <TimeSelector setTime={props.setTime} time={props.time}  />
                 <SelectedWeekdays setDays={props.setWeekdays} days={props.weekdays}/>
                 <DeviceChecker selectedDevices={props.selectedDevices} setSelectedDevices={props.setSelectedDevices}/>
             </Stack>
