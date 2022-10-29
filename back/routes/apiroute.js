@@ -68,7 +68,6 @@ router.post("/alarm/:id",function(req,res) {
 		wday:req.body.wday,
         date:req.body.date,
 		label:req.body.label,
-		devices:req.body.devices,
 		device_ids:req.body.device_ids,
 		active:req.body.active
 	})
@@ -108,7 +107,6 @@ router.put("/alarm/:id",function(req,res) {
 		_id:req.body._id,
 		date:req.body.date,
 		device_ids:req.body.device_ids,
-		devices:req.body.devices,
 		label:req.body.label,
 		occurence:req.body.occurence,
 		time:req.body.time,
