@@ -5,7 +5,6 @@ let Schema = mongoose.Schema({
     wday:Array,
     date:String,
     label:String,
-    devices:Array,
     device_ids:Array,
     snooze:Array,
     active:String,
