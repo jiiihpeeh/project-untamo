@@ -19,10 +19,14 @@ import React , { useRef, useState, useEffect } from 'react';
 import { timePadding } from './AlarmComponents/timePadding';
 import AlarmSelector from './AlarmComponents/AlarmSelector';
 import AlarmCase from './AlarmComponents/AlarmCase';
+
+const currentTime = () => {
+  return `${timePadding(new Date().getHours())}:${timePadding(new Date().getMinutes())}`
+}
 const AddAlarmDrawer = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const btnRef = useRef();
-    const [ time, setTime ] = useState();
+    const [ time, setTime ] = useState(currentTime());
     const [date, setDate] = useState(new Date());
     const [selectedDevices, setSelectedDevices] = useState([]);
     const [weekdays, setWeekdays] = useState([]);
