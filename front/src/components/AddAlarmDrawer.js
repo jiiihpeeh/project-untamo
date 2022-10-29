@@ -40,7 +40,11 @@ const AddAlarmDrawer = () => {
     useEffect(() => {
         console.log(time)
         console.log(date)
-    },[time,date])
+        console.log(selectedDevices)
+        console.log(weekdays)
+        console.log(label)
+        console.log(alarmCase)
+    },[time,date, selectedDevices, weekdays, label, alarmCase])
     return (
       <>
         <Button ref={btnRef} colorScheme='teal' 
