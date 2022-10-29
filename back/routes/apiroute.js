@@ -17,7 +17,7 @@ const guessCount =  1000000000;
 
 router.get("/alarm",function(req,res) {
 	console.log(tStamppi(),"GET /api/alarm");
-	let query={"user":req.session.user}
+	let query={"user":req.session.userID}
 	alarmModel.find(query,function(err,alarms) {
 		if(err) {
 			console.log(tStamppi(),"Failed to find alarms. Reason",err);
@@ -62,7 +62,7 @@ router.post("/alarm/:id",function(req,res) {
 		return res.status(400).json({message:"Bad request"});
 	}
 	let alarm = new alarmModel({
-		user:req.session.user,
+		user:req.session.userID,
 		occurence:req.body.occurence,
 		time:req.body.time,
 		wday:req.body.wday,
@@ -113,13 +113,13 @@ router.put("/alarm/:id",function(req,res) {
 		occurence:req.body.occurence,
 		time:req.body.time,
 		wday:req.body.wday,
-        user:req.session.user,
+        user:req.session.userID,
 		active:req.body.active
 	}
 	if(req.body.snooze && Array.isArray(req.body.snooze)) {
 		alarm.snooze = req.body.snooze
 	}
-	alarmModel.replaceOne({"_id":req.params.id,"user":req.session.user},alarm,function(err) {
+	alarmModel.replaceOne({"_id":req.params.id,"user":req.session.userID},alarm,function(err) {
 		if(err) {
 			console.log(tStamppi(),"Failed to update alarm. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
