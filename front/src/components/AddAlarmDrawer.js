@@ -66,7 +66,7 @@ const AddAlarmDrawer = () => {
             />
             <Divider m={'5px'}/>
             <AlarmSelector alarmCase={alarmCase}
-                           time={setTime} 
+                           time={time} 
                            setTime={setTime} 
                            setDate={setDate} 
                            date={date} 
