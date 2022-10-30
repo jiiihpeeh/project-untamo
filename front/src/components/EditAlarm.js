@@ -30,11 +30,11 @@ function EditAlarm(props) {
 	const btnRef = useRef();
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [ time, setTime ] = useState(props.valinta.time);
-    const [date, setDate] = useState(parseDate(props.valinta.date));
-    const [selectedDevices, setSelectedDevices] = useState(props.valinta.device_ids);
-    const [weekdays, setWeekdays] = useState(props.valinta.wday);
-    const [ label, setLabel ] = useState(props.valinta.label);
-    const [alarmCase, setAlarmCase] = useState(props.valinta.occurence);
+	const [date, setDate] = useState(parseDate(props.valinta.date));
+	const [selectedDevices, setSelectedDevices] = useState(props.valinta.device_ids);
+	const [weekdays, setWeekdays] = useState(props.valinta.wday);
+	const [ label, setLabel ] = useState(props.valinta.label);
+	const [alarmCase, setAlarmCase] = useState(props.valinta.occurence);
 	const { alarms, setAlarms } = useContext(AlarmContext);
 	const { token } = useContext(SessionContext);
 
@@ -65,10 +65,22 @@ function EditAlarm(props) {
 				wday: weekdays,
 				_id: props.valinta._id
 			};
+			switch(alarmCase){
+				case 'weekly':
+					modAlarm.date = '';
+					break;
+				case 'daily':
+					modAlarm.date = '';
+					modAlarm.wday = [];
+				   break;
+				default:
+					modAlarm.wday = [];
+					break;
+			} 
 			console.log("Try: /api/alarm/"+modAlarm._id,modAlarm);
 			const res = await axios.put('/api/alarm/'+modAlarm._id, modAlarm,  {
-                headers: {'token': token}
-              });
+				headers: {'token': token}
+			});
 			console.log(res.data);
 			notification("Edit Alarm", "Alarm modified");
 			let oldAlarms = alarms.filter(alarm => alarm._id !== modAlarm._id);
@@ -135,3 +147,5 @@ function EditAlarm(props) {
 };
 
 export default EditAlarm;
+
+    

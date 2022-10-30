@@ -63,6 +63,18 @@ function AddAlarm() {
 				time: time,
 				wday: weekdays,
 			};
+			switch(alarmCase){
+				case 'weekly':
+					newAlarm.date = '';
+					break;
+				case 'daily':
+					newAlarm.date = '';
+					newAlarm.wday = [];
+				   break;
+				default:
+					newAlarm.wday = [];
+					break;
+			} 
 			//console.log("Try: /api/alarm/"+modAlarm._id,modAlarm);
 			const res = await axios.post('http://localhost:3001/api/alarm/', newAlarm, {headers: {token: token}} );
 			console.log(res.data);
