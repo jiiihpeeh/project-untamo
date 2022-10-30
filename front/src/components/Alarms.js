@@ -15,7 +15,8 @@ import {
 	HStack,
 	Center,
 	Switch,
-	FormControl
+	FormControl,
+	Radio
 	} from '@chakra-ui/react'
 import EditAlarm from "./EditAlarm";
 import AddAlarm from "./AddAlarm";
@@ -23,66 +24,58 @@ import DeleteAlarm from "./DeleteAlarm";
 import { notification } from './notification';
 import axios from 'axios';
 import { AlarmContext } from '../contexts/AlarmContext';
-import AddAlarmDrawer from "./AddAlarmDrawer";
 
 const Alarms = () => {
-	const [ealarm] = useState({})
-	const { sessionStatus } = useContext(SessionContext);
+	const { sessionStatus, token, userInfo } = useContext(SessionContext);
 	const { currentDevice } = useContext(DeviceContext);
     const navigate = useNavigate();
-	let toukeni = localStorage.getItem("token");
-	axios.defaults.headers.common['token'] = toukeni;
-	const { setAlarms } = useContext(AlarmContext);
+	const { devices, viewableDevices } = useContext(DeviceContext);
 
-	useEffect(() =>{
-		if(!sessionStatus){
-			navigate('/login');
-		}
-	},[sessionStatus])
-
-	useEffect(() =>{
-		if(!currentDevice){
-			navigate('/welcome');
-		}
-	},[currentDevice])
-
-	let alarmlist = JSON.parse(localStorage['alarms'])
-	const [alarms, setClarms] = useState(alarmlist)
+	const {alarms, setAlarms} = useContext(AlarmContext);
 	const renderAlarms = () => {
-		let activerow
-		let checkboxesChecked = [];
-
-		return alarms.map(({ _id, occurence, time, wday, date, label, devices, active },numero) => {
-			if(alarms[numero].active===1){
-				checkboxesChecked.push(alarms[numero].value);
-				activerow=<Td><FormControl display='flex' alignItems='center'>
-				<Switch name='swjtch' id='alarm-active' defaultChecked value={JSON.stringify(alarms[numero])} size='md' onChange={(e) => activityChange(alarms[numero], e)}/>
-				</FormControl></Td>
-			} else if(alarms[numero].active===0){
-				activerow=<Td><FormControl display='flex' alignItems='center'>
-				<Switch name='swjtch' id='alarm-active'  value={JSON.stringify(alarms[numero])} size='md' onChange={(e) => activityChange(alarms[numero], e)}/>
-				</FormControl></Td>
-			}
-		return <Tr key={_id}>
-		<Td>{occurence}</Td>
-		<Td>{time}</Td>
-		<Td>{wday}</Td>
-		<Td>{date}</Td>
-		<Td>{label}</Td>
-		{/* <Td>{devices.join(", ")}</Td> */}
-		{activerow}
-		<Td><DeleteAlarm updateAlarms={updateAlarms} valinta={alarms[numero]} /></Td>
-		<Td><EditAlarm updateAlarms={updateAlarms} valinta={alarms[numero]}/></Td>
-		</Tr>
-		})
+        return alarms.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
+               return (
+               <>
+                <Tr key={_id}>
+                    <Td>{occurence}</Td>
+                    <Td>{time}</Td>
+                    <Td>{wday}</Td>
+                    <Td>{date}</Td>
+                    <Td>{label}</Td>
+                    <Td>{mapIDsToNames(device_ids)}</Td>
+                    <Td>
+                        <FormControl display='flex' 
+                                     alignItems='center'
+                        >
+                            <Switch name={`alarm-switch-${alarms[key]._id}`}
+                                    id={`alarm-active-${alarms[key]._id}`}
+                                    isChecked={isAlarmActive(alarms[key])}
+                                    size='md' 
+                                    onChange={() => activityChange(alarms[key])}
+                            />
+                        </FormControl>
+                    </Td>
+                </Tr>
+                </>
+         )})
+    }
+	const isAlarmActive = (id) => {
+		let alarmObject = alarms.filter(alarm => alarm._id === id);
+		if (alarmObject && alarmObject.length === 1 ){
+			console.log(id,  alarmObject[0].active)
+			return alarmObject[0].active; 
+		}
+		return false;
 	}
-
+	const mapIDsToNames = (device_ids) =>{
+		return "Juu-u"
+	}
 	const activityChange = async (props) => {
 		if(props.active===1){props.active=0}
 		else if(props.active===0){props.active=1}
 		try {
 			console.log("Try: /api/alarm/"+props._id,props)
-			const res = await axios.put('/api/alarm/'+props._id,props );
+			const res = await axios.put('/api/alarm/'+props._id,props, {headers: {token: token}} );
 			console.log(res.data);
 			notification("Edit Alarm", "Alarm succesfully modified")
 			let oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
@@ -100,11 +93,21 @@ const Alarms = () => {
 		}
 	}
 
-	const updateAlarms = (alarmsChild) => setClarms(alarmsChild)
 
+	useEffect(() =>{
+		if(!sessionStatus){
+			navigate('/login');
+		}
+	},[sessionStatus])
+
+	useEffect(() =>{
+		if(!currentDevice){
+			navigate('/welcome');
+		}
+	},[currentDevice])
 	return (<>
 		<Container bg='blue.200' maxW='fit-content'>
-			<Heading size='sm'>List of Alarms for {localStorage.getItem('screenname')} {ealarm.label}</Heading>
+			<Heading size='sm'>List of Alarms for {userInfo.screenname} </Heading>
 			<TableContainer>
 				<Table variant='striped' colorScheme='teal' size='sm' className="table-tiny" id='tabell'>
 					<Thead>
@@ -114,7 +117,7 @@ const Alarms = () => {
 							<Th>Weekday</Th>
 							<Th>date</Th>
 							<Th>Label</Th>
-							{/* <Th>Devices</Th> */}
+							<Th>Devices</Th>
 							<Th>Active</Th>
 							<Th></Th>
 							<Th></Th>
