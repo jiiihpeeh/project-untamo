@@ -1,6 +1,7 @@
-export const timePadding = (number) => {
-    if(number < 10){
-        return `0${number}`;
+export const timePadding = (number, numbers = 2) => {
+    let numberStr = `${number}`;
+    if(numberStr.length < numbers){
+        numberStr = `0${numberStr}`;
     }
-    return `${number}`;
+    return numberStr;
 };

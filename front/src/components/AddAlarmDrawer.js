@@ -18,7 +18,6 @@ import {
 import React , { useRef, useState, useEffect } from 'react';
 import { timePadding } from './AlarmComponents/timePadding';
 import AlarmSelector from './AlarmComponents/AlarmSelector';
-import AlarmCase from './AlarmComponents/AlarmCase';
 
 const currentTime = () => {
   return `${timePadding(new Date().getHours())}:${timePadding(new Date().getMinutes())}`
@@ -27,11 +26,11 @@ const AddAlarmDrawer = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const btnRef = useRef();
     const [ time, setTime ] = useState(currentTime());
-    const [date, setDate] = useState(new Date());
-    const [selectedDevices, setSelectedDevices] = useState([]);
-    const [weekdays, setWeekdays] = useState([]);
+    const [ date, setDate ] = useState(new Date());
+    const [ selectedDevices, setSelectedDevices ] = useState([]);
+    const [ weekdays, setWeekdays ] = useState([]);
     const [ label, setLabel ] = useState('Alarm');
-    const [alarmCase, setAlarmCase ] = useState('weekly');
+    const [ alarmCase, setAlarmCase ] = useState('weekly');
   
 
     const closeDrawer = () => {
@@ -69,23 +68,21 @@ const AddAlarmDrawer = () => {
             <DrawerHeader>Set up an alarm</DrawerHeader>
   
             <DrawerBody>
-            <AlarmCase  alarmCase={alarmCase}
-                        setAlarmCase={setAlarmCase}
-            />
-            <Divider m={'5px'}/>
-            <AlarmSelector alarmCase={alarmCase}
-                           time={time} 
-                           setTime={setTime} 
-                           setDate={setDate} 
-                           date={date} 
-                           selectedDevices={selectedDevices} 
-                           setSelectedDevices={setSelectedDevices} 
-                           label={label} 
-                           setLabel={setLabel}
-                           weekdays={weekdays}
-                           setWeekdays={setWeekdays}  
-                       />
-            </DrawerBody>
+
+              <AlarmSelector alarmCase={alarmCase}
+                             setAlarmCase={setAlarmCase}
+                             time={time} 
+                             setTime={setTime} 
+                             setDate={setDate} 
+                             date={date} 
+                             selectedDevices={selectedDevices} 
+                             setSelectedDevices={setSelectedDevices} 
+                             label={label} 
+                             setLabel={setLabel}
+                             weekdays={weekdays}
+                             setWeekdays={setWeekdays}  
+                           />
+              </DrawerBody>
   
             <DrawerFooter>
               <Button variant='outline' mr={3} onClick={onClose}>

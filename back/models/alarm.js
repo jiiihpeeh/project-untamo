@@ -7,7 +7,7 @@ let Schema = mongoose.Schema({
     label:String,
     device_ids:Array,
     snooze:Array,
-    active:String,
+    active:Boolean,
     user:{type:String,index:true}
 });
 

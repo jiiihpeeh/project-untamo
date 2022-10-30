@@ -23,19 +23,14 @@ const DeviceChecker = (props) => {
             setSelectedDevices([...selectedDevices,id]);
         };
     };
-    const isSelected = (id) =>{
-        if(selectedDevices.includes(id)){
-            return true;
-        }
-        return false;
-    };
+
     const DeviceLister = () => {
         let deviceList = [];
         for( const device of devices){
             deviceList.push( <Tr key={`deviceList-${device.id}`} >
                                 <Td>
                                     <HStack>
-                                        <Checkbox isChecked={isSelected(device.id)} onChange={() => deviceSelection(device.id)} /> 
+                                        <Checkbox isChecked={selectedDevices.includes(device.id)} onChange={() => deviceSelection(device.id)} /> 
                                         <Text>{device.deviceName}</Text>
                                     </HStack>
                                 </Td>

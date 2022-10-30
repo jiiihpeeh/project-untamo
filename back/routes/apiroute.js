@@ -52,9 +52,9 @@ router.get("/admin",function(req,res) {
 });
 
 
-router.post("/alarm/:id",function(req,res) {
+router.post("/alarm/",function(req,res) {
 	console.log(tStamppi(),"POST /api/alarm")
-	console.log(tStamppi(),"POST "+req.params.id)
+	console.log(tStamppi(),"POST "+req.params)
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
@@ -78,7 +78,7 @@ router.post("/alarm/:id",function(req,res) {
 			return res.status(500).json({message:"Internal server error"})
 		}
 		console.log(tStamppi(),"   POST /api/alarm SUCCESS")
-		return res.status(201).json({message:"Alarm creation success",id:alarm._id});
+		return res.status(201).json({message:"Alarm creation success",alarm:alarm});
 	})
 })
 

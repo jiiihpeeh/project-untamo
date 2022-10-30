@@ -33,7 +33,6 @@ const TimeSelector = (props) => {
                    borderRadius="0px"
                    borderStyle="solid"
                    borderWidth="5px"
-                   pattern="T[0-9]{2}:[0-9]{2}" 
                    onChange={(e) => timeValue(e.target.value)}
                    textShadow='1px 2px gray'
                    value={time}

@@ -126,15 +126,11 @@ const Alarms = () => {
 				</Table>
 
 			</TableContainer>
-			
-			<Center>
-			<HStack spacing='30px'>
-			<AddAlarm updateAlarms={updateAlarms}/></HStack></Center>
 
 			
 		</Container>
 
-		<AddAlarmDrawer/>
+		<AddAlarm/>
 	</>)
 }
 
