@@ -42,7 +42,7 @@ const Alarms = () => {
                     <Td>{wday}</Td>
                     <Td>{date}</Td>
                     <Td>{label}</Td>
-                    <Td>{mapIDsToNames(device_ids)}</Td>
+                    <Td>{mapDeviceIDsToNames(device_ids)}</Td>
                     <Td>
                         <FormControl display='flex' 
                                      alignItems='center'
@@ -67,8 +67,13 @@ const Alarms = () => {
 		}
 		return false;
 	}
-	const mapIDsToNames = (device_ids) =>{
-		return "Juu-u"
+	const mapDeviceIDsToNames = (device_ids) =>{
+		let filteredDevices = devices.filter(device => device_ids.includes(device.id))
+		let filteredDeviceNames = []
+		for(const dev of filteredDevices){
+			filteredDeviceNames.push(dev.deviceName);
+		}
+		return filteredDeviceNames.join(", ")
 	}
 	const activityChange = async (props) => {
 		if(props.active===1){props.active=0}
