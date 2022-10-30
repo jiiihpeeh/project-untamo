@@ -27,7 +27,6 @@ import { AlarmContext } from '../contexts/AlarmContext';
 
 const Alarms = () => {
 	const { sessionStatus, token, userInfo } = useContext(SessionContext);
-	const {  } = useContext(DeviceContext);
     const navigate = useNavigate();
 	const { devices, viewableDevices, currentDevice } = useContext(DeviceContext);
 
@@ -59,14 +58,7 @@ const Alarms = () => {
                 </>
          )})
     }
-	// const isAlarmActive = (id) => {
-	// 	let alarmObject = alarms.filter(alarm => alarm._id === id);
-	// 	if (alarmObject && alarmObject.length === 1 ){
-	// 		console.log(id,  alarmObject[0].active)
-	// 		return alarmObject[0].active; 
-	// 	}
-	// 	return false;
-	//}
+
 	const mapDeviceIDsToNames = (device_ids) =>{
 		let filteredDevices = devices.filter(device => device_ids.includes(device.id));
 		let filteredDeviceNames = [];
