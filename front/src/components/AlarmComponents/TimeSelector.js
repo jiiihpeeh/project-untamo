@@ -15,7 +15,6 @@ const TimeSelector = (props) => {
         let minutes = parseInt(timeArr[1]);
         let hours = parseInt(timeArr[0]);
         if(!isNaN(minutes) && !isNaN(hours)){
-            if(hours < 10)
             setTime(`${timePadding(hours)}:${timePadding(minutes)}`);
         }else{
             setTime(undefined);
