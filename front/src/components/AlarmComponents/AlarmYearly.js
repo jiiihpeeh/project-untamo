@@ -9,10 +9,10 @@ const AlarmYearly = (props) => {
     return(
         <Center>
             <Stack>
-                <Message label={props.label} setLabel={props.setLabel}/>
-                <TimeSelector setTime={props.setTime} time={props.time}  />
-                <DateSelector setDate={props.setDate} date={props.date} dateFormat={'dd.MM'}/>
-                <DeviceChecker selectedDevices={props.selectedDevices} setSelectedDevices={props.setSelectedDevices}/>
+                <Message />
+                <TimeSelector  />
+                <DateSelector dateFormat={'dd.MM'}/>
+                <DeviceChecker/>
             </Stack>
         </Center>
        )

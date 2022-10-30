@@ -11,19 +11,20 @@ import { Center,
         TableContainer } from "@chakra-ui/react";   
 import React , {useContext } from 'react';
 import { DeviceContext } from '../../contexts/DeviceContext';
+import { AlarmComponentsContext } from "./AlarmComponentsContext";
 
 const DeviceChecker = (props) => {
     const { devices } = useContext(DeviceContext);
-    
+    const {selectedDevices, setSelectedDevices} = useContext(AlarmComponentsContext);
     const deviceSelection = ( id) => {
-        if(props.selectedDevices.includes(id)){
-            props.setSelectedDevices(props.selectedDevices.filter(device => device !== id));
+        if(selectedDevices.includes(id)){
+            setSelectedDevices(selectedDevices.filter(device => device !== id));
         }else {
-            props.setSelectedDevices([...props.selectedDevices,id]);
+            setSelectedDevices([...selectedDevices,id]);
         };
     };
     const isSelected = (id) =>{
-        if(props.selectedDevices.includes(id)){
+        if(selectedDevices.includes(id)){
             return true;
         }
         return false;

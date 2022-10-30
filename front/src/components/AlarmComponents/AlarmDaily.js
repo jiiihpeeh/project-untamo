@@ -7,9 +7,9 @@ const AlarmDaily = (props) => {
     return(
         <Center>
             <Stack>
-                <Message label={props.label} setLabel={props.setLabel}/>
-                <TimeSelector setTime={props.setTime} time={props.time}   />
-                <DeviceChecker selectedDevices={props.selectedDevices} setSelectedDevices={props.setSelectedDevices}/>
+                <Message />
+                <TimeSelector  />
+                <DeviceChecker />
             </Stack>
         </Center>
        )

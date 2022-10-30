@@ -1,12 +1,13 @@
 import { FormLabel , Input, Center, Flex } from "@chakra-ui/react";
-import React from "react";
-
+import React, {useContext} from "react";
+import { AlarmComponentsContext } from "./AlarmComponentsContext";
 const Message = (props) => {
+    const {label, setLabel} = useContext(AlarmComponentsContext);
     return(
         <Center>
         <Flex m={"1%"}>
             <FormLabel>Message</FormLabel>
-            <Input value={props.label} onChange={(e) => props.setLabel(e.target.value)} />
+            <Input value={label} onChange={(e) => setLabel(e.target.value)} />
         </Flex>
         </Center>          
     )

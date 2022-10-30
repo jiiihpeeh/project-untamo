@@ -23,6 +23,7 @@ import DeleteAlarm from "./DeleteAlarm";
 import { notification } from './notification';
 import axios from 'axios';
 import { AlarmContext } from '../contexts/AlarmContext';
+import AddAlarmDrawer from "./AddAlarmDrawer";
 
 const Alarms = () => {
 	const [ealarm] = useState({})
@@ -101,7 +102,7 @@ const Alarms = () => {
 
 	const updateAlarms = (alarmsChild) => setClarms(alarmsChild)
 
-	return (
+	return (<>
 		<Container bg='blue.200' maxW='fit-content'>
 			<Heading size='sm'>List of Alarms for {localStorage.getItem('screenname')} {ealarm.label}</Heading>
 			<TableContainer>
@@ -123,12 +124,18 @@ const Alarms = () => {
 					{renderAlarms()} 
 				</Tbody>
 				</Table>
+
 			</TableContainer>
+			
 			<Center>
 			<HStack spacing='30px'>
 			<AddAlarm updateAlarms={updateAlarms}/></HStack></Center>
+
+			
 		</Container>
-	)
+
+		<AddAlarmDrawer/>
+	</>)
 }
 
 export default Alarms;

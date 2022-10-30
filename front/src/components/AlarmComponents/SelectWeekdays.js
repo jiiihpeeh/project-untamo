@@ -1,14 +1,15 @@
 import { Button, Flex, Center } from "@chakra-ui/react";   
-import React from 'react';
+import React, { useContext } from 'react';
+import { AlarmComponentsContext } from "./AlarmComponentsContext";
 
 
 const SelectedWeekdays = (props) => {
-    
+    const {weekdays, setWeekdays } = useContext(AlarmComponentsContext);
     const pushedButton = (day) => {
-        if (props.days.includes(day)){
-            props.setDays(props.days.filter(selectedDay => selectedDay !== day));
+        if (weekdays.includes(day)){
+            setWeekdays(weekdays.filter(selectedDay => selectedDay !== day));
         }else{
-            props.setDays([...props.days, day]); 
+            setWeekdays([...weekdays, day]); 
         }
     };
 
@@ -16,7 +17,7 @@ const SelectedWeekdays = (props) => {
         return(
             <Button m="3px" 
                     borderColor={'black'} 
-                    bgColor={(props.days.includes(weekday.day))?"green":"gray.200" }
+                    bgColor={(weekdays.includes(weekday.day))?"green":"gray.200" }
                     onClick={() => pushedButton(weekday.day)} 
                     borderRadius={'md'}
                     borderWidth={'2px'}

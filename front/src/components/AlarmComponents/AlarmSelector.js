@@ -3,49 +3,31 @@ import AlarmOnce from "./AlarmOnce";
 import AlarmWeekly from "./AlarmWeekly";
 import AlarmDaily from "./AlarmDaily";
 import AlarmYearly from "./AlarmYearly";
+import { AlarmComponentsContext } from "./AlarmComponentsContext";
 
-const AlarmSelector = (props) => {    
+
+const AlarmSelector = (props) => {
+    const setTime= props.setTime;
+    const time= props.time;
+    const setDate= props.setDate;
+    const date= props.date;
+    const selectedDevices= props.selectedDevices;
+    const setSelectedDevices= props.setSelectedDevices;
+    const label = props.label;
+    const setLabel= props.setLabel;
+    const weekdays =  props.weekdays;
+    const setWeekdays = props.setWeekdays;
     return(<>
+    	<AlarmComponentsContext.Provider value={{ time, setTime, date, setDate, selectedDevices, setSelectedDevices, label, setLabel, weekdays, setWeekdays}}>
         {props.alarmCase === 'once' &&
-        <AlarmOnce setTime={props.setTime}
-                   time={props.time}  
-                   setDate={props.setDate} 
-                   date={props.date} 
-                   selectedDevices={props.selectedDevices} 
-                   setSelectedDevices={props.setSelectedDevices} 
-                   label={props.label} 
-                   setLabel={props.setLabel}
-        />}
+        <AlarmOnce />}
         {props.alarmCase === 'weekly' &&
-        <AlarmWeekly setTime={props.setTime}
-                     time={props.time}  
-                     weekdays={props.weekdays} 
-                     setWeekdays={props.setWeekdays} 
-                     selectedDevices={props.selectedDevices} 
-                     setSelectedDevices={props.setSelectedDevices} 
-                     label={props.label} 
-                     setLabel={props.setLabel}
-        />}
+        <AlarmWeekly  />}
         {props.alarmCase === 'daily' &&
-        <AlarmDaily setTime={props.setTime} 
-                    time={props.time}  
-                    weekdays={props.weekdays} 
-                    setWeekdays={props.setWeekdays} 
-                    selectedDevices={props.selectedDevices} 
-                    setSelectedDevices={props.setSelectedDevices} 
-                    label={props.label} 
-                    setLabel={props.setLabel}
-        />}
+        <AlarmDaily />}
         {props.alarmCase === 'yearly' &&
-        <AlarmYearly setTime={props.setTime}
-                     time={props.time}  
-                     setDate={props.setDate} 
-                     date={props.date} 
-                     selectedDevices={props.selectedDevices} 
-                     setSelectedDevices={props.setSelectedDevices} 
-                     label={props.label} 
-                     setLabel={props.setLabel}
-        />}
+        <AlarmYearly  />}
+    </AlarmComponentsContext.Provider>
     </>)
 };
 

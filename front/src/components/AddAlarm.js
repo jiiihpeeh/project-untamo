@@ -23,6 +23,7 @@ import { useState, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
+import AddAlarmDrawer from './AddAlarmDrawer';
 
 let selType=''
 let TempWday=[];
@@ -425,9 +426,9 @@ if(selType==='yearly'){
 renderWdays()
 	return (
 		<>
-		<Link onClick={onOpen}><Text as='b'>
-		Add Alarm
-		</Text></Link>
+		<Button onClick={onOpen}><Text as='b'>
+		+
+		</Text></Button>
 		<Drawer
 			isOpen={isOpen}
 			placement='left'
@@ -460,6 +461,7 @@ renderWdays()
 				{devicesRow}
 				</FormControl>
 				</form>
+				
 				</DrawerBody>
 				<DrawerFooter>
 					<Button variant='outline' mr={3} onClick={onClose} colorScheme="red">Cancel</Button>
