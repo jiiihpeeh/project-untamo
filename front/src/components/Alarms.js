@@ -27,9 +27,9 @@ import { AlarmContext } from '../contexts/AlarmContext';
 
 const Alarms = () => {
 	const { sessionStatus, token, userInfo } = useContext(SessionContext);
-	const { currentDevice } = useContext(DeviceContext);
+	const {  } = useContext(DeviceContext);
     const navigate = useNavigate();
-	const { devices, viewableDevices } = useContext(DeviceContext);
+	const { devices, viewableDevices, currentDevice } = useContext(DeviceContext);
 
 	const {alarms, setAlarms} = useContext(AlarmContext);
 	const renderAlarms = () => {
@@ -49,7 +49,7 @@ const Alarms = () => {
                         >
                             <Switch name={`alarm-switch-${alarms[key]._id}`}
                                     id={`alarm-active-${alarms[key]._id}`}
-                                    isChecked={isAlarmActive(alarms[key])}
+                                    isChecked={active}
                                     size='md' 
                                     onChange={() => activityChange(alarms[key])}
                             />
@@ -59,39 +59,33 @@ const Alarms = () => {
                 </>
          )})
     }
-	const isAlarmActive = (id) => {
-		let alarmObject = alarms.filter(alarm => alarm._id === id);
-		if (alarmObject && alarmObject.length === 1 ){
-			console.log(id,  alarmObject[0].active)
-			return alarmObject[0].active; 
-		}
-		return false;
-	}
+	// const isAlarmActive = (id) => {
+	// 	let alarmObject = alarms.filter(alarm => alarm._id === id);
+	// 	if (alarmObject && alarmObject.length === 1 ){
+	// 		console.log(id,  alarmObject[0].active)
+	// 		return alarmObject[0].active; 
+	// 	}
+	// 	return false;
+	//}
 	const mapDeviceIDsToNames = (device_ids) =>{
-		let filteredDevices = devices.filter(device => device_ids.includes(device.id))
-		let filteredDeviceNames = []
+		let filteredDevices = devices.filter(device => device_ids.includes(device.id));
+		let filteredDeviceNames = [];
 		for(const dev of filteredDevices){
 			filteredDeviceNames.push(dev.deviceName);
 		}
-		return filteredDeviceNames.join(", ")
+		return filteredDeviceNames.join(", ");
 	}
-	const activityChange = async (props) => {
-		if(props.active===1){props.active=0}
-		else if(props.active===0){props.active=1}
+	const activityChange = async (alarm) => {
 		try {
-			console.log("Try: /api/alarm/"+props._id,props)
-			const res = await axios.put('/api/alarm/'+props._id,props, {headers: {token: token}} );
+			console.log("Try: /api/alarm/"+alarm._id,alarm)
+			alarm.active = !alarm.active
+			const res = await axios.put('/api/alarm/'+alarm._id,alarm, {headers: {token: token}} );
 			console.log(res.data);
-			notification("Edit Alarm", "Alarm succesfully modified")
-			let oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
-			for (let i = 0; i < oldAlarms.length; i++) {
-				if(oldAlarms[i]._id===props._id) {
-					oldAlarms.splice(i,1)
-				}
-			}
-			oldAlarms.push(props)
-			localStorage.setItem('alarms', JSON.stringify(oldAlarms));
-			setAlarms(oldAlarms)
+			notification("Edit Alarm", "Alarm modified")
+			let filteredAlarms = alarms.filter(alarmItem => alarmItem._id !== alarm._id)
+			filteredAlarms.push(alarm)
+			localStorage.setItem('alarms', JSON.stringify(filteredAlarms));
+			setAlarms(filteredAlarms)
 		} catch (err){
 			console.error(err)
 			notification("Edit Alarm", "Alarm edit save failed", "error")
@@ -112,7 +106,7 @@ const Alarms = () => {
 	},[currentDevice])
 	return (<>
 		<Container bg='blue.200' maxW='fit-content'>
-			<Heading size='sm'>List of Alarms for {userInfo.screenname} </Heading>
+			<Heading size='sm'>List of Alarms for {userInfo.screenname}. </Heading>
 			<TableContainer>
 				<Table variant='striped' colorScheme='teal' size='sm' className="table-tiny" id='tabell'>
 					<Thead>
