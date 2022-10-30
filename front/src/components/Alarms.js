@@ -69,7 +69,7 @@ const Alarms = () => {
 		<Td>{wday}</Td>
 		<Td>{date}</Td>
 		<Td>{label}</Td>
-		<Td>{devices.join(", ")}</Td>
+		{/* <Td>{devices.join(", ")}</Td> */}
 		{activerow}
 		<Td><DeleteAlarm updateAlarms={updateAlarms} valinta={alarms[numero]} /></Td>
 		<Td><EditAlarm updateAlarms={updateAlarms} valinta={alarms[numero]}/></Td>
@@ -114,7 +114,7 @@ const Alarms = () => {
 							<Th>Weekday</Th>
 							<Th>date</Th>
 							<Th>Label</Th>
-							<Th>Devices</Th>
+							{/* <Th>Devices</Th> */}
 							<Th>Active</Th>
 							<Th></Th>
 							<Th></Th>
