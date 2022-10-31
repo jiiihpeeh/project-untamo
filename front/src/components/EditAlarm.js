@@ -29,23 +29,18 @@ import { SessionContext } from '../contexts/SessionContext';
 function EditAlarm(props) {
 	const btnRef = useRef();
 	const { isOpen, onOpen, onClose } = useDisclosure();
-	const [ time, setTime ] = useState(props.valinta.time);
-	const [date, setDate] = useState(parseDate(props.valinta.date));
-	const [selectedDevices, setSelectedDevices] = useState(props.valinta.device_ids);
-	const [weekdays, setWeekdays] = useState(props.valinta.wday);
-	const [ label, setLabel ] = useState(props.valinta.label);
-	const [alarmCase, setAlarmCase] = useState(props.valinta.occurence);
 	const { alarms, setAlarms } = useContext(AlarmContext);
 	const { token } = useContext(SessionContext);
+	let alarmArr = alarms.filter(alarmItem  => alarmItem._id === props.id);
+	let alarm = alarmArr[0];
+	const [ time, setTime ] = useState(alarm.time);
+	const [date, setDate] = useState(parseDate(alarm.date));
+	const [selectedDevices, setSelectedDevices] = useState(alarm.device_ids);
+	const [weekdays, setWeekdays] = useState(alarm.wday);
+	const [ label, setLabel ] = useState(alarm.label);
+	const [alarmCase, setAlarmCase] = useState(alarm.occurence);
 
-	// useEffect(() => {
-    //     console.log(time)
-    //     console.log(date)
-    //     console.log(selectedDevices)
-    //     console.log(weekdays)
-    //     console.log(label)
-    //     console.log(alarmCase)
-    // },[time,date, selectedDevices, weekdays, label, alarmCase])
+
 	const clearStates = () => {
 		setDate(new Date());
 		setSelectedDevices([]);
@@ -119,7 +114,7 @@ function EditAlarm(props) {
 			<DrawerCloseButton />
 			<DrawerHeader>Edit Alarm</DrawerHeader>	
 				<Center>
-				<Text color='gray'>{<FormLabel>ID: {props.valinta._id}</FormLabel>}</Text>
+				<Text color='gray'>{<FormLabel>ID: {alarm._id}</FormLabel>}</Text>
 			</Center>
 			<DrawerBody>
 				<AlarmSelector  alarmCase={alarmCase}

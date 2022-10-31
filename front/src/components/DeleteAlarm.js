@@ -17,35 +17,28 @@ import { useRef, useContext } from 'react'
 import axios from 'axios';
 import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
+import { SessionContext } from '../contexts/SessionContext';
 
 function DeleteAlarm(props) {
-	const { isOpen, onOpen, onClose } = useDisclosure()
+	const { alarms, setAlarms } = useContext(AlarmContext);
+	const { token } = useContext(SessionContext);
+	const { isOpen, onOpen, onClose } = useDisclosure();	
 	const cancelRef = useRef();
-	let valittu=props.valinta
-	let toukeni = localStorage.getItem("token");
-	axios.defaults.headers.common['token'] = toukeni;
-	const { setAlarms } = useContext(AlarmContext);
+	
 
 	const deleteAlarm = async() =>{
         try {
 			//Delete selected alarm id from mongodb
-			const res = await axios.delete('/api/alarm/'+valittu._id);
-			console.log("res.data:"+JSON.stringify(res.data));
-			//Delete selected alarm id from localstorage
-			let oldAlarms=JSON.parse(localStorage.getItem('alarms')) || [];
-			for (let i =0; i< oldAlarms.length; i++) {
-				if (oldAlarms[i]._id === valittu._id) {
-					oldAlarms.splice([i], 1);
-					localStorage.setItem('alarms',JSON.stringify(oldAlarms))
-					props.updateAlarms(oldAlarms)
-					setAlarms(oldAlarms);
-					notification("Delete Alarm", "Alarm succesfully removed")
-				}
-			}
+			const res = await axios.delete('/api/alarm/'+props.id, {headers:{token:token}});
+			console.log(res);
+			let filteredAlarms = alarms.filter(alarmItem => alarmItem._id !== props.id);
+			setAlarms(filteredAlarms);
+			localStorage.setItem('alarms',JSON.stringify(filteredAlarms));
+			notification("Delete Alarm", "Alarm succesfully removed");
         }catch(err){
             notification("Delete alarm", "Delete alarm failed", 'error');
             console.log("Delete alarm failed");
-			console.error(err)
+			console.error(err);
         };
     }
 	return (
@@ -63,7 +56,7 @@ function DeleteAlarm(props) {
 			<AlertDialogOverlay>
 				<AlertDialogContent>
 					<AlertDialogHeader fontSize='lg' fontWeight='bold'>
-						Delete alarm: {valittu.label}
+						Delete alarm?
 					</AlertDialogHeader>
 					<AlertDialogBody>
 					Are you sure?

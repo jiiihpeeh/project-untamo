@@ -12,11 +12,8 @@ import {
 	Th,
 	Td,
 	TableContainer,
-	HStack,
 	Center,
 	Switch,
-	FormControl,
-	Radio
 	} from '@chakra-ui/react'
 import EditAlarm from "./EditAlarm";
 import AddAlarm from "./AddAlarm";
@@ -59,7 +56,13 @@ const Alarms = () => {
 										onChange={() => activityChange(_id)}
 								/>
 							</Center>
-					</Td>
+						</Td>
+						<Td>
+							<EditAlarm id={_id} />
+						</Td>
+						<Td>
+							<DeleteAlarm id={_id}/>
+						</Td>
 				</Tr>
 				</>
 		)})
@@ -100,12 +103,14 @@ const Alarms = () => {
 		if(!sessionStatus){
 			navigate('/login');
 		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	},[sessionStatus])
 
 	useEffect(() =>{
 		if(!currentDevice){
 			navigate('/welcome');
 		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	},[currentDevice])
 	return (<>
 		<Container bg='blue.200' maxW='fit-content'>
