@@ -50,11 +50,13 @@ function EditAlarm(props) {
 	}
 	const onEdit = async () => {
 		try {
-			let editDate = new Date();
+			let editDate = "";
+
 			try{
 				editDate= stringifyDate(date);
 			}catch(err){
 				console.log(err);
+				editDate=stringifyDate(new Date())
 			}
 			let modAlarm = {
 				active: true,
