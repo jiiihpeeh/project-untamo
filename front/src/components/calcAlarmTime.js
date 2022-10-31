@@ -162,9 +162,18 @@ export const timeToNextAlarm = (alarm) => {
     //console.log('next snooze ', snoozer);
     
     if(!isNaN(preliminaryAlarm)){
-        let launchTime = Math.min(snoozer, preliminaryAlarm.getTime()) - Date.now();
-        console.log('premilinary alarm',preliminaryAlarm);
-        //console.log('launching in... ', new Date(launchTime))
+
+        let now = new Date().getTime();
+        let timeToAlarm = preliminaryAlarm.getTime() - now;
+        let timeToSnoozer = snoozer - now
+        let launchTime = 0;
+        if(Math.abs(timeToSnoozer) !== Infinity){
+            launchTime = Math.min(timeToAlarm, timeToSnoozer) ;
+        }else {
+            launchTime = timeToAlarm;
+        }
+        //console.log('launching in... ', launchTime, preliminaryAlarm);
+
         return launchTime;
     } 
     return snoozer;

@@ -16,6 +16,6 @@ const AlarmYearly = (props) => {
             </Stack>
         </Center>
        )
-}
+};
 
 export default AlarmYearly;

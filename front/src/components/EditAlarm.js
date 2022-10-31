@@ -55,7 +55,7 @@ function EditAlarm(props) {
 			try{
 				editDate= stringifyDate(date);
 			}catch(err){
-				console.log(err);
+				//console.log(err);
 				editDate=stringifyDate(new Date())
 			}
 			let modAlarm = {

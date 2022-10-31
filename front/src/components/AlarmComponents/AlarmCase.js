@@ -14,7 +14,7 @@ const AlarmCase = (props) => {
             <MenuItem  onClick={() => setAlarmCase('once')} >Once</MenuItem>
             <MenuItem  onClick={() => setAlarmCase('daily')}  >Daily</MenuItem>
             <MenuItem  onClick={() => setAlarmCase('weekly')}>Weekly</MenuItem>
-            <MenuItem onClick={() =>  setAlarmCase('yearly')}>Yearly</MenuItem>
+            <MenuItem  onClick={() =>  setAlarmCase('yearly')}>Yearly</MenuItem>
           </MenuList>
         </Menu>
       </Center>
