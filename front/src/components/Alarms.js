@@ -78,7 +78,6 @@ const Alarms = () => {
 		try {
 			let alarmArr = alarms.filter(alarm => alarm._id === id);
 			if(alarmArr.length !== 1){
-				// eslint-disable-next-line no-throw-literal
 				throw new Error('Alarm ids are problematic!');
 			}
 			let alarm = alarmArr[0]
