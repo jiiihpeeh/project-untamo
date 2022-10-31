@@ -37,14 +37,6 @@ function AddAlarm() {
 	const { alarms, setAlarms } = useContext(AlarmContext);
 	const { token } = useContext(SessionContext);
 
-	// useEffect(() => {
-    //     console.log(time)
-    //     console.log(date)
-    //     console.log(selectedDevices)
-    //     console.log(weekdays)
-    //     console.log(label)
-    //     console.log(alarmCase)
-    // },[time,date, selectedDevices, weekdays, label, alarmCase])
 	const clearStates = () => {
 		setDate(new Date());
 		setSelectedDevices([currentDevice]);
