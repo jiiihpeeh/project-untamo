@@ -57,7 +57,7 @@ const Alarms = () => {
 									id={`alarm-active-${alarms[key]._id}`}
 									isChecked={active}
 									size='md' 
-									onChange={() => activityChange(alarms[key])}
+									onChange={() => activityChange(_id)}
 							/>
 						</FormControl>
 					</Td>
@@ -74,8 +74,13 @@ const Alarms = () => {
 		}
 		return filteredDeviceNames.join(", ");
 	}
-	const activityChange = async (alarm) => {
+	const activityChange = async (id) => {
 		try {
+			let alarmArr = alarms.filter(alarm => alarm._id === id);
+			if(alarmArr.length !== 1){
+				return
+			}
+			let alarm = alarmArr[0]
 			console.log("Try: /api/alarm/"+alarm._id,alarm)
 			alarm.active = !alarm.active
 			const res = await axios.put('/api/alarm/'+alarm._id,alarm, {headers: {token: token}} );
