@@ -50,14 +50,14 @@ const Alarms = () => {
 						<Td>{label}</Td>
 						<Td>{mapDeviceIDsToNames(device_ids)}</Td>
 						<Td>
-						<Center>
-							<Switch name={`alarm-switch-${alarms[key]._id}`}
-									id={`alarm-active-${alarms[key]._id}`}
-									isChecked={active}
-									size='md' 
-									onChange={() => activityChange(_id)}
-							/>
-						</Center>
+							<Center>
+								<Switch name={`alarm-switch-${alarms[key]._id}`}
+										id={`alarm-active-${alarms[key]._id}`}
+										isChecked={active}
+										size='md' 
+										onChange={() => activityChange(_id)}
+								/>
+							</Center>
 					</Td>
 				</Tr>
 				</>
