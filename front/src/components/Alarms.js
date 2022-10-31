@@ -51,7 +51,8 @@ const Alarms = () => {
 						<Td>{mapDeviceIDsToNames(device_ids)}</Td>
 						<Td>
 							<Center>
-								<Switch name={`alarm-switch-${alarms[key]._id}`}
+								<Switch 
+										name={`alarm-switch-${alarms[key]._id}`}
 										id={`alarm-active-${alarms[key]._id}`}
 										isChecked={active}
 										size='md' 
