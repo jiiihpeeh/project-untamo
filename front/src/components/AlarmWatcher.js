@@ -35,7 +35,8 @@ const AlarmWatcher  = () => {
         const filterAlarms = () => {
             if(alarms && alarms.length > 0){
                 let filteredAlarms = alarms.filter(alarm => alarm.device_ids.indexOf(currentDevice) !== -1 );
-                console.log('alarms for this device: ', filteredAlarms);
+                filteredAlarms = filteredAlarms.filter(alarm => alarm.active === true);
+                console.log('active alarms for this device: ', filteredAlarms);
                 let idTimeOutMap = new Map();
                 for(const alarm of filteredAlarms){
                     let timed = timeToNextAlarm(alarm);
