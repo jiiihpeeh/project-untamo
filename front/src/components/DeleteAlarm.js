@@ -23,7 +23,7 @@ function DeleteAlarm(props) {
 	const { alarms, setAlarms } = useContext(AlarmContext);
 	const { token } = useContext(SessionContext);
 	const { isOpen, onOpen, onClose } = useDisclosure();	
-	let alarm = alarms.filter(alarmItem => alarmItem._id == props.id )[0];
+	let alarm = alarms.filter(alarmItem => alarmItem._id === props.id )[0];
 	const cancelRef = useRef();
 	
 

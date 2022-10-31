@@ -99,8 +99,8 @@ function AddAlarm() {
 	return (
 		<>
 		<Link onClick={onOpen}>
-			<Tooltip label='Edit alarm' fontSize='md'>
-            <IconButton size='xs' icon={<EditIcon/>} ml="5.5%"/>
+			<Tooltip label='Add an alarm' fontSize='md'>
+            	<Button size='xl' ml="5.5%" borderRadius={"50%"} backgroundColor={'teal'} width={"50px"} height={"50px"}>+</Button>
 			</Tooltip>
 		</Link>
 		<Drawer
