@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import { useNavigate } from "react-router-dom";
@@ -27,35 +27,42 @@ import { AlarmContext } from '../contexts/AlarmContext';
 
 const Alarms = () => {
 	const { sessionStatus, token, userInfo } = useContext(SessionContext);
-    const navigate = useNavigate();
+	const navigate = useNavigate();
 	const { devices, viewableDevices, currentDevice } = useContext(DeviceContext);
 
 	const {alarms, setAlarms} = useContext(AlarmContext);
 	const renderAlarms = () => {
-        return alarms.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
+		let viewableAlarmsSet = new Set ();
+		for(const filtrate of viewableDevices){
+			for(const secondFiltrate of alarms.filter(alarm => alarm.device_ids.includes(filtrate))){
+				viewableAlarmsSet.add(secondFiltrate);
+			};
+		};
+		let viewableAlarms = [...viewableAlarmsSet];
+		return viewableAlarms.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
                return (
-               <>
-                <Tr key={_id}>
-                    <Td>{occurence}</Td>
-                    <Td>{time}</Td>
-                    <Td>{wday}</Td>
-                    <Td>{date}</Td>
-                    <Td>{label}</Td>
-                    <Td>{mapDeviceIDsToNames(device_ids)}</Td>
-                    <Td>
-                        <FormControl display='flex' 
-                                     alignItems='center'
-                        >
-                            <Switch name={`alarm-switch-${alarms[key]._id}`}
-                                    id={`alarm-active-${alarms[key]._id}`}
-                                    isChecked={active}
-                                    size='md' 
-                                    onChange={() => activityChange(alarms[key])}
-                            />
-                        </FormControl>
-                    </Td>
-                </Tr>
-                </>
+					<>
+					<Tr key={_id}>
+						<Td>{occurence}</Td>
+						<Td>{time}</Td>
+						<Td>{wday}</Td>
+						<Td>{date}</Td>
+						<Td>{label}</Td>
+						<Td>{mapDeviceIDsToNames(device_ids)}</Td>
+						<Td>
+						<FormControl display='flex' 
+									alignItems='center'
+						>
+							<Switch name={`alarm-switch-${alarms[key]._id}`}
+									id={`alarm-active-${alarms[key]._id}`}
+									isChecked={active}
+									size='md' 
+									onChange={() => activityChange(alarms[key])}
+							/>
+						</FormControl>
+					</Td>
+				</Tr>
+				</>
          )})
     }
 
