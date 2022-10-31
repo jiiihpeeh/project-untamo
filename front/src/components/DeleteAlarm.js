@@ -23,6 +23,7 @@ function DeleteAlarm(props) {
 	const { alarms, setAlarms } = useContext(AlarmContext);
 	const { token } = useContext(SessionContext);
 	const { isOpen, onOpen, onClose } = useDisclosure();	
+	let alarm = alarms.filter(alarmItem => alarmItem._id == props.id )[0];
 	const cancelRef = useRef();
 	
 
@@ -56,7 +57,7 @@ function DeleteAlarm(props) {
 			<AlertDialogOverlay>
 				<AlertDialogContent>
 					<AlertDialogHeader fontSize='lg' fontWeight='bold'>
-						Delete alarm?
+						Delete alarm ({alarm.occurence}, {alarm.time} for {alarm.device_ids.length} devices)?
 					</AlertDialogHeader>
 					<AlertDialogBody>
 					Are you sure?
