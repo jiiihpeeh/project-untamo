@@ -80,19 +80,19 @@ const Alarms = () => {
 			if(alarmArr.length !== 1){
 				throw new Error('Alarm ids are problematic!');
 			}
-			let alarm = alarmArr[0]
-			console.log("Try: /api/alarm/"+alarm._id,alarm)
-			alarm.active = !alarm.active
+			let alarm = alarmArr[0];
+			console.log("Try: /api/alarm/"+alarm._id,alarm);
+			alarm.active = !alarm.active;
 			const res = await axios.put('/api/alarm/'+alarm._id,alarm, {headers: {token: token}} );
 			console.log(res.data);
-			notification("Edit Alarm", "Alarm modified")
-			let filteredAlarms = alarms.filter(alarmItem => alarmItem._id !== alarm._id)
-			filteredAlarms.push(alarm)
+			notification("Edit Alarm", "Alarm modified");
+			let filteredAlarms = alarms.filter(alarmItem => alarmItem._id !== alarm._id);
+			filteredAlarms.push(alarm);
 			localStorage.setItem('alarms', JSON.stringify(filteredAlarms));
-			setAlarms(filteredAlarms)
+			setAlarms(filteredAlarms);
 		} catch (err){
-			console.error(err)
-			notification("Edit Alarm", "Alarm edit save failed", "error")
+			console.error(err);
+			notification("Edit Alarm", "Alarm edit save failed", "error");
 		}
 	}
 
