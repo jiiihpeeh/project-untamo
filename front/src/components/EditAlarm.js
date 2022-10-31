@@ -50,15 +50,21 @@ function EditAlarm(props) {
 	}
 	const onEdit = async () => {
 		try {
+			let editDate = new Date();
+			try{
+				editDate= stringifyDate(date);
+			}catch(err){
+				console.log(err);
+			}
 			let modAlarm = {
 				active: true,
-				date: stringifyDate(date),
+				date: editDate,
 				device_ids: selectedDevices,
 				label: label,
 				occurence: alarmCase,
 				time: time,
 				wday: weekdays,
-				_id: props.valinta._id
+				_id: props.id
 			};
 			switch(alarmCase){
 				case 'weekly':

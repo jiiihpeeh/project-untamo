@@ -4,7 +4,7 @@ export const parseDate = (dateStr) => {
 		let year = parseInt(dateArr[0]);
 		let month = parseInt(dateArr[1]) - 1;
 		let day = parseInt(dateArr[2]);
-		let date = new Date()
+		let date = new Date();
 		date.setFullYear(year);
 		date.setMonth(month);
 		date.setDate(day);
