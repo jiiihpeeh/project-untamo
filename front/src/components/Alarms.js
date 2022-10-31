@@ -78,7 +78,7 @@ const Alarms = () => {
 		try {
 			let alarmArr = alarms.filter(alarm => alarm._id === id);
 			if(alarmArr.length !== 1){
-				return
+				throw 'Alarm ids are problematic!';
 			}
 			let alarm = alarmArr[0]
 			console.log("Try: /api/alarm/"+alarm._id,alarm)
