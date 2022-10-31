@@ -50,16 +50,14 @@ const Alarms = () => {
 						<Td>{label}</Td>
 						<Td>{mapDeviceIDsToNames(device_ids)}</Td>
 						<Td>
-						<FormControl display='flex' 
-									alignItems='center'
-						>
+						<Center>
 							<Switch name={`alarm-switch-${alarms[key]._id}`}
 									id={`alarm-active-${alarms[key]._id}`}
 									isChecked={active}
 									size='md' 
 									onChange={() => activityChange(_id)}
 							/>
-						</FormControl>
+						</Center>
 					</Td>
 				</Tr>
 				</>
