@@ -40,7 +40,7 @@ const Alarms = () => {
 		};
 		let viewableAlarms = [...viewableAlarmsSet];
 		return viewableAlarms.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
-               return (
+			return (
 					<>
 					<Tr key={_id}>
 						<Td>{occurence}</Td>
@@ -63,7 +63,7 @@ const Alarms = () => {
 					</Td>
 				</Tr>
 				</>
-         )})
+		)})
     }
 
 	const mapDeviceIDsToNames = (device_ids) =>{
