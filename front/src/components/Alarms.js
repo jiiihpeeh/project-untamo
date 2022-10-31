@@ -110,7 +110,7 @@ const Alarms = () => {
 	},[currentDevice])
 	return (<>
 		<Container bg='blue.200' maxW='fit-content'>
-			<Heading size='sm'>List of Alarms for {userInfo.screenname}. </Heading>
+			<Heading size='sm'>List of Alarms for selected devices for user {userInfo.screenname}. Currently on {mapDeviceIDsToNames([currentDevice])}. </Heading>
 			<TableContainer>
 				<Table variant='striped' colorScheme='teal' size='sm' className="table-tiny" id='tabell'>
 					<Thead>
