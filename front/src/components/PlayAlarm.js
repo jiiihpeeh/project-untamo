@@ -29,19 +29,17 @@ const PlayAlarm = () =>{
     useLayoutEffect(() => {
         function updateSize() {
             setClockSize(Math.min(window.innerWidth, window.innerHeight) * 0.35);
-        }
+        };
         window.addEventListener('resize', updateSize);
         updateSize();
         return () => window.removeEventListener('resize', updateSize);
     }, []);
-
-    
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     const snoozer = async () =>{
         try{
             clearTimeout(JSON.parse(sessionStorage.getItem('alarm-timeout')));
-        }catch(err){}
+        }catch(err){};
         
         let aElem = document.getElementById('playAudioAlarm');
         if(aElem){
@@ -49,8 +47,8 @@ const PlayAlarm = () =>{
             if(audioURL){
                 URL.revokeObjectURL(audioURL);
                 setAudioURL(undefined);
-            }
-        }
+            };
+        };
         let currentAlarm = Object.assign({},runAlarm);
         let currentMoment = Date.now();
         if(currentAlarm.hasOwnProperty('snooze')){
@@ -58,26 +56,26 @@ const PlayAlarm = () =>{
             currentAlarm.snooze.push(currentMoment);
         }else{
             currentAlarm.snooze = [ currentMoment ];
-        }
+        };
         try {
             let res = await axios.put('/api/alarm/'+currentAlarm._id, currentAlarm);
             console.log(res.data)
         }catch(err){
-            console.log("Couldn't update alarm info ", err)
-        }
+            console.log("Couldn't update alarm info ", err);;
+        };
         let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm._id);
         filterAlarms.push(currentAlarm);
         setAlarms(filterAlarms);
         localStorage.setItem('alarms', JSON.stringify(filterAlarms));
         navigate('/alarms');   
-     }
+     };
     
  
     const turnOff = async (event) => {
         console.log(event);
         try{
             clearTimeout(JSON.parse(sessionStorage.getItem('alarm-timeout')));
-        }catch(err){}
+        }catch(err){};
         let aElem = document.getElementById('playAudioAlarm');
         if(aElem){
             aElem.pause();
@@ -85,9 +83,9 @@ const PlayAlarm = () =>{
             currentAlarm.snooze = [0];
             try {
                 let res = await axios.put('/api/alarm/'+currentAlarm._id, currentAlarm);
-                console.log(res.data)
+                console.log(res.data);
             }catch(err){
-                console.log("Couldn't update alarm info ", err)
+                console.log("Couldn't update alarm info ", err);
             }
             let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm._id);
             filterAlarms.push(currentAlarm);
@@ -100,7 +98,7 @@ const PlayAlarm = () =>{
             }
         }
         setTimeout(() => {navigate('/alarms')},100);
-    }
+    };
 
     useEffect(() =>{
         if(!sessionStatus){

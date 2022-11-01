@@ -3,17 +3,9 @@ import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../contexts/DeviceContext";
 import { useNavigate } from "react-router-dom";
 import {
-	Container,
-	Heading,
-	Table,
-	Thead,
-	Tbody,
-	Tr,
-	Th,
-	Td,
-	TableContainer,
-	Center,
-	Switch,
+	Container,Heading,Table,Thead,Tbody,
+	Tr,Th,Td,TableContainer,
+	Center,Switch
 	} from '@chakra-ui/react'
 import EditAlarm from "./EditAlarm";
 import AddAlarm from "./AddAlarm";
@@ -22,6 +14,7 @@ import { notification } from './notification';
 import axios from 'axios';
 import { AlarmContext } from '../contexts/AlarmContext';
 import { dayContinuationDays } from "./calcAlarmTime";
+import AlarmNotification from "./AlarmNotification";
 
 const Alarms = () => {
 	const { sessionStatus, token, userInfo } = useContext(SessionContext);
@@ -124,6 +117,7 @@ const Alarms = () => {
 	},[currentDevice])
 	return (<>
 		<Container bg='blue.200' maxW='fit-content'>
+
 			<Heading size='sm'>List of Alarms for selected devices for user {userInfo.screenname}. Currently on {mapDeviceIDsToNames([currentDevice])}. </Heading>
 			<TableContainer>
 				<Table variant='striped' colorScheme='teal' size='sm' className="table-tiny" id='tabell'>
@@ -146,11 +140,9 @@ const Alarms = () => {
 				</Table>
 
 			</TableContainer>
-
-			
 		</Container>
-
 		<AddAlarm/>
+		<AlarmNotification/>
 	</>)
 }
 

@@ -1,15 +1,10 @@
 import { useContext } from 'react';
 import { SessionContext } from '../contexts/SessionContext';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  Link,
-  Center,
-  useDisclosure
+  Modal, ModalOverlay,
+  ModalContent, ModalHeader,
+  ModalBody, ModalCloseButton,
+  Link, Center, useDisclosure
 } from '@chakra-ui/react';
 
 
@@ -25,7 +20,7 @@ const QRPairingDialog = () => {
   } 
  
   const closeWindow = async () => {
-    setFetchQR(-1);
+    setFetchQR(false);
     setTimeout(onClose,20);
   }
   return (

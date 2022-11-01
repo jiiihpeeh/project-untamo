@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { SessionContext } from '../contexts/SessionContext';
 import { AlarmContext } from '../contexts/AlarmContext';
@@ -7,10 +7,10 @@ import fetchAlarms from './fetchAlarms';
 import fetchDevices from './fetchDevices';
 const UserWatcher = () => {
   //Public API that will echo messages sent to it back to the client
-  const [socketUrl, setSocketUrl] = useState('ws://localhost:3001/action');
+  const [ socketUrl ] = useState('ws://localhost:3001/action');
   const didUnmount = useRef(false);
-  const [messageHistory, setMessageHistory] = useState([]);
-  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, {
+  //const [messageHistory, setMessageHistory] = useState([]);
+  const { sendMessage, lastMessage } = useWebSocket(socketUrl, {
     onOpen: () => sendIdentity(),
     shouldReconnect: (closeEvent) => {
       /*
@@ -39,7 +39,7 @@ const UserWatcher = () => {
   useEffect(() => {
     const watcher = async () => { 
       if (lastMessage !== null) {
-        console.log(lastMessage);
+        //console.log(lastMessage);
         let msgData = JSON.parse(lastMessage.data);
         if(!msgData || !msgData.hasOwnProperty('url')){
           return;
@@ -47,10 +47,10 @@ const UserWatcher = () => {
           
         console.log(msgData);
         let urlSplit = msgData.url.split('/');
-        console.log(urlSplit);
+        //console.log(urlSplit);
         if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
             let alarmData = await fetchAlarms(token);
-            console.log(alarmData);
+           // console.log(alarmData);
             setAlarms(alarmData);
         };
         if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'device'){
@@ -63,21 +63,21 @@ const UserWatcher = () => {
   }, [lastMessage ]);
 
   useEffect(() => {
-    sendIdentity()
+    sendIdentity();
   },[token])
 
 
   //const handleClickSendMessage = useCallback(() => sendMessage('Hello'), []);
 
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Connecting',
-    [ReadyState.OPEN]: 'Open',
-    [ReadyState.CLOSING]: 'Closing',
-    [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }
-  //console.log(ReadyState)
-  [readyState];
+  // const connectionStatus = {
+  //   [ReadyState.CONNECTING]: 'Connecting',
+  //   [ReadyState.OPEN]: 'Open',
+  //   [ReadyState.CLOSING]: 'Closing',
+  //   [ReadyState.CLOSED]: 'Closed',
+  //   [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+  // }
+  // //console.log(ReadyState)
+  // [readyState];
 
   useEffect(() => {
     return () => {

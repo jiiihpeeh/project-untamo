@@ -9,8 +9,8 @@ const SelectedWeekdays = (props) => {
             props.setDays(props.days.filter(selectedDay => selectedDay !== day));
         }else{
             props.setDays([...props.days, day]); 
-        }
-    }
+        };
+    };
 
     const WeekdayButton = (weekday) => {
         return(
@@ -25,7 +25,7 @@ const SelectedWeekdays = (props) => {
             {weekday.abbrev} 
         </Button>
         )
-    }
+    };
     
 
     return(
@@ -42,5 +42,5 @@ const SelectedWeekdays = (props) => {
         </Center>
         
     )
-}
+};
 export default SelectedWeekdays;

@@ -50,8 +50,8 @@ export const numberToWeekDay = (number) =>{
             return 'Sunday';
         default:
             return 'Sunday';
-    }
-}
+    };
+};
 
 export const dayContinuation = (dayNumberList) => {
    // console.log(dayNumberList)
@@ -63,7 +63,7 @@ export const dayContinuation = (dayNumberList) => {
         let max = num;
         while( dayNumbers.includes(max) ){
             max++;
-        }
+        };
         if(min !== max - 1){
             if(continuation.length > 0){
                 let prev = continuation[continuation.length -1];
@@ -74,8 +74,7 @@ export const dayContinuation = (dayNumberList) => {
                 }
             }else{
                 continuation.push([min, max - 1]);
-            }
-            
+            };
         }else{
             if(continuation.length > 0){
                 let prev = continuation[continuation.length -1];
@@ -83,12 +82,12 @@ export const dayContinuation = (dayNumberList) => {
                 let prevMin = Math.min(...prev);
                 if (!(min >= prevMin && min <= prevMax )){
                     continuation.push([min]);
-                }
+                };
             }else{
                 continuation.push([min]);
-            }        
-        }   
-    }
+            };     
+        }; 
+    };
     return continuation;
 };
 

@@ -26,12 +26,11 @@ const LogOut = () => {
     const navigate = useNavigate();
     const logOut = async() =>{
         try {
-            let res = await axios.post('http://localhost:3001/logout', {msg: "smell you later"}, {
+            let res = await axios.post('/logout', {msg: "smell you later"}, {
                 headers: {'token': token}
             });
-            console.log(res.data);
-            
-            notification("Logged out", "Log out succcesful", 'info');
+            //console.log(res.data);
+            notification("Logged out", "Logged out", 'info');
             setToken(undefined);
             setSessionStatus(false);
             setUserInfo({});
@@ -41,20 +40,18 @@ const LogOut = () => {
                 localStorage.clear();
                 //await clearAudio();
                 await deleteAudioDB();
-                
             }catch(err){
                 notification("Logged out", "Failed to clear user info", 'error');
                 console.error("Clearing userinfo failed");
 
-            }
+            };
             navigate('/login');
         }catch(err){
             notification("Log out", "Log out failed", 'error');
             console.log("Log out failed");
         };
-    }
+    };
 
-  
     return (
       <>
         <Text  onClick={onOpen} id="logout-button" key="logout-button" >

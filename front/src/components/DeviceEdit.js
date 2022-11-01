@@ -4,22 +4,13 @@ import { notification } from "./notification";
 import { SessionContext } from "../contexts/SessionContext";
 import { DeviceContext } from "../contexts/DeviceContext";
 import { 
-        Menu,
-        MenuItem,
-        MenuList,
-        MenuButton,
-        Drawer,
-        DrawerOverlay,
-        DrawerContent,
-        DrawerHeader,
-        DrawerBody,
-        DrawerFooter,
-        DrawerCloseButton,
-        Button,
-        Divider,
-        Input,
-        Stack,
-        useDisclosure
+        Menu, MenuItem,
+        MenuList, MenuButton,
+        Drawer, DrawerOverlay,
+        DrawerContent, DrawerHeader,
+        DrawerBody, DrawerFooter,
+        DrawerCloseButton, Button, Divider,
+        Input, Stack, useDisclosure
         } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 
@@ -56,7 +47,7 @@ const DeviceEdit = (props) => {
             let res = await axios.put(`/api/device/`+ props.device.id,
                       {deviceName:deviceName, type: deviceType, id: props.device.id }, 
                       {headers: {'token': token}});
-            console.log(res.data);
+            //console.log(res.data);
             let devicesUpdated =  devices.filter(device => device.id !== props.device.id);
             devicesUpdated.push({deviceName:deviceName, type: deviceType, id: props.device.id});
             setDevices(devicesUpdated);
