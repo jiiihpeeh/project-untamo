@@ -15,6 +15,7 @@ import axios from 'axios';
 import { AlarmContext } from '../contexts/AlarmContext';
 import { dayContinuationDays } from "./calcAlarmTime";
 import AlarmNotification from "./AlarmNotification";
+import { timeForNextAlarm } from "./calcAlarmTime";
 
 const Alarms = () => {
 	const { sessionStatus, token, userInfo } = useContext(SessionContext);
@@ -30,8 +31,16 @@ const Alarms = () => {
 			};
 		};
 		let viewableAlarms = [...viewableAlarmsSet];
-
-		return viewableAlarms.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
+		let timeAlarmMap = new Map()
+		for(const item of viewableAlarms){
+			timeAlarmMap.set(timeForNextAlarm(item).getTime(), item._id)
+		}
+		let timeMapArray = [...timeAlarmMap.keys()].sort(function(a, b){return a - b});
+		let sortedView = [] 
+		for(const item of timeMapArray){
+			sortedView.push(viewableAlarms.filter(alarm => alarm._id === timeAlarmMap.get(item))[0])
+		}
+		return sortedView.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
 			return (
 					<>
 					<Tr key={_id}>

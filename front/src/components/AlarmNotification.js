@@ -25,6 +25,9 @@ const AlarmNotification = ()  => {
 	}
 	useEffect(() => {
 		const  updateToast = () => {
+			if(!runAlarm.hasOwnProperty('_id')){
+				return;
+			}
 			toast.update('alarm-notification', { 
                                                 title: `${runAlarm.label}`, 
 												description: `${timeForNextAlarm(runAlarm)}`,

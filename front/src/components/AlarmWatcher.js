@@ -3,14 +3,14 @@ import { AlarmContext } from "../contexts/AlarmContext";
 import { DeviceContext } from "../contexts/DeviceContext";
 import { timeToNextAlarm } from "./calcAlarmTime";
 import { useNavigate } from "react-router-dom";
-import { notification } from "./notification";
 
 const clearAlarmTimeout = () => {
+    //Session storage is used in order to keep timeouts in sync
     let delTimeOut = JSON.parse(sessionStorage.getItem('timeOutID'));
         if(delTimeOut){
             try {
                 clearTimeout(delTimeOut);
-        }catch(err){
+            }catch(err){
                 console.log(err);
         };
     };
@@ -23,7 +23,6 @@ const AlarmWatcher  = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        //Session strorage is used in order to keep timeouts in sync
         clearAlarmTimeout();
         if(runAlarm.hasOwnProperty('._id')){
             let timed = timeToNextAlarm(runAlarm);
@@ -43,10 +42,11 @@ const AlarmWatcher  = () => {
     useEffect(() => {
         const filterAlarms = () => {
             if(runAlarm){
-                if(runAlarm.hasOwnProperty('active') && runAlarm.active === false){
+                if((runAlarm.hasOwnProperty('active') && (runAlarm.active === false)) ||
+                     (runAlarm.hasOwnProperty('device_ids') && (!runAlarm.device_ids.includes(currentDevice))) ){
                     setRunAlarm('');
                     clearAlarmTimeout();
-                };
+                }
             };
             if(alarms && alarms.length > 0){
                 let filteredAlarms = alarms.filter(alarm => alarm.device_ids.indexOf(currentDevice) !== -1 );
@@ -69,6 +69,7 @@ const AlarmWatcher  = () => {
             };
         }; 
         filterAlarms();
+    // eslint-disable-next-line react-hooks/exhaustive-deps 
     },[alarms, currentDevice, setRunAlarm])
 };
 
