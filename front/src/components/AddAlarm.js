@@ -1,18 +1,16 @@
 import {
 	useDisclosure,
-	Button,
+	Button,Tooltip,
 	Drawer, DrawerBody,
 	DrawerFooter,
 	DrawerHeader,
 	DrawerOverlay,
 	DrawerContent,
 	DrawerCloseButton,Link,
-	Tooltip, IconButton 
 	} from '@chakra-ui/react';
 import { notification } from './notification';
 import { AlarmContext } from '../contexts/AlarmContext';
 import { timePadding } from './AlarmComponents/timePadding';
-import { EditIcon } from '@chakra-ui/icons';
 import React, { useRef, useState, useContext } from 'react';
 import axios from 'axios';
 import AlarmSelector from './AlarmComponents/AlarmSelector';
@@ -20,15 +18,16 @@ import { stringifyDate } from './AlarmComponents/stringifyDate';
 import { SessionContext } from '../contexts/SessionContext';
 import { DeviceContext } from '../contexts/DeviceContext';
 
-const currentTime = () => {
-	return `${timePadding(new Date().getHours())}:${timePadding(new Date().getMinutes())}`;
+const alarmTime = () => {
+	let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+	return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`;
 };
 
 function AddAlarm() {
 	const btnRef = useRef();
 	const {currentDevice} = useContext(DeviceContext);
 	const { isOpen, onOpen, onClose } = useDisclosure();
-	const [ time, setTime ] = useState(currentTime());
+	const [ time, setTime ] = useState(alarmTime());
     const [ date, setDate ] = useState(new Date());
     const [ selectedDevices, setSelectedDevices] = useState([currentDevice]);
     const [ weekdays, setWeekdays ] = useState([new Date().toLocaleDateString('en-US', {weekday: 'long'})]);
@@ -69,7 +68,7 @@ function AddAlarm() {
 			} 
 			//console.log("Try: /api/alarm/"+modAlarm._id,modAlarm);
 			const res = await axios.post('http://localhost:3001/api/alarm/', newAlarm, {headers: {token: token}} );
-			console.log(res.data);
+			//console.log(res.data);
 			let addedAlarm = res.data.alarm;
 			notification("Edit Alarm", "Alarm modified");
 			let currentAlarms = [...alarms, addedAlarm];
@@ -87,10 +86,15 @@ function AddAlarm() {
 		clearStates();
 		onClose();
 	}
+	const onDrawerOpen = () => {
+		setTime(alarmTime());
+		setDate(new Date());
+		onOpen();
+	}
 //let idRow=<><FormLabel>ID: {props.valinta._id}</FormLabel></>
 	return (
 		<>
-		<Link onClick={onOpen}>
+		<Link onClick={onDrawerOpen}>
 			<Tooltip label='Add an alarm' fontSize='md'>
             	<Button size='xl' ml="5.5%" borderRadius={"50%"} backgroundColor={'teal'} width={"50px"} height={"50px"}>+</Button>
 			</Tooltip>

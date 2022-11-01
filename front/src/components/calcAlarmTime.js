@@ -10,8 +10,8 @@ const addDays = (date, count) => {
     return calculated;
 };
     
-
-const weekDayToNumber = (weekDay) => {
+export const weekDayToNumber = (weekDay) => {
+    //console.log(weekDay)
     switch(weekDay){
         case 'Monday':
             return 1;
@@ -31,6 +31,85 @@ const weekDayToNumber = (weekDay) => {
             return 0;
     };
 };
+
+export const numberToWeekDay = (number) =>{
+    switch(number){
+        case 1:
+            return 'Monday';
+        case 2:
+            return  'Tuesday';
+        case 3:
+            return 'Wednesday';
+        case 4:
+            return 'Thursday';
+        case 5:
+            return 'Friday';
+        case 6:
+            return 'Saturday';
+        case 0:
+            return 'Sunday';
+        default:
+            return 'Sunday';
+    }
+}
+
+export const dayContinuation = (dayNumberList) => {
+   // console.log(dayNumberList)
+    let dayNumbers = dayNumberList;
+    dayNumbers.sort(function(a, b){return a - b});
+    let continuation = [];
+    for(const num of dayNumbers){
+        let min = num;
+        let max = num;
+        while( dayNumbers.includes(max) ){
+            max++;
+        }
+        if(min !== max - 1){
+            if(continuation.length > 0){
+                let prev = continuation[continuation.length -1];
+                let prevMax = Math.max(...prev);
+                let prevMin = Math.min(...prev);
+                if (!(min >= prevMin && (max - 1) <= prevMax )){
+                    continuation.push([min, max - 1]);
+                }
+            }else{
+                continuation.push([min, max - 1]);
+            }
+            
+        }else{
+            if(continuation.length > 0){
+                let prev = continuation[continuation.length -1];
+                let prevMax = Math.max(...prev);
+                let prevMin = Math.min(...prev);
+                if (!(min >= prevMin && min <= prevMax )){
+                    continuation.push([min]);
+                }
+            }else{
+                continuation.push([min]);
+            }        
+        }   
+    }
+    return continuation;
+};
+
+export const dayContinuationDays = (dayList) => {
+    //console.log('InpUT:', dayList)
+    let dayNumberList = [];
+    for(const day of dayList){
+        let d = weekDayToNumber(day);
+        dayNumberList.push((d===0)?7:d);
+    }
+    let continuationArr = dayContinuation(dayNumberList);
+    let dayContinuationArr = [];
+    for(const c of continuationArr){
+        let subList = [];
+        for(const i of c){
+            subList.push(numberToWeekDay((i===7)?0:i));
+        }
+        dayContinuationArr.push(subList);
+    }
+    return dayContinuationArr;
+}
 
 const initAlarmDate = (timeString) => {
     let timeCompare = new Date();

@@ -80,11 +80,11 @@ function EditAlarm(props) {
 					modAlarm.wday = [];
 					break;
 			} 
-			console.log("Try: /api/alarm/"+modAlarm._id,modAlarm);
+			//console.log("Try: /api/alarm/"+modAlarm._id,modAlarm);
 			const res = await axios.put('/api/alarm/'+modAlarm._id, modAlarm,  {
 				headers: {'token': token}
 			});
-			console.log(res.data);
+			//console.log(res.data);
 			notification("Edit Alarm", "Alarm modified");
 			let oldAlarms = alarms.filter(alarm => alarm._id !== modAlarm._id);
 			oldAlarms.push(modAlarm);
@@ -102,10 +102,19 @@ function EditAlarm(props) {
 		clearStates();
 		onClose();
 	}
+	const onDrawerOpen = () => {
+		setTime(alarm.time);
+		setDate(parseDate(alarm.date));
+		setSelectedDevices(alarm.device_ids);
+		setWeekdays(alarm.wday);
+		setLabel(alarm.label);
+		setAlarmCase(alarm.occurence);
+		onOpen();
+	}
 //let idRow=<><FormLabel>ID: {props.valinta._id}</FormLabel></>
 	return (
 		<>
-		<Link onClick={onOpen}>
+		<Link onClick={onDrawerOpen}>
 			<Tooltip label='Edit alarm' fontSize='md'>
             <IconButton size='xs' icon={<EditIcon/>} ml="5.5%"/>
 			</Tooltip>
@@ -125,7 +134,8 @@ function EditAlarm(props) {
 				<Text color='gray'>{<FormLabel>ID: {alarm._id}</FormLabel>}</Text>
 			</Center>
 			<DrawerBody>
-				<AlarmSelector  alarmCase={alarmCase}
+				<AlarmSelector  
+								alarmCase={alarmCase}
 								setAlarmCase={setAlarmCase}
 								time={time}
 								setTime={setTime} 

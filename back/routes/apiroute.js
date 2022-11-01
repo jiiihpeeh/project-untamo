@@ -15,19 +15,6 @@ const guessCount =  1000000000;
 
 
 
-router.get("/alarm",function(req,res) {
-	console.log(tStamppi(),"GET /api/alarm");
-	let query={"user":req.session.userID}
-	alarmModel.find(query,function(err,alarms) {
-		if(err) {
-			console.log(tStamppi(),"Failed to find alarms. Reason",err);
-			return res.status(500).json({message:"Internal server error"})
-		}
-		console.log(tStamppi(),"   GET /api/alarm/ SUCCESS")
-		return res.status(200).json(alarms);
-	})
-});
-
 router.get("/admin",function(req,res) {
 	console.log(tStamppi(),"GET /api/admin");
 	var usercreds = new Array();
@@ -48,6 +35,20 @@ router.get("/admin",function(req,res) {
 			usercreds.push(tempusercreds)
 		}
 		return res.status(200).json(usercreds);
+	})
+});
+
+
+router.get("/alarms",function(req,res) {
+	console.log(tStamppi(),"GET /api/alarms");
+	let query={"user":req.session.userID}
+	alarmModel.find(query,function(err,alarms) {
+		if(err) {
+			console.log(tStamppi(),"Failed to find alarms. Reason",err);
+			return res.status(500).json({message:"Internal server error"})
+		}
+		console.log(tStamppi(),"   GET /api/alarm/ SUCCESS")
+		return res.status(200).json(alarms);
 	})
 });
 

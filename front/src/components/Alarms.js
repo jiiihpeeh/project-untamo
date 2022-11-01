@@ -21,6 +21,7 @@ import DeleteAlarm from "./DeleteAlarm";
 import { notification } from './notification';
 import axios from 'axios';
 import { AlarmContext } from '../contexts/AlarmContext';
+import { dayContinuationDays } from "./calcAlarmTime";
 
 const Alarms = () => {
 	const { sessionStatus, token, userInfo } = useContext(SessionContext);
@@ -29,20 +30,21 @@ const Alarms = () => {
 
 	const {alarms, setAlarms} = useContext(AlarmContext);
 	const renderAlarms = () => {
-		let viewableAlarmsSet = new Set ();
+		let viewableAlarmsSet = new Set ();		
 		for(const filtrate of viewableDevices){
 			for(const secondFiltrate of alarms.filter(alarm => alarm.device_ids.includes(filtrate))){
 				viewableAlarmsSet.add(secondFiltrate);
 			};
 		};
 		let viewableAlarms = [...viewableAlarmsSet];
+
 		return viewableAlarms.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
 			return (
 					<>
 					<Tr key={_id}>
 						<Td>{occurence}</Td>
 						<Td>{time}</Td>
-						<Td>{wday}</Td>
+						<Td>{weekdayDisplay(wday)}</Td>
 						<Td>{date}</Td>
 						<Td>{label}</Td>
 						<Td>{mapDeviceIDsToNames(device_ids)}</Td>
@@ -98,6 +100,14 @@ const Alarms = () => {
 		}
 	}
 
+	const weekdayDisplay = (days) => {
+		let dayArr = dayContinuationDays(days);
+		let subList = [];
+		for(const outer of dayArr){
+			subList.push(outer.join('-'));
+		}
+		return subList.join(', ');
+	}
 
 	useEffect(() =>{
 		if(!sessionStatus){
