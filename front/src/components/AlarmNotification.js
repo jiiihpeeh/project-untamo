@@ -41,10 +41,10 @@ const AlarmNotification = ()  => {
         const closeToast = () => {
             toast.close('alarm-notification');
         }
-        if(!sessionStatus || !runAlarm.hasOwnProperty('_id') ){
+        if(!sessionStatus || (!runAlarm.hasOwnProperty('_id')) ){
             closeToast();
         }
-    },[sessionStatus]);
+    },[sessionStatus, runAlarm]);
 
 	return (<>
 		      <AddToast/>

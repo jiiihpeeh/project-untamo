@@ -25,25 +25,33 @@ const Alarms = () => {
 	const {alarms, setAlarms} = useContext(AlarmContext);
 	const renderAlarms = () => {
 		let viewableAlarmsSet = new Set ();		
+		let timeAlarmMap = new Map();
 		for(const filtrate of viewableDevices){
 			for(const secondFiltrate of alarms.filter(alarm => alarm.device_ids.includes(filtrate))){
-				viewableAlarmsSet.add(secondFiltrate);
+				viewableAlarmsSet.add(secondFiltrate);			
+				let timeStamp = timeForNextAlarm(secondFiltrate).getTime();
+				if(timeStamp && secondFiltrate){
+					if(timeAlarmMap.has(timeStamp)){
+						timeAlarmMap.set(timeStamp, timeAlarmMap.get(timeStamp).add(secondFiltrate._id) );
+					}else{
+						timeAlarmMap.set(timeStamp, new Set( [ secondFiltrate._id ]));
+					};
+				};
 			};
 		};
 		let viewableAlarms = [...viewableAlarmsSet];
-		let timeAlarmMap = new Map();
-		for(const item of viewableAlarms){
-			let timeStamp = timeForNextAlarm(item).getTime();
-			timeAlarmMap.set(timeStamp, timeAlarmMap.get(timeStamp)? timeAlarmMap.get(timeStamp).push(item._id): [item._id] );
-		}
+		
 		let timeMapArray = [...timeAlarmMap.keys()].sort(function(a, b){return a - b});
 		let sortedView = [];
 		for(const item of timeMapArray){
 			for (const subitem of timeAlarmMap.get(item)){
-				sortedView.push(viewableAlarms.filter(alarm => alarm._id === subitem)[0]);
-			} 
-			
-		}
+				let filtration = viewableAlarms.filter(alarm => alarm._id === subitem)[0]
+				if(filtration){
+					sortedView.push(filtration);
+				};
+			};
+		};
+		//console.log(sortedView)
 		return sortedView.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
 			return (
 					<>

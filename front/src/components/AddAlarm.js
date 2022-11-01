@@ -43,7 +43,8 @@ function AddAlarm() {
 		setLabel('Alarm');
 		setAlarmCase('weekly');
 	}
-	const onAdd = async () => {
+	const onAdd = async (event) => {
+		event.currentTarget.disabled = true;
 		try {
 			let newAlarm = {
 				active: true,

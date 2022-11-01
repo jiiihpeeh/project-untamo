@@ -42,8 +42,8 @@ const AlarmWatcher  = () => {
     useEffect(() => {
         const filterAlarms = () => {
             if(runAlarm){
-                if((runAlarm.hasOwnProperty('active') && (runAlarm.active === false)) ||
-                     (runAlarm.hasOwnProperty('device_ids') && (!runAlarm.device_ids.includes(currentDevice))) ){
+                if((runAlarm.hasOwnProperty('active') && (runAlarm.active === false) ) ||
+                  (runAlarm.hasOwnProperty('device_ids') && (!runAlarm.device_ids.includes(currentDevice))) ){
                     setRunAlarm('');
                     clearAlarmTimeout();
                 }
