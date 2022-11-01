@@ -2,7 +2,9 @@ import { useState, useCallback, useEffect, useRef, useContext } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { SessionContext } from '../contexts/SessionContext';
 import { AlarmContext } from '../contexts/AlarmContext';
+import { DeviceContext } from '../contexts/DeviceContext';
 import fetchAlarms from './fetchAlarms';
+import fetchDevices from './fetchDevices';
 const UserWatcher = () => {
   //Public API that will echo messages sent to it back to the client
   const [socketUrl, setSocketUrl] = useState('ws://localhost:3001/action');
@@ -22,6 +24,8 @@ const UserWatcher = () => {
   });
   const {token} = useContext(SessionContext);
   const { setAlarms } = useContext(AlarmContext);
+  const { setDevices } = useContext(DeviceContext);
+ 
 
   const sendIdentity = () => {
     if(token){
@@ -31,29 +35,33 @@ const UserWatcher = () => {
       setTimeout(sendIdentity, 5000);
     }
   } 
+
   useEffect(() => {
     const watcher = async () => { 
       if (lastMessage !== null) {
         console.log(lastMessage);
-        let msgData = JSON.parse(lastMessage.data)//.split('/');
-        if(msgData && msgData.hasOwnProperty('url') ){
-          console.log(msgData)
-          let urlSplit = msgData.url.split('/');
-          console.log(urlSplit)
-          if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
-            let alarmData = await fetchAlarms(token)
+        let msgData = JSON.parse(lastMessage.data);
+        if(!msgData || !msgData.hasOwnProperty('url')){
+          return;
+        }
+          
+        console.log(msgData);
+        let urlSplit = msgData.url.split('/');
+        console.log(urlSplit);
+        if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
+            let alarmData = await fetchAlarms(token);
             console.log(alarmData);
             setAlarms(alarmData);
-          }
-        
-        }
+        };
+        if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'device'){
+          let deviceData = await fetchDevices(token);
+          setDevices(deviceData);
+      };
+    };
+  };
+  watcher();
+  }, [lastMessage ]);
 
-        //setMessageHistory((prev) => prev.concat(lastMessage));
-      }
-    } 
-  watcher()
-  }, [lastMessage, setMessageHistory]);
- 
   useEffect(() => {
     sendIdentity()
   },[token])
