@@ -25,7 +25,7 @@ const AlarmWatcher  = () => {
     useEffect(() => {
         //Session strorage is used in order to keep timeouts in sync
         clearAlarmTimeout();
-        if(runAlarm._id){
+        if(runAlarm.hasOwnProperty('._id')){
             let timed = timeToNextAlarm(runAlarm);
             if(timed > 0){
                 
