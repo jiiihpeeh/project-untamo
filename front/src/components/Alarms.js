@@ -31,14 +31,18 @@ const Alarms = () => {
 			};
 		};
 		let viewableAlarms = [...viewableAlarmsSet];
-		let timeAlarmMap = new Map()
+		let timeAlarmMap = new Map();
 		for(const item of viewableAlarms){
-			timeAlarmMap.set(timeForNextAlarm(item).getTime(), item._id)
+			let timeStamp = timeForNextAlarm(item).getTime();
+			timeAlarmMap.set(timeStamp, timeAlarmMap.get(timeStamp)? timeAlarmMap.get(timeStamp).push(item._id): [item._id] );
 		}
 		let timeMapArray = [...timeAlarmMap.keys()].sort(function(a, b){return a - b});
-		let sortedView = [] 
+		let sortedView = [];
 		for(const item of timeMapArray){
-			sortedView.push(viewableAlarms.filter(alarm => alarm._id === timeAlarmMap.get(item))[0])
+			for (const subitem of timeAlarmMap.get(item)){
+				sortedView.push(viewableAlarms.filter(alarm => alarm._id === subitem)[0]);
+			} 
+			
 		}
 		return sortedView.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
 			return (
