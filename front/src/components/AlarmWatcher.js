@@ -5,6 +5,18 @@ import { timeToNextAlarm } from "./calcAlarmTime";
 import { useNavigate } from "react-router-dom";
 import { notification } from "./notification";
 
+const clearAlarmTimeout = () => {
+    let delTimeOut = JSON.parse(sessionStorage.getItem('timeOutID'));
+        if(delTimeOut){
+            try {
+                clearTimeout(delTimeOut);
+        }catch(err){
+                console.log(err);
+        };
+    };
+}
+
+
 const AlarmWatcher  = () => {
     const { alarms, setRunAlarm, runAlarm } = useContext(AlarmContext);
     const { currentDevice } = useContext(DeviceContext);
@@ -12,14 +24,7 @@ const AlarmWatcher  = () => {
 
     useEffect(() => {
         //Session strorage is used in order to keep timeouts in sync
-        let delTimeOut = JSON.parse(sessionStorage.getItem('timeOutID'));
-        if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut);
-            }catch(err){
-                console.log(err);
-            };
-        };
+        clearAlarmTimeout();
         if(runAlarm._id){
             let timed = timeToNextAlarm(runAlarm);
             if(timed > 0){
@@ -37,6 +42,12 @@ const AlarmWatcher  = () => {
 
     useEffect(() => {
         const filterAlarms = () => {
+            if(runAlarm){
+                if(runAlarm.hasOwnProperty('active') && runAlarm.active === false){
+                    setRunAlarm('');
+                    clearAlarmTimeout();
+                };
+            };
             if(alarms && alarms.length > 0){
                 let filteredAlarms = alarms.filter(alarm => alarm.device_ids.indexOf(currentDevice) !== -1 );
                 filteredAlarms = filteredAlarms.filter(alarm => alarm.active === true);
