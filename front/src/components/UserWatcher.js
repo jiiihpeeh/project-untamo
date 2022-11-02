@@ -5,6 +5,9 @@ import { AlarmContext } from '../contexts/AlarmContext';
 import { DeviceContext } from '../contexts/DeviceContext';
 import fetchAlarms from './fetchAlarms';
 import fetchDevices from './fetchDevices';
+import { userInfoFetch } from './userInfoFetch';
+import { sleep } from './sleep';
+
 const UserWatcher = () => {
   //Public API that will echo messages sent to it back to the client
   const [ socketUrl ] = useState('ws://localhost:3001/action');
@@ -22,8 +25,8 @@ const UserWatcher = () => {
     reconnectAttempts: 1e8,
     reconnectInterval: 60000,
   });
-  const {token} = useContext(SessionContext);
-  const { setAlarms } = useContext(AlarmContext);
+  const {token, setUserInfo } = useContext(SessionContext);
+  const { setAlarms} = useContext(AlarmContext);
   const { setDevices } = useContext(DeviceContext);
  
 
@@ -48,19 +51,26 @@ const UserWatcher = () => {
         console.log(msgData);
         let urlSplit = msgData.url.split('/');
         //console.log(urlSplit);
-        if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
-            let alarmData = await fetchAlarms(token);
-           // console.log(alarmData);
-            setAlarms(alarmData);
-        };
-        if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'device'){
-          let deviceData = await fetchDevices(token);
-          setDevices(deviceData);
+      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
+        await sleep(500);
+        let alarmData = await fetchAlarms(token);
+        // console.log(alarmData);
+        setAlarms(alarmData);
+      };
+      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'device'){
+        await sleep(500);
+        let deviceData = await fetchDevices(token);
+        setDevices(deviceData);
+      };
+      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'editUser'){
+        await sleep(5000);
+        let userData = await userInfoFetch(token);
+        setUserInfo(userData)
       };
     };
   };
   watcher();
-  }, [lastMessage ]);
+  }, [lastMessage, setDevices, setAlarms, setUserInfo, token ]);
 
   useEffect(() => {
     sendIdentity();

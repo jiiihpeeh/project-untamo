@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import {
 	Container,Heading,Table,Thead,Tbody,
 	Tr,Th,Td,TableContainer,
-	Center,Switch
+	Center,Switch, Button
 	} from '@chakra-ui/react'
 import EditAlarm from "./EditAlarm";
 import AddAlarm from "./AddAlarm";
@@ -18,11 +18,11 @@ import AlarmNotification from "./AlarmNotification";
 import { timeForNextAlarm } from "./calcAlarmTime";
 
 const Alarms = () => {
-	const { sessionStatus, token, userInfo } = useContext(SessionContext);
 	const navigate = useNavigate();
+	const { sessionStatus, token, userInfo } = useContext(SessionContext);
 	const { devices, viewableDevices, currentDevice } = useContext(DeviceContext);
-
 	const {alarms, setAlarms} = useContext(AlarmContext);
+
 	const renderAlarms = () => {
 		let viewableAlarmsSet = new Set ();		
 		let timeAlarmMap = new Map();
@@ -101,6 +101,7 @@ const Alarms = () => {
 			let alarm = alarmArr[0];
 			//console.log("Try: /api/alarm/"+alarm._id,alarm);
 			alarm.active = !alarm.active;
+			delete alarm.snooze
 			const res = await axios.put('/api/alarm/'+alarm._id,alarm, {headers: {token: token}} );
 			//console.log(res.data);
 			notification("Edit Alarm", "Alarm modified");
@@ -122,7 +123,9 @@ const Alarms = () => {
 		}
 		return subList.join(', ');
 	}
-
+	const print = () => {
+		console.log(userInfo)
+	}
 	useEffect(() =>{
 		if(!sessionStatus){
 			navigate('/login');

@@ -20,14 +20,15 @@ import UserWatcher from './components/UserWatcher';
 
 function App() {
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
-	const [userInfo, setUserInfo] = useState(localStorage['userInfo'] ? JSON.parse(localStorage['userInfo']) : {});
+	const [ userInfo, setUserInfo ] = useState(localStorage['userInfo'] ? JSON.parse(localStorage['userInfo']) : {});
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;
-	const [sessionStatus, setSessionStatus] = useState(undefined);
-	const [viewableDevices, setViewableDevices] = useState(localStorage['viewableDevices'] ? JSON.parse(localStorage['viewableDevices']) : []);
-	const [fetchQR, setFetchQR] = useState(false);
+	const [ sessionStatus, setSessionStatus ] = useState(undefined);
+	const [ viewableDevices, setViewableDevices ] = useState(localStorage['viewableDevices'] ? JSON.parse(localStorage['viewableDevices']) : []);
+	const [ fetchQR, setFetchQR ] = useState(false);
 	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
 	const [ runAlarm, setRunAlarm ] = useState('');
+	const [ runOtherSnooze, setRunOtherSnooze ] = useState(false);
 	// This one is id when set when set it is string see AlarmWatcher. Meaning: to Trigger PlayAlarm. 
 
 	const checkSession = async () => {
@@ -73,7 +74,7 @@ function App() {
 		<div className="App">
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
-		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm }}>
+		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm, runOtherSnooze, setRunOtherSnooze }}>
 			<NavGrid/>
 
 			<Routes>

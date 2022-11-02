@@ -1,24 +1,22 @@
 import { timeForNextAlarm, timeToNextAlarm } from "./calcAlarmTime";
-import React,{useContext, useEffect } from "react";
+import React,{useContext, useEffect, useState } from "react";
 import { AlarmContext } from "../contexts/AlarmContext";
 import { SessionContext } from "../contexts/SessionContext";
 import { useToast } from "@chakra-ui/react";
 
 const AlarmNotification = ()  => {
-	const {runAlarm} = useContext(AlarmContext);
-	let message = timeForNextAlarm(runAlarm);
-	let duration = timeToNextAlarm(runAlarm);
+    const [ alarm, setAlarm] = useState(undefined)
+	const {runAlarm, alarms } = useContext(AlarmContext);
     const {sessionStatus} = useContext(SessionContext);
-	//console.log('DURATION ', duration)
 	const toast = useToast()
 
 	const  AddToast = () => {
-        if(!toast.isActive('alarm-notification')){
+        if(!toast.isActive('alarm-notification') && alarm){
             return (toast({
-                title: `${runAlarm.label}`,
-                description: `${message}`,
+                title: `${alarm.label}`,
+                description: `${alarm.label}`,
                 status: 'info',
-                duration: duration,
+                duration: timeToNextAlarm(alarm),
                 id:'alarm-notification',
                 isClosable: true,
             })
@@ -26,27 +24,38 @@ const AlarmNotification = ()  => {
     }
 	useEffect(() => {
 		const  updateToast = () => {
-			if(!runAlarm.hasOwnProperty('_id')){
-				return;
-			}
-			toast.update('alarm-notification', { 
-                                                title: `${runAlarm.label}`, 
-												description: `${timeForNextAlarm(runAlarm)}`,
-												duration : timeToNextAlarm(runAlarm),
-                                                isClosable: true,
-												}
-            );
-	  	}
+			if(alarm){
+                    toast.update('alarm-notification', { 
+                                        title: `${alarm.label}`, 
+                                        description: `${timeForNextAlarm(alarm)}`,
+                                        duration : timeToNextAlarm(alarm),
+                                        isClosable: true,
+                                        }
+                 );
+	  	    };
+        };
 	  	updateToast();
+    },[alarm]);
+
+    useEffect(() => {
+     const alarmSet = () => {
+        let alarmItem = alarms.filter(alarm => alarm._id === runAlarm)[0];
+        if(alarmItem){
+            setAlarm(alarmItem);
+        }else{
+            setAlarm(undefined);
+        }
+     }
+     alarmSet();
 	},[runAlarm]);
     useEffect(() =>{
         const closeToast = () => {
             toast.close('alarm-notification');
         }
-        if(!sessionStatus || (!runAlarm.hasOwnProperty('_id')) ){
+        if(!sessionStatus || !alarm ){
             closeToast();
         }
-    },[sessionStatus, runAlarm]);
+    },[sessionStatus, alarm]);
 
 	return (<>
 		      <AddToast/>

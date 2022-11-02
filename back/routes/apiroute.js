@@ -10,7 +10,7 @@ const tStamppi = require("../modules/tstamppi");
 const bcrypt = require('bcrypt')
 const zxcvbn = require("zxcvbn");
 const e = require("express");
-
+const asyncHandler = require('express-async-handler')
 const guessCount =  1000000000;
 
 
@@ -329,6 +329,21 @@ router.post("/qrToken",function(req,res) {
 	})
 })
 
+router.get('/user', asyncHandler(async(req, res) => {
+	let query={"_id":req.session.userID}
+	try {
+		let user = await  userModel.findOne(query);
 
+		return res.status(201).json({
+			user:user.user,
+			firstname: user.firstname,
+			lastname: user.lastname,
+			screenname: user.screenname,
+		});
+	}catch(err){
+		return res.status(500).json({message:`Internal server error.`, code: err.code});
+	}
+
+}))
 
 module.exports = router;

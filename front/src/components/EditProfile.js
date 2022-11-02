@@ -31,23 +31,19 @@ import '../App.css'
 
 function EditProfile() {
 
-	let toukeni = localStorage.getItem("token");
-    axios.defaults.headers.common['token'] = toukeni;
-
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const btnRef = React.useRef()
 
-    const { userInfo, setUserInfo } = useContext(SessionContext);
+    const { userInfo, setUserInfo, token } = useContext(SessionContext);
 
     const [formData, setFormData] = useState({
-        firstname: userInfo.firstname,
-        lastname: userInfo.lastname,
-        user: userInfo.user,
-		screenname: userInfo.screenname,
-		current_password: '',
-		change_password: '',
-		confirm_password:''
-    });
+												firstname: '',
+												lastname:'',
+												user: '',
+												screenname: '',
+												current_password: '',
+												change_password: '',
+												confirm_password:''});
 
 	const [ changePassword, setChangePassword ] = useState(false);
 	const [ formChecks, setFormChecks ] = useState(true);
@@ -69,7 +65,7 @@ function EditProfile() {
 			delete reqFormData.change_password;
 		}
 		try {
-			const res = await axios.put('/api/editUser/'+formData.user,reqFormData );
+			const res = await axios.put('/api/editUser/'+formData.user,reqFormData , {headers:{ token: token }});
 			console.log(res.data);
 			notification("Edit Profile", "User information succesfully modified");
 			setUserInfo({ firstname : formData.firstname, lastname: formData.lastname, user: formData.user, screenname: formData.screenname })
@@ -82,12 +78,30 @@ function EditProfile() {
 	}
 
 	const onCloseFixed = () => {
-		setChangePassword(false);
+		  setChangePassword(false);
+		  setFormData({ firstname: '',
+			          lastname: '',
+			           user: '',
+			          screenname: '',
+			          current_password: '',
+			          change_password: '',
+			          confirm_password:''})
 		onClose();
+	}
+	const drawerOpen = () => {
+		console.log(userInfo)
+		setFormData({firstname: userInfo.firstname,
+			lastname: userInfo.lastname,
+			user: userInfo.user,
+			screenname: userInfo.screenname,
+			current_password: '',
+			change_password: '',
+			confirm_password:''})
+		onOpen();
 	}
 	useEffect(() => {
 		const passwordChecker = () => {
-			if(formData.current_password.length < 6){
+			if(formData && formData.current_password && formData.current_password.length < 6){
 				setFormChecks(false);
 				return;
 			}
@@ -112,7 +126,7 @@ function EditProfile() {
 
 	return (
 		<>
-		<Link onClick={onOpen}>
+		<Link onClick={drawerOpen}>
 			<Text as='b'>
 				Edit Profile
 			</Text>

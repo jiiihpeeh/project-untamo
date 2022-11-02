@@ -5,7 +5,8 @@ let Schema = mongoose.Schema({
     password:String,
     firstname: String,
     lastname: String,
-    screenname: String
+    screenname: String,
+    admin: {type: Boolean,default: false}
 });
 
 Schema.virtual("id").get(function() {
