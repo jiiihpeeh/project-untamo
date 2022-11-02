@@ -20,12 +20,7 @@ import UserWatcher from './components/UserWatcher';
 
 function App() {
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
-	const [userInfo, setUserInfo] = useState({
-		user: localStorage['user'] ? localStorage['user'] : undefined,
-		firstname: localStorage['firstname'] ? localStorage['firstname'] : undefined,
-		lastname: localStorage['lastname'] ? localStorage['lastname'] : undefined,
-		screenname: localStorage['screenname'] ? localStorage['screenname'] : undefined,
-	});
+	const [userInfo, setUserInfo] = useState(localStorage['userInfo'] ? JSON.parse(localStorage['userInfo']) : {});
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;
 	const [sessionStatus, setSessionStatus] = useState(undefined);

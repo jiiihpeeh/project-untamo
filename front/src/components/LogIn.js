@@ -45,14 +45,12 @@ const LogIn = () => {
             
             fetchAudioFiles(res.data.token)
             console.log(res.data);
-            localStorage.setItem("token", res.data.token);
-            localStorage.setItem("user", res.data.user);
-            localStorage.setItem("screenname", res.data.screenname);
-            localStorage.setItem("firstname", res.data.firstname);
-            localStorage.setItem("lastname", res.data.lastname);
+
             let userRes = Object.assign({}, res.data);
+            localStorage.setItem('token', res.data.token)
             delete userRes.token;
             setUserInfo(userRes);
+            localStorage.setItem('userInfo', JSON.stringify(userRes));
             setToken(res.data.token);
             let devices = await fetchDevices(res.data.token);
             setDevices(devices);

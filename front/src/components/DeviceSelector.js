@@ -45,7 +45,7 @@ const DeviceSelector = (props) => {
           setMenuDevices( devices.map((device) => 
             <Tooltip label={device.type} key={`tooltip-${device.id}`}>
               <MenuItemOption onClick={() => deviceSelected(device.id)}   
-                              key={`device-${device.id}`}
+                              key={`menu-device-${device.id}`}
                               closeOnSelect={true}
                               value={device.id}>
                         

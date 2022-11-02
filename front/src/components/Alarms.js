@@ -55,7 +55,7 @@ const Alarms = () => {
 		return sortedView.map(({ _id, occurence, time, wday, date, label, device_ids, active },key) => {
 			return (
 					<>
-					<Tr key={_id}>
+					<Tr key={`alarm-item-${_id}`}>
 						<Td>{occurence}</Td>
 						<Td>{time}</Td>
 						<Td>{weekdayDisplay(wday)}</Td>
@@ -99,10 +99,10 @@ const Alarms = () => {
 				throw new Error('Alarm ids are problematic!');
 			}
 			let alarm = alarmArr[0];
-			console.log("Try: /api/alarm/"+alarm._id,alarm);
+			//console.log("Try: /api/alarm/"+alarm._id,alarm);
 			alarm.active = !alarm.active;
 			const res = await axios.put('/api/alarm/'+alarm._id,alarm, {headers: {token: token}} );
-			console.log(res.data);
+			//console.log(res.data);
 			notification("Edit Alarm", "Alarm modified");
 			let filteredAlarms = alarms.filter(alarmItem => alarmItem._id !== alarm._id);
 			filteredAlarms.push(alarm);

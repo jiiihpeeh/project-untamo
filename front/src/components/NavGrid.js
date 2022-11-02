@@ -10,10 +10,9 @@ import DeviceMenu from './DeviceMenu';
 
 const NavGrid = () => {
     //const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
-    const { token, sessionStatus } = useContext(SessionContext);
+    const { sessionStatus } = useContext(SessionContext);
+    const [ validItems, setValidItems ] = useState(["login", "register", "about"]);
 
-    const [gridItems, setGridItems] = useState();
-    const [columnCount, setColumnCount] = useState(`repeat(5, 1fr)`);
     const GridLink = (text) => {
         let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1);
         return (<>
@@ -23,44 +22,37 @@ const NavGrid = () => {
         </>);
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         const constructGrid = () => {
-            let validItems = [];
             if(sessionStatus){
-                validItems = ["alarms", "devices", 'user'];
+                setValidItems(["alarms", "devices", 'user']);
             } else {
-                validItems = ["login", "register", "about"];        
+                setValidItems(["login", "register", "about"]);        
             }
-            let validLinks = [];
-            for (const item of validItems){
-                switch(item){
-                    case 'user':
-                        validLinks.push(<GridItem key="navgrid-user"><UserMenu/></GridItem>);
-                        break;
-                    case 'about':
-                        validLinks.push(<GridItem key="navgrid-about"><About/></GridItem>);
-                        break;
-                    case 'devices':
-                        validLinks.push(<GridItem key="navgrid-device"><DeviceMenu/></GridItem>);
-                        break;
-                    default:
-                        validLinks.push(<GridLink text={item} key={item}/>);
-                        break;
-                }
-            }
-            setGridItems(validLinks);
-            setColumnCount( `repeat(${validLinks.length}, 1fr)`);
         }
         constructGrid();
-    },[token, sessionStatus]);
+    },[sessionStatus]);
+
     return (
         <Grid  h='4%'mt='0.5%'
             templateRows='repeat(1, 1fr)'
-            templateColumns={columnCount}
+            templateColumns={`repeat(${validItems.length}, 1fr)`}
             gap={4}
             key="navgrid-assembled"
-        >
-            {gridItems}
+        >   
+            {validItems.includes('login') && 
+            <GridLink text='login' key={'navgrid-login'}/>}
+            {validItems.includes('register') && 
+            <GridLink text='register' key={'navgrid-register'}/>}
+            {validItems.includes('alarms') && 
+            <GridLink text='alarms' key={'navgrid-alarms'}/>}
+            {validItems.includes('devices') && 
+            <GridItem key="navgrid-device"><DeviceMenu/></GridItem>}
+            {validItems.includes('about') && 
+            <GridItem key="navgrid-about"><About/></GridItem>}
+            {validItems.includes('user') && 
+            <GridItem key="navgrid-user"><UserMenu/></GridItem>}
+            
         </Grid>
     )
     

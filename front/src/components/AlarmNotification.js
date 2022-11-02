@@ -13,16 +13,17 @@ const AlarmNotification = ()  => {
 	const toast = useToast()
 
 	const  AddToast = () => {
-	    return ( !toast.isActive('alarm-notification') && toast({
-		title: `${runAlarm.label}`,
-		description: `${message}`,
-		status: 'info',
-		isClosable: false,
-		duration: duration,
-		id:'alarm-notification'
-	  })
-		)
-	}
+        if(!toast.isActive('alarm-notification')){
+            return (toast({
+                title: `${runAlarm.label}`,
+                description: `${message}`,
+                status: 'info',
+                duration: duration,
+                id:'alarm-notification',
+                isClosable: true,
+            })
+        )}
+    }
 	useEffect(() => {
 		const  updateToast = () => {
 			if(!runAlarm.hasOwnProperty('_id')){
@@ -31,7 +32,8 @@ const AlarmNotification = ()  => {
 			toast.update('alarm-notification', { 
                                                 title: `${runAlarm.label}`, 
 												description: `${timeForNextAlarm(runAlarm)}`,
-												duration : timeToNextAlarm(runAlarm) 
+												duration : timeToNextAlarm(runAlarm),
+                                                isClosable: true,
 												}
             );
 	  	}

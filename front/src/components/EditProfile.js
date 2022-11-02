@@ -73,10 +73,7 @@ function EditProfile() {
 			console.log(res.data);
 			notification("Edit Profile", "User information succesfully modified");
 			setUserInfo({ firstname : formData.firstname, lastname: formData.lastname, user: formData.user, screenname: formData.screenname })
-			localStorage['firstname'] = formData.firstname;
-			localStorage['lastname'] = formData.lastname;
-			localStorage['screenname'] = formData.screenname;
-			localStorage['user'] = formData.user;
+			localStorage['userInfo'] = JSON.stringify( {firstname : formData.firstname, lastname: formData.lastname, user: formData.user, screenname: formData.screenname });
 			
 		} catch (err){
 			console.error(err.response.data.message);
