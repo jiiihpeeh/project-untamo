@@ -20,7 +20,7 @@ import UserWatcher from './components/UserWatcher';
 
 function App() {
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
-	const [ server, setServer] = useState('http://localhost:3001')
+	const [ server, setServer] = useState(localStorage['server'] ? JSON.parse(localStorage['server']) : 'http://localhost:3001')
 	const [ userInfo, setUserInfo ] = useState(localStorage['userInfo'] ? JSON.parse(localStorage['userInfo']) : {});
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;

@@ -45,6 +45,14 @@ function AddAlarm() {
 	}
 	const onAdd = async (event) => {
 		event.currentTarget.disabled = true;
+		if(selectedDevices.length === 0){
+			notification("Add alarm", "No devices set", "error")
+			return			
+		}
+		if(( alarmCase === 'weekly') && (weekdays.length === 0) ){
+			notification("Add alarm", "No weekdays set", "error")
+			return
+		}
 		try {
 			let newAlarm = {
 				active: true,

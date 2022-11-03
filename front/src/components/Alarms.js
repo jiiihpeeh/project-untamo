@@ -59,7 +59,7 @@ const Alarms = () => {
 						<Td>{occurence}</Td>
 						<Td>{time}</Td>
 						<Td>{weekdayDisplay(wday)}</Td>
-						<Td>{date}</Td>
+						<Td>{dateView(date, occurence)}</Td>
 						<Td>{label}</Td>
 						<Td>{mapDeviceIDsToNames(device_ids)}</Td>
 						<Td>
@@ -83,7 +83,16 @@ const Alarms = () => {
 				</>
 		)})
     }
-
+	const dateView = (date, occurence) => {
+		let datePieces = date.split('-');
+		//console.log(datePieces)
+		if(occurence === 'yearly'){
+			return `${datePieces[2]}.${datePieces[1]}`
+		}else if (occurence === 'once'){
+			return `${datePieces[2]}.${datePieces[1]}.${datePieces[0]}`
+		}
+		return ""
+	}
 	const mapDeviceIDsToNames = (device_ids) =>{
 		let filteredDevices = devices.filter(device => device_ids.includes(device.id));
 		let filteredDeviceNames = [];

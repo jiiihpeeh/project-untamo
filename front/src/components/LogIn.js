@@ -48,7 +48,7 @@ const LogIn = () => {
 
             let userRes = Object.assign({}, res.data);
             localStorage.setItem('token', res.data.token)
-            localStorage.setItem('server', server)
+            localStorage.setItem('server', JSON.stringify(server));
             delete userRes.token;
             setUserInfo(userRes);
             localStorage.setItem('userInfo', JSON.stringify(userRes));
