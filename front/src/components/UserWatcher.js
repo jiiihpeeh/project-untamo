@@ -15,7 +15,9 @@ const UserWatcher = () => {
   const {token, setUserInfo, server } = useContext(SessionContext);
   const { setAlarms} = useContext(AlarmContext);
   const { setDevices } = useContext(DeviceContext);
-  const [ socketUrl ] = useState(websocketAddress(server) +'/action');
+  const wsURL = websocketAddress(server) +'/action'
+  console.log(wsURL)
+  const [ socketUrl ] = useState(wsURL);
   const didUnmount = useRef(false);
   //const [messageHistory, setMessageHistory] = useState([]);
   const { sendMessage, lastMessage } = useWebSocket(socketUrl, {
