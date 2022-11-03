@@ -6,27 +6,20 @@ import { deleteAudioDB } from "../audiostorage/audioDatabase";
 import { useNavigate } from "react-router-dom";
 
 import {
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
-    Button,
-    useDisclosure,
-    Text
+    AlertDialog,AlertDialogBody,AlertDialogFooter,AlertDialogHeader,
+    AlertDialogContent,AlertDialogOverlay,Button,useDisclosure,Text
   } from '@chakra-ui/react';
   import { notification } from "./notification";
 
 const LogOut = () => {
     const {  setCurrentDevice, setDevices } = useContext(DeviceContext);
-    const { token, setToken,  setUserInfo,  setSessionStatus } = useContext(SessionContext);
+    const { token, setToken,  setUserInfo,  setSessionStatus, server } = useContext(SessionContext);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef();
     const navigate = useNavigate();
     const logOut = async() =>{
         try {
-            let res = await axios.post('/logout', {msg: "smell you later"}, {
+            let res = await axios.post(`${server}/logout`, {msg: "smell you later"}, {
                 headers: {'token': token}
             });
             //console.log(res.data);
@@ -38,6 +31,7 @@ const LogOut = () => {
             setDevices([]);
             try{
                 localStorage.clear();
+                sessionStorage.clear();
                 //await clearAudio();
                 await deleteAudioDB();
             }catch(err){

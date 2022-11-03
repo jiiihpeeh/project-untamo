@@ -34,7 +34,7 @@ function EditProfile() {
 	const { isOpen, onOpen, onClose } = useDisclosure()
 	const btnRef = React.useRef()
 
-    const { userInfo, setUserInfo, token } = useContext(SessionContext);
+    const { userInfo, setUserInfo, token, server } = useContext(SessionContext);
 
     const [formData, setFormData] = useState({
 												firstname: '',
@@ -65,7 +65,7 @@ function EditProfile() {
 			delete reqFormData.change_password;
 		}
 		try {
-			const res = await axios.put('/api/editUser/'+formData.user,reqFormData , {headers:{ token: token }});
+			const res = await axios.put(`${server}/api/editUser/`+formData.user,reqFormData , {headers:{ token: token }});
 			console.log(res.data);
 			notification("Edit Profile", "User information succesfully modified");
 			setUserInfo({ firstname : formData.firstname, lastname: formData.lastname, user: formData.user, screenname: formData.screenname })
@@ -149,22 +149,26 @@ function EditProfile() {
 			<FormControl>
 				<FormLabel htmlFor="screenname">Profile name</FormLabel>
 				<Input name='screenname' 
+					   id ='edit-screenname' 
 					   onChange={onChange}
 					   placeholder={formData.screenname}
 					   value={formData.screenname} />
 
 				<FormLabel htmlFor="firstname">First Name</FormLabel>
-				<Input name='firstname' 
-					   onChange={onChange} 
-					   value={formData.firstname} />
+				<Input name='firstname'
+						id ='edit-firstname' 
+					    onChange={onChange} 
+					    value={formData.firstname} />
 			
 				<FormLabel htmlFor="lastname">Last Name</FormLabel>
-				<Input name='lastname' 
+				<Input name='lastname'
+					   id ='edit-lastname'
 					   onChange={onChange} 
 					   value={formData.lastname} />
 
 				<FormLabel htmlFor="user">E-mail</FormLabel>
-				<Input name='user' 
+				<Input name='user'
+					   id ='edit-user' 
 					   onChange={onChange} 
 					   value={formData.user}
 					   type="email" />
@@ -172,6 +176,7 @@ function EditProfile() {
 				<FormLabel htmlFor="current_password">Current Password</FormLabel>
 				<Input name='current_password' 
 					   onChange={onChange}
+					   id ='edit-currentpassword'
 					   value={formData.current_password}
 					   type="password" />
 				<Accordion allowToggle={true} onChange={() => {setChangePassword(!changePassword)}}>
@@ -181,18 +186,24 @@ function EditProfile() {
 							<Box flex='1' textAlign='left' >
 								Change Password
 							</Box>
-							<Checkbox isChecked={changePassword}  colorScheme='green'/>
+							<Checkbox isChecked={changePassword}  
+									  colorScheme='green'
+									/>
 						</AccordionButton>
 						</h2>
 						<AccordionPanel pb={4}>
-							<FormLabel htmlFor="change_password">New Password</FormLabel>
-							<Input name='change_password' 
+							<FormLabel htmlFor="change_password">
+								New Password
+							</FormLabel>
+							<Input name='change_password'
+								id="edit-newpassword" 
 								onChange={onChange}
 								value={formData.change_password}
 								type="password" />
 
 							<FormLabel htmlFor="confirm_password">Confirm new Password</FormLabel>
-							<Input name='confirm_password' 
+							<Input name='confirm_password'
+									id="edit-confirmpassword"
 								   onChange={onChange}
 								   value={formData.confirm_password}
 								   type="password" />
@@ -205,10 +216,16 @@ function EditProfile() {
 
 			</DrawerBody>
 			<DrawerFooter>
-				<Button variant='outline' mr={3} onClick={onCloseFixed} colorScheme="red">
-					Cancel
+				<Button variant='outline' mr={3} 
+						onClick={onCloseFixed} 
+						colorScheme="red"
+					>
+						Cancel
 				</Button>
-				<Button colorScheme='green' onClick={onRegister} isDisabled={!formChecks}>Save</Button>
+				<Button colorScheme='green' 
+						onClick={onRegister} 
+						isDisabled={!formChecks}
+					>Save</Button>
 			</DrawerFooter>
 		</DrawerContent>
 		</Drawer>

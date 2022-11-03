@@ -3,11 +3,12 @@ import { notification } from './notification';
 
 
 class AudioPlayer {
-    constructor(track,token){
+    constructor(track,token,server){
         this.track = track;
         this.audioelem = document.createElement('audio');
         this.audioelem.setAttribute("id","audioplayer");
         this.token = token;
+        this.server = server;
         this.instances = 0;
     };
     async setTrack (){

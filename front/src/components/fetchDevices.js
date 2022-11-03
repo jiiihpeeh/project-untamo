@@ -1,9 +1,9 @@
 import axios from "axios";
 import { notification } from "./notification";
-const fetchDevices = async ( token) => {
+const fetchDevices = async ( token, server) => {
     let fetchedDevices = [];
     try{
-        let res = await axios.get(`/api/devices`,{
+        let res = await axios.get(`${server}/api/devices`,{
         headers: {'token': token}
         });
         localStorage['devices'] = JSON.stringify(res.data);

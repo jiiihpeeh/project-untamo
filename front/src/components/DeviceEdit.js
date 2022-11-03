@@ -15,7 +15,7 @@ import {
 import { ChevronDownIcon } from "@chakra-ui/icons";
 
 const DeviceEdit = (props) => {
-    const { token } = useContext(SessionContext);
+    const { token, server } = useContext(SessionContext);
     const { onClose } = useDisclosure();
     const btnRef = useRef();
     const [ deviceName, setDeviceName ] = useState(props.device.deviceName);
@@ -44,7 +44,7 @@ const DeviceEdit = (props) => {
         let deviceMatchName = devices.filter(device => device.deviceName === deviceName);
         if (deviceMatchName.length === 0 || (deviceObject.deviceName === deviceName)){
           try{
-            let res = await axios.put(`/api/device/`+ props.device.id,
+            let res = await axios.put(`${server}/api/device/`+ props.device.id,
                       {deviceName:deviceName, type: deviceType, id: props.device.id }, 
                       {headers: {'token': token}});
             //console.log(res.data);

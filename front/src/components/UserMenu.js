@@ -1,13 +1,9 @@
 import React, { useContext } from "react";
 import { SessionContext } from "../contexts/SessionContext"
-import { Avatar,
-         Menu,
-         MenuButton,
-		 MenuList,
-		 MenuItem,
-		 IconButton,
-		 MenuGroup,
-		 MenuDivider} from '@chakra-ui/react';
+import { Avatar,Menu,
+         MenuButton,MenuList,
+		 MenuItem,IconButton,
+		 MenuGroup,MenuDivider} from '@chakra-ui/react';
 import LogOut from './LogOut';
 import About from "./About";
 import EditProfile from "./EditProfile";

@@ -31,10 +31,10 @@ export const hasAudio = async (key)  => {
     return existing.indexOf(key) !== -1;
 };
 
-export const fetchAudio = async (audio, token) => {
+export const fetchAudio = async (audio, token, server) => {
     if(token && audio.length > 0){
         try {
-            let res = await axios.get(`http://localhost:3001/audioresources/${audio}.opus`,{
+            let res = await axios.get(`${server}/audioresources/${audio}.opus`,{
                 responseType: 'blob', 
                 headers: {'token': token}
             });
@@ -47,10 +47,10 @@ export const fetchAudio = async (audio, token) => {
     }
 };
 
-export const hasOrFetchAudio = async (audio, token) => {
-    if (! await hasAudio(audio,token)){
+export const hasOrFetchAudio = async (audio, token, server) => {
+    if (! await hasAudio(audio,token, server)){
         try{
-            await fetchAudio(audio,token);
+            await fetchAudio(audio,token, server);
         } catch(err){
             return false;
         }
@@ -58,15 +58,15 @@ export const hasOrFetchAudio = async (audio, token) => {
     return true;
 };
 
-export const fetchAudioFiles = async (token) => {
+export const fetchAudioFiles = async (token, server) => {
     if(token){
         try {
-            let res = await axios.get(`http://localhost:3001/audioresources/resource_list.json`,{
+            let res = await axios.get(`${server}/audioresources/resource_list.json`,{
                 headers: {'token': token}
             });
             if(res.data.length > 0){
                 for (const audio of res.data){
-                    await hasOrFetchAudio(audio, token);
+                    await hasOrFetchAudio(audio, token, server);
                 }
             }
         } catch(err){

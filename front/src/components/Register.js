@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from 'react'
 import useWebSocket from 'react-use-websocket';
 import { formString } from './registerComponents/formString';
 import RegisterPasswordCheck from './registerComponents/RegisterPasswordCheck';
-import { wsURL } from './registerComponents/registerConst';
+
 import RegisterSubmit from './registerComponents/RegisterSubmit';
 import PasswordMatch from './registerComponents/PasswordMatch';
 import { useNavigate } from 'react-router-dom';
@@ -19,9 +19,11 @@ import { Input ,
     Box,
     } from '@chakra-ui/react'
 import { SessionContext } from '../contexts/SessionContext';
+import { websocketAddress } from './websocketAddress';
 
 const Register = (props) => {
-    
+    const {  sessionStatus, server } = useContext(SessionContext);
+    const wsURL = websocketAddress(server)+'/registercheck'
     const [formData, setFormData] = useState({
         firstname: "",
         lastname: "",
@@ -39,7 +41,7 @@ const Register = (props) => {
     });
     //checkmark = (form.password.length >5 && form.password === form.password_confirm) ? "✓": "𐄂";
     const { sendMessage, lastMessage } = useWebSocket(wsURL);
-    const {  sessionStatus } = useContext(SessionContext);
+    
 
     useEffect(() => {
         if(!formCheck.has(formString(formData))){
@@ -124,7 +126,7 @@ const Register = (props) => {
 
     const onRegister = async (event) => {
         try {
-            const res = await axios.post('/register',formData );
+            const res = await axios.post(`${server}/register`,formData );
             console.log(res.data);
             notification("Registration", "User was succesfully registered")
             navigate('/login')

@@ -13,7 +13,7 @@ import AudioPlayer from "./AudioPlayer";
 
 
 const Welcome = () => {
-    const { token, userInfo, sessionStatus} = useContext(SessionContext);
+    const { token, userInfo, sessionStatus, server } = useContext(SessionContext);
     const { currentDevice, devices } = useContext(DeviceContext);
     const  navigate = useNavigate();
     
@@ -48,7 +48,7 @@ const Welcome = () => {
 			navigate('/login');
 		}
         const welcome = async () => {
-            let audiotrack = new AudioPlayer('rooster', token);
+            let audiotrack = new AudioPlayer('rooster', token, server);
             await audiotrack.playOnce();
         }
         welcome()

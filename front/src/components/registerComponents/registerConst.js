@@ -1,1 +1,0 @@
-export const wsURL = 'ws://localhost:3001/registercheck'

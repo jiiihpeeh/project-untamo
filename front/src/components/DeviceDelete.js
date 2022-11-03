@@ -18,14 +18,14 @@ const DeviceDelete = (props) => {
     const { onClose } = useDisclosure();
     const cancelRef = useRef();
     const { devices, setDevices, currentDevice, setCurrentDevice,viewableDevices, setViewableDevices  } = useContext(DeviceContext);
-    const { token } = useContext(SessionContext);
+    const { token, server } = useContext(SessionContext);
     const cancel = () => {
         props.setDeleteDialogState(false); 
         onClose();
     };
     const deleteDevice = async () => {
         try {
-            let res = await axios.delete( 'http://localhost:3000/api/device/' + props.device.id, 
+            let res = await axios.delete( `${server}/api/device/` + props.device.id, 
                         {headers: {token: token}} );
             console.log(res.data);
             let devicesupdated = devices.filter(device => device.id !== props.device.id) ;

@@ -20,10 +20,12 @@ import UserWatcher from './components/UserWatcher';
 
 function App() {
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
+	const [ server, setServer] = useState('http://localhost:3001')
 	const [ userInfo, setUserInfo ] = useState(localStorage['userInfo'] ? JSON.parse(localStorage['userInfo']) : {});
 	const [ currentDevice, setCurrentDevice ] = useState(localStorage['currentDevice'] ? localStorage['currentDevice'] : undefined);
 	const [ devices, setDevices ] = useState(localStorage['devices'] ? JSON.parse(localStorage['devices']) : []) ;
 	const [ sessionStatus, setSessionStatus ] = useState(undefined);
+	const [ signInTime, setSignedInTime ] = useState((localStorage['signInTime'])? JSON.parse(localStorage['signInTime']) :0);
 	const [ viewableDevices, setViewableDevices ] = useState(localStorage['viewableDevices'] ? JSON.parse(localStorage['viewableDevices']) : []);
 	const [ fetchQR, setFetchQR ] = useState(false);
 	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
@@ -35,7 +37,7 @@ function App() {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
 		if (sessionToken !== undefined){
 			try {
-				let res = await axios.get('http://localhost:3001/api/issessionvalid',  {
+				let res = await axios.get(`${server}/api/issessionvalid`,  {
 					headers: {'token': sessionToken}
 				});
 				if(res.data.status){
@@ -72,7 +74,7 @@ function App() {
 	return (
 		
 		<div className="App">
-		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR }}>
+		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR, signInTime, setSignedInTime, server, setServer  }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
 		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm, runOtherSnooze, setRunOtherSnooze }}>
 			<NavGrid/>

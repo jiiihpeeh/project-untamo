@@ -6,11 +6,16 @@ import { DeviceContext } from '../contexts/DeviceContext';
 import fetchAlarms from './fetchAlarms';
 import fetchDevices from './fetchDevices';
 import { userInfoFetch } from './userInfoFetch';
-import { sleep } from './sleep';
+import sleep  from './sleep';
+import { websocketAddress } from './websocketAddress';
+
 
 const UserWatcher = () => {
   //Public API that will echo messages sent to it back to the client
-  const [ socketUrl ] = useState('ws://localhost:3001/action');
+  const {token, setUserInfo, server } = useContext(SessionContext);
+  const { setAlarms} = useContext(AlarmContext);
+  const { setDevices } = useContext(DeviceContext);
+  const [ socketUrl ] = useState(websocketAddress(server) +'/action');
   const didUnmount = useRef(false);
   //const [messageHistory, setMessageHistory] = useState([]);
   const { sendMessage, lastMessage } = useWebSocket(socketUrl, {
@@ -25,9 +30,7 @@ const UserWatcher = () => {
     reconnectAttempts: 1e8,
     reconnectInterval: 60000,
   });
-  const {token, setUserInfo } = useContext(SessionContext);
-  const { setAlarms} = useContext(AlarmContext);
-  const { setDevices } = useContext(DeviceContext);
+
  
 
   const sendIdentity = () => {
@@ -53,19 +56,19 @@ const UserWatcher = () => {
         //console.log(urlSplit);
       if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
         await sleep(500);
-        let alarmData = await fetchAlarms(token);
+        let alarmData = await fetchAlarms(token, server);
         // console.log(alarmData);
         setAlarms(alarmData);
       };
       if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'device'){
         await sleep(500);
-        let deviceData = await fetchDevices(token);
+        let deviceData = await fetchDevices(token, server);
         setDevices(deviceData);
       };
       if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'editUser'){
         await sleep(5000);
-        let userData = await userInfoFetch(token);
-        setUserInfo(userData)
+        let userData = await userInfoFetch(token, server);
+        setUserInfo(userData);
       };
     };
   };

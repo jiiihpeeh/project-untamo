@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from 'react';
 import { SessionContext } from '../contexts/SessionContext';
 
 const GenerateQRPairingKey = () => {
-  const { token, fetchQR } = useContext(SessionContext);
+  const { token, fetchQR, server } = useContext(SessionContext);
   const [qrKey, setQrKey] = useState('');
 
 
@@ -29,7 +29,7 @@ const GenerateQRPairingKey = () => {
     const fetchKey = async () => {
       if(fetchQR === true){
         try{
-          let res = await axios.post('http://localhost:3001/api/qrToken', {msg: "Generate a qr token for me, please... No hurry."}, {
+          let res = await axios.post(`${server}/api/qrToken`, {msg: "Generate a qr token for me, please... No hurry."}, {
             headers: {'token': token}});
           setQrKey(JSON.stringify(res.data.key));
         }catch(err){

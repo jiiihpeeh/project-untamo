@@ -21,7 +21,7 @@ import { SessionContext } from '../contexts/SessionContext';
 
 function DeleteAlarm(props) {
 	const { alarms, setAlarms } = useContext(AlarmContext);
-	const { token } = useContext(SessionContext);
+	const { token, server } = useContext(SessionContext);
 	const { isOpen, onOpen, onClose } = useDisclosure();	
 	let alarm = alarms.filter(alarmItem => alarmItem._id === props.id )[0];
 	const cancelRef = useRef();
@@ -30,7 +30,7 @@ function DeleteAlarm(props) {
 	const deleteAlarm = async() =>{
         try {
 			//Delete selected alarm id from mongodb
-			const res = await axios.delete('/api/alarm/'+props.id, {headers:{token:token}});
+			const res = await axios.delete(`${server}/api/alarm/`+props.id, {headers:{token:token}});
 			console.log(res);
 			let filteredAlarms = alarms.filter(alarmItem => alarmItem._id !== props.id);
 			setAlarms(filteredAlarms);

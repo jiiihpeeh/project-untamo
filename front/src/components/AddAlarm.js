@@ -34,7 +34,7 @@ function AddAlarm() {
     const [ label, setLabel ] = useState('Alarm');
     const [ alarmCase, setAlarmCase ] = useState('weekly');
 	const { alarms, setAlarms } = useContext(AlarmContext);
-	const { token } = useContext(SessionContext);
+	const { token, server } = useContext(SessionContext);
 
 	const clearStates = () => {
 		setDate(new Date());
@@ -68,7 +68,7 @@ function AddAlarm() {
 					break;
 			} 
 			//console.log("Try: /api/alarm/"+modAlarm._id,modAlarm);
-			const res = await axios.post('http://localhost:3001/api/alarm/', newAlarm, {headers: {token: token}} );
+			const res = await axios.post(`${server}/api/alarm/`, newAlarm, {headers: {token: token}} );
 			//console.log(res.data);
 			let addedAlarm = res.data.alarm;
 			notification("Edit Alarm", "Alarm modified");

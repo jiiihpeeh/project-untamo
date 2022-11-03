@@ -1,9 +1,9 @@
 import axios from "axios";
 import { notification } from "./notification";
-const fetchAlarms = async ( token) => {
+const fetchAlarms = async ( token, server) => {
     let fetchedAlarms = [];
     try{
-        let res = await axios.get(`/api/alarms`,{
+        let res = await axios.get(`${server}/api/alarms`,{
         headers: {'token': token}
         });
         localStorage['alarms'] = JSON.stringify(res.data);

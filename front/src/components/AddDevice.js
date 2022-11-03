@@ -22,7 +22,7 @@ import { notification } from "./notification";
 
 
 const AddDevice = (props) => {
-  const { token } = useContext(SessionContext);
+  const { token, server } = useContext(SessionContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const btnRef = useRef();
   const [ deviceName, setDeviceName ] = useState('');
@@ -49,7 +49,7 @@ const AddDevice = (props) => {
       }
       if (dn.indexOf(deviceName) === -1){
         try{
-          let res = await axios.post(`/api/device`, {"deviceName":deviceName, type: deviceType}, {
+          let res = await axios.post(`${server}/api/device`, {"deviceName":deviceName, type: deviceType}, {
                 headers: {'token': token}
               });
           console.log(res.data);

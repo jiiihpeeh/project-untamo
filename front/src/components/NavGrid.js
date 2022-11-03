@@ -7,6 +7,7 @@ import { useState, useEffect, useContext } from "react";
 import UserMenu from './UserMenu';
 import About from './About';
 import DeviceMenu from './DeviceMenu';
+import ServerLocation from './ServerLocation';
 
 const NavGrid = () => {
     //const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -27,7 +28,7 @@ const NavGrid = () => {
             if(sessionStatus){
                 setValidItems(["alarms", "devices", 'user']);
             } else {
-                setValidItems(["login", "register", "about"]);        
+                setValidItems(["login", "register",'server', "about"]);        
             }
         }
         constructGrid();
@@ -48,11 +49,12 @@ const NavGrid = () => {
             <GridLink text='alarms' key={'navgrid-alarms'}/>}
             {validItems.includes('devices') && 
             <GridItem key="navgrid-device"><DeviceMenu/></GridItem>}
+            {validItems.includes('server') &&
+            <GridItem key="navgrid-server"><ServerLocation/></GridItem>}
             {validItems.includes('about') && 
             <GridItem key="navgrid-about"><About/></GridItem>}
             {validItems.includes('user') && 
             <GridItem key="navgrid-user"><UserMenu/></GridItem>}
-            
         </Grid>
     )
     

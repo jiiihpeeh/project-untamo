@@ -13,7 +13,7 @@ const PlayAlarm = () =>{
     const [clockSize, setClockSize] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35);
     const { runAlarm, alarms, setAlarms, runOtherSnooze, setRunOtherSnooze } = useContext(AlarmContext);
     const { token } = useContext(SessionContext);
-    const {sessionStatus} = useContext(SessionContext);
+    const {sessionStatus, server} = useContext(SessionContext);
     const [ audioURL, setAudioURL ] = useState(undefined);
     const [ info, setInfo ] = useState({label:'', time:''})
     
@@ -67,7 +67,7 @@ const PlayAlarm = () =>{
                 currentAlarm.snooze = [ currentMoment ];
             };
             try {
-                let res = await axios.put('/api/alarm/'+runAlarm, currentAlarm, {headers:{token:token}});
+                let res = await axios.put(`${server}/api/alarm/`+runAlarm, currentAlarm, {headers:{token:token}});
                 console.log(res.data);
             }catch(err){
                 console.log("Couldn't update alarm info ", err);
@@ -89,7 +89,7 @@ const PlayAlarm = () =>{
         if(currentAlarm){
             currentAlarm.snooze = [0];
             try {
-                let res = await axios.put('/api/alarm/'+runAlarm, currentAlarm,  {headers:{token:token}});
+                let res = await axios.put(`${server}/api/alarm/`+runAlarm, currentAlarm,  {headers:{token:token}});
                 console.log(res.data);
             }catch(err){
                 console.log("Couldn't update alarm info ", err);

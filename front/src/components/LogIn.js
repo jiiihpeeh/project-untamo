@@ -20,7 +20,7 @@ import { AlarmContext } from "../contexts/AlarmContext";
 import '../App.css'
 
 const LogIn = () => {
-    const {  setToken, setUserInfo, sessionStatus, setSessionStatus } = useContext(SessionContext);
+    const {  setToken, setUserInfo, sessionStatus, setSessionStatus, setSignedInTime, server  } = useContext(SessionContext);
     const { setDevices, setViewableDevices } = useContext(DeviceContext);
     const { setAlarms}=useContext(AlarmContext)
     const [formData, setFormData] = useState({
@@ -40,19 +40,20 @@ const LogIn = () => {
     const onSubmit = async (event) => {
         try{
             event.preventDefault();
-            let res = await axios.post('/login', formData);
+            let res = await axios.post(`${server}/login`, formData);
             await initAudioDB()
             
-            fetchAudioFiles(res.data.token)
+            fetchAudioFiles(res.data.token, server)
             console.log(res.data);
 
             let userRes = Object.assign({}, res.data);
             localStorage.setItem('token', res.data.token)
+            localStorage.setItem('server', server)
             delete userRes.token;
             setUserInfo(userRes);
             localStorage.setItem('userInfo', JSON.stringify(userRes));
             setToken(res.data.token);
-            let devices = await fetchDevices(res.data.token);
+            let devices = await fetchDevices(res.data.token, server);
             setDevices(devices);
             let viewable = []
             for(const item of devices){
@@ -61,7 +62,10 @@ const LogIn = () => {
             setViewableDevices(viewable);
             localStorage.setItem("devices", JSON.stringify(devices));
             localStorage.setItem("viewableDevices", JSON.stringify(viewable));
-            setAlarms(await fetchAlarms(res.data.token));
+            let timeNow = Date.now()
+            setSignedInTime(timeNow);
+            localStorage.setItem('signedInTime', JSON.stringify(timeNow));
+            setAlarms(await fetchAlarms(res.data.token, server));
             notification("Logged In", "Successfully logged in");
             setSessionStatus(true);
             

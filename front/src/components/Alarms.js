@@ -19,7 +19,7 @@ import { timeForNextAlarm } from "./calcAlarmTime";
 
 const Alarms = () => {
 	const navigate = useNavigate();
-	const { sessionStatus, token, userInfo } = useContext(SessionContext);
+	const { sessionStatus, token, userInfo, server } = useContext(SessionContext);
 	const { devices, viewableDevices, currentDevice } = useContext(DeviceContext);
 	const {alarms, setAlarms} = useContext(AlarmContext);
 
@@ -102,7 +102,7 @@ const Alarms = () => {
 			//console.log("Try: /api/alarm/"+alarm._id,alarm);
 			alarm.active = !alarm.active;
 			delete alarm.snooze
-			const res = await axios.put('/api/alarm/'+alarm._id,alarm, {headers: {token: token}} );
+			const res = await axios.put(`${server}/api/alarm/`+alarm._id,alarm, {headers: {token: token}} );
 			//console.log(res.data);
 			notification("Edit Alarm", "Alarm modified");
 			let filteredAlarms = alarms.filter(alarmItem => alarmItem._id !== alarm._id);

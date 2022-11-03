@@ -30,7 +30,7 @@ function EditAlarm(props) {
 	const btnRef = useRef();
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const { alarms, setAlarms } = useContext(AlarmContext);
-	const { token } = useContext(SessionContext);
+	const { token, server } = useContext(SessionContext);
 	let alarmArr = alarms.filter(alarmItem  => alarmItem._id === props.id);
 	let alarm = alarmArr[0];
 	const [ time, setTime ] = useState(alarm.time);
@@ -81,7 +81,7 @@ function EditAlarm(props) {
 					break;
 			} 
 			//console.log("Try: /api/alarm/"+modAlarm._id,modAlarm);
-			const res = await axios.put('/api/alarm/'+modAlarm._id, modAlarm,  {
+			const res = await axios.put(`${server}/api/alarm/`+modAlarm._id, modAlarm,  {
 				headers: {'token': token}
 			});
 			//console.log(res.data);
