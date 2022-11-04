@@ -1,7 +1,7 @@
 import { SessionContext} from '../contexts/SessionContext';
 //import { DeviceContext } from '../contexts/DeviceContext';
 import {Link as ReachLink} from 'react-router-dom';
-import { Grid, GridItem, Text, Link, Flex, Spacer } from '@chakra-ui/react';
+import { Grid, GridItem, Text, Link, Flex, Spacer, HStack, Center } from '@chakra-ui/react';
 //import { notification } from './notification';
 import { useState, useEffect, useContext } from "react";
 import UserMenu from './UserMenu';
@@ -10,6 +10,8 @@ import DeviceMenu from './DeviceMenu';
 import ServerLocation from './ServerLocation';
 import Countdown from "react-countdown";
 import { AdminContext } from '../contexts/AdminContext';
+import { timePadding } from "./AlarmComponents/timePadding";
+
 
 const NavGrid = () => {
     //const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -21,11 +23,17 @@ const NavGrid = () => {
     const FlexLink = (text) => {
         let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1);
         return (<>
-                <Link as={ReachLink} to={`/${text.text}`} id={`link-${text.text}`} ><Text as='b'>{titled}</Text></Link>
+                <Link as={ReachLink} 
+                      to={`/${text.text}`} 
+                      id={`link-${text.text}`} >
+                      <Text as='b'>
+                            {titled}
+                      </Text>
+                </Link>
         </>);
     }
     const timeOutput = ({ minutes, seconds,}) => {
-        return `   Admin Time: ${minutes}:${seconds}`
+        return `( remaining admin time: ${timePadding(minutes)}:${timePadding(seconds)})`
     }
    
     useEffect(() => {
@@ -52,7 +60,8 @@ const NavGrid = () => {
         console.log("admin: ", showAdmin)
     },[showAdmin])
     return (
-        <Flex>   
+        <Center>   
+            <HStack spacing='60px'>
             {validItems.includes('login') && <>
             <Spacer/>
             <FlexLink text='login' key={'navgrid-login'}/></>}
@@ -71,19 +80,20 @@ const NavGrid = () => {
             {validItems.includes('about') && <>
             <Spacer/>
             <About/></>}
+            {showAdmin && <>
+            <Spacer/>
+            <HStack><FlexLink text='admin' key={'navgrid-admin'}/>
+            <Text as='b' color='red' > 
+                <Countdown  date={adminTime}
+                            renderer={timeOutput}
+                            />
+            </Text></HStack></>}
             {validItems.includes('user') && <>
             <Spacer/>
-            <UserMenu/><Spacer/></>}
-            {showAdmin && <>
-                <FlexLink text='Admin' key={'navgrid-admin'}/>
-                    <Text as='b' color='red' ml="2%"> 
-                        <Countdown date={adminTime}
-                                   renderer={timeOutput}
-                                   zeroPadTime={2} 
-                                />
-                    </Text>
-           </> }
-        </Flex>
+            <UserMenu/></>}
+            <Spacer/>
+            </HStack>
+        </Center>
     )
     
 };
