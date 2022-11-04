@@ -123,10 +123,47 @@ isUserLogged = (req,res,next) => {
 	})
 }
 
+isUserAdmin = (req,res,next) => {
+	if(!req.headers.token) {
+		return res.status(403).json({message:"Forbidden!"});
+	}
+	
+	sessionModel.findOne({"token":req.headers.token},function(err,session) {
+		if(err) {
+			console.log(tStamppi(),"Failed to find session. Reason",err);
+			return res.status(403).json({message:"Forbidden"})
+		}
+		if(!session) {
+			return res.status(403).json({message:"Forbidden"})
+		}
+		serverSocket.send(JSON.stringify({mode: 'api', url: req.originalUrl, token: req.headers.token, userID: session.userID }));
+		let now=Date.now();
+		if(now>session.ttl) {
+			sessionModel.deleteOne({"_id":session._id},function(err) {
+				if(err) {
+					console.log(tStamppi(),"Failed to remove session. Reason",err)
+				}
+				return res.status(403).json({message:"Forbidden"})
+			})
+		} else {
+			req.session = {};
+			req.session.user = session.user;
+			req.session.userID = session.userID;
+			session.ttl = now+time_to_live_diff;
+			session.save(function(err) {
+				if(err) {
+					console.log(tStamppi(),"Failed to resave session. Reason",err);
+				}
+				return next()
+			})
+		}
+	})
+}
+
 
 // LOGIN API:
 
-app.post("/register",function(req,res) {
+app.post("/register", asyncHandler( async(req,res) => {
 	console.log(tStamppi(),"/register");
 	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
@@ -143,34 +180,45 @@ app.post("/register",function(req,res) {
 	if(zxcvbn(req.body.password).guesses < guessCount){
 		return res.status(400).json({message:"Bad Request. Password is too obvious"}); 
 	}
-	
-	bcrypt.hash(req.body.password,14,function(err,hash) {
-		if(err) {
-			return res.status(400).json({message:"Bad Request"}); 
-		}
-		
-		let user = new userModel({
-			user:req.body.email,
+	let hash = ''
+	try {
+		hash = await bcrypt.hash(req.body.password,14)
+	}catch(err){
+		return res.status(400).json({message:"Bad Request"}); 
+	}
+	let userCount = 0;
+	try{
+		userCount = await userModel.count()
+	}catch(err){
+		return res.status(500).json({message:"Internal server error"})
+	}
+	let admin = userCount === 0
+	let user = new userModel({
+		    user:req.body.email,
 			password:hash,
 			firstname: req.body.firstname,
 			lastname: req.body.lastname,
-			screenname: formScreenName(req.body)
+			screenname: formScreenName(req.body),
+			admin: admin,
+			owner: admin
 		})
-		user.save(function(err,user) {
-			if(err) {
-				console.log(tStamppi(),"Failed to create user. Reason",err);
-				if(err.code === 11000) {
-					return res.status(409).json({message:"Username already in use"})
-				}
-				return res.status(500).json({message:"Internal server error"})
-			}
-			if(!user) {
-				return res.status(500).json({message:"Internal server error"})
-			}
-			return res.status(201).json({message:"User registered!"});
-		})
-	})
-})
+	try{
+	    user = await user.save(user);
+	}
+	catch(err){
+		console.log(tStamppi(),"Failed to create user. Reason",err);
+		if(err.code === 11000) {
+			return res.status(409).json({message:"Username already in use"})
+		}
+		return res.status(500).json({message:"Internal server error"})
+	}
+
+	if(!user) {
+		return res.status(500).json({message:"Internal server error"})
+	}
+			
+	return res.status(201).json({message:"User registered!"});
+}))
 
 app.post("/login",function(req,res) {
 	console.log(tStamppi(),"/login");
@@ -191,6 +239,9 @@ app.post("/login",function(req,res) {
 		if(!user) {
 			return res.status(401).json({message:"Unathorized"})
 		}
+		if(user && user.hasOwnProperty('active') && (user.active === false)){
+			return res.status(401).json({message:"User freezed!"});
+		}
 		//console.log(user)
 		bcrypt.compare(req.body.password,user.password,function(err,success) {
 			if(err) {
@@ -200,6 +251,7 @@ app.post("/login",function(req,res) {
 			if(!success) {
 				return res.status(401).json({message:"Unauthorized"})
 			}
+
 			let token=createToken();
 			let now=Date.now();
 			let session= new sessionModel({
@@ -235,6 +287,7 @@ app.post("/logout",function(req,res) {
 		return res.status(200).json({message:"Logged out"});
 	})
 })
+
 
 
 app.ws('/registercheck', function(ws, req) {

@@ -1,18 +1,14 @@
 import {
 	useDisclosure,
-	Link,
-	Button,
-	Drawer,
-	DrawerBody,
+	Link,Button,
+	Drawer,DrawerBody,
 	DrawerFooter,
 	DrawerHeader,
 	DrawerOverlay,
 	DrawerContent,
 	DrawerCloseButton,
-	FormLabel,
-	Center,
-	Tooltip,
-	Text,
+	FormLabel,Center,
+	Tooltip,Text,
 	IconButton
 	} from '@chakra-ui/react'
 import { EditIcon } from '@chakra-ui/icons';

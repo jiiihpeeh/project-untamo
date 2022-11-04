@@ -1,28 +1,33 @@
 import { SessionContext} from '../contexts/SessionContext';
 //import { DeviceContext } from '../contexts/DeviceContext';
 import {Link as ReachLink} from 'react-router-dom';
-import { Grid, GridItem, Text, Link } from '@chakra-ui/react';
+import { Grid, GridItem, Text, Link, Flex, Spacer } from '@chakra-ui/react';
 //import { notification } from './notification';
 import { useState, useEffect, useContext } from "react";
 import UserMenu from './UserMenu';
 import About from './About';
 import DeviceMenu from './DeviceMenu';
 import ServerLocation from './ServerLocation';
+import Countdown from "react-countdown";
+import { AdminContext } from '../contexts/AdminContext';
 
 const NavGrid = () => {
     //const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
+    const {adminToken, setAdminToken, adminTime, setAdminTime} = useContext(AdminContext);
     const { sessionStatus } = useContext(SessionContext);
     const [ validItems, setValidItems ] = useState(["login", "register", "about"]);
+    const [ showAdmin, setShowAdmin ] = useState(false);
 
-    const GridLink = (text) => {
+    const FlexLink = (text) => {
         let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1);
         return (<>
-            <GridItem key={`navgridlink-${text.text}`} >
                 <Link as={ReachLink} to={`/${text.text}`} id={`link-${text.text}`} ><Text as='b'>{titled}</Text></Link>
-            </GridItem>
         </>);
     }
-
+    const timeOutput = ({ minutes, seconds,}) => {
+        return `   Admin Time: ${minutes}:${seconds}`
+    }
+   
     useEffect(() => {
         const constructGrid = () => {
             if(sessionStatus){
@@ -34,28 +39,51 @@ const NavGrid = () => {
         constructGrid();
     },[sessionStatus]);
 
+    
+    useEffect(()=> {
+        try{
+            clearTimeout(JSON.parse(sessionStorage.getItem('adminTimeOut')));
+        }catch(err){}
+        setShowAdmin(true);
+        let tID = setTimeout(() => setShowAdmin(false), adminTime - Date.now());
+        sessionStorage.setItem('adminTimeOut', JSON.stringify(tID));
+    },[adminTime]);
+    useEffect(() => {
+        console.log("admin: ", showAdmin)
+    },[showAdmin])
     return (
-        <Grid  h='4%'mt='0.5%'
-            templateRows='repeat(1, 1fr)'
-            templateColumns={`repeat(${validItems.length}, 1fr)`}
-            gap={4}
-            key="navgrid-assembled"
-        >   
-            {validItems.includes('login') && 
-            <GridLink text='login' key={'navgrid-login'}/>}
-            {validItems.includes('register') && 
-            <GridLink text='register' key={'navgrid-register'}/>}
-            {validItems.includes('alarms') && 
-            <GridLink text='alarms' key={'navgrid-alarms'}/>}
-            {validItems.includes('devices') && 
-            <GridItem key="navgrid-device"><DeviceMenu/></GridItem>}
-            {validItems.includes('server') &&
-            <GridItem key="navgrid-server"><ServerLocation/></GridItem>}
-            {validItems.includes('about') && 
-            <GridItem key="navgrid-about"><About/></GridItem>}
-            {validItems.includes('user') && 
-            <GridItem key="navgrid-user"><UserMenu/></GridItem>}
-        </Grid>
+        <Flex>   
+            {validItems.includes('login') && <>
+            <Spacer/>
+            <FlexLink text='login' key={'navgrid-login'}/></>}
+            {validItems.includes('register') && <>
+            <Spacer/>
+            <FlexLink text='register' key={'navgrid-register'}/></>}
+            {validItems.includes('alarms') && <>
+            <Spacer/>
+            <FlexLink text='alarms' key={'navgrid-alarms'}/></>}
+            {validItems.includes('devices') && <>
+            <Spacer/>
+            <DeviceMenu/></>}
+            {validItems.includes('server') && <>
+            <Spacer/>
+            <ServerLocation/></>}
+            {validItems.includes('about') && <>
+            <Spacer/>
+            <About/></>}
+            {validItems.includes('user') && <>
+            <Spacer/>
+            <UserMenu/><Spacer/></>}
+            {showAdmin && <>
+                <FlexLink text='Admin' key={'navgrid-admin'}/>
+                    <Text as='b' color='red' ml="2%"> 
+                        <Countdown date={adminTime}
+                                   renderer={timeOutput}
+                                   zeroPadTime={2} 
+                                />
+                    </Text>
+           </> }
+        </Flex>
     )
     
 };

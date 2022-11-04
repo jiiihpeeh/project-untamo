@@ -17,6 +17,8 @@ import GenerateQRPairingKey from './components/GenerateQRPairingKey';
 import PlayAlarm from './components/PlayAlarm';
 import AlarmWatcher from './components/AlarmWatcher';
 import UserWatcher from './components/UserWatcher';
+import Admin from './components/Admin';
+import { AdminContext } from './contexts/AdminContext';
 
 function App() {
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
@@ -31,7 +33,9 @@ function App() {
 	const [ alarms, setAlarms ] = useState(localStorage['alarms'] ? JSON.parse(localStorage['alarms']) : []) ;
 	const [ runAlarm, setRunAlarm ] = useState('');
 	const [ runOtherSnooze, setRunOtherSnooze ] = useState(false);
-	// This one is id when set when set it is string see AlarmWatcher. Meaning: to Trigger PlayAlarm. 
+	//Never ever  put admin in storage
+	const [adminToken, setAdminToken] = useState(undefined);
+	const [adminTime, setAdminTime] = useState(undefined);
 
 	const checkSession = async () => {
 		let sessionToken = localStorage['token'] ? localStorage['token'] : undefined;
@@ -77,6 +81,7 @@ function App() {
 		<SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR, signInTime, setSignedInTime, server, setServer  }}>
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
 		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm, runOtherSnooze, setRunOtherSnooze }}>
+		<AdminContext.Provider value={{adminToken, setAdminToken, adminTime, setAdminTime}}>
 			<NavGrid/>
 
 			<Routes>
@@ -87,12 +92,14 @@ function App() {
 					<Route path="/welcome" element={<Welcome/>}/>
 					<Route path="/playalarm" element={<PlayAlarm/>}/>
 					<Route path="/clueless" element={<Clueless/>}/>
+					<Route path="/admin" element={<Admin/>}/>
 					<Route path="/" element={<Navigate to="/login" /> } />
 					<Route path="*" element={<Navigate to="/clueless" /> } />
 			</Routes>
 		<GenerateQRPairingKey/>
 		<AlarmWatcher/>
 		<UserWatcher/>
+		</AdminContext.Provider>
 		</AlarmContext.Provider>
 		</DeviceContext.Provider>
 		</SessionContext.Provider>    

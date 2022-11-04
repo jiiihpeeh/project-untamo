@@ -4,39 +4,18 @@ const alarmModel = require("../models/alarm");
 const userModel = require("../models/user");
 const deviceModel = require("../models/device");
 const qrModel = require("../models/qrpair");
+const adminModel = require("../models/admin")
 const router = express.Router();
 const crypto = require("crypto");
 const tStamppi = require("../modules/tstamppi");
 const bcrypt = require('bcrypt')
 const zxcvbn = require("zxcvbn");
 const e = require("express");
-const asyncHandler = require('express-async-handler')
+const asyncHandler = require('express-async-handler');
 const guessCount =  1000000000;
 
 
 
-router.get("/admin",function(req,res) {
-	console.log(tStamppi(),"GET /api/admin");
-	var usercreds = new Array();
-	
-	userModel.find({},function(err,usersList) {
-		if(err) {
-			console.log(tStamppi(),"Failed to find users. Reason",err);
-			return res.status(500).json({message:"Internal server error"})
-		}
-		console.log(tStamppi(),"   GET /api/admin/ SUCCESS")
-		console.log(tStamppi(),"User list length: "+usersList.length)
-		
-		for (let i = 0; i < usersList.length; i++) {
-			var tempusercreds1 = JSON.parse('{"screenname":"'+usersList[i].screenname+'"}');
-			var tempusercreds2 = JSON.parse('{"email":"'+usersList[i].user+'"}');
-			var tempusercreds3 = JSON.parse('{"id":"'+usersList[i].id+'"}');
-			var tempusercreds = Object.assign(tempusercreds1, tempusercreds2, tempusercreds3);
-			usercreds.push(tempusercreds)
-		}
-		return res.status(200).json(usercreds);
-	})
-});
 
 
 router.get("/alarms",function(req,res) {
@@ -269,6 +248,7 @@ router.put("/editUser/:user",function(req,res) {
 				firstname: req.body.firstname,
 				lastname: req.body.lastname,
 				screenname: req.body.screenname,
+				admin:user.admin
 			}
 			if ('change_password' in req.body){
 				input_password = req.body.change_password;
@@ -344,6 +324,39 @@ router.get('/user', asyncHandler(async(req, res) => {
 		return res.status(500).json({message:`Internal server error.`, code: err.code});
 	}
 
+}))
+
+
+router.post('/admin', asyncHandler(async(req, res) => {
+	let user = {};
+	let query={"_id":req.session.userID};
+	try{
+		user = await  userModel.findOne(query);
+		if(!user || (user.admin === false)){
+			return res.status(401).json({message:"Can not give admin rights"});
+		}
+		let success = await bcrypt.compare(req.body.password,user.password);
+		if(!success){
+			return res.status(401).json({message:"Can not give admin rights. Wrong password!"});
+		}
+	}catch(err){
+		return res.status(500).json({message:`Internal server error.`, code: err.code});
+	}
+	
+	let adminToken = crypto.randomBytes(128).toString("hex");
+	let ttl = Date.now() + (10*60*1000);
+	let admin = new adminModel( {
+		userID: req.session.userID,
+		adminToken: adminToken,
+		ttl: ttl
+	});
+	//let adminObject = {};
+	try{
+		adminObject = await admin.save();
+	}catch(err){
+		return res.status(500).json({message:`Internal server error.`, code: err.code});
+	}
+	return res.status(201).json({adminToken:adminToken, ttl:ttl});
 }))
 
 module.exports = router;

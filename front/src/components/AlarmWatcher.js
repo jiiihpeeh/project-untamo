@@ -59,7 +59,7 @@ const AlarmWatcher  = () => {
                     //console.log(runThis)
                     let timed = timeToNextAlarm(alarms.filter(alarm => alarm._id === runThis)[0]);
                     //console.log(timed)
-                    if(timed > 0){
+                    if(timed > 100){
                         clearAlarmTimeout();
                         setRunAlarm(runThis);
                         let timeOutID = setTimeout(() => { navigate('/playalarm/') }, timed);
