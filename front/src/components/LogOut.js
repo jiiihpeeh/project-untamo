@@ -1,6 +1,7 @@
 import axios from "axios";
 import { SessionContext } from "../contexts/SessionContext";
 import { DeviceContext } from "../contexts/DeviceContext";
+import { AdminContext } from "../contexts/AdminContext";
 import { useContext, useRef} from "react";
 import { deleteAudioDB } from "../audiostorage/audioDatabase";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +15,7 @@ import {
 const LogOut = () => {
     const {  setCurrentDevice, setDevices } = useContext(DeviceContext);
     const { token, setToken,  setUserInfo,  setSessionStatus, server } = useContext(SessionContext);
+    const { setAdminToken, setAdminTime } = useContext(AdminContext);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef();
     const navigate = useNavigate();
@@ -29,6 +31,8 @@ const LogOut = () => {
             setUserInfo({});
             setCurrentDevice(undefined);
             setDevices([]);
+            setAdminToken(''); 
+            setAdminTime(0);
             try{
                 localStorage.clear();
                 sessionStorage.clear();

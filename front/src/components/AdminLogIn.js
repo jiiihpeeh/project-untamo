@@ -30,6 +30,7 @@ const AdminLogin = () => {
             setAdminToken(res.data.adminToken);
             setAdminTime(res.data.ttl);
             notification("Admin", "Admin rights granted");
+            onClose();
         }catch(err){
           console.log(err)
           notification("Admin", "Cannot get admin rights", "error");

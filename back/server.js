@@ -1,11 +1,13 @@
 const express = require("express");
 const apiroute = require("./routes/apiroute");
+const adminroute = require("./routes/adminroute");
 const cors = require('cors')
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 const userModel = require("./models/user");
 const sessionModel = require("./models/session");
+const adminModel = require("./models/admin")
 const user = require("./models/user");
 const formScreenName = require('./modules/form_screenname')
 const zxcvbn = require('zxcvbn');
@@ -18,10 +20,6 @@ let app = express();
 
 
 const expressWs = require('express-ws')(app);
-
-
-
-
 
 
 app.use(express.json());
@@ -90,7 +88,7 @@ isUserLogged = (req,res,next) => {
 	if(!req.headers.token) {
 		return res.status(403).json({message:"Forbidden!"});
 	}
-	
+	//console.log(req.headers)
 	sessionModel.findOne({"token":req.headers.token},function(err,session) {
 		if(err) {
 			console.log(tStamppi(),"Failed to find session. Reason",err);
@@ -124,38 +122,31 @@ isUserLogged = (req,res,next) => {
 }
 
 isUserAdmin = (req,res,next) => {
+	
 	if(!req.headers.token) {
 		return res.status(403).json({message:"Forbidden!"});
 	}
-	
-	sessionModel.findOne({"token":req.headers.token},function(err,session) {
+	console.log("ADMIN:  ", req.headers.admintoken)
+	adminModel.findOne({"adminToken":req.headers.admintoken},function(err,adminSession) {
 		if(err) {
 			console.log(tStamppi(),"Failed to find session. Reason",err);
 			return res.status(403).json({message:"Forbidden"})
 		}
-		if(!session) {
+		//console.log("SURVIVED", adminSession);
+		if(!adminSession) {
 			return res.status(403).json({message:"Forbidden"})
 		}
-		serverSocket.send(JSON.stringify({mode: 'api', url: req.originalUrl, token: req.headers.token, userID: session.userID }));
+		
 		let now=Date.now();
-		if(now>session.ttl) {
-			sessionModel.deleteOne({"_id":session._id},function(err) {
+		if(now>adminSession.ttl) {
+			adminModel.deleteOne({"_id":adminSession._id},function(err) {
 				if(err) {
 					console.log(tStamppi(),"Failed to remove session. Reason",err)
 				}
 				return res.status(403).json({message:"Forbidden"})
 			})
 		} else {
-			req.session = {};
-			req.session.user = session.user;
-			req.session.userID = session.userID;
-			session.ttl = now+time_to_live_diff;
-			session.save(function(err) {
-				if(err) {
-					console.log(tStamppi(),"Failed to resave session. Reason",err);
-				}
-				return next()
-			})
+			return next()
 		}
 	})
 }
@@ -414,6 +405,8 @@ app.ws('/action', asyncHandler(async(ws, req) => {
 app.use('/audioresources', isUserLogged, express.static('audioresources'))
 
 app.use("/api",isUserLogged,apiroute);
+app.use("/admin",isUserLogged, isUserAdmin, adminroute);
+
 
 app.listen(port);
 
