@@ -96,7 +96,7 @@ const AdminChangeActivity = (props) => {
         switch(props.command.action){
             case 'delete':
                 setMessage({action: 'Delete?', 
-                            message: 'Delete user? Information of the corresponding user will be erased.',
+                            message: 'Delete user? User information will be erased.',
                             button: 'Delete user'
                         });
                 break;
@@ -108,7 +108,7 @@ const AdminChangeActivity = (props) => {
                 break;
             case 'activity':
                 setMessage({ action: 'Activity Status', 
-                            message: 'Activity status of the user will be changed. All the current sessions will be erased if accepted',
+                            message: 'Activity status of the user will be changed. Current sessions will be erased if accepted and activity is turned OFF',
                             button: "Change Activity Status"
                         });
                 break;
