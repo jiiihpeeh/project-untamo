@@ -52,7 +52,7 @@ const AdminChangeActivity = (props) => {
                 }catch(err){
                     notification("Change", `Change failed ${err.data}`, "error");
                     console.log("err: ", err);
-                    fetcher();
+                    await fetcher();
                 }
                 break;
             case 'admin':
@@ -67,7 +67,7 @@ const AdminChangeActivity = (props) => {
                 }catch(err){
                     notification("Change", `Change failed ${err.data}`, "error");
                     console.log("err: ", err);
-                    fetcher();
+                    await fetcher();
                 }
                 
                 break;
@@ -81,7 +81,7 @@ const AdminChangeActivity = (props) => {
                 }catch(err){
                     notification("Change", `Change failed ${err.data}`, "error");
                     console.log("err: ", err); 
-                    fetcher();                   
+                    await fetcher();                   
                 }
                 break;
             default:
