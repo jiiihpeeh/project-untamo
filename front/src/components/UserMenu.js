@@ -25,10 +25,10 @@ const UserMenu = () => {
 					<MenuItem>
 						<EditProfile/>
 					</MenuItem>
-					<MenuDivider/>
+					{userInfo.admin && <><MenuDivider/>
 					<MenuItem closeOnSelect={false}>
 						<AdminLogin/>
-					</MenuItem>
+					</MenuItem></>}
 					<MenuDivider />
 					<MenuItem>
 						<LogOut/>

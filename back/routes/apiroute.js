@@ -248,7 +248,8 @@ router.put("/editUser/:user",function(req,res) {
 				firstname: req.body.firstname,
 				lastname: req.body.lastname,
 				screenname: req.body.screenname,
-				admin:user.admin
+				admin:user.admin,
+				owner: user.owner
 			}
 			if ('change_password' in req.body){
 				input_password = req.body.change_password;

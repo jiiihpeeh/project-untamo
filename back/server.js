@@ -126,7 +126,6 @@ isUserAdmin = (req,res,next) => {
 	if(!req.headers.token) {
 		return res.status(403).json({message:"Forbidden!"});
 	}
-	console.log("ADMIN:  ", req.headers.admintoken)
 	adminModel.findOne({"adminToken":req.headers.admintoken},function(err,adminSession) {
 		if(err) {
 			console.log(tStamppi(),"Failed to find session. Reason",err);
@@ -233,7 +232,7 @@ app.post("/login",function(req,res) {
 		if(user && user.hasOwnProperty('active') && (user.active === false)){
 			return res.status(401).json({message:"User freezed!"});
 		}
-		//console.log(user)
+		console.log(user)
 		bcrypt.compare(req.body.password,user.password,function(err,success) {
 			if(err) {
 				console.log(tStamppi(),"Comparing passwords failed. Reason",err);
@@ -256,8 +255,12 @@ app.post("/login",function(req,res) {
 					console.log(tStamppi(),"Saving session failed. Reason",err);
 					return res.status(500).json({message:"Internal server error"})
 				}
-				return res.status(200).json({token:token, user: user.user, 
-					screenname:user.screenname, firstname: user.firstname, lastname:user.lastname});
+				return res.status(200).json({token:token, 
+											user: user.user, 
+											screenname:user.screenname, 
+											firstname: user.firstname, 
+											lastname:user.lastname, 
+											admin: user.admin});
 			})
 		})
 	})

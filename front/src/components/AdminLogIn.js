@@ -1,15 +1,16 @@
 import {
-    Popover,
-    PopoverContent,
-    PopoverHeader,
-    PopoverBody,
-    PopoverFooter,
-    PopoverArrow,
-    PopoverCloseButton,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
     Button, ButtonGroup,
     useDisclosure, 
     Text, FormLabel,Input,
   } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 import { FocusLock } from '@chakra-ui/focus-lock';
 import { useState, useContext } from 'react';
 import { SessionContext } from '../contexts/SessionContext';
@@ -22,8 +23,8 @@ const AdminLogin = () => {
     const [ adminPassword, setAdminPassword ] = useState('');
     const {server, token }  = useContext(SessionContext);
     const {setAdminTime, setAdminToken} = useContext(AdminContext);
+    const navigate = useNavigate();
     const onLogIn = async () => {
-      
         try{
             let res = await axios.post(`${server}/api/admin`,{password: adminPassword},{headers:{token:token}});
             //console.log(res)
@@ -31,31 +32,33 @@ const AdminLogin = () => {
             setAdminTime(res.data.ttl);
             notification("Admin", "Admin rights granted");
             onClose();
+            navigate('/admin')
         }catch(err){
-          console.log(err)
-          notification("Admin", "Cannot get admin rights", "error");
+            console.log(err)
+            notification("Admin", "Cannot get admin rights", "error");
         }  
     } 
+
+
+
     return (
       <>
         <Text mr={5} onClick={onToggle}>
           Admin LogIn
         </Text>
-        <Popover
+        <Modal
           returnFocusOnClose={false}
           isOpen={isOpen}
           onClose={onClose}
-          placement='right'
           closeOnBlur={false}
         >
           {/* <PopoverTrigger>
             <Button colorScheme='pink'>Popover Target</Button>
           </PopoverTrigger> */}
-          <PopoverContent>
-              <PopoverHeader fontWeight='semibold'>Request admin rights?</PopoverHeader>
-              <PopoverArrow />
-              <PopoverCloseButton />
-              <PopoverBody>
+          <ModalContent>
+              <ModalHeader fontWeight='semibold'>Request admin rights?</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
               <FocusLock returnFocus persistentFocus={false}>
                   <FormLabel>Password</FormLabel>
                   <Input type="password" 
@@ -63,15 +66,15 @@ const AdminLogin = () => {
                          onChange={(e)=> setAdminPassword(e.target.value)}
                          />
               </FocusLock>
-              </PopoverBody>
-              <PopoverFooter display='flex' justifyContent='flex-end'>
+              </ModalBody>
+              <ModalFooter display='flex' justifyContent='flex-end'>
                 <ButtonGroup size='sm'>
                   <Button variant='outline' onClick={onClose}>Cancel</Button>
                   <Button colorScheme='red' onClick={onLogIn}>Apply</Button>
                 </ButtonGroup>
-              </PopoverFooter>
-          </PopoverContent>
-        </Popover>
+              </ModalFooter>
+          </ModalContent>
+        </Modal>
       </>
     )
   }

@@ -11,7 +11,7 @@ import ServerLocation from './ServerLocation';
 import Countdown from "react-countdown";
 import { AdminContext } from '../contexts/AdminContext';
 import { timePadding } from "./AlarmComponents/timePadding";
-
+import { useNavigate } from 'react-router-dom';
 
 const NavGrid = () => {
     //const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -19,7 +19,7 @@ const NavGrid = () => {
     const { sessionStatus } = useContext(SessionContext);
     const [ validItems, setValidItems ] = useState(["login", "register", "about"]);
     const [ showAdmin, setShowAdmin ] = useState(false);
-
+    const navigate  = useNavigate()
     const FlexLink = (text) => {
         let titled = text.text.charAt(0).toUpperCase() + text.text.slice(1);
         return (<>
@@ -33,7 +33,7 @@ const NavGrid = () => {
         </>);
     }
     const timeOutput = ({ minutes, seconds,}) => {
-        return `( remaining admin time: ${timePadding(minutes)}:${timePadding(seconds)})`
+        return `Admin (${timePadding(minutes)}:${timePadding(seconds)})`
     }
    
     useEffect(() => {
@@ -49,18 +49,27 @@ const NavGrid = () => {
 
     
     useEffect(()=> {
+        const adminTimeOut = () =>{
+            setShowAdmin(false);
+            if(window.location.pathname === '/admin'){
+                navigate('/alarms');
+            }
+        }
         try{
             clearTimeout(JSON.parse(sessionStorage.getItem('adminTimeOut')));
         }catch(err){}
-        setShowAdmin(true);
-        let tID = setTimeout(() => setShowAdmin(false), adminTime - Date.now());
+        if(adminTime > Date.now()){
+            setShowAdmin(true);
+        }
+        
+        let tID = setTimeout(adminTimeOut, adminTime - Date.now());
         sessionStorage.setItem('adminTimeOut', JSON.stringify(tID));
     },[adminTime]);
     useEffect(() => {
         console.log("admin: ", showAdmin)
     },[showAdmin])
     return (
-        <Center>   
+        <Center mt="5px">   
             <HStack spacing='60px'>
             {validItems.includes('login') && <>
             <Spacer/>
@@ -82,12 +91,16 @@ const NavGrid = () => {
             <About/></>}
             {showAdmin && <>
             <Spacer/>
-            <HStack><FlexLink text='admin' key={'navgrid-admin'}/>
-            <Text as='b' color='red' > 
-                <Countdown  date={adminTime}
+            <Link 
+                    key="admin-link"
+                    as={ReachLink} 
+                    to={`/admin`} 
+                    id={`link-admin`} >
+                            <Text  color='red' as='b'>
+                            <Countdown  date={adminTime}
                             renderer={timeOutput}
-                            />
-            </Text></HStack></>}
+                            /></Text>
+            </Link></>}
             {validItems.includes('user') && <>
             <Spacer/>
             <UserMenu/></>}
