@@ -30,6 +30,8 @@ const AlarmNotification = ()  => {
                                         description: `${timeForNextAlarm(alarm)}`,
                                         duration : timeToNextAlarm(alarm),
                                         isClosable: true,
+                                        status: 'info',
+                                        id:'alarm-notification',
                                         }
                  );
 	  	    };
