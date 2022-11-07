@@ -1,9 +1,9 @@
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const fetchDevices = async ( token) => {
+const fetchDevices = async ( token, server) => {
     let fetchedDevices = [];
     try{
-        let res = await axios.get(`http://192.168.2.207:3001/api/devices`,{
+        let res = await axios.get(`${server}/api/devices`,{
         headers: {'token': token}
         });
         await AsyncStorage.setItem('devices', JSON.stringify(res.data))
