@@ -63,8 +63,7 @@ const  App =  () => {
         {!sessionStatus &&
           <LogIn/>}
         {sessionStatus  &&
-          <AlarmView/>
-        }
+          <AlarmView/>}
         </SafeAreaView>
       <StatusBar/>
       </AlarmContext.Provider>

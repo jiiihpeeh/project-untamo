@@ -10,7 +10,7 @@ const AlarmView = () => {
      console.log('devices: ',devices)
     },[currentDevice, devices])
     return(<>
-        { currentDevice === undefined && 
+        { currentDevice === null && 
             <Welcome/>
         }
         <Div>

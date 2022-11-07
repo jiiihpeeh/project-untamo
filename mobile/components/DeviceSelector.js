@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, createRef } from "react";
 //import { SessionContext } from "../contexts/SessionContext"
 import { DeviceContext } from "../context/DeviceContext";
 
-import { Dropdown, Button } from "react-native-magnus";
+import { Dropdown, Button, Text } from "react-native-magnus";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DeviceSelector = (props) => {
