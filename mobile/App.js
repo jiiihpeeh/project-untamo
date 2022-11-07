@@ -9,7 +9,7 @@ import { DeviceContext } from './context/DeviceContext';
 import { AlarmContext } from './context/AlarmContext';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import axios from 'axios'
 
 
 const  App =  () => {
@@ -32,7 +32,7 @@ const  App =  () => {
       //await AsyncStorage.clear()
       let keys = await AsyncStorage.getAllKeys();
       console.log(keys)
-      setToken(keys.includes('token') ? await AsyncStorage.getItem('token') : undefined);
+      setToken(keys.includes('token') ? JSON.parse(await AsyncStorage.getItem('token')) : undefined);
       setServer(keys.includes('server') ? JSON.parse(await AsyncStorage.getItem('server')) : 'http://192.168.2.207:3001')
       setUserInfo(keys.includes('userInfo') ? JSON.parse(await AsyncStorage.getItem('userInfo')) : {});
       setCurrentDevice(keys.includes('currentDevice') ? await AsyncStorage.getItem('currentDevice') : null);
@@ -48,7 +48,35 @@ const  App =  () => {
     storedData();
   },[])
   useEffect(() =>{
-
+    const checkSession = async () => {
+      if (token){
+        console.log(token)
+        try {
+          let res = await axios.get(`${server}/api/issessionvalid`,  {
+            headers: {token: token}
+          });
+          if(res.data.status){
+            console.log("session valid");
+            setSessionStatus(true);
+          } else {
+            console.log(res.status);
+            setSessionStatus(false);
+          }
+        } catch(err){
+          if(err.response.status === 403){
+            setSessionStatus(false);
+            console.log(err)
+            console.log("session invalid");
+            
+          }else{
+            setSessionStatus(undefined);
+          }
+        }
+      } else {
+        setSessionStatus(false);
+      }
+    };
+    checkSession();
   },[token])
 
 
