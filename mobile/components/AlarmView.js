@@ -2,6 +2,7 @@ import { Button, Icon, Div,Text, View, Input, Image, Modal } from 'react-native-
 import { DeviceContext } from '../context/DeviceContext';
 import React, {useContext, useState, useEffect} from 'react';
 import Welcome from './Welcome';
+import Alarms from './Alarms';
 const AlarmView = () => {
     const { currentDevice, setCurrentDevice, devices } = useContext(DeviceContext);
 
@@ -10,13 +11,11 @@ const AlarmView = () => {
      console.log('devices: ',devices)
     },[currentDevice, devices])
     return(<>
-        { currentDevice === null && 
-            <Welcome/>
-        }
-        <Div>
-            <Text>Hei</Text>
-        </Div>
-    </>)
+        {!currentDevice &&  
+            <Welcome/>}
+        {currentDevice &&
+            <Alarms/>}
+        </>)
 }
 
 export default AlarmView;

@@ -2,7 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import axios from 'axios'
 import { SessionContext } from "../context/SessionContext";
 import { DeviceContext } from "../context/DeviceContext";
-import fetchDevices from "./fetchDevices";
+import { AlarmContext } from "../context/AlarmContext";
+
 import { Button, Icon, Div,Text, View, Input, Image, Modal } from 'react-native-magnus';
 import AsyncStorage  from '@react-native-async-storage/async-storage';
 import ServerAddress from "./ServerAddress";
@@ -12,6 +13,7 @@ const LogIn = ({navigation}) => {
     const {token, setToken, setUserInfo, setSessionStatus, server } = useContext(SessionContext);
 
     const { setDevices } = useContext(DeviceContext);
+    const {setAlarms} = useContext(AlarmContext);
     const [isLogInFormValid, setIsLogInFormValid] = useState(false);
     const [user, setUser] = useState('');
     const [password, setPassword] = useState('');
@@ -28,10 +30,23 @@ const LogIn = ({navigation}) => {
         setToken(res.data.token);
         setUserInfo(userInfoSave);
         setSessionStatus(true);
-        let devices = fetchDevices(res.data.token, server);
-        setDevices(devices)
-        let info = JSON.parse(await AsyncStorage.getItem('userInfo'));
-        console.log(info);
+        let deviceData = await axios.get(`${server}/api/devices`,{
+          headers: {'token': res.data.token}
+          });
+        let devices = deviceData.data;
+        //console.log('fetched devices: ',devices)
+        await AsyncStorage.setItem('alarms', JSON.stringify(devices))
+        setDevices(devices);
+        let alarmData = await axios.get(`${server}/api/alarms`,
+                    {headers: {'token': res.data.token}});
+        console.log("ALARM!!!!: ", alarmData.data);
+        let alarms = alarmData.data;
+        
+        await AsyncStorage.setItem('alarms', JSON.stringify(alarms));
+        
+        setAlarms(alarms);
+        //let info = JSON.parse(await AsyncStorage.getItem('userInfo'));
+        //console.log(info);
       }catch(err){
         console.log(err)
       }

@@ -18,7 +18,7 @@ const  App =  () => {
 	const [ userInfo, setUserInfo ] = useState({});
 	const [ currentDevice, setCurrentDevice ] = useState( null);
 	const [ devices, setDevices ] = useState([]) ;
-	const [ sessionStatus, setSessionStatus ] = useState(undefined);
+	const [ sessionStatus, setSessionStatus ] = useState(false);
 	const [ signInTime, setSignedInTime ] = useState(0);
 	const [ viewableDevices, setViewableDevices ] = useState( []);
 	const [ fetchQR, setFetchQR ] = useState(false);
@@ -35,7 +35,7 @@ const  App =  () => {
       setToken(keys.includes('token') ? JSON.parse(await AsyncStorage.getItem('token')) : undefined);
       setServer(keys.includes('server') ? JSON.parse(await AsyncStorage.getItem('server')) : 'http://192.168.2.207:3001')
       setUserInfo(keys.includes('userInfo') ? JSON.parse(await AsyncStorage.getItem('userInfo')) : {});
-      setCurrentDevice(keys.includes('currentDevice') ? await AsyncStorage.getItem('currentDevice') : null);
+      setCurrentDevice(keys.includes('currentDevice') ? JSON.parse(await AsyncStorage.getItem('currentDevice')) : null);
       setDevices(keys.includes('devices') ? JSON.parse(await AsyncStorage.getItem('devices')) : []) ;
       setSessionStatus(undefined);
       setSignedInTime((keys.includes('signInTime'))? JSON.parse(await AsyncStorage.getItem('signInTime')) :0);
