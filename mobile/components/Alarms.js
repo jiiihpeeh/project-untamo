@@ -14,27 +14,46 @@ const Alarms = () => {
     const { currentDevice, devices, setDevices } = useContext(DeviceContext);
     const {alarms} = useContext(AlarmContext);
     const [ alarmViews, setAlarmViews ] = useState([]);
+    const [allDevices, setAllDevices] = useState(false);
 
     useEffect(() => {
         const renderAlarms = () => {
+            let showAlarms = alarms;
+            if(!allDevices){
+                showAlarms = showAlarms.filter(alarm => alarm.device_ids.includes(currentDevice))
+            }
             let alarmList =[];
-            for(const item of alarms){
+
+            for(const item of showAlarms){
                 alarmList.push(<AlarmButton alarm={item} key={`alarmbutton-${item._id}`}/>);
             }
         setAlarmViews(alarmList)
         }
         renderAlarms()
         console.log('Alarms', alarms)
-    },[alarms])
+    },[alarms,allDevices])
     return(
         <>  
-        <Div row>
-            <Button flex={1} bg={"white"} >
-                <Text as='b' fontSize={"xl"} color="black">This device</Text>
-            </Button>
-            <Button flex={1} bg={"white"} >
-                <Text as='b' fontSize={"xl"} color="gray">All devices</Text>
-            </Button>
+        <Div row alignItems="center">
+                <Text as='b' 
+                      fontSize={"xl"} 
+                      color={allDevices?"gray": "black"} 
+                      flex={1} 
+                      m={10} 
+                      textAlign="center"
+                      onPress={() => setAllDevices(false)}
+                >
+                      This device
+                </Text>
+                <Text as='b' 
+                      fontSize={"xl"} 
+                      color={allDevices?"black": "gray"}
+                      flex={1} m={10} 
+                      textAlign="center"
+                      onPress={() => setAllDevices(true)}
+                >
+                      All devices
+                </Text>
         </Div>
             {alarmViews}
         </>
