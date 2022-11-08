@@ -8,7 +8,7 @@ import { AlarmContext } from "../context/AlarmContext";
 import { Button, Icon, Div,Text, View, Input, Image, Modal, Dropdown } from 'react-native-magnus';
 import AddDevice from "./AddDevice";
 import AlarmButton from "./AlarmButton";
-
+import { timeForNextAlarm } from "./calcAlarmTime";
 const Alarms = () => {
     const { token, userInfo, sessionStatus} = useContext(SessionContext);
     const { currentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -18,14 +18,40 @@ const Alarms = () => {
 
     useEffect(() => {
         const renderAlarms = () => {
-            let showAlarms = alarms;
+            let showAlarms = alarms;            
             if(!allDevices){
                 showAlarms = showAlarms.filter(alarm => alarm.device_ids.includes(currentDevice))
             }
+
+            let viewableAlarmsSet = new Set ();		
+            let timeAlarmMap = new Map();
+            for(const secondFiltrate of showAlarms){
+                viewableAlarmsSet.add(secondFiltrate);			
+                let timeStamp = timeForNextAlarm(secondFiltrate).getTime();
+                if(timeStamp && secondFiltrate){
+                    if(timeAlarmMap.has(timeStamp)){
+                        timeAlarmMap.set(timeStamp, timeAlarmMap.get(timeStamp).add(secondFiltrate._id) );
+                    }else{
+                        timeAlarmMap.set(timeStamp, new Set( [ secondFiltrate._id ]));
+                    };
+                };
+            };
+            let viewableAlarms = [...viewableAlarmsSet];
+		
+            let timeMapArray = [...timeAlarmMap.keys()].sort(function(a, b){return a - b});
+            let sortedView = [];
+            for(const item of timeMapArray){
+                for (const subitem of timeAlarmMap.get(item)){
+                    let filtration = viewableAlarms.filter(alarm => alarm._id === subitem)[0]
+                    if(filtration){
+                        sortedView.push(filtration);
+                    };
+                };
+            };
             let alarmList =[];
 
-            for(const item of showAlarms){
-                alarmList.push(<AlarmButton alarm={item} key={`alarmbutton-${item._id}`}/>);
+            for(const item of sortedView){
+                alarmList.push(<AlarmButton alarm={item} key={`alarmButton-${item._id}`}/>);
             }
         setAlarmViews(alarmList)
         }
