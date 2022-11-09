@@ -35,7 +35,7 @@ const LogIn = ({navigation}) => {
           });
         let devices = deviceData.data;
         //console.log('fetched devices: ',devices)
-        await AsyncStorage.setItem('alarms', JSON.stringify(devices))
+        await AsyncStorage.setItem('devices', JSON.stringify(devices))
         setDevices(devices);
         let alarmData = await axios.get(`${server}/api/alarms`,
                     {headers: {'token': res.data.token}});

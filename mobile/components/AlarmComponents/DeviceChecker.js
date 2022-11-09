@@ -6,7 +6,9 @@ import { AlarmComponentsContext } from "./AlarmComponentsContext";
 const DeviceChecker = (props) => {
     const { devices } = useContext(DeviceContext);
     const { selectedDevices, setSelectedDevices } = useContext(AlarmComponentsContext);
-    const [ displayDevices, setDisplayDevices ] = useState([])
+    const [ displayDevices, setDisplayDevices ] = useState( [])        
+
+    
     const deviceSelection = ( id) => {
         if(selectedDevices.includes(id)){
             setSelectedDevices(selectedDevices.filter(device => device !== id));
@@ -14,14 +16,15 @@ const DeviceChecker = (props) => {
             setSelectedDevices([...selectedDevices,id]);
         };
     };
-    useEffect(() =>{
+    useEffect(() =>{    
         const deviceLister = () => {
             let deviceList = [];
             for( const device of devices){
                 deviceList.push(<> 
                                 <Checkbox 
+                                    key={`device-check-${device.id}`}
                                     checked={selectedDevices.includes(device.id)}   
-                                    onChange={() => deviceSelection(device.id)}  
+                                    onPress={() => deviceSelection(device.id)}
                                     prefix={
                                         <Text flex={1}>
                                             {device.deviceName} {device.type}
@@ -29,10 +32,11 @@ const DeviceChecker = (props) => {
                                     />
                                 </>);
             };
-            setDisplayDevices(deviceList)
-        };
-        deviceLister()
-    },[selectedDevices, devices])
+            setDisplayDevices(deviceList);
+        }
+        deviceLister();
+        
+    },[devices, selectedDevices])
 
 
     return(

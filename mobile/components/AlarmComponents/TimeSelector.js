@@ -19,7 +19,12 @@ const TimeSelector = (props) => {
 
     
     useEffect(() => {
-        setTime(`${timePadding(date.getHours)}:${timePadding(date.getMinutes)}`)
+        if(isNaN(date) || !date){
+            setDate(new Date());
+        }if(date){
+            setTime(`${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`);
+        }
+        
     },[date])
 
     return( <>  
