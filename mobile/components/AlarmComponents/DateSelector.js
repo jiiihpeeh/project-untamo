@@ -1,27 +1,20 @@
-import { SingleDatepicker } from "chakra-dayzed-datepicker";
-import { Center, FormLabel , Flex } from "@chakra-ui/react";
 import React, { useContext } from "react";
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
+import DateModal from "./DateModal";
+import { Text, Div } from 'react-native-magnus';
+
 const DateSelector = (props) => {
     const {date, setDate} = useContext(AlarmComponentsContext);
-    return(
-        <Flex>
-            <Center>
-                <FormLabel>
-                    Date
-                </FormLabel>
-                <SingleDatepicker
-                    name="date-input"
-                    date={date}
-                    onDateChange={setDate}
-                    configs={{
-                        dateFormat: `${props.dateFormat}`,
-                        }
-                    }
-                />        
-            </Center>
-        </Flex>
+    return(<>
+            <Div row>
+                <Text>Date: </Text>
+                <DateModal
+                    mode={props.mode}
+                    date = {date}
+                    setDate = {setDate}
+                />
+            </Div>
+        </>)
         
-    )
 };
 export default DateSelector;

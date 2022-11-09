@@ -3,9 +3,9 @@ import AlarmOnce from "./AlarmOnce";
 import AlarmWeekly from "./AlarmWeekly";
 import AlarmDaily from "./AlarmDaily";
 import AlarmYearly from "./AlarmYearly";
-import AlarmCase from "./AlarmCase";
-import { Divider } from "@chakra-ui/react";
+import { SafeAreaView, StatusBar, FlatList } from "react-native";
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
+import { Div, Button, Icon, Modal, ThemeProvider } from "react-native-magnus";
 
 
 const AlarmSelector = (props) => {
@@ -21,10 +21,27 @@ const AlarmSelector = (props) => {
     const setLabel= props.setLabel;
     const weekdays =  props.weekdays;
     const setWeekdays = props.setWeekdays;
+    const showModal = props.showModal;
+    const setShowModal = props.setShowModal;
+
     return(<>
     	<AlarmComponentsContext.Provider value={{ alarmCase, setAlarmCase, time, setTime, date, setDate, selectedDevices, setSelectedDevices, label, setLabel, weekdays, setWeekdays}}>
-            <AlarmCase/>
-            <Divider m={'5px'}/>
+        <StatusBar barStyle="dark-content" />
+        <SafeAreaView style={{ flex: 1 }}>
+        <Modal isVisible={showModal}>
+            <Button
+                bg="gray400"
+                h={35}
+                w={35}
+                position="absolute"
+                top={50}
+                right={15}
+                rounded="circle"
+                onPress={() => {setShowModal(false)}}
+            >
+                <Icon color="black900" name="close" />
+            </Button>
+            <Div m={100}>
             {alarmCase === 'once' &&
             <AlarmOnce />}
             {alarmCase === 'weekly' &&
@@ -33,6 +50,10 @@ const AlarmSelector = (props) => {
             <AlarmDaily />}
             {alarmCase === 'yearly' &&
             <AlarmYearly  />}
+            </Div>
+        </Modal>
+        </SafeAreaView>
+
         </AlarmComponentsContext.Provider>
     </>)
 };

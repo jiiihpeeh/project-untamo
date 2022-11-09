@@ -1,43 +1,36 @@
-import React, {useContext} from "react";
+import React, {useContext, useState, useEffect } from "react";
 import { timePadding } from "./timePadding";
-import { 
-        Input,
-        FormLabel,
-        HStack
-     } from "@chakra-ui/react";
+import { Text, Div } from 'react-native-magnus';
 
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
+import DateModal from "./DateModal";
 
 const TimeSelector = (props) => {
     const {time, setTime} = useContext(AlarmComponentsContext);
-    const timeValue = (e) => {
-        let timeArr = `${e}`.split(':');
-        let minutes = parseInt(timeArr[1]);
-        let hours = parseInt(timeArr[0]);
-        if(!isNaN(minutes) && !isNaN(hours)){
-            setTime(`${timePadding(hours)}:${timePadding(minutes)}`);
-        }else{
-            setTime(undefined);
-        }
+    const dateSetter = () => {
+        let timeArr = time.split(':');
+        let dateTime = new Date();
+        dateTime.setHours(timeArr[0]);
+        dateTime.setMinutes(timeArr[1]);
+        return dateTime;
     }
-    return( <>
-            <HStack>
-            <FormLabel>Time</FormLabel>
-            <Input type="time" 
-                   autocomplete  
-                   className="timeBox"
-                   fontSize="50px" 
-                   width="195px" 
-                   height="70px"
-                   borderRadius="0px"
-                   borderStyle="solid"
-                   borderWidth="5px"
-                   onChange={(e) => timeValue(e.target.value)}
-                   textShadow='1px 2px gray'
-                   value={time}
-            />
-            </HStack>
-            </>
-    )
+    
+    const [ date, setDate ] = useState(dateSetter());
+
+    
+    useEffect(() => {
+        setTime(`${timePadding(date.getHours)}:${timePadding(date.getMinutes)}`)
+    },[date])
+
+    return( <>  
+            <Div row>
+                <Text>Time: </Text>
+                <DateModal
+                    mode={'time'}
+                    date = {date}
+                    setDate ={setDate}
+                />
+            </Div>
+            </>)
 };
 export default TimeSelector;

@@ -1,4 +1,4 @@
-import { Center, Stack } from "@chakra-ui/react";
+import { Div } from 'react-native-magnus';
 import TimeSelector from "./TimeSelector";
 import DateSelector from "./DateSelector";
 import DeviceChecker from "./DeviceChecker";
@@ -7,14 +7,12 @@ import React from "react";
 
 const AlarmYearly = (props) => {
     return(
-        <Center>
-            <Stack>
+            <Div>
                 <Message />
                 <TimeSelector  />
-                <DateSelector dateFormat={'dd.MM'}/>
+                <DateSelector mode={'date-no-year'}/>
                 <DeviceChecker/>
-            </Stack>
-        </Center>
+            </Div>
        )
 };
 

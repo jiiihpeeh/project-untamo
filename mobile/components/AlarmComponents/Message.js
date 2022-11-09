@@ -1,15 +1,13 @@
-import { FormLabel , Input, Center, Flex } from "@chakra-ui/react";
+import { Text, Div, Input } from 'react-native-magnus';
 import React, {useContext} from "react";
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
 const Message = (props) => {
     const {label, setLabel} = useContext(AlarmComponentsContext);
     return(
-        <Center>
-        <Flex m={"1%"}>
-            <FormLabel>Message</FormLabel>
-            <Input value={label} onChange={(e) => setLabel(e.target.value)} />
-        </Flex>
-        </Center>          
+        <Div row>
+            <Text>Message</Text>
+            <Input value={label} onChangeText= {(text) => setLabel(text)} style={{ flex: 1 }} m={10}/>
+        </Div>          
     )
 };
 export default Message;

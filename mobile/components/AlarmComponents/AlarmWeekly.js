@@ -1,4 +1,4 @@
-import { Center, Stack } from "@chakra-ui/react";
+import { Div } from 'react-native-magnus';
 import TimeSelector from "./TimeSelector";
 import SelectedWeekdays from "./SelectWeekdays";
 import DeviceChecker from "./DeviceChecker";
@@ -7,14 +7,12 @@ import React from "react";
 
 const AlarmWeekly = (props) => {
     return(
-        <Center>
-            <Stack>
-                <Message />
-                <TimeSelector/>
-                <SelectedWeekdays/>
-                <DeviceChecker/>
-            </Stack>
-        </Center>
+        <Div>
+            <Message />
+            <TimeSelector/>
+            <SelectedWeekdays/>
+            <DeviceChecker/>
+        </Div>
        )
 }
 

@@ -6,21 +6,25 @@ import { SessionContext } from "../context/SessionContext";
 import DeviceSelector from "./DeviceSelector";
 import { AlarmContext } from "../context/AlarmContext";
 import { Button, Icon, Div,Text, View, Input, Image, Modal, Dropdown } from 'react-native-magnus';
+import { ScrollView } from 'react-native';
 import AddDevice from "./AddDevice";
 import AlarmButton from "./AlarmButton";
 import { timeForNextAlarm } from "./calcAlarmTime";
+import DateModal from "./AlarmComponents/DateModal";
+import AddAlarm from "./AddAlarm";
 const Alarms = () => {
     const { token, userInfo, sessionStatus} = useContext(SessionContext);
     const { currentDevice, devices, setDevices } = useContext(DeviceContext);
     const {alarms} = useContext(AlarmContext);
     const [ alarmViews, setAlarmViews ] = useState([]);
-    const [allDevices, setAllDevices] = useState(false);
+    const [ allDevices, setAllDevices] = useState(false);
+    const [ date, setDate ] = useState(new Date())
 
     useEffect(() => {
         const renderAlarms = () => {
             let showAlarms = alarms;            
             if(!allDevices){
-                showAlarms = showAlarms.filter(alarm => alarm.device_ids.includes(currentDevice))
+                showAlarms = showAlarms.filter(alarm => alarm.device_ids.includes(currentDevice));
             }
 
             let viewableAlarmsSet = new Set ();		
@@ -42,7 +46,7 @@ const Alarms = () => {
             let sortedView = [];
             for(const item of timeMapArray){
                 for (const subitem of timeAlarmMap.get(item)){
-                    let filtration = viewableAlarms.filter(alarm => alarm._id === subitem)[0]
+                    let filtration = viewableAlarms.filter(alarm => alarm._id === subitem)[0];
                     if(filtration){
                         sortedView.push(filtration);
                     };
@@ -53,11 +57,11 @@ const Alarms = () => {
             for(const item of sortedView){
                 alarmList.push(<AlarmButton alarm={item} key={`alarmButton-${item._id}`}/>);
             }
-        setAlarmViews(alarmList)
+        setAlarmViews(alarmList);
         }
-        renderAlarms()
-        console.log('Alarms', alarms)
-    },[alarms,allDevices])
+        renderAlarms();
+        console.log('Alarms', alarms);
+    },[alarms,allDevices]);
     return(
         <>  
         <Div row alignItems="center">
@@ -81,7 +85,12 @@ const Alarms = () => {
                       All devices
                 </Text>
         </Div>
+        <ScrollView>
             {alarmViews}
+
+           
+        </ScrollView>
+        <AddAlarm/>
         </>
     )
 }
