@@ -1,22 +1,13 @@
 import { Fab, Button, Div, Text } from "react-native-magnus";
-import React, { useRef, useState, useContext } from 'react';
+import React, { useRef, useState, useContext, useEffect } from 'react';
 import Icon from "react-native-vector-icons/EvilIcons";
 import { DeviceContext } from '../context/DeviceContext';
 import { SessionContext } from '../context/SessionContext';
 import { AlarmContext } from '../context/AlarmContext';
 import axios from 'axios';
 import AlarmSelector from "./AlarmComponents/AlarmSelector";
-/* import {
-	useDisclosure,
-	Button,Tooltip,
-	Drawer, DrawerBody,
-	DrawerFooter,
-	DrawerHeader,
-	DrawerOverlay,
-	DrawerContent,
-	DrawerCloseButton,Link,
-	} from '@chakra-ui/react';
-import { notification } from './notification';
+import { numberToWeekDay } from './calcAlarmTime'
+/* 
 
 import { timePadding } from './AlarmComponents/timePadding';
 import React, { useRef, useState, useContext } from 'react';
@@ -163,15 +154,16 @@ const AddAlarm = () => {
     const [ time, setTime ] = useState('00:00');
     const [ date, setDate ] = useState(new Date());
     const [ selectedDevices, setSelectedDevices] = useState([currentDevice]);
-    const [ weekdays, setWeekdays ] = useState([new Date().toLocaleDateString('en-US', {weekday: 'long'})]);
+    const [ weekdays, setWeekdays ] = useState([ numberToWeekDay(new Date().getDay()) ]);
     const [ label, setLabel ] = useState('Alarm');
     const [ alarmCase, setAlarmCase ] = useState('weekly');
     const [showModal, setShowModal ]  = useState(false);
     const showDialog = (alarmType) => {
         setShowModal(true);
+		setWeekdays([ numberToWeekDay(new Date().getDay())]);
         setAlarmCase(alarmType);
-        
     }
+
     return(<>
         <Fab bg="blue600" h={65} w={65}>
             <Button p="none" 
