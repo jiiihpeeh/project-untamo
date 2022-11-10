@@ -2,6 +2,8 @@ import { Div, Checkbox, Text } from "react-native-magnus";
 import React , { useContext, useState, useEffect } from 'react';
 import { DeviceContext } from '../../context/DeviceContext';
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
+import { ScrollView } from "react-native";
+
 
 const DeviceChecker = (props) => {
     const { devices } = useContext(DeviceContext);
@@ -26,8 +28,8 @@ const DeviceChecker = (props) => {
                                     checked={selectedDevices.includes(device.id)}   
                                     onPress={() => deviceSelection(device.id)}
                                     prefix={
-                                        <Text flex={1}>
-                                            {device.deviceName} {device.type}
+                                        <Text>
+                                            <Text>{device.deviceName}</Text> <Text>{device.type}</Text>
                                         </Text>} 
                                     />
                                 </>);
@@ -41,9 +43,11 @@ const DeviceChecker = (props) => {
 
     return(
         <>
-        <Div>
-            {displayDevices}
-        </Div>
+        <ScrollView>
+            <Div ml={150} mt={20}>
+                {displayDevices}
+            </Div>
+        </ScrollView>
         </>
     );
 };

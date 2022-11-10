@@ -9,8 +9,12 @@ const AlarmYearly = (props) => {
     return(
             <Div>
                 <Message />
-                <TimeSelector  />
-                <DateSelector mode={'date-no-year'}/>
+                <Div row alignItems='center' ml={90}>
+                    <TimeSelector  />
+                    <Div ml={15}>
+                        <DateSelector mode={'date-no-year'}/>
+                    </Div>
+                </Div>
                 <DeviceChecker/>
             </Div>
        )

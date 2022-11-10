@@ -9,7 +9,9 @@ const AlarmWeekly = (props) => {
     return(
         <Div>
             <Message />
-            <TimeSelector/>
+            <Div ml={150} mb={10}>
+                <TimeSelector/>
+            </Div>
             <SelectedWeekdays/>
             <DeviceChecker/>
         </Div>

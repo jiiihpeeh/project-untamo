@@ -3,7 +3,8 @@ import AlarmOnce from "./AlarmOnce";
 import AlarmWeekly from "./AlarmWeekly";
 import AlarmDaily from "./AlarmDaily";
 import AlarmYearly from "./AlarmYearly";
-import { SafeAreaView, StatusBar, FlatList } from "react-native";
+import AlarmCase from "./AlarmCase";
+import { SafeAreaView, StatusBar } from "react-native";
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
 import { Div, Button, Icon, Modal, ThemeProvider } from "react-native-magnus";
 
@@ -42,6 +43,7 @@ const AlarmSelector = (props) => {
                 <Icon color="black900" name="close" />
             </Button>
             <Div m={100}>
+            <AlarmCase/>
             {alarmCase === 'once' &&
             <AlarmOnce />}
             {alarmCase === 'weekly' &&
@@ -51,9 +53,12 @@ const AlarmSelector = (props) => {
             {alarmCase === 'yearly' &&
             <AlarmYearly  />}
             </Div>
+            <Div row ml={80} mr={80}>
+                <Button flex={1} m={20}>OK</Button>
+                <Button flex={1} m={20} onPress={() => {setShowModal(false)}} > Cancel</Button>
+            </Div>
         </Modal>
         </SafeAreaView>
-
         </AlarmComponentsContext.Provider>
     </>)
 };
