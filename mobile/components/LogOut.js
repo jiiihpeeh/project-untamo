@@ -15,12 +15,12 @@ const LogOut = () => {
     const logOut = async() =>{
         try {
             let res = await axios.post(`${server}/logout`, {msg: "smell you later"}, {
-                headers: {'token': token}
+                headers: {token: token}
             });
             setToken(undefined);
             setSessionStatus(false);
             setUserInfo({});
-            setCurrentDevice(undefined);
+            setCurrentDevice(null);
             setDevices([]);
 
             try{
@@ -44,7 +44,7 @@ const LogOut = () => {
         </Button>
 
         <Modal isVisible={visible}>
-          <Button
+          {/* <Button
             bg="gray400"
             h={35}
             w={35}
@@ -52,12 +52,10 @@ const LogOut = () => {
             top={50}
             right={15}
             rounded="circle"
-            onPress={() => {
-              setVisible(false);
-            }}
+            onPress={() => setVisible(false)}
           >
             <Icon color="black900" name="close" />
-          </Button>
+          </Button> */}
           <Div>
           <Text textAlign="center" fontSize="6xl" mt={100}>Are you sure?</Text>
             <Div row mt={150}>
