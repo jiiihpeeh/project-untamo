@@ -72,7 +72,11 @@ const AlarmButton = (props) => {
     }
     const Weekly = () => {
         return(
-            <Button m={10} bg="yellow">
+            <Button 
+                m={10} 
+                bg={(props.alarm.active)?"yellow":"gray200"}
+                onPress={()=>props.setEditID(props.alarm._id)}
+            >
                 <Time/>
                 <Div flex={1} alignItems={"center"} row={false}>
                 <Text>Weekly: {props.alarm.label}</Text>
@@ -87,7 +91,11 @@ const AlarmButton = (props) => {
     }
     const Once = () => {
         return(
-            <Button m={10} bg="yellow">
+            <Button 
+                m={10} 
+                bg={(props.alarm.active)?"yellow":"gray200"}
+                onPress={()=>props.setEditID(props.alarm._id)}
+            >
                 <Time/>
                 <Div    flex={1} 
                         alignItems={"center"} 
@@ -104,7 +112,11 @@ const AlarmButton = (props) => {
     }
     const Daily = () => {
         return(
-            <Button m={10} bg="yellow">
+            <Button 
+                m={10} 
+                bg={(props.alarm.active)?"yellow":"gray200"}
+                onPress={()=>props.setEditID(props.alarm._id)}
+            >                
                 <Time/>
                 <Div flex={1} alignItems={"center"} row={false}>
                 <Text>Daily: {props.alarm.label}</Text>
@@ -119,7 +131,11 @@ const AlarmButton = (props) => {
     }
     const Yearly = () => {
         return(
-            <Button m={10} bg="yellow">
+            <Button 
+                m={10} 
+                bg={(props.alarm.active)?"yellow":"gray200"}
+                onPress={()=>props.setEditID(props.alarm._id)}
+            >
                 <Time/>
                 <Div flex={1} alignItems={"center"} row={false}>
                 <Text>Yearly: {props.alarm.label}</Text>

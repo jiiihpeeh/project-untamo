@@ -9,6 +9,8 @@ import { DeviceContext } from './context/DeviceContext';
 import { AlarmContext } from './context/AlarmContext';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import UserWatcher from './components/UserWatcher';
+
 import axios from 'axios'
 
 
@@ -92,6 +94,7 @@ const  App =  () => {
           <LogIn/>}
         {sessionStatus  &&
           <AlarmView/>}
+          <UserWatcher/>
         </SafeAreaView>
       <StatusBar/>
       </AlarmContext.Provider>

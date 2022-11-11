@@ -3,6 +3,7 @@ import TimeSelector from "./TimeSelector";
 import DeviceChecker from "./DeviceChecker";
 import Message from "./Message";
 import React from "react";
+import Active from './Active';
 const AlarmDaily = (props) => {
     return(
             <Div>
@@ -10,7 +11,7 @@ const AlarmDaily = (props) => {
                 <Div ml={120}>
                     <TimeSelector  />
                 </Div>
-                
+                <Active/>
                 <DeviceChecker />
             </Div>
        )

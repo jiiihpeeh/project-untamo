@@ -5,6 +5,7 @@ import DateSelector from "./DateSelector";
 import DeviceChecker from "./DeviceChecker";
 import Message from "./Message";
 import React from "react";
+import Active from './Active';
 const AlarmOnce = (props) => {
     return(
             <Div>
@@ -15,6 +16,7 @@ const AlarmOnce = (props) => {
                         <DateSelector mode={'date'}/>
                     </Div>
                 </Div>
+                <Active/>
                 <DeviceChecker/>
             </Div>
        )

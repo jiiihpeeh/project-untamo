@@ -22,17 +22,18 @@ const DeviceChecker = (props) => {
         const deviceLister = () => {
             let deviceList = [];
             for( const device of devices){
-                deviceList.push(<> 
-                                <Checkbox 
-                                    key={`device-check-${device.id}`}
-                                    checked={selectedDevices.includes(device.id)}   
-                                    onPress={() => deviceSelection(device.id)}
-                                    prefix={
-                                        <Text>
-                                            <Text>{device.deviceName}</Text> <Text>{device.type}</Text>
-                                        </Text>} 
-                                    />
-                                </>);
+                deviceList.push(<Div key={`device-check-div-${device.id}`}>
+                                    <Checkbox 
+                                        key={`device-check-${device.id}`}
+                                        checked={selectedDevices.includes(device.id)}   
+                                        onPress={() => deviceSelection(device.id)}
+                                        prefix={
+                                            <Text key={`device-check-text-${device.id}`}>
+                                                {device.deviceName} {device.type}
+                                            </Text>} 
+                                        />
+                                </Div>
+                                );
             };
             setDisplayDevices(deviceList);
         }
@@ -44,7 +45,7 @@ const DeviceChecker = (props) => {
     return(
         <>
         <ScrollView>
-            <Div ml={150} mt={20}>
+            <Div ml={150} mt={20} key={'device-list'}>
                 {displayDevices}
             </Div>
         </ScrollView>

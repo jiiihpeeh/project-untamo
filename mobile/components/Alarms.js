@@ -12,6 +12,9 @@ import AlarmButton from "./AlarmButton";
 import { timeForNextAlarm } from "./calcAlarmTime";
 import DateModal from "./AlarmComponents/DateModal";
 import AddAlarm from "./AddAlarm";
+import EditAlarm from "./EditAlarm";
+import EditDrawer from './EditDrawer'
+
 const Alarms = () => {
     const { token, userInfo, sessionStatus} = useContext(SessionContext);
     const { currentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -19,6 +22,7 @@ const Alarms = () => {
     const [ alarmViews, setAlarmViews ] = useState([]);
     const [ allDevices, setAllDevices] = useState(false);
     const [ date, setDate ] = useState(new Date())
+    const [ editID, setEditID ] = useState('')
 
     useEffect(() => {
         const renderAlarms = () => {
@@ -55,13 +59,18 @@ const Alarms = () => {
             let alarmList =[];
 
             for(const item of sortedView){
-                alarmList.push(<AlarmButton alarm={item} key={`alarmButton-${item._id}`}/>);
+                alarmList.push(<AlarmButton 
+                                    alarm={item} 
+                                    key={`alarmButton-${item._id}`}
+                                    setEditID={setEditID}
+                                    />);
             }
         setAlarmViews(alarmList);
         }
         renderAlarms();
         console.log('Alarms', alarms);
     },[alarms,allDevices]);
+
     return(
         <>  
         <Div row alignItems="center">
@@ -91,6 +100,11 @@ const Alarms = () => {
            
         </ScrollView>
         <AddAlarm/>
+        <EditAlarm
+            editID={editID}
+            setEditID={setEditID}
+        />
+        <EditDrawer/>
         </>
     )
 }

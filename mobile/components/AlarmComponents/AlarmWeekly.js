@@ -4,7 +4,7 @@ import SelectedWeekdays from "./SelectWeekdays";
 import DeviceChecker from "./DeviceChecker";
 import Message from "./Message";
 import React from "react";
-
+import Active from './Active';
 const AlarmWeekly = (props) => {
     return(
         <Div>
@@ -13,6 +13,7 @@ const AlarmWeekly = (props) => {
                 <TimeSelector/>
             </Div>
             <SelectedWeekdays/>
+            <Active/>
             <DeviceChecker/>
         </Div>
        )

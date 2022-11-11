@@ -24,9 +24,14 @@ const AlarmSelector = (props) => {
     const setWeekdays = props.setWeekdays;
     const showModal = props.showModal;
     const setShowModal = props.setShowModal;
+    const postAlarm= props.postAlarm;
+    const setPostAlarm= props.setPostAlarm;
+    const active = props.active;
+    const setActive = props.setActive;
+    const setCancel = props.setCancel;
 
     return(<>
-    	<AlarmComponentsContext.Provider value={{ alarmCase, setAlarmCase, time, setTime, date, setDate, selectedDevices, setSelectedDevices, label, setLabel, weekdays, setWeekdays}}>
+    	<AlarmComponentsContext.Provider value={{ alarmCase, setAlarmCase, time, setTime, date, setDate, selectedDevices, setSelectedDevices, label, setLabel, weekdays, setWeekdays, active, setActive}}>
         <StatusBar barStyle="dark-content" />
         <SafeAreaView style={{ flex: 1 }}>
         <Modal isVisible={showModal}>
@@ -38,7 +43,7 @@ const AlarmSelector = (props) => {
                 top={50}
                 right={15}
                 rounded="circle"
-                onPress={() => {setShowModal(false)}}
+                onPress={() => {setCancel(true)}}
             >
                 <Icon color="black900" name="close" />
             </Button>
@@ -54,8 +59,8 @@ const AlarmSelector = (props) => {
             <AlarmYearly  />}
             </Div>
             <Div row ml={80} mr={80}>
-                <Button flex={1} m={20}>OK</Button>
-                <Button flex={1} m={20} onPress={() => {setShowModal(false)}} > Cancel</Button>
+                <Button flex={1} m={20} onPress={() => {setPostAlarm(true)}} >OK</Button>
+                <Button flex={1} m={20} onPress={() => {setCancel(true)}} > Cancel</Button>
             </Div>
         </Modal>
         </SafeAreaView>
