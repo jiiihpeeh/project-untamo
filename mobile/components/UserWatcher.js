@@ -20,7 +20,7 @@ const UserWatcher = () => {
   const  socketUrl  = wsURL;
   const didUnmount = useRef(false);
   //const [messageHistory, setMessageHistory] = useState([]);
-  const { sendMessage, lastMessage } = useWebSocket(socketUrl, {
+  const { sendMessage, lastJsonMessage } = useWebSocket(socketUrl, {
     onOpen: () => sendIdentity(),
     shouldReconnect: (closeEvent) => {
       /*
@@ -36,7 +36,7 @@ const UserWatcher = () => {
  
 
   const sendIdentity = () => {
-    if(token){
+    if(token && token.length >5){
       console.log('sending creds');
       sendMessage(JSON.stringify({mode:'client', token: token}));
     }else{
@@ -46,9 +46,9 @@ const UserWatcher = () => {
 
   useEffect(() => {
     const watcher = async () => {  
-      if (lastMessage && (lastMessage !== null || lastMessage !== undefined)) {
-        console.log("LAST Message: ", lastMessage);
-        let msgData = JSON.parse(lastMessage.data);
+      if (lastJsonMessage) {
+        console.log("LAST Message: ", lastJsonMessage);
+        let msgData = lastJsonMessage//JSON.parse(lastMessage.data);
         if(!msgData || !msgData.hasOwnProperty('url')){
           return "njoo";
         }
@@ -96,8 +96,12 @@ const UserWatcher = () => {
     };
   };
   };
-  watcher();
-  }, [lastMessage, setDevices, setAlarms, setUserInfo, token ]);
+  if(token){
+    console.log('watcher called')
+    watcher();
+  }
+    
+  }, [lastJsonMessage]);
 
   useEffect(() => {
     sendIdentity();
