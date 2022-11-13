@@ -5,8 +5,9 @@ const Active = (props) =>{
     const { active, setActive} = useContext(AlarmComponentsContext);
 
     return(
-            <Div row ml={150} mt={20}>
-                <Text mr={10}>Active</Text>
+            <Div alignItems="center" mb={10} mt={10}>
+                <Div row>
+                <Text mr={3}>Active</Text>
                 <Toggle
                     on={active}
                     onPress={() => setActive(!active)}
@@ -16,6 +17,7 @@ const Active = (props) =>{
                     h={30}
                     w={60}
                 />
+            </Div>
             </Div>)
 }
 

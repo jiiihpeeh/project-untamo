@@ -15,16 +15,18 @@ const AlarmCase = (props) => {
             mt="sm"
             p="md"
             color="white"
+            m={3}
+            mt={20}
             onPress={() => dropdownRef.current.open()}>
             <Text>Select Alarm type: {alarmCase}</Text>
           </Button>
           <Dropdown
              ref={dropdownRef}
              m="md"
-            pb="md"
-            bg="transparent"
-            showSwipeIndicator={false}
-            roundedTop="xl"
+             pb="md"
+             bg="transparent"
+             showSwipeIndicator={false}
+             roundedTop="xl"
           >
             <Dropdown.Option
               block

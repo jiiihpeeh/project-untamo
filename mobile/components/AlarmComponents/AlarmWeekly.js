@@ -7,12 +7,14 @@ import React from "react";
 import Active from './Active';
 const AlarmWeekly = (props) => {
     return(
-        <Div>
+        <Div >
             <Message />
-            <Div ml={150} mb={10}>
+            <Div ml={0} mb={10}>
                 <TimeSelector/>
             </Div>
-            <SelectedWeekdays/>
+            <Div ml={0}>
+                <SelectedWeekdays/>
+            </Div>
             <Active/>
             <DeviceChecker/>
         </Div>

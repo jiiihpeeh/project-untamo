@@ -2,7 +2,7 @@ import { Text, Div, Button } from 'react-native-magnus';
 import React, { useContext } from 'react';
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
 
-
+import { View } from 'react-native';
 const SelectedWeekdays = (props) => {
     const { weekdays, setWeekdays } = useContext(AlarmComponentsContext);
     const pushedButton = (day) => {
@@ -15,21 +15,25 @@ const SelectedWeekdays = (props) => {
 
     const WeekdayButton = (weekday) => {
         return(
-            <Button ml={2}
+            <Div alignItems='center'>
+            <View>
+            <Button ml={1}
                     mt={10}
                     borderColor={'black'} 
                     bg={(weekdays.includes(weekday.day))?"green":"gray" }
                     onPress={() => pushedButton(weekday.day)} 
-                    borderRadius={'md'}
+                    borderRadius={'xs'}
                     borderWidth={2}
-                    w={60} 
+                    w={48} 
                     h={45} >
-                {weekday.abbrev} 
+                <Text fontSize={10}>{weekday.abbrev} </Text>
             </Button>
+            </View>
+            </Div>
         )
     };
     return(
-        <Div>
+        <Div alignItems='center'>
             <Text textAlign='center'>Select Weekdays</Text>
             <Div row>
                 <WeekdayButton day="Monday" abbrev="Mon"/>

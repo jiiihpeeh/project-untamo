@@ -4,7 +4,7 @@ import AlarmWeekly from "./AlarmWeekly";
 import AlarmDaily from "./AlarmDaily";
 import AlarmYearly from "./AlarmYearly";
 import AlarmCase from "./AlarmCase";
-import { SafeAreaView, StatusBar } from "react-native";
+import { SafeAreaView, StatusBar , ScrollView} from "react-native";
 import { AlarmComponentsContext } from "./AlarmComponentsContext";
 import { Div, Button, Icon, Modal, ThemeProvider } from "react-native-magnus";
 
@@ -35,19 +35,20 @@ const AlarmSelector = (props) => {
         <StatusBar barStyle="dark-content" />
         <SafeAreaView style={{ flex: 1 }}>
         <Modal isVisible={showModal}>
-            <Button
+        <ScrollView>
+{/*             <Button
                 bg="gray400"
                 h={35}
                 w={35}
                 position="absolute"
-                top={50}
+                top={20}
                 right={15}
                 rounded="circle"
                 onPress={() => {setCancel(true)}}
             >
                 <Icon color="black900" name="close" />
-            </Button>
-            <Div m={100}>
+            </Button> */}
+            <Div >
             <AlarmCase/>
             {alarmCase === 'once' &&
             <AlarmOnce />}
@@ -58,10 +59,11 @@ const AlarmSelector = (props) => {
             {alarmCase === 'yearly' &&
             <AlarmYearly  />}
             </Div>
-            <Div row ml={80} mr={80}>
+            <Div row >
                 <Button flex={1} m={20} onPress={() => {setPostAlarm(true)}} >OK</Button>
                 <Button flex={1} m={20} onPress={() => {setCancel(true)}} > Cancel</Button>
             </Div>
+            </ScrollView>
         </Modal>
         </SafeAreaView>
         </AlarmComponentsContext.Provider>

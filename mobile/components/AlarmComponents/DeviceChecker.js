@@ -45,7 +45,7 @@ const DeviceChecker = (props) => {
     return(
         <>
         <ScrollView>
-            <Div ml={150} mt={20} key={'device-list'}>
+            <Div alignItems="center" key={'device-list'}>
                 {displayDevices}
             </Div>
         </ScrollView>

@@ -8,7 +8,7 @@ const AlarmDaily = (props) => {
     return(
             <Div>
                 <Message />
-                <Div ml={120}>
+                <Div >
                     <TimeSelector  />
                 </Div>
                 <Active/>

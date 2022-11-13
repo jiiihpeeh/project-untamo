@@ -27,8 +27,9 @@ const TimeSelector = (props) => {
         
     },[date])
 
-    return( <>  
-            <Div row>
+    return(
+            <Div alignItems="center">
+            <Div  row>
                 <Text>Time: </Text>
                 <DateModal
                     mode={'time'}
@@ -36,6 +37,7 @@ const TimeSelector = (props) => {
                     setDate ={setDate}
                 />
             </Div>
-            </>)
+            </Div>
+            )
 };
 export default TimeSelector;

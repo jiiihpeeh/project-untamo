@@ -10,9 +10,9 @@ const AlarmOnce = (props) => {
     return(
             <Div>
                 <Message />
-                <Div row alignItems='center' ml={90}>
+                <Div row alignItems='center' >
                     <TimeSelector  />
-                    <Div ml={15}>
+                    <Div>
                         <DateSelector mode={'date'}/>
                     </Div>
                 </Div>
