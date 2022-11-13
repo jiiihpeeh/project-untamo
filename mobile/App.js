@@ -15,7 +15,7 @@ import axios from 'axios'
 
 
 const  App =  () => {
-  const [ token, setToken ] = useState( undefined);
+  const [ token, setToken ] = useState( null);
 	const [ server, setServer] = useState('http://192.168.2.207:3001')
 	const [ userInfo, setUserInfo ] = useState({});
 	const [ currentDevice, setCurrentDevice ] = useState( null);
@@ -27,6 +27,7 @@ const  App =  () => {
 	const [ alarms, setAlarms ] = useState([]) ;
 	const [ runAlarm, setRunAlarm ] = useState('');
 	const [ runOtherSnooze, setRunOtherSnooze ] = useState(false);
+  const [ alarmWindow, setAlarmWindow ] = useState(false);
 
 
   useEffect(() => {
@@ -34,7 +35,7 @@ const  App =  () => {
       //await AsyncStorage.clear()
       let keys = await AsyncStorage.getAllKeys();
       console.log(keys)
-      setToken(keys.includes('token') ? JSON.parse(await AsyncStorage.getItem('token')) : undefined);
+      setToken(keys.includes('token') ? JSON.parse(await AsyncStorage.getItem('token')) : null);
       setServer(keys.includes('server') ? JSON.parse(await AsyncStorage.getItem('server')) : 'http://192.168.2.207:3001')
       setUserInfo(keys.includes('userInfo') ? JSON.parse(await AsyncStorage.getItem('userInfo')) : {});
       setCurrentDevice(keys.includes('currentDevice') ? JSON.parse(await AsyncStorage.getItem('currentDevice')) : null);
@@ -71,7 +72,7 @@ const  App =  () => {
             console.log("session invalid");
             
           }else{
-            setSessionStatus(undefined);
+            setSessionStatus(false);
           }
         }
       } else {
@@ -86,7 +87,7 @@ const  App =  () => {
     <ThemeProvider >
       <SessionContext.Provider value={{ token, setToken, userInfo, setUserInfo, sessionStatus, setSessionStatus, fetchQR, setFetchQR, signInTime, setSignedInTime, server, setServer  }}>
       <DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
-		  <AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm, runOtherSnooze, setRunOtherSnooze }}>
+		  <AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm, runOtherSnooze, setRunOtherSnooze, alarmWindow, setAlarmWindow }}>
 
       <StatusBar/>
         <SafeAreaView style={{ flex: 1 }}>
@@ -94,7 +95,7 @@ const  App =  () => {
           <LogIn/>}
         {sessionStatus  &&
           <AlarmView/>}
-          <UserWatcher/>
+        <UserWatcher/>
         </SafeAreaView>
       <StatusBar/>
       </AlarmContext.Provider>

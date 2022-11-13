@@ -14,15 +14,18 @@ import DateModal from "./AlarmComponents/DateModal";
 import AddAlarm from "./AddAlarm";
 import EditAlarm from "./EditAlarm";
 import EditDrawer from './EditDrawer'
+import PlayAlarm from "./PlayAlarm";
+import AlarmWatcher from "./AlarmWatcher";
 
 const Alarms = () => {
     const { token, userInfo, sessionStatus} = useContext(SessionContext);
     const { currentDevice, devices, setDevices } = useContext(DeviceContext);
-    const {alarms} = useContext(AlarmContext);
+    const { alarms, alarmWindow, setAlarmWindow } = useContext(AlarmContext);
     const [ alarmViews, setAlarmViews ] = useState([]);
     const [ allDevices, setAllDevices] = useState(false);
     const [ date, setDate ] = useState(new Date())
-    const [ editID, setEditID ] = useState('')
+    const [ editID, setEditID ] = useState('');
+    const [ playAlarm, setPlayAlarm ] = useState(false);
 
     useEffect(() => {
         const renderAlarms = () => {
@@ -105,6 +108,9 @@ const Alarms = () => {
             setEditID={setEditID}
         />
         <EditDrawer/>
+        <Button onPress={() => setAlarmWindow(true)}> Alarm</Button>
+        <PlayAlarm/>
+        <AlarmWatcher/>
         </>
     )
 }
