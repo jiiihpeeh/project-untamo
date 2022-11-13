@@ -5,7 +5,7 @@ import { Text, Div } from 'react-native-magnus';
 
 const DateSelector = (props) => {
     const {date, setDate} = useContext(AlarmComponentsContext);
-    return(<>
+    return(<Div alignItems="center">
             <Div row>
                 <Text>Date: </Text>
                 <DateModal
@@ -14,7 +14,7 @@ const DateSelector = (props) => {
                     setDate = {setDate}
                 />
             </Div>
-        </>)
+        </Div>)
         
 };
 export default DateSelector;

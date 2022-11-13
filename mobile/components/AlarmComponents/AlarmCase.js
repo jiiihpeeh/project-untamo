@@ -12,7 +12,6 @@ const AlarmCase = (props) => {
         <>          
           <Button
             block
-            mt="sm"
             p="md"
             color="white"
             m={3}

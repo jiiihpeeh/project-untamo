@@ -10,11 +10,13 @@ const AlarmOnce = (props) => {
     return(
             <Div>
                 <Message />
-                <Div row alignItems='center' >
+                <Div alignItems='center'>
+                <Div row >
                     <TimeSelector  />
-                    <Div>
+                    <Div ml={3}>
                         <DateSelector mode={'date'}/>
                     </Div>
+                </Div>
                 </Div>
                 <Active/>
                 <DeviceChecker/>
