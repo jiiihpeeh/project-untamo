@@ -6,16 +6,21 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, Image, Button, Div, Modal, Toggle } from "react-native-magnus";
 
-import { Animated, View, StyleSheet, SafeAreaView, Easing, TouchableHighlight } from 'react-native';
+import { Animated, View, StyleSheet, SafeAreaView, Easing, TouchableHighlight, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-
+import Logo from './logo.svg'
 
 const  PlayAlarm = (props) => {
   const [sound, setSound] = useState();
   const [ currentAlarm, setCurrentAlarm] = useState({})
   const { runAlarm, alarms, setAlarms, alarmWindow, setAlarmWindow  } = useContext(AlarmContext);
   const { token } = useContext(SessionContext);
+
+  const width = Dimensions.get('window').width;
+  const height = Dimensions.get('window').height;
+  const radiusMax = Math.min(width/1.5, height/1.5);
+
   const playSound = async () => {
     console.log('Loading Sound');
     const { sound } = await Audio.Sound.createAsync( require('./rooster.mp3'), {isLooping: true } 
@@ -48,7 +53,12 @@ const  PlayAlarm = (props) => {
       let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm);
       filterAlarms.push(currentAlarmMod);
       setAlarms(filterAlarms);
-      await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms));
+      try {
+        await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms));
+      }catch(err){
+        console.log(err)
+      }
+      
     };
   };
 
@@ -66,7 +76,12 @@ const  PlayAlarm = (props) => {
       let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm);
       filterAlarms.push(currentAlarmMod);
       setAlarms(filterAlarms);
-      await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms));  
+      try{
+        await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms)); 
+      }catch(err){
+        console.log(err);
+      }
+       
     };
   };
   useEffect(() => {
@@ -113,7 +128,6 @@ const  PlayAlarm = (props) => {
       <Modal isVisible={alarmWindow}>
       <Div 
         alignItems='center' 
-        m={50} 
         mt={40}
       >
         <Text fontWeight="bold" 
@@ -123,7 +137,7 @@ const  PlayAlarm = (props) => {
               textAlign={'center'}>
                 {currentAlarm.label}
         </Text>
-        <Button  
+        {/* <Button  
                 h={480} 
                 w={480} 
                 rounded="circle"
@@ -135,7 +149,14 @@ const  PlayAlarm = (props) => {
             m={10}
             source={require('./alarm.png')}
           />
-        </Button>
+        </Button> */}
+        <Div alignItems='center' >
+        <TouchableHighlight onPress={() => snoozer()}>
+          <View width={radiusMax} height={radiusMax}>
+            <Logo  width={radiusMax * 3/4} height={radiusMax}/>
+          </View>
+        </TouchableHighlight>
+        </Div>
           <Text 
             mt={15} 
             fontWeight="bold"
@@ -152,6 +173,7 @@ const  PlayAlarm = (props) => {
 
 
 export default PlayAlarm;
+
 
 
 

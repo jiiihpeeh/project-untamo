@@ -5,8 +5,8 @@ import { SessionContext } from "../context/SessionContext";
 
 import DeviceSelector from "./DeviceSelector";
 import { AlarmContext } from "../context/AlarmContext";
-import { Button, Icon, Div,Text, View, Input, Image, Modal, Dropdown } from 'react-native-magnus';
-import { ScrollView } from 'react-native';
+import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus';
+import { ScrollView, TouchableHighlight, View } from 'react-native';
 import AddDevice from "./AddDevice";
 import AlarmButton from "./AlarmButton";
 import { timeForNextAlarm } from "./calcAlarmTime";
@@ -76,6 +76,7 @@ const Alarms = () => {
 
     return(
         <>  
+
         <Div row alignItems="center">
                 <Text as='b' 
                       fontSize={"xl"} 
@@ -96,11 +97,10 @@ const Alarms = () => {
                 >
                       All devices
                 </Text>
+
         </Div>
         <ScrollView>
             {alarmViews}
-
-           
         </ScrollView>
         <AddAlarm/>
         <EditAlarm

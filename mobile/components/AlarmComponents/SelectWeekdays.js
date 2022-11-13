@@ -26,7 +26,7 @@ const SelectedWeekdays = (props) => {
                     borderWidth={2}
                     w={48} 
                     h={45} >
-                <Text fontSize={10}>{weekday.abbrev} </Text>
+                <Text fontSize={9}>{weekday.abbrev} </Text>
             </Button>
             </View>
             </Div>
