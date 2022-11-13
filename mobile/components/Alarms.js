@@ -108,7 +108,7 @@ const Alarms = () => {
             setEditID={setEditID}
         />
         <EditDrawer/>
-        <Button onPress={() => setAlarmWindow(true)}> Alarm</Button>
+        {/* <Button onPress={() => setAlarmWindow(true)}> Alarm</Button> */}
         <PlayAlarm/>
         <AlarmWatcher/>
         </>
