@@ -292,7 +292,7 @@ router.post("/qrToken",function(req,res) {
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	let qrToken = crypto.randomBytes(64).toString("hex");
+	let qrToken = crypto.randomBytes(96).toString("hex");
 
 	let now=Date.now();
 	let qrKey = new qrModel({
