@@ -151,11 +151,13 @@ const  PlayAlarm = (props) => {
           />
         </Button> */}
         <Div alignItems='center' >
-        <TouchableHighlight onPress={() => snoozer()}>
-          <View width={radiusMax} height={radiusMax}>
-            <Logo  width={radiusMax * 3/4} height={radiusMax}/>
-          </View>
-        </TouchableHighlight>
+        {/* <TouchableHighlight onPress={() => snoozer()} >
+          <View width={radiusMax} height={radiusMax} backgroundColor='#fff' > */}
+          <Button width={radiusMax } height={radiusMax} onPress={() => snoozer()}  rounded="circle" bg="white" >
+            <Logo  width={radiusMax * 4/3} height={radiusMax}/>
+          </Button>
+          {/* </View>
+        </TouchableHighlight> */}
         </Div>
           <Text 
             mt={15} 
