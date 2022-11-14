@@ -15,6 +15,8 @@ const formChecker  = require('./modules/formcheck');
 const session = require("./models/session");
 const tStamppi = require("./modules/tstamppi");
 const asyncHandler = require('express-async-handler')
+const qrModel = require("./models/qrpair");
+
 let app = express();
 
 
@@ -267,6 +269,63 @@ app.post("/login",function(req,res) {
 });
 
 
+app.post("/qrlogin",function(req,res) {
+	console.log(tStamppi(),"/login");
+	if(!req.body) {
+		return res.status(400).json({message:"Bad Request"});
+	}
+	if(!req.body.token ) {
+		return res.status(400).json({message:"Bad Request"});
+	}
+	console.log("QRPAIR: ", req.body.token);
+	let query = {"qrToken":req.body.token};
+	console.log(query);
+	qrModel.findOne( query , function(err,qrpair) {
+		if(err) {
+			console.log(tStamppi(),"Failed to login. Reason",err);
+			return res.status(500).json({message:"Internal server error"})
+		}
+		if(!qrpair) {
+			console.log(" PAIR not FOUND")
+			return res.status(401).json({message:"Unathorized"})
+		}
+		
+		console.log("Found PAIR: ",qrpair)
+		userModel.findOne({"_id":qrpair.userID},function(err,user) {
+			if(err) {
+				console.log(tStamppi(),"Comparing passwords failed. Reason",err);
+				return res.status(500).json({message:"Internal server error"})
+			}
+			if(!user) {
+				return res.status(401).json({message:"Unauthorized"})
+			}
+
+			let sessionToken=createToken();
+			let now=Date.now();
+			let session= new sessionModel({
+				ttl:now + time_to_live_diff,
+				token:sessionToken,
+				userID: user._id
+			})
+			session.save(function(err) {
+				if(err) {
+					console.log(tStamppi(),"Saving session failed. Reason",err);
+					return res.status(500).json({message:"Internal server error"})
+				}
+				//serverSocket.send(JSON.stringify({mode: 'api', url: `/qrlogin/${}`, token: sessionToken, userID: session.userID }));
+				return res.status(200).json({token:sessionToken, 
+											user: user.user, 
+											screenname:user.screenname, 
+											firstname: user.firstname, 
+											lastname:user.lastname, 
+											admin: user.admin});
+			})
+		})
+	})
+});
+
+
+
 
 app.post("/logout",function(req,res) {
 	console.log(tStamppi(),"/logout");
@@ -402,6 +461,7 @@ app.ws('/action', asyncHandler(async(ws, req) => {
 		}
 	}))
 }));
+
 
 
 //app.use('/resources', isUserLogged, express.static('resources'))

@@ -5,11 +5,9 @@ import { SessionContext } from "../contexts/SessionContext";
 import axios from "axios";
 import { Button, Table,
     Thead, Tbody,
-    Tfoot,Tr,Th,Td,
-    TableCaption,
+    Tr,Th,Td,
     TableContainer, Switch,
-    IconButton, 
-    propNames} from "@chakra-ui/react";
+    IconButton} from "@chakra-ui/react";
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm";
 
@@ -103,7 +101,7 @@ const Admin = () => {
         if(!sessionStatus || (adminTime < Date.now())){
             navigate('/alarms');
         }
-    },[])
+    },[adminTime, navigate, sessionStatus])
     useEffect(() => {
         const getInfo = async () =>{
            await fetcher();
@@ -114,7 +112,7 @@ const Admin = () => {
     useEffect(() => {
         //console.log(userData);
         renderUsers();
-    },[userData])
+    },[userData, renderUsers])
     return(<>
                 <Button onClick={fetcher}  m="30px">Update User List</Button>
                 <TableContainer>

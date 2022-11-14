@@ -199,6 +199,7 @@ router.put("/device/:id",function(req,res) {
 
 //session data
 router.get("/issessionvalid", function(req,res) {
+	console.log("token validated");
 	return res.status(200).json({status: true});
 });
 
@@ -297,6 +298,7 @@ router.post("/qrToken",function(req,res) {
 	let qrKey = new qrModel({
 		qrToken: qrToken,
 		userID: req.session.userID,
+		qrOriginator: req.headers.token,
 		ttl: now + 60000
 	});
 	qrKey.save(function(err, saved) {

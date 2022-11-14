@@ -4,53 +4,62 @@ import { SessionContext } from "../context/SessionContext";
 import { DeviceContext } from "../context/DeviceContext";
 import { AlarmContext } from "../context/AlarmContext";
 
-import { Button, Icon, Div,Text, View, Input, Image, Modal } from 'react-native-magnus';
+import { Button, Icon, Div,Text,  Input, Image, Modal } from 'react-native-magnus';
 import AsyncStorage  from '@react-native-async-storage/async-storage';
 import ServerAddress from "./ServerAddress";
+import { ScrollView, TouchableHighlight } from 'react-native';
+import QrWindow from './QrWindow'
 
 const LogIn = ({navigation}) => {
   //const [visible, setVisible] = useState(false);
-    const {token, setToken, setUserInfo, setSessionStatus, server } = useContext(SessionContext);
+    const {token, setToken, setUserInfo, setSessionStatus, server, setServer } = useContext(SessionContext);
 
     const { setDevices } = useContext(DeviceContext);
     const {setAlarms} = useContext(AlarmContext);
     const [isLogInFormValid, setIsLogInFormValid] = useState(false);
     const [user, setUser] = useState('');
     const [password, setPassword] = useState('');
+    const [ qrcodeScanner, setQrcodeScanner] = useState(false);
+    const [ scanData, setScanData ] = useState('');
     const logIn = async () => {
       console.log("Logging In....")
       try{
         let res = await axios.post(`${server}/login`,{user: user,password: password });
         console.log(res.data);
-        let userInfoSave = Object.assign({}, res.data);
+        await logInStorage(res.data);
+      }catch(err){
+        console.log(err);
+      }
+    }
+    const logInStorage = async (resData) =>{
+      try{
+        let userInfoSave = Object.assign({}, resData);
         delete userInfoSave.token;
-        await AsyncStorage.setItem('token', JSON.stringify(res.data.token));
+        await AsyncStorage.setItem('token', JSON.stringify(resData.token));
         await AsyncStorage.setItem('userInfo', JSON.stringify(userInfoSave));
- 
-        setToken(res.data.token);
+
+        setToken(resData.token);
         setUserInfo(userInfoSave);
         setSessionStatus(true);
         let deviceData = await axios.get(`${server}/api/devices`,{
-          headers: {'token': res.data.token}
+          headers: {'token': resData.token}
           });
         let devices = deviceData.data;
         //console.log('fetched devices: ',devices)
         await AsyncStorage.setItem('devices', JSON.stringify(devices))
         setDevices(devices);
         let alarmData = await axios.get(`${server}/api/alarms`,
-                    {headers: {'token': res.data.token}});
+                    {headers: {'token': resData.token}});
         console.log("ALARM!!!!: ", alarmData.data);
         let alarms = alarmData.data;
         
         await AsyncStorage.setItem('alarms', JSON.stringify(alarms));
         
-        setAlarms(alarms);
-        //let info = JSON.parse(await AsyncStorage.getItem('userInfo'));
-        //console.log(info);
+        setAlarms(alarms);        
       }catch(err){
-        console.log(err)
+        console.log(err);
       }
-    }
+    } 
     useEffect(() => {
         const isOK = () => {
           if(password.length > 5 && emailPattern.test(user)){
@@ -63,8 +72,29 @@ const LogIn = ({navigation}) => {
         const emailPattern = new RegExp(".+@.+..+");
         isOK();
     },[user, password])
+    useEffect(() => {
+      const scannerLogIn = async () => {
+        setQrcodeScanner(false);
+        if(scanData && scanData.length > 10){
+          try{
+            let scanObject = JSON.parse(scanData);
+            console.log(scanObject.token);
+            console.log({token: scanObject.token, ensure: scanObject.ensure});
+            setServer(scanObject.server);
+            let res = await axios.post(`${scanObject.server}/qrlogin`, {token: scanObject.token, ensure: scanObject.ensure});
+            console.log(res.data);
+            await logInStorage(res.data);
+            
+          }catch(err){
+            console.log(err);
+          }
 
-    return (<Div flex={1} alignItems='center'>
+        }
+      }
+      scannerLogIn();
+    },[scanData])
+    return ( <ScrollView>
+              <Div flex={1} alignItems='center'>
               <ServerAddress/>
               <Image
                     h={100}
@@ -108,8 +138,19 @@ const LogIn = ({navigation}) => {
                             LogIn
                     </Button>
                 </Div>
-
+                <Div m={10}>
+                  <Button onPress={() => setQrcodeScanner(true)}> Scan Qr Code</Button>
+                </Div>
+            
           </Div>
+          <QrWindow 
+            qrcodeScanner={qrcodeScanner} 
+            setQrcodeScanner={setQrcodeScanner}
+            setScanData={setScanData}
+            scanData={scanData}
+          />
+        </ScrollView>
+          
     );
 }
 

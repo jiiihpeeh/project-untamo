@@ -17,7 +17,7 @@ import AlarmSelector from './AlarmComponents/AlarmSelector';
 import { stringifyDate } from './AlarmComponents/stringifyDate';
 import { SessionContext } from '../contexts/SessionContext';
 import { DeviceContext } from '../contexts/DeviceContext';
-
+import { numberToWeekDay } from './calcAlarmTime' 
 const alarmTime = () => {
 	let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
 	return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`;
@@ -30,7 +30,7 @@ function AddAlarm() {
 	const [ time, setTime ] = useState(alarmTime());
     const [ date, setDate ] = useState(new Date());
     const [ selectedDevices, setSelectedDevices] = useState([currentDevice]);
-    const [ weekdays, setWeekdays ] = useState([new Date().toLocaleDateString('en-US', {weekday: 'long'})]);
+    const [ weekdays, setWeekdays ] = useState([ numberToWeekDay(new Date().getDay()) ]);
     const [ label, setLabel ] = useState('Alarm');
     const [ alarmCase, setAlarmCase ] = useState('weekly');
 	const { alarms, setAlarms } = useContext(AlarmContext);
@@ -39,7 +39,7 @@ function AddAlarm() {
 	const clearStates = () => {
 		setDate(new Date());
 		setSelectedDevices([currentDevice]);
-		setWeekdays ([new Date().toLocaleDateString('en-US', {weekday: 'long'})]);
+		setWeekdays ([ numberToWeekDay(new Date().getDay()) ]);
 		setLabel('Alarm');
 		setAlarmCase('weekly');
 	}

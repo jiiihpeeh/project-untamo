@@ -3,20 +3,17 @@ import { useEffect, useContext, useState } from "react";
 import { DeviceContext } from "../context/DeviceContext";
 import { SessionContext } from "../context/SessionContext";
 
-import DeviceSelector from "./DeviceSelector";
 import { AlarmContext } from "../context/AlarmContext";
 import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus';
 import { ScrollView, TouchableHighlight, View } from 'react-native';
 import AddDevice from "./AddDevice";
 import AlarmButton from "./AlarmButton";
 import { timeForNextAlarm } from "./calcAlarmTime";
-import DateModal from "./AlarmComponents/DateModal";
 import AddAlarm from "./AddAlarm";
 import EditAlarm from "./EditAlarm";
 import EditDrawer from './EditDrawer'
 import PlayAlarm from "./PlayAlarm";
 import AlarmWatcher from "./AlarmWatcher";
-
 const Alarms = () => {
     const { token, userInfo, sessionStatus} = useContext(SessionContext);
     const { currentDevice, devices, setDevices } = useContext(DeviceContext);
@@ -76,7 +73,6 @@ const Alarms = () => {
 
     return(
         <>  
-
         <Div row alignItems="center">
                 <Text as='b' 
                       fontSize={"xl"} 
@@ -102,11 +98,14 @@ const Alarms = () => {
         <ScrollView>
             {alarmViews}
         </ScrollView>
+        <Div alignItems="flex-end" row>
+            <EditAlarm
+                editID={editID}
+                setEditID={setEditID}
+            />
+        </Div>
         <AddAlarm/>
-        <EditAlarm
-            editID={editID}
-            setEditID={setEditID}
-        />
+       
         <EditDrawer/>
         {/* <Button onPress={() => setAlarmWindow(true)}> Alarm</Button> */}
         <PlayAlarm/>

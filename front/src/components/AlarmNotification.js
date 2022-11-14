@@ -37,7 +37,7 @@ const AlarmNotification = ()  => {
 	  	    };
         };
 	  	updateToast();
-    },[alarm]);
+    },[alarm, toast]);
 
     useEffect(() => {
      const alarmSet = () => {
@@ -49,7 +49,7 @@ const AlarmNotification = ()  => {
         }
      }
      alarmSet();
-	},[runAlarm]);
+	},[runAlarm, alarms]);
     useEffect(() =>{
         const closeToast = () => {
             toast.close('alarm-notification');
@@ -57,7 +57,7 @@ const AlarmNotification = ()  => {
         if(!sessionStatus || !alarm ){
             closeToast();
         }
-    },[sessionStatus, alarm]);
+    },[sessionStatus, alarm, toast]);
 
 	return (<>
 		      <AddToast/>

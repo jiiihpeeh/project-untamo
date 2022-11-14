@@ -1,7 +1,7 @@
 import { SessionContext} from '../contexts/SessionContext';
 //import { DeviceContext } from '../contexts/DeviceContext';
 import {Link as ReachLink} from 'react-router-dom';
-import { Grid, GridItem, Text, Link, Flex, Spacer, HStack, Center } from '@chakra-ui/react';
+import { Text, Link, Spacer, HStack, Center } from '@chakra-ui/react';
 //import { notification } from './notification';
 import { useState, useEffect, useContext } from "react";
 import UserMenu from './UserMenu';
@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 
 const NavGrid = () => {
     //const { currentDevice, setCurrentDevice, devices, setDevices } = useContext(DeviceContext);
-    const {adminToken, setAdminToken, adminTime, setAdminTime} = useContext(AdminContext);
+    const {adminTime} = useContext(AdminContext);
     const { sessionStatus } = useContext(SessionContext);
     const [ validItems, setValidItems ] = useState(["login", "register", "about"]);
     const [ showAdmin, setShowAdmin ] = useState(false);
@@ -64,10 +64,10 @@ const NavGrid = () => {
         
         let tID = setTimeout(adminTimeOut, adminTime - Date.now());
         sessionStorage.setItem('adminTimeOut', JSON.stringify(tID));
-    },[adminTime]);
-    useEffect(() => {
-        console.log("admin: ", showAdmin)
-    },[showAdmin])
+    },[adminTime, navigate]);
+    // useEffect(() => {
+    //     console.log("admin: ", showAdmin)
+    // },[showAdmin])
     return (
         <Center mt="5px">   
             <HStack spacing='60px'>
@@ -97,9 +97,10 @@ const NavGrid = () => {
                     to={`/admin`} 
                     id={`link-admin`} >
                             <Text  color='red' as='b'>
-                            <Countdown  date={adminTime}
-                            renderer={timeOutput}
-                            /></Text>
+                                <Countdown  date={adminTime}
+                                            renderer={timeOutput}
+                                />
+                            </Text>
             </Link></>}
             {validItems.includes('user') && <>
             <Spacer/>

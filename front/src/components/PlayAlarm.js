@@ -112,15 +112,18 @@ const PlayAlarm = () =>{
     // useEffect(() =>{
     //     const goAway = (id) =>{
     //         console.log('TIMEOUT!!!!!!!!!!! ')
-    //         if(window.location.pathname === '/playalarm/' && (id === runAlarm._id)){
-    //             let alarmCurrent = alarms.filter(alarm => alarm._id === id)
+    //         if(window.location.pathname === '/playalarm/' ){
+    //             let alarmCurrent = alarms.filter(alarm => alarm._id === runAlarm)
     //             let timeNow = new Date().getTime();
-    //             if(alarmCurrent.length === 1 && (timeNow - Math.max(...alarmCurrent[0].snooze) > 95 * 6 * 1000 )){
+    //             if((alarmCurrent.length === 1) ){
+    //                 let maxSnooze = (Math.max(...alarmCurrent[0].snooze))?Math.max(...alarmCurrent[0].snooze):0
+
+    //                 (maxSnooze > (95 * 6 * 1000)
     //                 snoozer();
     //             }
     //         }
     //     }
-    //    let timeout = setTimeout(() => goAway(runAlarm._id), 10* 60* 1000);
+    //    let timeout = setTimeout(() => goAway(runAlarm), 10* 60* 1000);
     //    sessionStorage.setItem('alarm-timeout', JSON.stringify(timeout));
     // },[])
     useEffect(() => {
