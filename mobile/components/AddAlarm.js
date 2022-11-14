@@ -24,6 +24,7 @@ const AddAlarm = () => {
 	const [ postAlarm, setPostAlarm ] = useState(false);
 	const [ cancel, setCancel] = useState(false);
 	const [ active, setActive ] = useState(true);
+    const [ deleteAlarm, setDeleteAlarm ] = useState(false);
 
     useEffect(() => {
         if(cancel){
@@ -187,6 +188,8 @@ const AddAlarm = () => {
 						setCancel={setCancel}
 						active={active}
 						setActive={setActive}
+                        showDelete={false}
+                        setDeleteAlarm={setDeleteAlarm}
                     />
         </>
     )

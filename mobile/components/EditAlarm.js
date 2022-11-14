@@ -10,6 +10,7 @@ import { numberToWeekDay } from './calcAlarmTime'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { parseDate } from "./AlarmComponents/parseDate";
 import { stringifyDate } from "./AlarmComponents/stringifyDate";
+import DeleteAlarm from "./DeleteAlarm";
 const EditAlarm = (props) => {
     
     const { alarms, setAlarms } = useContext(AlarmContext);
@@ -21,11 +22,12 @@ const EditAlarm = (props) => {
     const [ weekdays, setWeekdays ] = useState([ ]);
     const [ label, setLabel ] = useState('Alarm');
     const [ alarmCase, setAlarmCase ] = useState('weekly');
-    const [showModal, setShowModal ]  = useState(false);
+    const [ showModal, setShowModal ]  = useState(false);
 	const [ postAlarm, setPostAlarm ] = useState(false);
     const [cancel, setCancel] = useState(false);
     const [ active, setActive ] = useState(true);
-    const [ editAlarm, setEditAlarm ] = useState({})
+    const [ editAlarm, setEditAlarm ] = useState({});
+    const [ deleteAlarm, setDeleteAlarm ] = useState(false);
 
     useEffect(() => {
         if(cancel){
@@ -108,9 +110,12 @@ const EditAlarm = (props) => {
 		
 		alarmPost();
 	},[postAlarm])
-
+    useEffect(() =>{
+        console.log("Delete!")
+    },[deleteAlarm])
     return(<>       
-            <AlarmSelector  alarmCase={alarmCase}
+            <AlarmSelector  
+                alarmCase={alarmCase}
                 setAlarmCase={setAlarmCase}
                 time={time}
                 setTime={setTime} 
@@ -130,7 +135,15 @@ const EditAlarm = (props) => {
                 setEditID={props.setEditID}
                 active={active}
                 setActive={setActive}
+                showDelete={true}
+                setDeleteAlarm={setDeleteAlarm}
             />
+    <DeleteAlarm 
+            deleteAlarm={deleteAlarm}
+            setDeleteAlarm={setDeleteAlarm}
+            editID={editAlarm._id}
+            setShowModal={setShowModal}
+    />
     </>)
 }
 

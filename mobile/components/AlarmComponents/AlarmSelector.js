@@ -29,6 +29,8 @@ const AlarmSelector = (props) => {
     const active = props.active;
     const setActive = props.setActive;
     const setCancel = props.setCancel;
+    const showDelete = props.showDelete;
+    const setDeleteAlarm = props.setDeleteAlarm;
 
     return(<>
     	<AlarmComponentsContext.Provider value={{ alarmCase, setAlarmCase, time, setTime, date, setDate, selectedDevices, setSelectedDevices, label, setLabel, weekdays, setWeekdays, active, setActive}}>
@@ -59,9 +61,15 @@ const AlarmSelector = (props) => {
             {alarmCase === 'yearly' &&
             <AlarmYearly  />}
             </Div>
-            <Div row >
-                <Button flex={1} m={20} onPress={() => {setPostAlarm(true)}} >OK</Button>
-                <Button flex={1} m={20} onPress={() => {setCancel(true)}} > Cancel</Button>
+            <Div alignItems="center">
+                <Div row >
+                    <Button flex={1} m={20} onPress={() => {setPostAlarm(true)}} >OK</Button>
+                    <Button flex={1} m={20} onPress={() => {setCancel(true)}} > Cancel</Button>
+                </Div>
+                {showDelete &&
+                    <Div alignItems="center">
+                        <Button m={20} bg="red" onPress={() => {setDeleteAlarm(true)}} > Delete</Button>
+                    </Div>}
             </Div>
             </ScrollView>
         </Modal>
