@@ -277,27 +277,28 @@ app.post("/qrlogin",function(req,res) {
 	if(!req.body.token ) {
 		return res.status(400).json({message:"Bad Request"});
 	}
-	console.log("QRPAIR: ", req.body.token);
 	let query = {"qrToken":req.body.token};
-	console.log(query);
+
 	qrModel.findOne( query , function(err,qrpair) {
 		if(err) {
 			console.log(tStamppi(),"Failed to login. Reason",err);
-			return res.status(500).json({message:"Internal server error"})
+			return res.status(500).json({message:"Internal server error"});
 		}
 		if(!qrpair) {
-			console.log(" PAIR not FOUND")
-			return res.status(401).json({message:"Unathorized"})
+			console.log(" PAIR not FOUND");
+			return res.status(401).json({message:"Unathorized"});
 		}
-		
-		console.log("Found PAIR: ",qrpair)
+		let now = Date.now();
+		if(now > qrpair.ttl){
+			return res.status(401).json({message:"Unathorized"});
+		}
 		userModel.findOne({"_id":qrpair.userID},function(err,user) {
 			if(err) {
 				console.log(tStamppi(),"Comparing passwords failed. Reason",err);
-				return res.status(500).json({message:"Internal server error"})
+				return res.status(500).json({message:"Internal server error"});
 			}
 			if(!user) {
-				return res.status(401).json({message:"Unauthorized"})
+				return res.status(401).json({message:"Unauthorized"});
 			}
 
 			let sessionToken=createToken();
@@ -310,7 +311,7 @@ app.post("/qrlogin",function(req,res) {
 			session.save(function(err) {
 				if(err) {
 					console.log(tStamppi(),"Saving session failed. Reason",err);
-					return res.status(500).json({message:"Internal server error"})
+					return res.status(500).json({message:"Internal server error"});
 				}
 				//serverSocket.send(JSON.stringify({mode: 'api', url: `/qrlogin/${}`, token: sessionToken, userID: session.userID }));
 				return res.status(200).json({token:sessionToken, 

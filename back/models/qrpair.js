@@ -4,7 +4,7 @@ let Schema = mongoose.Schema({
     qrOriginator: String,
     userID: String,
     ttl:Number,
-    createdAt: { type: Date, expires: '2m', default: Date.now }
+    createdAt: { type: Date, expires: '1m', default: Date.now }
 });
 
 Schema.virtual("id").get(function() {
