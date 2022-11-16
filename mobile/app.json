@@ -24,15 +24,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.jpj.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "packagerOpts": {
       "config": "metro.config.js"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "20dbf43f-e96c-40da-b2ad-ecdfde55f14b"
+      }
     }
   }
 }
-
-

@@ -52,7 +52,7 @@ const GenerateQRPairingKey = () => {
   
       if (qrcanvas){
       //if(fetchQR === true){
-        setTimeout(fetcher, 30000);
+        setTimeout(fetcher, 15000);
       }
     }
     if (fetchQR === true){

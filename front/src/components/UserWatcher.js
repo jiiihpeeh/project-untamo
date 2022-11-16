@@ -56,18 +56,18 @@ const UserWatcher = () => {
         console.log(msgData);
         let urlSplit = msgData.url.split('/');
         //console.log(urlSplit);
-      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
+      if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
         await sleep(500);
         let alarmData = await fetchAlarms(token, server);
         // console.log(alarmData);
         setAlarms(alarmData);
       };
-      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'device'){
+      if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'device'){
         await sleep(500);
         let deviceData = await fetchDevices(token, server);
         setDevices(deviceData);
       };
-      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'editUser'){
+      if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'editUser'){
         await sleep(5000);
         let userData = await userInfoFetch(token, server);
         setUserInfo(userData);

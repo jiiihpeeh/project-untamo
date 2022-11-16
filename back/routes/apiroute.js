@@ -299,7 +299,7 @@ router.post("/qrToken",function(req,res) {
 		qrToken: qrToken,
 		userID: req.session.userID,
 		qrOriginator: req.headers.token,
-		ttl: now + 32000
+		ttl: now + 17000
 	});
 	qrKey.save(function(err, saved) {
 		if(err) {
