@@ -34,8 +34,14 @@ const Alarms = () => {
             let viewableAlarmsSet = new Set ();		
             let timeAlarmMap = new Map();
             for(const secondFiltrate of showAlarms){
-                viewableAlarmsSet.add(secondFiltrate);			
-                let timeStamp = timeForNextAlarm(secondFiltrate).getTime();
+                viewableAlarmsSet.add(secondFiltrate);
+                let timeStamp
+                try{
+                    timeStamp = timeForNextAlarm(secondFiltrate).getTime();
+                }catch(err){
+                    timeStamp = null
+                }			
+                 
                 if(timeStamp && secondFiltrate){
                     if(timeAlarmMap.has(timeStamp)){
                         timeAlarmMap.set(timeStamp, timeAlarmMap.get(timeStamp).add(secondFiltrate._id) );
