@@ -60,6 +60,8 @@ const NavGrid = () => {
         }catch(err){}
         if(adminTime > Date.now()){
             setShowAdmin(true);
+        }else{
+            setShowAdmin(false);
         }
         
         let tID = setTimeout(adminTimeOut, adminTime - Date.now());
