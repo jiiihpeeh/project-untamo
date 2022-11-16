@@ -27,7 +27,8 @@ const UserWatcher = () => {
       useWebSocket will handle unmounting for you, but this is an example of a 
       case in which you would not want it to automatically reconnect
     */
-      return didUnmount.current === false;
+      //return didUnmount.current === true;
+      return true
     },
     reconnectAttempts: 1e8,
     reconnectInterval: 60000,
