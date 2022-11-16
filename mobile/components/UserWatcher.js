@@ -35,10 +35,31 @@ const UserWatcher = () => {
 
  
 
-  const sendIdentity = () => {
+  const sendIdentity = async () => {
     if(token && token.length >5){
       console.log('sending creds');
       sendMessage(JSON.stringify({mode:'client', token: token}));
+      try {
+        await sleep(500);
+        let alarmData = await axios.get(`${server}/api/alarms`,
+            {headers: {'token': token}});
+        console.log("ALARM!!!!: ", alarmData.data);
+        let alarms = alarmData.data;
+        await AsyncStorage.setItem('alarms', JSON.stringify(alarms));
+        setAlarms(alarms);
+        let deviceData = await axios.get(`${server}/api/devices`,{
+          headers: {'token': token}
+          });
+        let devices = deviceData.data;
+        //console.log('fetched devices: ',devices)
+        await AsyncStorage.setItem('devices', JSON.stringify(devices))
+        setDevices(devices);
+        let userData = await axios.get(`${server}/api/user`,  {headers: {token: token}});
+        await AsyncStorage.setItem('userInfo', JSON.stringify(userData.data));
+        setUserInfo(userData.data);
+      }catch(err){
+        console.log(err);
+      }
     }else{
       setTimeout(sendIdentity, 5000);
     }

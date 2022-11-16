@@ -35,10 +35,20 @@ const UserWatcher = () => {
 
  
 
-  const sendIdentity = () => {
+  const sendIdentity = async () => {
     if(token){
       console.log('sending creds');
       sendMessage(JSON.stringify({mode:'client', token: token}));
+      try{
+        let alarmData = await fetchAlarms(token, server);
+        setAlarms(alarmData);
+        let deviceData = await fetchDevices(token, server);
+        setDevices(deviceData);
+        let userData = await userInfoFetch(token, server);
+        setUserInfo(userData);
+      }catch(err){
+        console.log(err);
+      }
     }else{
       setTimeout(sendIdentity, 5000);
     }
