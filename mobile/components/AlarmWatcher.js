@@ -38,7 +38,7 @@ const AlarmWatcher  = () => {
                     };
                 };
             };
-            if(alarms && alarms.length > 0){
+            if(alarms && currentDevice && alarms.length > 0){
                 let filteredAlarms = alarms.filter(alarm => alarm.device_ids.indexOf(currentDevice) !== -1 );
                 filteredAlarms = filteredAlarms.filter(alarm => alarm.active === true);
                 //console.log('active alarms for this device: ', filteredAlarms);

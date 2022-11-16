@@ -55,7 +55,7 @@ const UserWatcher = () => {
         console.log(msgData);
         let urlSplit = msgData.url.split('/');
         //console.log(urlSplit);
-      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'alarm'){
+        if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
         try {
             await sleep(500);
             let alarmData = await axios.get(`${server}/api/alarms`,
@@ -68,7 +68,7 @@ const UserWatcher = () => {
           console.log(err);
         }
       };
-      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'device'){
+      if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'device'){
         try{
             await sleep(500);
             let deviceData = await axios.get(`${server}/api/devices`,{
@@ -83,7 +83,7 @@ const UserWatcher = () => {
         }
   
       };
-      if(urlSplit.length > 2 && urlSplit[1] === 'api' && urlSplit[2] === 'editUser'){
+      if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'editUser'){
         await sleep(5000);
         try {
           let userData = await axios.get(`${server}/api/user`,  {headers: {token: token}});
