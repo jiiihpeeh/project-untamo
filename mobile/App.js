@@ -52,7 +52,7 @@ const  App =  () => {
   },[])
   useEffect(() =>{
     const checkSession = async () => {
-      if (token){
+      if (token && server){
         console.log(token)
         try {
           let res = await axios.get(`${server}/api/issessionvalid`,  {
@@ -80,7 +80,7 @@ const  App =  () => {
       }
     };
     checkSession();
-  },[token])
+  },[token, server])
 
 
   return (

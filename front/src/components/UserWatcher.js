@@ -31,7 +31,7 @@ const UserWatcher = () => {
       return true
     },
     reconnectAttempts: 1e8,
-    reconnectInterval: 60000,
+    reconnectInterval: 15000,
   });
 
  
