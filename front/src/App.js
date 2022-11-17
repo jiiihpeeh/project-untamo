@@ -19,6 +19,7 @@ import AlarmWatcher from './components/AlarmWatcher';
 import UserWatcher from './components/UserWatcher';
 import Admin from './components/Admin';
 import { AdminContext } from './contexts/AdminContext';
+import AppAlert from './components/AppAlert';
 
 function App() {
 	const [ token, setToken ] = useState(localStorage['token'] ? localStorage['token'] : undefined);
@@ -82,6 +83,7 @@ function App() {
 		<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
 		<AlarmContext.Provider value={{ alarms, setAlarms, runAlarm, setRunAlarm, runOtherSnooze, setRunOtherSnooze }}>
 		<AdminContext.Provider value={{adminToken, setAdminToken, adminTime, setAdminTime}}>
+			{/* <AppAlert/> */}
 			<NavGrid/>
 
 			<Routes>
