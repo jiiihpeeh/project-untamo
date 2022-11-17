@@ -10,7 +10,6 @@ import { AlarmContext } from './context/AlarmContext';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import UserWatcher from './components/UserWatcher';
-
 import axios from 'axios'
 
 
