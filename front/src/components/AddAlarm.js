@@ -118,7 +118,7 @@ function AddAlarm() {
 		<DrawerOverlay />
 		<DrawerContent>
 			<DrawerCloseButton />
-			<DrawerHeader>Add an an alarm</DrawerHeader>	
+			<DrawerHeader>Add an alarm</DrawerHeader>	
 			<DrawerBody>
 				<AlarmSelector  alarmCase={alarmCase}
 								setAlarmCase={setAlarmCase}
