@@ -39,6 +39,7 @@ const QrWindow = (props) => {
                 onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
                 style={StyleSheet.absoluteFillObject}
             />
+            <Button onPress={() => props.setQrcodeScanner(false)}>Cancel</Button>
         </Modal>
     </Div>)
 }

@@ -12,7 +12,7 @@ import axios from 'axios';
 
 const UserWatcher = () => {
   //Public API that will echo messages sent to it back to the client
-  const {token, setUserInfo, server } = useContext(SessionContext);
+  const {token, setUserInfo, server, setSessionStatus } = useContext(SessionContext);
   const { setAlarms} = useContext(AlarmContext);
   const { setDevices } = useContext(DeviceContext);
   const wsURL = websocketAddress(server) +'/action'
@@ -58,6 +58,7 @@ const UserWatcher = () => {
         let userData = await axios.get(`${server}/api/user`,  {headers: {token: token}});
         await AsyncStorage.setItem('userInfo', JSON.stringify(userData.data));
         setUserInfo(userData.data);
+        setSessionStatus(true);
       }catch(err){
         console.log(err);
       }

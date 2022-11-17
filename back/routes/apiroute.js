@@ -322,6 +322,7 @@ router.get('/user', asyncHandler(async(req, res) => {
 			firstname: user.firstname,
 			lastname: user.lastname,
 			screenname: user.screenname,
+			admin: user.admin
 		});
 	}catch(err){
 		return res.status(500).json({message:`Internal server error.`, code: err.code});

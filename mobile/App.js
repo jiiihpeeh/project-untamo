@@ -16,7 +16,7 @@ import axios from 'axios'
 
 const  App =  () => {
   const [ token, setToken ] = useState( null);
-	const [ server, setServer] = useState('http://192.168.2.207:3001')
+	const [ server, setServer] = useState('https://kukkoilija.chickenkiller.com/server')
 	const [ userInfo, setUserInfo ] = useState({});
 	const [ currentDevice, setCurrentDevice ] = useState( null);
 	const [ devices, setDevices ] = useState([]) ;
@@ -36,7 +36,7 @@ const  App =  () => {
       let keys = await AsyncStorage.getAllKeys();
       console.log(keys)
       setToken(keys.includes('token') ? JSON.parse(await AsyncStorage.getItem('token')) : null);
-      setServer(keys.includes('server') ? JSON.parse(await AsyncStorage.getItem('server')) : 'http://192.168.2.207:3001')
+      setServer(keys.includes('server') ? JSON.parse(await AsyncStorage.getItem('server')) : 'https://kukkoilija.chickenkiller.com/server')
       setUserInfo(keys.includes('userInfo') ? JSON.parse(await AsyncStorage.getItem('userInfo')) : {});
       setCurrentDevice(keys.includes('currentDevice') ? JSON.parse(await AsyncStorage.getItem('currentDevice')) : null);
       setDevices(keys.includes('devices') ? JSON.parse(await AsyncStorage.getItem('devices')) : []) ;
@@ -55,16 +55,11 @@ const  App =  () => {
       if (token && server){
         console.log(token)
         try {
+          console.log(`${server}/api/issessionvalid`,token )
           let res = await axios.get(`${server}/api/issessionvalid`,  {
             headers: {token: token}
           });
-          if(res.data.status){
-            console.log("session valid");
-            setSessionStatus(true);
-          } else {
-            console.log(res.status);
-            setSessionStatus(false);
-          }
+
         } catch(err){
           if(err.response.status === 403){
             setSessionStatus(false);
