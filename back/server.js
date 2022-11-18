@@ -441,7 +441,11 @@ app.ws('/action', asyncHandler(async(ws, req) => {
 				console.log("CALLER", callingHeader);
 				for(const client of availHeaders){
 					console.log("CALLING", client);
-					headersSocketMap.get(client).send(JSON.stringify({ url:msg.url}));
+					try{
+						headersSocketMap.get(client).send(JSON.stringify({ url:msg.url}));
+					}catch(err){
+						console.log(err);
+					}
 				}
 			}
 
