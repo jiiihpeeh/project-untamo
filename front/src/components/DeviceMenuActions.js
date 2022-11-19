@@ -40,7 +40,7 @@ const DeviceMenuActions = (props) => {
     };
     return (
       <>                    
-        <Table  id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`} variant="unstyled" size="sm">
+        <Table  id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`} variant="unstyled" size="sm" mb={"0px"} mt={"0px"}>
           <Tr>
           <Td>
             <Link  onClick={flipState} onDoubleClick={()=>{}} >

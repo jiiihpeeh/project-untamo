@@ -71,7 +71,7 @@ const DeviceEdit = (props) => {
             <Drawer
               isOpen={props.editDialogState}
               placement='right'
-              onClose={onClose}
+              onClose={cancelEdit}
               finalFocusRef={btnRef}
               key='xs'
             >
