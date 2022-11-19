@@ -1,12 +1,10 @@
 
 import { useState, useContext} from "react";
 import {
-        Link,
-        Text,
-        Checkbox, 
-        HStack,
-        IconButton,
-        Tooltip
+        Link,Text,
+        Checkbox,
+        IconButton,Tooltip, 
+        Table, Tr, Td,
         } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon} from '@chakra-ui/icons';
 import DeviceDelete from "./DeviceDelete";
@@ -42,23 +40,31 @@ const DeviceMenuActions = (props) => {
     };
     return (
       <>                    
-        <HStack spacing='24px' id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`} >
-          <Link  onClick={flipState} onDoubleClick={()=>{}} >
-          <Checkbox isChecked={checkViewState(props.device.id)}>
-          <Tooltip label={props.device.type} fontSize='md'>
-              <Text>
-                {props.device.deviceName} <Icon as={deviceIcons(props.device.type)}></Icon>
-              </Text>
-          </Tooltip>
-          </Checkbox>
-          </Link>
-          <Tooltip label='Edit device' fontSize='md'>
-            <IconButton size='xs' onClick={openEdit} icon={<EditIcon/>} ml="5.5%"/>
-          </Tooltip>
-          <Tooltip label='Delete device' fontSize='md'>
-            <IconButton size='xs' onClick={openDelete} icon={<DeleteIcon/>} ml="5.5%"/>
-          </Tooltip>
-        </HStack>
+        <Table  id={`linkview-${props.device.id}`} key={`viewedDevice-${props.device.id}`} variant="unstyled" size="sm">
+          <Tr>
+          <Td>
+            <Link  onClick={flipState} onDoubleClick={()=>{}} >
+            <Checkbox isChecked={checkViewState(props.device.id)}>
+            <Tooltip label={props.device.type} fontSize='md'>
+                <Text>
+                  {props.device.deviceName} <Icon as={deviceIcons(props.device.type)}></Icon>
+                </Text>
+            </Tooltip>
+            </Checkbox>
+            </Link>
+          </Td>
+          <Td>
+            <Tooltip label='Edit device' fontSize='md'>
+              <IconButton alignItems={"right"} size='xs' onClick={openEdit} icon={<EditIcon/>} ml="5.5%"/>
+            </Tooltip>
+          </Td>
+          <Td>
+            <Tooltip label='Delete device' fontSize='md'>
+              <IconButton alignItems={"right"}  size='xs' onClick={openDelete} icon={<DeleteIcon/>} ml="5.5%"/>
+            </Tooltip>
+          </Td>
+        </Tr>
+        </Table>
         <DeviceDelete device={props.device} 
                       deleteDialogState={deleteDialogState} 
                       setDeleteDialogState={setDeleteDialogState} />

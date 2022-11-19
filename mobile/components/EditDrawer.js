@@ -7,7 +7,7 @@ const EditDrawer = () => {
     const drawerRef = React.createRef();
     return(<>
         <Drawer ref={drawerRef} >
-            <Div m={50}>
+            <Div alignItems="center">
                 <DeviceSelector/>
                 <LogOut/>
             </Div>
