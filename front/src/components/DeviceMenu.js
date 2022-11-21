@@ -7,8 +7,7 @@ import {
     MenuItem,
     MenuGroup,
     MenuDivider,
-    Flex,
-  } from '@chakra-ui/react';
+    Flex } from '@chakra-ui/react';
 //import { EditIcon, DeleteIcon} from '@chakra-ui/icons';
 import DeviceSelector from './DeviceSelector';
 import { DeviceContext } from '../contexts/DeviceContext';
@@ -44,15 +43,23 @@ const DeviceMenu = () => {
             <Text as='b'>Devices</Text>
         </MenuButton>
         <MenuList>
-            <MenuItem><Flex><DeviceSelector type="submenu"/></Flex></MenuItem>
+            <MenuItem>
+                <Flex>
+                    <DeviceSelector type="submenu"/>
+                </Flex>
+            </MenuItem>
             <MenuDivider />
             <MenuGroup title='Viewable devices' type='checkbox'>
                 {menuDeviceItems}
             </MenuGroup>
             <MenuDivider />
             <MenuGroup title="Add a device">
-                <MenuItem><QRPairingDialog/></MenuItem>
-                <MenuItem><AddDevice open="menu"/></MenuItem>
+                <MenuItem>
+                    <QRPairingDialog/>
+                </MenuItem>
+                <MenuItem>
+                    <AddDevice open="menu"/>
+                </MenuItem>
             </MenuGroup>
         </MenuList>
         </Menu>

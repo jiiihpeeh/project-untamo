@@ -1,15 +1,13 @@
 import {
 	useDisclosure,
-	Link,
-	Button,
+	Link, Button,
 	AlertDialog,
     AlertDialogBody,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogContent,
     AlertDialogOverlay,
-	Tooltip,
-	IconButton
+	Tooltip, IconButton
 	} from '@chakra-ui/react'
 import React from 'react';
 import { DeleteIcon} from '@chakra-ui/icons';
@@ -45,7 +43,7 @@ function DeleteAlarm(props) {
 	return (
 		<>
 		<Link onClick={onOpen}>
-			<Tooltip label='Delete device' fontSize='md'>
+			<Tooltip label='Delete alarm' fontSize='md'>
 			<IconButton size='xs' icon={<DeleteIcon/>} ml="5.5%" colorScheme='red'/>
 			</Tooltip>
 		</Link>
