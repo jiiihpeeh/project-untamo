@@ -3,7 +3,7 @@ let Schema = mongoose.Schema({
     qrToken: String,
     qrOriginator: String,
     userID: String,
-    ttl:Number,
+    time:Number,
     createdAt: { type: Date, expires: '1m', default: Date.now }
 });
 

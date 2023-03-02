@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 let Schema = mongoose.Schema({
-    user:{type:String,unique:true},
+    email:{type:String,unique:true},
     password:String,
-    firstname: String,
-    lastname: String,
-    screenname: String,
+    firstName: String,
+    lastName: String,
+    screenName: String,
     active: {type: Boolean,default: true},
     admin: {type: Boolean,default: false},
     owner: {type: Boolean,default: false}

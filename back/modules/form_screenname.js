@@ -1,8 +1,8 @@
 const formScreenName = (body) => {
-    if (body.firstname.length === 0 &&  body.lastname.length === 0){
+    if (body.firstName.length === 0 &&  body.lastName.length === 0){
         return body.email.split('@')[0];
     }
-    return `${body.firstname} ${body.lastname}`;
+    return `${body.firstName} ${body.lastName}`;
 }
 
 module.exports = formScreenName

@@ -82,7 +82,8 @@ const guessCount =  1000000000
 //MIDDLEWARE
 
 createToken = () => {
-	let token = crypto.randomBytes(64);
+	const randLength = Math.floor(Math.random()*10)
+	let token = crypto.randomBytes(64 + randLength);
 	return token.toString("hex");
 }
 
@@ -101,7 +102,7 @@ isUserLogged = (req,res,next) => {
 		}
 		serverSocket.send(JSON.stringify({mode: 'api', url: req.originalUrl, token: req.headers.token, userID: session.userID }));
 		let now=Date.now();
-		if(now>session.ttl) {
+		if(now>session.time) {
 			sessionModel.deleteOne({"_id":session._id},function(err) {
 				if(err) {
 					console.log(tStamppi(),"Failed to remove session. Reason",err)
@@ -110,9 +111,9 @@ isUserLogged = (req,res,next) => {
 			})
 		} else {
 			req.session = {};
-			req.session.user = session.user;
+			req.session.sessionID = session._id;
 			req.session.userID = session.userID;
-			session.ttl = now+time_to_live_diff;
+			session.time = now+time_to_live_diff;
 			session.save(function(err) {
 				if(err) {
 					console.log(tStamppi(),"Failed to resave session. Reason",err);
@@ -128,7 +129,7 @@ isUserAdmin = (req,res,next) => {
 	if(!req.headers.token) {
 		return res.status(403).json({message:"Forbidden!"});
 	}
-	adminModel.findOne({"adminToken":req.headers.admintoken},function(err,adminSession) {
+	adminModel.findOne({"adminToken":req.headers.adminToken},function(err,adminSession) {
 		if(err) {
 			console.log(tStamppi(),"Failed to find session. Reason",err);
 			return res.status(403).json({message:"Forbidden"})
@@ -139,8 +140,8 @@ isUserAdmin = (req,res,next) => {
 		}
 		
 		let now=Date.now();
-		if(now>adminSession.ttl) {
-			adminModel.deleteOne({"_id":adminSession._id},function(err) {
+		if(now>adminSession.time) {
+			adminModel.deleteOne({"_id":adminSession.id},function(err) {
 				if(err) {
 					console.log(tStamppi(),"Failed to remove session. Reason",err)
 				}
@@ -157,6 +158,7 @@ isUserAdmin = (req,res,next) => {
 
 app.post("/register", asyncHandler( async(req,res) => {
 	console.log(tStamppi(),"/register");
+	console.log(req.body)
 	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
 	}
@@ -186,16 +188,20 @@ app.post("/register", asyncHandler( async(req,res) => {
 	}
 	let admin = userCount === 0
 	let user = new userModel({
-		    user:req.body.email,
+		    email:req.body.email,
 			password:hash,
-			firstname: req.body.firstname,
-			lastname: req.body.lastname,
-			screenname: formScreenName(req.body),
+			firstName: req.body.firstName,
+			lastName: req.body.lastName,
+			screenName: formScreenName(req.body),
 			admin: admin,
 			owner: admin
 		})
+	
 	try{
+		console.log("User: ",user)
+		user.id= user._id
 	    user = await user.save(user);
+		console.log("User: ",user)
 	}
 	catch(err){
 		console.log(tStamppi(),"Failed to create user. Reason",err);
@@ -214,16 +220,17 @@ app.post("/register", asyncHandler( async(req,res) => {
 
 app.post("/login",function(req,res) {
 	console.log(tStamppi(),"/login");
+	console.log(req.body)
 	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(!req.body.user || !req.body.password) {
+	if(!req.body.email || !req.body.password) {
 		return res.status(400).json({message:"Bad Request"});
 	}
-	if(req.body.user.length < 4 || req.body.password.length < 6) {
+	if(req.body.email.length < 4 || req.body.password.length < 6) {
 		return res.status(400).json({message:"Bad Request"}); 
 	}
-	userModel.findOne({"user":req.body.user},function(err,user) {
+	userModel.findOne({"email":req.body.email},function(err,user) {
 		if(err) {
 			console.log(tStamppi(),"Failed to login. Reason",err);
 			return res.status(500).json({message:"Internal server error"})
@@ -246,9 +253,10 @@ app.post("/login",function(req,res) {
 
 			let token=createToken();
 			let now=Date.now();
+			let time = now + time_to_live_diff
 			let session= new sessionModel({
-				user:req.body.user,
-				ttl:now + time_to_live_diff,
+				email:req.body.email,
+				time:time,
 				token:token,
 				userID: user._id
 			})
@@ -258,18 +266,21 @@ app.post("/login",function(req,res) {
 					return res.status(500).json({message:"Internal server error"})
 				}
 				return res.status(200).json({token:token, 
-											user: user.user, 
-											screenname:user.screenname, 
-											firstname: user.firstname, 
-											lastname:user.lastname, 
-											admin: user.admin});
+											email: user.email, 
+											screenName:user.screenName, 
+											firstName: user.firstName, 
+											lastName:user.lastName, 
+											admin: user.admin,
+											owner: user.owner,
+											time: time
+										});
 			})
 		})
 	})
 });
 
 
-app.post("/qrlogin",function(req,res) {
+app.post("/qr-login",function(req,res) {
 	console.log(tStamppi(),"/login");
 	if(!req.body) {
 		return res.status(400).json({message:"Bad Request"});
@@ -286,11 +297,11 @@ app.post("/qrlogin",function(req,res) {
 		}
 		if(!qrpair) {
 			console.log(" PAIR not FOUND");
-			return res.status(401).json({message:"Unathorized"});
+			return res.status(401).json({message:"Unauthorized"});
 		}
 		let now = Date.now();
-		if(now > qrpair.ttl){
-			return res.status(401).json({message:"Unathorized"});
+		if(now > qrpair.time){
+			return res.status(401).json({message:"Unauthorized"});
 		}
 		userModel.findOne({"_id":qrpair.userID},function(err,user) {
 			if(err) {
@@ -302,9 +313,9 @@ app.post("/qrlogin",function(req,res) {
 			}
 
 			let sessionToken=createToken();
-			let now=Date.now();
+			let time = Date.now() + time_to_live_diff
 			let session= new sessionModel({
-				ttl:now + time_to_live_diff,
+				time: time,
 				token:sessionToken,
 				userID: user._id
 			})
@@ -314,12 +325,17 @@ app.post("/qrlogin",function(req,res) {
 					return res.status(500).json({message:"Internal server error"});
 				}
 				//serverSocket.send(JSON.stringify({mode: 'api', url: `/qrlogin/${}`, token: sessionToken, userID: session.userID }));
-				return res.status(200).json({token:sessionToken, 
-											user: user.user, 
-											screenname:user.screenname, 
-											firstname: user.firstname, 
-											lastname:user.lastname, 
-											admin: user.admin});
+				return res.status(200).json(
+												{
+													token:sessionToken, 
+													email: user.email, 
+													screenName:user.screenName, 
+													firstName: user.firstName, 
+													lastName:user.lastName, 
+													admin: user.admin,
+													time: time
+												}
+											);
 			})
 		})
 	})
@@ -344,7 +360,7 @@ app.post("/logout",function(req,res) {
 
 
 
-app.ws('/registercheck', function(ws, req) {
+app.ws('/register-check', function(ws, req) {
 
     ws.on('message', function(msgs) {
         let msg = JSON.parse(msgs)
@@ -353,9 +369,10 @@ app.ws('/registercheck', function(ws, req) {
         switch (msg.query) {
             case "zxcvbn":
                 report.type = "zxcvbn"
-                let pwmsg = msg.password.slice(0, 35)
-                report.content = zxcvbn(pwmsg)
-				report.content.server_minimum = guessCount
+                let passwordMsg = msg.password.slice(0, 35)
+				let zxcvbnReport = zxcvbn(passwordMsg)
+                report.content = {guesses: zxcvbnReport.guesses, server_minimum : guessCount, score: zxcvbnReport.score}
+				console.log(report.content)
                 break
             case "form":
 				let pass = formChecker(msg)
@@ -470,7 +487,7 @@ app.ws('/action', asyncHandler(async(ws, req) => {
 
 
 //app.use('/resources', isUserLogged, express.static('resources'))
-app.use('/audioresources', isUserLogged, express.static('audioresources'))
+app.use('/audio-resources', isUserLogged, express.static('audio-resources'))
 
 app.use("/api",isUserLogged,apiroute);
 app.use("/admin",isUserLogged, isUserAdmin, adminroute);

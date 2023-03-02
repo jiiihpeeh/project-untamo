@@ -1,7 +1,7 @@
 
 
 const fs = require('fs');
-const contents = fs.readFileSync('./audioresources/rooster.opus', {encoding: 'base64'});
+const contents = fs.readFileSync('./audio-resources/rooster.opus', {encoding: 'base64'});
 
 
 

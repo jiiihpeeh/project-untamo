@@ -5,6 +5,7 @@ const userModel = require("../models/user");
 const deviceModel = require("../models/device");
 const qrModel = require("../models/qrpair");
 const adminModel = require("../models/admin")
+const sessionModel = require("../models/session");
 const router = express.Router();
 const crypto = require("crypto");
 const tStamppi = require("../modules/tstamppi");
@@ -13,13 +14,12 @@ const zxcvbn = require("zxcvbn");
 const e = require("express");
 const asyncHandler = require('express-async-handler');
 const guessCount =  1000000000;
-
-
-
+const time_to_live_diff = 365*24*60*60*1000//3600000;
 
 
 router.get("/alarms",function(req,res) {
 	console.log(tStamppi(),"GET /api/alarms");
+	console.log("USER request alarm",req.session.userID)
 	let query={"user":req.session.userID}
 	alarmModel.find(query,function(err,alarms) {
 		if(err) {
@@ -27,6 +27,7 @@ router.get("/alarms",function(req,res) {
 			return res.status(500).json({message:"Internal server error"})
 		}
 		console.log(tStamppi(),"   GET /api/alarm/ SUCCESS")
+		//console.log(alarms)
 		return res.status(200).json(alarms);
 	})
 });
@@ -45,13 +46,14 @@ router.post("/alarm/",function(req,res) {
 		user:req.session.userID,
 		occurence:req.body.occurence,
 		time:req.body.time,
-		wday:req.body.wday,
+		weekdays:[...new Set(req.body.weekdays)],
         date:req.body.date,
 		label:req.body.label,
-		device_ids:req.body.device_ids,
-		active:req.body.active
+		devices:[...new Set(req.body.devices)],
+		active:req.body.active,
+		tone:req.body.tone
 	})
-	console.log("ALARMID:"+alarm._id)
+	console.log("ALARMID:"+alarm.id)
 	alarm.save(function(err) {
 		if(err) {
 			console.log(tStamppi(),"Failed to create alarm. Reason",err);
@@ -76,23 +78,26 @@ router.delete("/alarm/:id",function(req,res) {
 })
 
 router.put("/alarm/:id",function(req,res) {
+	console.log(req.body)
 	console.log(tStamppi(),"PUT /api/alarm:"+req.params.id)
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	if(!req.body._id) {
+	if(!req.body.id) {
 		return res.status(400).json({message:"Bad request"});
 	}
 	let alarm = {
-		_id:req.body._id,
+		_id:req.body.id,
+		id:req.body.id,
 		date:req.body.date,
-		device_ids:req.body.device_ids,
+		devices:[...new Set(req.body.devices)],
 		label:req.body.label,
 		occurence:req.body.occurence,
 		time:req.body.time,
-		wday:req.body.wday,
+		weekdays:[...new Set(req.body.weekdays)],
         user:req.session.userID,
-		active:req.body.active
+		active:req.body.active,
+		tone:req.body.tone
 	}
 	if(req.body.snooze && Array.isArray(req.body.snooze)) {
 		alarm.snooze = req.body.snooze
@@ -117,20 +122,18 @@ router.get("/devices",function(req,res) {
 			console.log(tStamppi(),"Failed to find devices. Reason",err);
 			return res.status(500).json({message:"Internal server error"});
 		}
-		let devmap = [];
+		let deviceMap = [];
 		console.log(devices);
 		for (let i =0; i<devices.length;i++){
-			let dobj = {deviceName: devices[i].deviceName, id: devices[i].id};
+			let deviceObj = {deviceName: devices[i].deviceName, id: devices[i].id};
 			if(devices[i].type !== undefined){
-				dobj.type = devices[i].type;
+				deviceObj.type = devices[i].type;
 			}
-			devmap.push(dobj);
+			deviceMap.push(deviceObj);
 		}
-		return res.status(200).json(devmap);
+		return res.status(200).json(deviceMap);
 	})
 });
-
-
 
 router.post("/device",function(req,res) {
 	console.log('checking out new device');
@@ -198,26 +201,65 @@ router.put("/device/:id",function(req,res) {
 })
 
 //session data
-router.get("/issessionvalid", function(req,res) {
+router.get("/is-session-valid", function(req,res) {
 	console.log("token validated");
 	return res.status(200).json({status: true});
 });
 
+router.post("/refreshToken", function(req,res) {
+	if(!req.body) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	if(!req.body.token) {
+		return res.status(400).json({message:"Bad request"});
+	}
+	console.log("refreshing token ", req.body.token);
+	const randLength = Math.floor(Math.random()*10)
+	let token = crypto.randomBytes(64 + randLength).toString("hex");
+	let time = Date.now() + time_to_live_diff
+
+	//console.log(token, session, req.session.sessionID)
+
+	sessionModel.deleteOne({"token":req.headers.token},function(err) {
+		if(err) {
+			console.log(tStamppi(),"Failed to update a token. Reason",err);
+			return res.status(500).json({message:"Internal server error"});
+		}
+		let session= new sessionModel({
+			time:time,
+			token:token,
+			userID: req.session.userID
+		})
+		session.save(function(err) {
+			if(err) {
+				console.log(tStamppi(),"Saving session failed. Reason",err);
+				return res.status(500).json({message:"Internal server error"})
+			}
+			return res.status(200).json(
+										{
+											token:token, 
+											time: time
+										});
+		})
+	})
+});
+
+
 
 // EDIT USER
-router.put("/editUser/:user",function(req,res) {
-	console.log(tStamppi(),"PUT /api/editUser:"+req.params.user)
+router.put("/editUser/:email",function(req,res) {
+	console.log(tStamppi(),"PUT /api/editUser:"+req.params.email)
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
 
-	if(!req.body.user) {	
+	if(!req.body.email) {	
 		return res.status(400).json({message:"No username/email"});	
 	}
-	if(!req.body.screenname) {	
+	if(!req.body.screenName) {	
 		return res.status(400).json({message:"You should have profile name"});	
 	}
-	if(!req.body.current_password) {	
+	if(!req.body.password) {	
 		return res.status(400).json({message:"No password was given"});	
 	}
 	if ('change_password' in req.body){
@@ -226,14 +268,14 @@ router.put("/editUser/:user",function(req,res) {
 			return res.status(400).json({message:"Password is too obvious"}); 
 		}
 	}
-	let query={"_id":req.session.userID}
+	let query={"id":req.session.userID}
 	userModel.findOne(query,function(err,user) {
 		if(err) {
 			console.log(tStamppi(),"Failed to find user. Reason",err);
 			return res.status(500).json({message:"Couldn't find the user!!! This might be critical. Please log out and log in."});
 		}
 
-		bcrypt.compare(req.body.current_password,user.password,function(err,success) {
+		bcrypt.compare(req.body.password,user.password,function(err,success) {
 			if(err) {
 				console.log(tStamppi(),"Comparing passwords failed. Reason",err);
 				console.log(err)
@@ -242,13 +284,13 @@ router.put("/editUser/:user",function(req,res) {
 			if(!success) {
 				return res.status(401).json({message:"Original password did not match"});
 			}
-			let input_password = req.body.current_password;
+			let input_password = req.body.password;
 			let tempUser = {
-				user:req.body.user,
+				email:req.body.email,
 				password:user.password,
-				firstname: req.body.firstname,
-				lastname: req.body.lastname,
-				screenname: req.body.screenname,
+				firstName: req.body.firstName,
+				lastName: req.body.lastName,
+				screenName: req.body.screenName,
 				admin:user.admin,
 				owner: user.owner
 			}
@@ -259,7 +301,7 @@ router.put("/editUser/:user",function(req,res) {
 						return res.status(400).json({message:"Failed to hash password"}); 
 					}
 					tempUser.password = hash;
-					userModel.replaceOne({"_id":req.session.userID},tempUser,function(err) {
+					userModel.replaceOne({"id":req.session.userID},tempUser,function(err) {
 						if(err) {
 							console.log(tStamppi(),"Failed to update user. Reason",err);
 							return res.status(500).json({message:"Failed to update user"});
@@ -268,7 +310,7 @@ router.put("/editUser/:user",function(req,res) {
 					})
 				})
 			}else {
-				userModel.replaceOne({"_id":req.session.userID},tempUser,function(err) {
+				userModel.replaceOne({"id":req.session.userID},tempUser,function(err) {
 					if(err) {
 						console.log(tStamppi(),"Failed to update user. Reason",err);
 						return res.status(500).json({message:"Failed to update user"});
@@ -318,10 +360,10 @@ router.get('/user', asyncHandler(async(req, res) => {
 		let user = await  userModel.findOne(query);
 
 		return res.status(201).json({
-			user:user.user,
-			firstname: user.firstname,
-			lastname: user.lastname,
-			screenname: user.screenname,
+			email:user.email,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			screenName: user.screenName,
 			admin: user.admin
 		});
 	}catch(err){
@@ -332,14 +374,17 @@ router.get('/user', asyncHandler(async(req, res) => {
 
 
 router.post('/admin', asyncHandler(async(req, res) => {
+	console.log("admin ", req.session.userID)
 	let user = {};
 	let query={"_id":req.session.userID};
 	try{
 		user = await  userModel.findOne(query);
+		console.log("user ", user, req.body.password)
 		if(!user || (user.admin === false)){
 			return res.status(401).json({message:"Can not give admin rights"});
 		}
 		let success = await bcrypt.compare(req.body.password,user.password);
+		console.log(success)
 		if(!success){
 			return res.status(401).json({message:"Can not give admin rights. Wrong password!"});
 		}
@@ -352,7 +397,7 @@ router.post('/admin', asyncHandler(async(req, res) => {
 	let admin = new adminModel( {
 		userID: req.session.userID,
 		adminToken: adminToken,
-		ttl: ttl
+		time: ttl
 	});
 	//let adminObject = {};
 	try{
@@ -360,7 +405,7 @@ router.post('/admin', asyncHandler(async(req, res) => {
 	}catch(err){
 		return res.status(500).json({message:`Internal server error.`, code: err.code});
 	}
-	return res.status(201).json({adminToken:adminToken, ttl:ttl});
+	return res.status(201).json({adminToken:adminToken, time:ttl});
 }))
 
 module.exports = router;

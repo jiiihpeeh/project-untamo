@@ -1,26 +1,26 @@
 const fuzzy = require('fuzzy-comparison');
 const { default: compare } = require('fuzzy-comparison');
 
-const formCheckcer = (msg) => {
+const formChecker = (msg) => {
     const emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
     let pass = true
     if (!msg.email.match(emailPattern)){
         pass  = false
     }
     if(pass){
-        let emailparts = msg.email.split("@")
+        let emailParts = msg.email.split("@")
         let forbidden = [
-            msg.firstname,
-            msg.lastname,
+            msg.firstName,
+            msg.lastName,
             msg.email,
-            msg.firstname + msg.lastname,
-            msg.lastname + msg.firstname,
-            emailparts[0],
-            emailparts[1],
-            msg.firstname + msg.lastname+emailparts[1],
-            msg.lastname + msg.firstname+emailparts[1],
-            msg.firstname+emailparts[1],
-            msg.lastname +emailparts[1]
+            msg.firstName + msg.lastName,
+            msg.lastName + msg.firstName,
+            emailParts[0],
+            emailParts[1],
+            msg.firstName + msg.lastName+emailParts[1],
+            msg.lastName + msg.firstName+emailParts[1],
+            msg.firstName+emailParts[1],
+            msg.lastName +emailParts[1]
                         ]
 
         const password =  msg.password.toLowerCase()
@@ -38,4 +38,4 @@ const formCheckcer = (msg) => {
     return pass
 } 
 
-module.exports = formCheckcer
+module.exports = formChecker

@@ -2,12 +2,13 @@ const mongoose = require("mongoose");
 let Schema = mongoose.Schema({
     occurence:String,
     time:String,
-    wday:Array,
+    weekdays:Array,
     date:String,
     label:String,
-    device_ids:Array,
+    devices:Array,
     snooze:Array,
-    active:Boolean,
+    tone: {type:String,default:'rooster'},
+    active:{type:Boolean,default:true},
     user:{type:String,index:true}
 });
 

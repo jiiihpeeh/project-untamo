@@ -20,8 +20,8 @@ const formUserData = (data) => {
 	let usersData = []
 	for(const user of data){
 		let userData = {
-			userID: `${user._id}`,
-			user: user.user,
+			userID: `${user.id}`,
+			email: user.email,
 			active: user.active,
 			admin: user.admin,
 			owner: user.owner
