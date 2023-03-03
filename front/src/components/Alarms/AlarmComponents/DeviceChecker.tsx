@@ -9,10 +9,10 @@ const DeviceChecker = () => {
     const selectedDevices = useAlarm((state) => state.devices);
     const toggleDevices = useAlarm((state)=> state.toggleDevices);
 
-    const DeviceLister = (): Array<JSX.Element> => {
-        let deviceList = [] as Array<JSX.Element>;
-        for( const device of devices){
-            deviceList.push( 
+    const deviceLister = () => {
+        return devices.map(device =>
+                {
+                    return(
                             <Tr 
                                 key={`deviceList-${device.id}`} 
                             >
@@ -33,12 +33,10 @@ const DeviceChecker = () => {
                                     </Text>
                                 </Td>
                             </Tr> 
-                            );
-        };
-        return (
-            deviceList 
-        );
-    };
+                        )
+                    }
+            )
+    }
 
     return(
         <>
@@ -52,7 +50,7 @@ const DeviceChecker = () => {
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {DeviceLister()}
+                    {deviceLister()}
                 </Tbody>
             </Table>
             </TableContainer>
