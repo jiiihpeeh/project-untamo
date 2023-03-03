@@ -4,6 +4,7 @@ import { timePadding } from "./timePadding";
 import { numberToWeekDay } from '../calcAlarmTime';
 import { useDevices } from '../../../stores';
 import { stringifyDate, stringToDate } from './stringifyDate';
+import { weeksToDays } from 'date-fns';
 
 export enum AlarmCases {
     Once = "once",
@@ -120,12 +121,14 @@ const useAlarm = create<AlarmStates>((set, get) => (
             }
         ),
         date: new Date(),
-        setDate: (d:Date) =>  set(
-            {
-                date: d
-            }
-        )
-       ,
+        setDate: (day:Date) =>  {
+            set(
+                {
+                    date: day,
+                    weekdays: [numberToWeekDay(day.getDay())]
+                }
+            )
+        },
         time: "00:00",
         setTime: (time) => set(
             {
@@ -225,6 +228,13 @@ const useAlarm = create<AlarmStates>((set, get) => (
                     tone: alarm.tone
                 }
             )
+            if(alarm.occurence === AlarmCases.Once){
+                set (
+                    {
+                        weekdays: [ numberToWeekDay(get().date.getDay()) ]
+                    }
+                )
+            }
         }
     }
 ))

@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import {Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
 		TableContainer, Center,Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
-import { timeForNextAlarm, dayContinuationDays } from "./calcAlarmTime"
+import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
 import { WeekDay } from "../../type.d"
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
@@ -10,6 +10,7 @@ import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { timePadding } from "./AlarmComponents/timePadding"
 import { CheckIcon } from "@chakra-ui/icons"
+import { stringToDate } from "./AlarmComponents/stringifyDate"
 
 
 const Alarms = () => {
@@ -137,7 +138,7 @@ const Alarms = () => {
 							<Tooltip
 								label={showTooltip}
 							>
-								{weekdayDisplay(weekdays)}
+								{weekdayDisplay(weekdays, date)}
 							</Tooltip>
 						</Td>
 						<Td
@@ -240,13 +241,19 @@ const Alarms = () => {
 	}
 
 
-	const weekdayDisplay = (days: Array<WeekDay>) => {
+	const weekdayDisplay = (days: Array<WeekDay>, date:string) => {
 		let dayArr = dayContinuationDays(days)
 		let subList: Array<string> = []  
 		for(const outer of dayArr){
 			subList.push(outer.join('-'))
 		}
-		return subList.join(', ')
+		let daysFormat = subList.join(', ')
+		if(daysFormat.length === 0){
+			if(date.length > 0){
+				daysFormat = numberToWeekDay(stringToDate(date).getDay())
+			}
+		}
+		return daysFormat
 	}
 
 	return (

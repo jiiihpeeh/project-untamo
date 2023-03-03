@@ -33,8 +33,8 @@ const DeviceChecker = () => {
                                     </Text>
                                 </Td>
                             </Tr> 
-                        )
-                    }
+                    )
+                }
             )
     }
 
