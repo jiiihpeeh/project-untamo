@@ -7,7 +7,6 @@ import React, { useEffect, useRef } from 'react'
 import AlarmSelector from './AlarmComponents/AlarmSelector'
 import { useAlarms, usePopups } from '../../stores'
 import useAlarm  from './AlarmComponents/alarmStates'
-import { stringToDate} from './AlarmComponents/stringifyDate'
 
 const EditAlarm = () => {
 	const editAlarm = useAlarms((state)=> state.editAlarm)
