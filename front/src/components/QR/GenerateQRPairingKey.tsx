@@ -37,13 +37,14 @@ const GenerateQRPairingKey = () => {
                                             server: server, 
                                           }
                                         )
-          console.log(qrObject)                            
+          //console.log(qrObject)                            
           QRCode.toCanvas(qrCanvas, qrObject, function (error) {
-          if (error) { 
-            console.error('qr',error)
-          }
-          console.log('qr: success!')
-          })
+              if (error) { 
+                console.error('qr',error)
+              }
+            //console.log('qr: success!')
+            }
+          )
         }
       }
     }
@@ -51,7 +52,7 @@ const GenerateQRPairingKey = () => {
   },[qrKey])
 
   useEffect(() => {
-    console.log("fetchQR ", fetchQR, timeOut)
+    //console.log("fetchQR ", fetchQR, timeOut)
     if(fetchQR && !timeOut){
       fetchKey()
     }

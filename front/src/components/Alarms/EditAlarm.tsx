@@ -22,7 +22,6 @@ const EditAlarm = () => {
 
 	const onEdit = async () => {
 		let alarm = alarmFromDialog()
-		console.log(alarm)
 		if(alarm){
 			editAlarm(alarm)
 		}
@@ -33,9 +32,7 @@ const EditAlarm = () => {
 		setShowEdit(false)
 		onClose()
 	}
-	const onDrawerOpen = () => {
-		setShowEdit(true)
-	}
+
 	useEffect(()=>{
 		if(showEdit && toEdit){
 			let alarm = alarms.filter(alarm => alarm.id === toEdit)[0]
