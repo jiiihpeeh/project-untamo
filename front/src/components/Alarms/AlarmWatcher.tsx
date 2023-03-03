@@ -56,7 +56,7 @@ const AlarmWatcher  = () => {
                         let timeOutID = setTimeout(() => { navigate('/play-alarm/') }, timed)
                         setTimeoutId(timeOutID)
                         let alarmDate =   new Date(timed + Date.now())
-                        console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
+                        //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
                         setTimeForNextLaunch(Math.ceil(timed/1000))
                      }  
                 }

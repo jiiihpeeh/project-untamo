@@ -166,7 +166,7 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
                                                             }
                                             }
                                 )
-        console.log(res.data)
+        //console.log(res.data)
         notification("Edit Profile", "User information modified")
         useLogIn.setState(
             {
@@ -181,7 +181,7 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
             }
         )
     } catch (err:any){
-        console.error(err.response.data.message)
+        //console.error(err.response.data.message)
         notification("Edit Profile", `Profile save failed: ${err.response.data.message}`, Status.Error)
     }
 } 

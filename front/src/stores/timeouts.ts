@@ -10,7 +10,7 @@ const compareTime = () =>{
     const currentTime = Date.now()
     
     if(currentTime - systemTime > 6000){
-        console.log("interval trigger")
+        //console.log("interval trigger")
         useDevices.getState().fetchDevices()
         useLogIn.getState().getUserInfo()
         useAlarms.getState().fetchAlarms()
@@ -46,7 +46,7 @@ const clearAlarmTimeout = () => {
             try {
                 clearTimeout(delTimeOut)
             }catch(err){
-                console.log(err)
+               // console.log(err)
         }
     }
 }
@@ -57,7 +57,7 @@ const clearAdminTimeout = () => {
             try {
                 clearTimeout(delTimeOut)
             }catch(err){
-                console.log(err)
+                //console.log(err)
         }
     }
 }
@@ -68,7 +68,7 @@ const clearQrTimeout = () => {
             try {
                 clearTimeout(delTimeOut)
             }catch(err){
-                console.log(err)
+               // console.log(err)
         }
     }
 } 
@@ -79,7 +79,7 @@ const clearRunAlarmID = () => {
             try {
                 clearTimeout(delTimeOut)
             }catch(err){
-                console.log(err)
+               // console.log(err)
         }
     }
 } 
@@ -89,7 +89,7 @@ const clearAlarmCounter = () => {
             try {
                 clearTimeout(delTimeOut)
             }catch(err){
-                console.log(err)
+                //console.log(err)
         }
     }
 } 

@@ -37,7 +37,7 @@ const UserWatcher = () => {
       clearTimeout(wsTimeout)
     }
     if(token && token.length > 3){
-      console.log('sending credits')
+      //console.log('sending credits')
       sendMessage(JSON.stringify({mode:'client', token: token}))
     }else{
       wsTimeout = setTimeout(sendIdentity, 5000)

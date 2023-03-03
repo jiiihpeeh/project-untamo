@@ -185,7 +185,7 @@ const fetchDevices = async () => {
             }
         }
     }catch(err:any){
-        console.log("Cannot fetch devices")
+        //console.log("Cannot fetch devices")
         notification("Devices", "Couldn't fetch the device list", Status.Error)
     }
 }
@@ -267,7 +267,7 @@ const deleteDevice = async (id: string ) => {
                                                         }
                                         } 
                                     )
-        console.log(res.data)
+        //console.log(res.data)
         const currentDevice = useDevices.getState().currentDevice
         if(currentDevice === deleteDevice.id){
             useDevices.setState(
@@ -294,7 +294,7 @@ const deleteDevice = async (id: string ) => {
                                 }
                             ) 
     }catch(err){
-        console.log(err)
+        //console.log(err)
         notification("Device", "Can not delete device", Status.Error)
     }
 }

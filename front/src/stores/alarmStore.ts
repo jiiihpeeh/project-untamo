@@ -72,7 +72,7 @@ const fetchAlarms = async () => {
         )
         fetchedAlarms = alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
     }catch(err){
-        console.log("Cannot fetch alarms")
+        //console.log("Cannot fetch alarms")
         notification("Alarms", "Couldn't fetch the alarm list", Status.Error)
     }
     useAlarms.setState({ alarms: fetchedAlarms})
@@ -100,9 +100,9 @@ const resetSnooze = async() => {
                                             }
                                 }
                             )
-    console.log(res.data)
+    //console.log(res.data)
   }catch(err:any){
-      console.log("Couldn't update alarm info ", err)
+      //console.log("Couldn't update alarm info ", err)
       return
   }
   let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id)
@@ -135,9 +135,9 @@ const snoozer = async () =>{
                                             }
                                   }
                                 )
-      console.log(res.data)
+      //console.log(res.data)
   }catch(err:any){
-      console.log("Couldn't update alarm info ", err)
+      //console.log("Couldn't update alarm info ", err)
       return
   }
   let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id)
@@ -332,14 +332,14 @@ const deleteAlarm = async() =>{
                                             }
                                     }
                                   )
-    console.log(res)
+    //console.log(res)
     let filteredAlarms = alarms.filter(alarmItem => alarmItem.id !== id)
     
     notification("Delete Alarm", "Alarm removed")
     useAlarms.setState({ alarms: filteredAlarms})
   }catch(err:any){
           notification("Delete alarm", "Delete alarm failed", Status.Error)
-          console.error(err)
+          //console.error(err)
   }
 }
 

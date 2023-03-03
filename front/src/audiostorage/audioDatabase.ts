@@ -52,9 +52,9 @@ export const fetchAudio = async (audio: string) => {
                 headers: {token: token}
             });
             await storeAudio(audio, res.data);
-            console.log(`Dowloaded audio: ${audio}`);
+            //console.log(`Dowloaded audio: ${audio}`);
         } catch(err){
-            console.log(`Couldn't fetch audio ${audio}`);
+            //console.log(`Couldn't fetch audio ${audio}`);
             notification("Audio File", `Couldn't download a file ${audio}`, Status.Error);
         }
     }
@@ -91,7 +91,7 @@ export const fetchAudioFiles = async () => {
             useAudio.setState({tracks: audioTracks})
 
         } catch(err){
-            console.log(`Couldn't fetch resources listing`);
+            //console.log(`Couldn't fetch resources listing`);
             notification("Alarm sounds", "Failed to get a listing", Status.Error);
         }
     }   

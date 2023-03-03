@@ -27,7 +27,7 @@ const fetchQRKey = async() =>{
         //console.log(key)                      
         useFetchQR.setState({qrKey: key})
     }catch(err:any){
-        console.log(err)
+        //console.log(err)
     }
 }
 

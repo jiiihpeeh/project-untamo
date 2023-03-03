@@ -163,11 +163,11 @@ const onRegister = async () => {
     const formData = useRegister.getState().formData()
     try {
         const res = await axios.post(`${server}/register`,formData )
-        console.log(res.data)
+        //console.log(res.data)
         notification("Registration", "User was registered")
         useRegister.setState({registered: true})
     } catch (err){
-        console.error(err)
+        //console.error(err)
         notification("Registration", "Registration failed", Status.Error)
     }
 }

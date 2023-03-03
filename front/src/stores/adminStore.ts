@@ -73,7 +73,7 @@ const logIn = async () => {
                 } as ResponseData
 
     }catch(err:any){
-        console.log(err)
+        //console.log(err)
         notification("Admin", "Cannot get admin rights", Status.Error)
         return  {
                     adminToken: '',
@@ -95,7 +95,7 @@ const getUsersData = async() =>{
         let usersData = res.data as Array<UsersData>
         useAdmin.setState({usersData: usersData})
     }catch(err){
-        console.log(err)
+        //console.log(err)
     }
 }
 
@@ -125,7 +125,7 @@ const runAdminAction = async () => {
                 notification("Change", `Changed user: ${command.id}`)
             }catch(err:any){
                 notification("Change", `Change failed ${err.data}`, Status.Error)
-                console.log("err: ", err)
+                //console.log("err: ", err)
                 getUsersData()
             }
             break
@@ -154,7 +154,7 @@ const runAdminAction = async () => {
                 notification("Change", `Changed user: ${command.id}`)
             }catch(err:any){
                 notification("Change", `Change failed ${err.data}`, Status.Error)
-                console.log("err: ", err)
+                //console.log("err: ", err)
                 getUsersData()
             }
             
@@ -178,7 +178,7 @@ const runAdminAction = async () => {
                 notification("Deleted", `Changed user: ${command.id}`)
             }catch(err: any){
                 notification("Change", `Change failed ${err.data}`, Status.Error)
-                console.log("err: ", err) 
+                //console.log("err: ", err) 
                 getUsersData()                   
             }
             break

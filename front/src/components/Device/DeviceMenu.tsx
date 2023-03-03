@@ -28,7 +28,7 @@ const DeviceMenu = () => {
     const openDelete = async(value:string) => {
         let delDevice = devices.filter(dev => dev.id === value)[0]
         if(delDevice){
-            console.log(delDevice)
+            //console.log(delDevice)
             setToDelete(delDevice)
             setShowDelete(true)
         }
@@ -42,7 +42,7 @@ const DeviceMenu = () => {
     const openEdit = async(value:string) => {
         let editDevice = devices.filter(dev => dev.id === value)[0]
         if(editDevice){
-            console.log(editDevice)
+            //console.log(editDevice)
             setToEdit(editDevice)
             setShowEdit(true)
         }

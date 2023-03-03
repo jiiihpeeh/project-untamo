@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
 import {  useAlarms, useTimeouts, useAudio } from '../../stores'
-import alarmclock from './logo.svg'
+import alarmClockString from './logo.svg?raw'
 import '../../App.css'
+
+const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
 const PlayAlarm = () =>{
     const [ clockSize, setClockSize ] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35)
@@ -107,7 +109,7 @@ const PlayAlarm = () =>{
                 aria-label=""
             >
                 <Image 
-                    src={alarmclock}  
+                    src={alarmClock}  
                     width='60%'
                 />
             </IconButton>
@@ -130,3 +132,4 @@ const PlayAlarm = () =>{
     )
 }
 export default PlayAlarm
+

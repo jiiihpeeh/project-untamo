@@ -90,7 +90,7 @@ const Register = () => {
             if(!msg){
                 return
             }
-            console.log(msg)
+            //console.log(msg)
             switch(msg.type){
                 case Query.ZXCVBN:
                     if(msg.content){
@@ -117,9 +117,9 @@ const Register = () => {
             }
         }
     },[lastMessage])
-    useEffect(()=>{
-        console.log(passwordCheck, formCheck)
-    },[passwordCheck, formCheck])
+    // useEffect(()=>{
+    //     console.log(passwordCheck, formCheck)
+    // },[passwordCheck, formCheck])
     return (
         <Box 
             bg='lightgray' 
