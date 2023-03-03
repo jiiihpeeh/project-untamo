@@ -3,7 +3,7 @@ import { WeekDay } from '../../../type'
 import { timePadding } from "./timePadding";
 import { numberToWeekDay } from '../calcAlarmTime';
 import { useDevices } from '../../../stores';
-import { stringifyDate } from './stringifyDate';
+import { stringifyDate, stringToDate } from './stringifyDate';
 
 export enum AlarmCases {
     Once = "once",
@@ -93,6 +93,7 @@ type AlarmStates = {
     formAlarm: () => void,
     tone: string
     alarmFromDialog: () => Alarm|undefined,
+    alarmToEditDialog: (alarm: Alarm) => void,
 }
 
 const initialDevice = () => {
@@ -208,6 +209,22 @@ const useAlarm = create<AlarmStates>((set, get) => (
         alarmFromDialog:()=>{
             get().formAlarm()
             return get().alarm
+        },
+        alarmToEditDialog: ( alarm) => {
+            get().setOccurence(alarm.occurence)
+            set( 
+                {
+                    time: alarm.time,
+                    weekdays: alarm.weekdays,
+                    devices: alarm.devices,
+                    id: alarm.id,
+                    active: alarm.active,
+                    label: alarm.label,
+                    snoozed: alarm.snooze,
+                    date: stringToDate(alarm.date),
+                    tone: alarm.tone
+                }
+            )
         }
     }
 ))

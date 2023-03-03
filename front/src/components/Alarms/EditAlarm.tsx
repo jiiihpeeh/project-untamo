@@ -15,8 +15,8 @@ const EditAlarm = () => {
 	const toEdit = useAlarms((state)=> state.toEdit)
 	const alarms = useAlarms((state)=> state.alarms) 
 	const alarmFromDialog = useAlarm((state)=> state.alarmFromDialog) 
-
 	const setShowEdit = usePopups((state)=> state.setShowEditAlarm) 
+	const alarmToEditDialog = useAlarm((state)=> state.alarmToEditDialog) 
 
 	const btnRef = useRef<any>(null)
 	const { onOpen, onClose } = useDisclosure()
@@ -41,20 +41,7 @@ const EditAlarm = () => {
 		if(showEdit && toEdit){
 			let alarm = alarms.filter(alarm => alarm.id === toEdit)[0]
 			if(alarm){
-				useAlarm.getState().setOccurence(alarm.occurence)
-				useAlarm.setState(
-					{
-						time: alarm.time,
-						weekdays: alarm.weekdays,
-						devices: alarm.devices,
-						id: alarm.id,
-						active: alarm.active,
-						label: alarm.label,
-						snoozed: alarm.snooze,
-						date: stringToDate(alarm.date),
-						tone: alarm.tone
-					}
-				)
+				alarmToEditDialog(alarm)
 			}
 			onOpen()
 		}
