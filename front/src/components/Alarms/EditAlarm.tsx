@@ -42,9 +42,9 @@ const EditAlarm = () => {
 			console.log(toEdit)
 			let alarm = alarms.filter(alarm => alarm.id === toEdit)[0]
 			if(alarm){
+				useAlarm.getState().setOccurence(alarm.occurence)
 				useAlarm.setState(
 					{
-						occurence: alarm.occurence,
 						time: alarm.time,
 						weekdays: alarm.weekdays,
 						devices: alarm.devices,
