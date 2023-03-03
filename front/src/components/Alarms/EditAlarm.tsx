@@ -39,7 +39,6 @@ const EditAlarm = () => {
 	}
 	useEffect(()=>{
 		if(showEdit && toEdit){
-			console.log(toEdit)
 			let alarm = alarms.filter(alarm => alarm.id === toEdit)[0]
 			if(alarm){
 				useAlarm.getState().setOccurence(alarm.occurence)
