@@ -1,5 +1,5 @@
 import {
-	useDisclosure, Button, AlertDialog, 
+	Button, AlertDialog, 
 	AlertDialogBody,AlertDialogFooter, 
 	AlertDialogHeader,AlertDialogContent, 
 	AlertDialogOverlay } from '@chakra-ui/react'
@@ -14,15 +14,13 @@ function DeleteAlarm() {
 	const alarms  = useAlarms((state)=>state.alarms)
 	const toDelete  = useAlarms((state)=>state.toDelete)
 	let alarm = alarms.filter(a => a.id === toDelete)[0]
-
-	const { isOpen, onOpen, onClose } = useDisclosure()	
 	const cancelRef = useRef<HTMLButtonElement>(null)
 
 	return ( <>{alarm && <>
         <AlertDialog
             isOpen={showDelete}
             leastDestructiveRef={cancelRef}
-            onClose={() => {onClose()}}
+            onClose={() => {setShowDelete(false)}}
         >
 			<AlertDialogOverlay>
 				<AlertDialogContent>
@@ -38,13 +36,13 @@ function DeleteAlarm() {
 					<AlertDialogFooter>
 						<Button 
 							ref={cancelRef} 
-							onClick={() => {onClose; setShowDelete(false)}}
+							onClick={() => {setShowDelete(false)}}
 						>
 							Cancel
 						</Button>
 						<Button 
 							colorScheme='red' 
-							onClick= {() => {deleteAlarm() ; onClose(); setShowDelete(false)}} 
+							onClick= {() => {deleteAlarm() ; setShowDelete(false)}} 
 							ml={3}
 						>
 							OK

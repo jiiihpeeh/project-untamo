@@ -100,7 +100,7 @@ const LogIn = () => {
                 mb="1%" 
                 isDisabled={!canSubmit}
             >
-                    Log In 
+                Log In 
             </Button>
         </FormControl> 
         </Box>
