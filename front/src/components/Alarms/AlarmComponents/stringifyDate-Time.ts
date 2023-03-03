@@ -1,4 +1,3 @@
-import { timePadding } from "./timePadding"
 export const stringifyDate = (date: Date) => {
 	let dateArr : Array<string> = [] 
 	dateArr.push(timePadding(date.getFullYear(),4))
@@ -23,4 +22,11 @@ export const stringToDate = (dateStr: string) => {
 		date = new Date()
 	}
 	return date	
+}
+export const timePadding = (number:number, numbers = 2) => {
+    let numberStr = `${number}`
+    while(numberStr.length < numbers){
+        numberStr = `0${numberStr}`
+    }
+    return numberStr
 }

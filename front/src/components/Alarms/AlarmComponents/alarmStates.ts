@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { WeekDay } from '../../../type'
-import { timePadding } from "./timePadding";
+import { timePadding } from "./stringifyDate-Time";
 import { numberToWeekDay } from '../calcAlarmTime';
 import { useDevices } from '../../../stores';
-import { stringifyDate, stringToDate } from './stringifyDate';
+import { stringifyDate, stringToDate } from './stringifyDate-Time';
 import { weeksToDays } from 'date-fns';
 
 export enum AlarmCases {

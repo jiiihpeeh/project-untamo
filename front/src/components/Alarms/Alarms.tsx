@@ -1,6 +1,6 @@
 import React, { useState } from "react"
-import {Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
-		TableContainer, Center,Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
+import {  Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
+		  TableContainer, Center,Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
 import { WeekDay } from "../../type.d"
@@ -8,9 +8,8 @@ import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases, Device } from "../../vite-env.d"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
-import { timePadding } from "./AlarmComponents/timePadding"
+import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"
 import { CheckIcon } from "@chakra-ui/icons"
-import { stringToDate } from "./AlarmComponents/stringifyDate"
 
 
 const Alarms = () => {

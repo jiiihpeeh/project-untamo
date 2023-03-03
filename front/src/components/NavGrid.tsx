@@ -2,7 +2,7 @@ import {Link as ReachLink} from 'react-router-dom'
 import { Text, Link, Spacer, HStack, Avatar } from '@chakra-ui/react'
 import React, { useState, useEffect } from "react"
 import Countdown from "react-countdown"
-import { timePadding } from "./Alarms/AlarmComponents/timePadding"
+import { timePadding } from "./Alarms/AlarmComponents/stringifyDate-Time"
 import { useNavigate } from 'react-router-dom'
 import { useLogIn, useAdmin, useTimeouts, usePopups } from '../stores'
 import { SessionStatus } from '../type.d'

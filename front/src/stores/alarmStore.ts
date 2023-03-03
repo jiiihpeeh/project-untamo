@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { WeekDay } from '../type.d'
 import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useTimeouts } from '../stores'
-import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate'
+import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
 
