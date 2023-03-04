@@ -60,10 +60,11 @@ const AlarmWatcher  = () => {
                         setRunAlarm(runThis)
                         let timeOutID = setTimeout(() => { navigate('/play-alarm/') }, timed)
                         setTimeoutId(timeOutID)
-                        let alarmDate =   new Date(timed + Date.now())
+                        //let alarmDate =   new Date(timed + Date.now())
                         //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
                         setTimeForNextLaunch(Math.ceil(timed/1000))
                         setTrack(alarms.filter(alarm => alarm.id === runThis)[0].tone)
+                        
                      }  
                 }
             }

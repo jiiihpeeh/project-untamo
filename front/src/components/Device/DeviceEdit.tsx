@@ -1,13 +1,12 @@
 import React, { useRef, useState, useEffect } from "react"
 
-import { 
-        Menu, MenuItem,
-        MenuList, MenuButton,
-        Drawer, DrawerOverlay,
-        DrawerContent, DrawerHeader,
-        DrawerBody, DrawerFooter,
-        DrawerCloseButton, Button, Divider,
-        Input, Stack } from "@chakra-ui/react"
+import { Menu, MenuItem,
+         MenuList, MenuButton,
+         Drawer, DrawerOverlay,
+         DrawerContent, DrawerHeader,
+         DrawerBody, DrawerFooter,
+         DrawerCloseButton, Button, Divider,
+         Input, Stack } from "@chakra-ui/react"
 import { ChevronDownIcon } from "@chakra-ui/icons"
 import { usePopups , useDevices } from "../../stores"
 import { DeviceType, Device } from "../../type.d"

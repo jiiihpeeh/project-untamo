@@ -9,8 +9,6 @@ import '../../App.css'
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
 
-
-
 const PlayAlarm = () =>{
     const [ clockSize, setClockSize ] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35)
     const runAlarm =  useAlarms((state)=> state.runAlarm)
@@ -83,7 +81,7 @@ const PlayAlarm = () =>{
             setSnoozeIt(false)
         }
     },[snoozeIt])
-    
+
     const snoozePressFunction = (time: number) =>{
         if((pressTime > 0) && (time - pressTime > 200)){
             console.log("Press trigger")
