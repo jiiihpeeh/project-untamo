@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { useAlarms, useLogIn, useDevices } from '../stores'
+import { useAlarms, useLogIn, useDevices, useAudio } from '../stores'
 //This one detects resume
 
 var systemTime = Date.now()
@@ -207,6 +207,9 @@ const locationChecker = () => {
         useTimeouts.getState().setSnoozeIt(false)
     }
     if(location !== newLocation){
+        if(location.replaceAll('/','').endsWith('play-alarm')){
+            useAudio.getState().stop()
+        }
       location = newLocation
     }
     locationId = setTimeout(locationChecker,600)
