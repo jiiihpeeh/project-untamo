@@ -84,7 +84,7 @@ const UserWatcher = () => {
       setReloadAlarmList()
   }
     stopParallel()
-  }, [alarms, runner])
+  }, [alarms])
   useEffect(() => {
     const watcher = async () => { 
       if (lastMessage !== null) {

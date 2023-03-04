@@ -21,6 +21,9 @@ const compareTime = () =>{
 
 compareTime()
 
+
+
+
 type UseTimeout = {
     id: NodeJS.Timeout|undefined,
     setId: (to: NodeJS.Timeout) => void,
@@ -37,6 +40,8 @@ type UseTimeout = {
     alarmCounter: NodeJS.Timeout|undefined,
     setAlarmCounter: (to: NodeJS.Timeout)=>void,
     clearAlarmCounter: () => void,
+    snoozeIt: boolean,
+    setSnoozeIt: (status:boolean) => void,
     clear: () => void
 }
 
@@ -94,7 +99,7 @@ const clearAlarmCounter = () => {
     }
 } 
 
-const useTimeouts = create<UseTimeout>((set) => ({
+const useTimeouts = create<UseTimeout>((set,get) => ({
         id: undefined,
         setId: (to) => {
             set( 
@@ -165,6 +170,14 @@ const useTimeouts = create<UseTimeout>((set) => ({
         clearAlarmCounter: () => {
             clearAlarmCounter()
         },
+        snoozeIt: false,
+        setSnoozeIt: (status: boolean) => {
+            set(
+                {
+                    snoozeIt: status
+                }
+            )
+        },
         clear:() =>{
             clearAlarmTimeout()
             clearAdminTimeout()
@@ -174,5 +187,31 @@ const useTimeouts = create<UseTimeout>((set) => ({
         }
     }
 ))
+
+let alarmToSnooze : NodeJS.Timeout
+let locationId : NodeJS.Timeout
+let location = window.location.pathname
+let newLocation = ""
+useTimeouts.getState().setSnoozeIt(false)
+const locationChecker = () => {
+    clearTimeout(locationId)
+    newLocation = window.location.pathname
+    if(location !== newLocation && newLocation.replaceAll('/','').endsWith('play-alarm')){
+        console.log("location trigger")
+        if(!useTimeouts.getState().snoozeIt){
+            alarmToSnooze = setTimeout(() => { useTimeouts.getState().setSnoozeIt(true)
+            }, 5*60*1000);            
+        }
+    }else if (!newLocation.replaceAll('/','').endsWith('play-alarm')) {
+        clearTimeout(alarmToSnooze)
+        useTimeouts.getState().setSnoozeIt(false)
+    }
+    if(location !== newLocation){
+      location = newLocation
+    }
+    locationId = setTimeout(locationChecker,600)
+}
+
+locationChecker()
 
 export default useTimeouts
