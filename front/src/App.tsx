@@ -31,6 +31,7 @@ import ServerLocation from './components/ServerLocation'
 import UserMenu from './components/User/UserMenu'
 import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
+import { extend } from './stores'
 import './App.css'
 
 function App() {
@@ -54,16 +55,16 @@ function App() {
 			{/* <AppAlert/> */}
 			<NavGrid/>
 			<Routes>
-					<Route path ="/alarms" element={<Alarms/>}/>
-					<Route path="/about" element={<About/>}/>
-					<Route path="/login" element={<LogIn/>}/>
-					<Route path="/register" element={<Register/>}/>
-					<Route path="/welcome" element={<Welcome/>}/>
-					<Route path="/play-alarm" element={<PlayAlarm/>}/>
-					<Route path="/clueless" element={<Clueless/>}/>
-					<Route path="/admin" element={<Admin/>}/>
-					<Route path="/" element={<Navigate to="/login" /> } />
-					<Route path="*" element={<Navigate to="/clueless" /> } />
+					<Route path ={extend("/alarms")} element={<Alarms/>}/>
+					<Route path={extend("/about")} element={<About/>}/>
+					<Route path={extend("/login")} element={<LogIn/>}/>
+					<Route path={extend("/register")} element={<Register/>}/>
+					<Route path={extend("/welcome")} element={<Welcome/>}/>
+					<Route path={extend("/play-alarm")} element={<PlayAlarm/>}/>
+					<Route path={extend("/clueless")} element={<Clueless/>}/>
+					<Route path={extend("/admin")} element={<Admin/>}/>
+					<Route path={extend("/")} element={<Navigate to={extend("/login")} /> } />
+					<Route path="*" element={<Navigate to={extend("/clueless")} /> } />
 			</Routes>
 			<GenerateQRPairingKey/>
 			<AlarmWatcher/>
