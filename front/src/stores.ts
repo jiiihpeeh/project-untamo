@@ -17,9 +17,12 @@ const getCommunicationInfo = () => {
            }
 }
 
+const extend = (path: string) => {
+    return useServer.getState().extend(path)
+}
 
 export 
     { 
-        useServer, useLogIn, useFetchQR, useAdmin, useAudio,
-        useDevices,useAlarms, useTimeouts, usePopups, getCommunicationInfo
+        useServer, useLogIn, useFetchQR, useAdmin, useAudio, extend,
+        useDevices,useAlarms, useTimeouts, usePopups, getCommunicationInfo 
     }

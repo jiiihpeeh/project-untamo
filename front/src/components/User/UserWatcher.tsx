@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import sleep  from '../sleep'
-import { useServer, useLogIn, useDevices, useAlarms, useAudio, useTimeouts } from '../../stores'
+import { useServer, useLogIn, useDevices, useAlarms, useAudio, useTimeouts, extend } from '../../stores'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
 import { Alarm } from '../../vite-env.d'
@@ -68,7 +68,7 @@ const UserWatcher = () => {
             
             if(path ==="play-alarm" ){
               await  sleep(600)
-              navigate("/alarms")
+              navigate(extend("/alarms"))
               if(plays){
                 stop()
               }

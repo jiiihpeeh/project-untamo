@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
         Button, Box,Divider,} from '@chakra-ui/react'
-import { useLogIn } from "../stores"
+import { useLogIn, extend } from "../stores"
 import { SessionStatus } from "../type.d"
 import '../App.css'
 
 const LogIn = () => {
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const logIn = useLogIn((state) => state.logIn)
+
 
     const [formData, setFormData] = useState({
         email: "",
@@ -27,7 +28,7 @@ const LogIn = () => {
     
     const onSubmit =  () => {
         logIn(formData.email, formData.password)
-        navigate('/welcome')
+        navigate(extend('/welcome'))
     }
 
 
@@ -35,7 +36,7 @@ const LogIn = () => {
 
     useEffect(() =>{
         if(sessionStatus == SessionStatus.Valid){
-            navigate('/alarms')
+            navigate(extend('/alarms'))
         }
     },[sessionStatus, navigate])
 

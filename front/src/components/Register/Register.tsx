@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Input, InputGroup,Box,
          InputRightAddon, FormControl,
          FormLabel, Text, Button } from '@chakra-ui/react'
-import { useServer } from '../../stores'
+import { useServer, extend } from '../../stores'
 import useRegister from './RegisterBackend'
 import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons';
 import '../../App.css'
@@ -59,7 +59,7 @@ const Register = () => {
     useEffect(()=>{
         if(registered){
             clearForm()
-            navigate("/login")
+            navigate(extend("/login"))
         }
     },[registered])
 

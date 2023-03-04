@@ -1,7 +1,7 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Text, Grid, GridItem, Button } from '@chakra-ui/react'
-import { useLogIn, useDevices, usePopups } from "../stores"
+import { useLogIn, useDevices, usePopups, extend } from "../stores"
 import { MenuType } from "../stores/popUpStore"
 import { ChevronDownIcon } from  '@chakra-ui/icons';
 
@@ -64,7 +64,7 @@ const Welcome = () => {
             )
         }
     }
-
+    
     return(
         <>{(userInfo.screenName.length > 0)? 
             <Text>Welcome, <Text as='b'>{userInfo.screenName}</Text> !</Text>: ''}

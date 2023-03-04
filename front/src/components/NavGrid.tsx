@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import Countdown from "react-countdown"
 import { timePadding } from "./Alarms/AlarmComponents/stringifyDate-Time"
 import { useNavigate } from 'react-router-dom'
-import { useLogIn, useAdmin, useTimeouts, usePopups } from '../stores'
+import { useLogIn, useAdmin, useTimeouts, usePopups, extend } from '../stores'
 import { SessionStatus } from '../type.d'
 import { MenuType } from '../stores/popUpStore'
 
@@ -32,7 +32,7 @@ const NavGrid = () => {
         return (<>
                 <Link 
                     as={ReachLink} 
-                    to={`/${item.text}`} 
+                    to={extend(`/${item.text}`)} 
                     id={`link-${item.text}`} 
                 >
                     <Text 
@@ -67,7 +67,7 @@ const NavGrid = () => {
         const adminTimeOut = () =>{
             setShowAdmin(false)
             if(window.location.pathname === '/admin'){
-                navigate('/alarms')
+                navigate(extend('/alarms'))
             }
         }
         try{

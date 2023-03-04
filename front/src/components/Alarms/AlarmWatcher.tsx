@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { useNavigate } from "react-router-dom"
-import { useDevices, useTimeouts, useAlarms, useAudio } from "../../stores"
+import { useDevices, useTimeouts, useAlarms, useAudio, extend } from "../../stores"
 
 const AlarmWatcher  = () => {
     const setTimeoutId = useTimeouts((state)=> state.setId)
@@ -58,7 +58,7 @@ const AlarmWatcher  = () => {
                     if( runThis && (timed > 100)){
                         
                         setRunAlarm(runThis)
-                        let timeOutID = setTimeout(() => { navigate('/play-alarm/') }, timed)
+                        let timeOutID = setTimeout(() => { navigate(extend('/play-alarm/')) }, timed)
                         setTimeoutId(timeOutID)
                         //let alarmDate =   new Date(timed + Date.now())
                         //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)

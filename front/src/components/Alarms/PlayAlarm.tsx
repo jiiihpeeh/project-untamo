@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
-import {  useAlarms, useTimeouts, useAudio } from '../../stores'
+import {  useAlarms, useTimeouts, useAudio, extend } from '../../stores'
 import alarmClockString from './logo.svg?raw'
 import '../../App.css'
 
@@ -49,12 +49,12 @@ const PlayAlarm = () =>{
         console.log("turn OFF")
         resetSnooze()
         removeAlarmObject()
-        setTimeout(() => {navigate('/alarms');stopAudio()},100)   
+        setTimeout(() => {navigate(extend('/alarms'));stopAudio()},100)   
     }
 
     useEffect(() => {
         if(runOtherSnooze){
-            navigate('/alarms')
+            navigate(extend('/alarms'))
             removeAlarmObject()
             setRunOtherSnooze(false)
         }
@@ -77,7 +77,7 @@ const PlayAlarm = () =>{
             console.log("snoozed")
             snoozeAlarm()
             removeAlarmObject()
-            setTimeout(() => {navigate('/alarms'); stopAudio()},100)
+            setTimeout(() => {navigate(extend('/alarms')); stopAudio()},100)
             setSnoozeIt(false)
         }
     },[snoozeIt])
