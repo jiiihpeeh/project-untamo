@@ -33,6 +33,7 @@ export type Alarm = {
     active: boolean,
     snooze: Array<number>,
     id: string,
+    tone: string
 }
 
 

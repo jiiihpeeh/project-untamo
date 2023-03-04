@@ -4,6 +4,7 @@ import sleep  from '../sleep'
 import { useServer, useLogIn, useDevices, useAlarms, useAudio, useTimeouts } from '../../stores'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
+import { Alarm } from '../../vite-env.d'
 
 var wsTimeout : NodeJS.Timeout | null = null
 
@@ -60,7 +61,7 @@ const UserWatcher = () => {
     const stopParallel = async() => {
       if (runner){
         let afterChange = alarms.filter(alarm => alarm.id === runner.id)[0]
-        const path = window.location.pathname.replaceAll('/','')
+        const path = (window.location.pathname).replaceAll('/','')
         if(afterChange){
           if(afterChange.snooze !== runner.snooze){
             //console.log("stopping ", path)
@@ -75,14 +76,15 @@ const UserWatcher = () => {
             }
             clearAlarm()
             //clearAlarm()
-            setReloadAlarmList()
+            
           }
+          
         }
-
       }
+      setReloadAlarmList()
   }
     stopParallel()
-  }, [alarms])
+  }, [alarms, runner])
   useEffect(() => {
     const watcher = async () => { 
       if (lastMessage !== null) {
@@ -93,7 +95,11 @@ const UserWatcher = () => {
       let urlSplit : Array<string> = msgData.url.split('/')
 
       if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
-        setRunner(runAlarm)
+        let runner : Alarm | undefined
+        if (runAlarm){
+          runner = alarms.filter(alarm => alarm.id === runAlarm.id)[0]
+        }
+        setRunner(runner)
         await sleep(500)
         fetchAlarms()
         
