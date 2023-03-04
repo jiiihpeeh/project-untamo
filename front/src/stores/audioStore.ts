@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { getAudio, hasOrFetchAudio } from '../audiostorage/audioDatabase' 
-
+import { getAudio, hasOrFetchAudio, keysAudio } from '../audiostorage/audioDatabase' 
+import sleep from '../components/sleep'
 const audioELement = document.createElement('audio')
 audioELement.setAttribute("id","audioPlayer")
 
@@ -16,6 +16,10 @@ audioELement.addEventListener("ended", (event) => {
     useAudio.setState({ plays: false })
 })
 
+audioELement.addEventListener("emptied", (event) => {
+    useAudio.setState({ plays: false })
+})
+
 type UseAudio = {
     track: string,
     tracks: Array<string>,
@@ -28,9 +32,8 @@ type UseAudio = {
     audioElement: HTMLAudioElement
 }
 
-const play = async () => {
-    const track = useAudio.getState().track
-    const loop = useAudio.getState().loop
+const play = async (track: string, loop: boolean) => {
+    console.log(track, loop)
     let audioData =  await getAudio(track)
     audioELement.src = URL.createObjectURL(audioData)
     if(!loop){
@@ -38,14 +41,23 @@ const play = async () => {
     }else{
        audioELement.setAttribute("loop", `${loop}`) 
     }
+    //audioELement.load()
+    await sleep(3)
     audioELement.play()
 }
 
 const stop = () => {
     if(useAudio.getState().plays){
-        audioELement.pause()
+        audioELement.load()
         URL.revokeObjectURL(audioELement.src) 
+        audioELement.src=""
     }
+}
+
+const reloadTracks = async(track: string) => {
+    let tracks = await keysAudio()
+    let newTrack = (tracks).includes(track)?track:"rooster"
+    useAudio.setState({tracks: tracks, track: newTrack})
 }
 
 const useAudio = create<UseAudio>((set, get) => (
@@ -59,10 +71,13 @@ const useAudio = create<UseAudio>((set, get) => (
                     track: newTrack 
                 }
             )
+            if(track !== newTrack || get().tracks.length === 0){
+                reloadTracks(track)
+            }
         },
         plays: false,
         play: async() =>{
-            await play()
+            await play(get().track, get().loop)
         },
         stop: () => {
             stop()

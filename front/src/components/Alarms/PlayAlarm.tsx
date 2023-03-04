@@ -42,6 +42,8 @@ const PlayAlarm = () =>{
     }
 
     const snoozer = async () =>{
+        console.log("snoozed")
+
         stopAudio()
         snoozeAlarm()
         removeAlarmObject()
@@ -49,6 +51,7 @@ const PlayAlarm = () =>{
     }
     
     const turnOff = async () => {
+        console.log("turn OFF")
         stopAudio()
         resetSnooze()
         removeAlarmObject()

@@ -4,8 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { DeviceType}  from '../type.d'
 import axios from "axios"
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo } from "../stores"
-
+import { getCommunicationInfo, useAlarms } from "../stores"
 
 interface Device {
     id: string,
@@ -72,13 +71,17 @@ const useDevices = create<UseDevices>()(
                         }
                     )
                 ),
-                setCurrentDevice: (id) => set (
-                    state => (
-                        {
-                            currentDevice: state.devices.filter(device => device.id  ===id).map(device => device.id)[0]
-                        }
+                setCurrentDevice: (id) => {
+                    useAlarms.getState().setReloadAlarmList()
+                    useAlarms.getState()
+                    set (
+                        state => (
+                            {
+                                currentDevice: state.devices.filter(device => device.id  ===id).map(device => device.id)[0]
+                            }
+                        )
                     )
-                ),
+                },
                 addDevice: async (name, type) => {
                     addDevice(name, type)
                 },

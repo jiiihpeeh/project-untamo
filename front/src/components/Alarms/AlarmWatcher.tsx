@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { useNavigate } from "react-router-dom"
-import { useDevices, useTimeouts, useAlarms } from "../../stores"
+import { useDevices, useTimeouts, useAlarms, useAudio } from "../../stores"
 
 const AlarmWatcher  = () => {
     const setTimeoutId = useTimeouts((state)=> state.setId)
@@ -13,10 +13,14 @@ const AlarmWatcher  = () => {
     const setRunOtherSnooze  = useAlarms((state)=> state.setRunOtherSnooze)
     const currentDevice  = useDevices((state)=> state.currentDevice)
     const setTimeForNextLaunch = useAlarms((state)=> state.setTimeForNextLaunch)
+    const reloadAlarmList = useAlarms((state)=>state.reloadAlarmList) 
+    const setReloadAlarmList = useAlarms((state)=>state.setReloadAlarmList) 
+    const setTrack = useAudio((state)=> state.setTrack)
 
     const navigate = useNavigate()
 
     useEffect(() => {
+        
         const filterAlarms = () => {
             setTimeForNextLaunch(-1)
             if(runAlarm){
@@ -47,23 +51,25 @@ const AlarmWatcher  = () => {
                 }
                 let minTime = Math.min(...idTimeOutMap.keys())
                 if(minTime && (!isNaN(minTime)) && (Math.abs(minTime) !== Infinity) ){
+                    clearAlarmTimeout()
                     let runThis =  idTimeOutMap.get(minTime)
                     let timed = timeToNextAlarm(alarms.filter(alarm => alarm.id === runThis)[0])
                     
                     if( runThis && (timed > 100)){
-                        clearAlarmTimeout()
+                        
                         setRunAlarm(runThis)
                         let timeOutID = setTimeout(() => { navigate('/play-alarm/') }, timed)
                         setTimeoutId(timeOutID)
                         let alarmDate =   new Date(timed + Date.now())
                         //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
                         setTimeForNextLaunch(Math.ceil(timed/1000))
+                        setTrack(alarms.filter(alarm => alarm.id === runThis)[0].tone)
                      }  
                 }
             }
         }
         filterAlarms()
-    },[alarms, currentDevice])
+    },[alarms, currentDevice, reloadAlarmList])
     return (<></>)
 }
 

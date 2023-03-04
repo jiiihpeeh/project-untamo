@@ -167,6 +167,8 @@ type UseAlarms =  {
   maxAlarmTime: number,
   timeForNextLaunch: number,
   setTimeForNextLaunch: (ms:number)=>void,
+  reloadAlarmList: boolean,
+  setReloadAlarmList: () => void,
   clear: () => void,
 }
 
@@ -413,7 +415,7 @@ const useAlarms = create<UseAlarms>()(
               }
               set(
                   {
-                    toDelete: delId                  
+                    toDelete: delId
                   }
               )
             },
@@ -427,7 +429,7 @@ const useAlarms = create<UseAlarms>()(
               }
               set(
                   {
-                    toEdit: edId                  
+                    toEdit: edId
                   }
               )
             },
@@ -490,8 +492,17 @@ const useAlarms = create<UseAlarms>()(
                   }
                 )
             },
+            reloadAlarmList:false,
+            setReloadAlarmList:()=>{
+              set ( 
+                  {
+                    reloadAlarmList: !(get().reloadAlarmList)
+                  }
+                )
+            },
           }
       ),
+
       {
           name: 'alarms', 
           storage: createJSONStorage(() => localStorage), 
