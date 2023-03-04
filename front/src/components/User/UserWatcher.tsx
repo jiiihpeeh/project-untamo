@@ -61,10 +61,10 @@ const UserWatcher = () => {
     const stopParallel = async() => {
       if (runner){
         let afterChange = alarms.filter(alarm => alarm.id === runner.id)[0]
-        const path = (window.location.pathname).replaceAll('/','')
+        const path = (window.location.pathname).replaceAll('/','').trim()
         if(afterChange){
           if(afterChange.snooze !== runner.snooze){
-            //console.log("stopping ", path)
+            //console.log(" ", path)
             
             if(path.endsWith("play-alarm") ){
               await  sleep(600)
