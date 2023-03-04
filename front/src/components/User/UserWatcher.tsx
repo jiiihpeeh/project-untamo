@@ -6,7 +6,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
 import { Alarm } from '../../vite-env.d'
 
-var wsTimeout : NodeJS.Timeout | null = null
+var wsTimeout : NodeJS.Timeout | null | number
 
 const UserWatcher = () => {
   //Public API that will echo messages sent to it back to the client
@@ -31,7 +31,7 @@ const UserWatcher = () => {
 
   const navigate = useNavigate()
   const { sendMessage, lastMessage } = useWebSocket(socketUrl, {
-    onOpen: () => sendIdentity(),
+    onOpen: () => sendIdentity("reconnect"),
     shouldReconnect: (closeEvent) => {
       /*
       useWebSocket will handle unmounting for you, but this is an example of a 
@@ -46,13 +46,20 @@ const UserWatcher = () => {
 
  
 
-  const sendIdentity = async () => {
+  const sendIdentity = async (mode:string) => {
     if(wsTimeout){
       clearTimeout(wsTimeout)
     }
     if(token && token.length > 3){
       //console.log('sending credits')
       sendMessage(JSON.stringify({mode:'client', token: token}))
+      if(mode === "reconnect"){
+        await sleep(500)
+        fetchAlarms()
+        fetchDevices()
+        userInfoFetch()
+      }
+
     }else{
       wsTimeout = setTimeout(sendIdentity, 5000)
     }
@@ -119,7 +126,7 @@ const UserWatcher = () => {
   }, [lastMessage, token ])
 
   useEffect(() => {
-    sendIdentity()
+    sendIdentity("token")
   },[token])
 
 
