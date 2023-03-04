@@ -66,7 +66,7 @@ const UserWatcher = () => {
           if(afterChange.snooze !== runner.snooze){
             //console.log("stopping ", path)
             
-            if(path ==="play-alarm" ){
+            if(path.endsWith("play-alarm") ){
               await  sleep(600)
               navigate(extend("/alarms"))
               if(plays){
