@@ -65,7 +65,7 @@ const UserWatcher = () => {
         console.log("location ", path)
         if(afterChange){
           if(afterChange.snooze !== runner.snooze){
-            //console.log(" ", path)
+            console.log("change detected ")
             
             if(path.endsWith("play-alarm") ){
               await  sleep(600)
