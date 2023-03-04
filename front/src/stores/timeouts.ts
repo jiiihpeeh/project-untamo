@@ -212,7 +212,7 @@ const locationChecker = () => {
                 useAudio.getState().stop()
             }
         }
-      location = newLocation
+        location = newLocation
     }
     locationId = setTimeout(locationChecker,600)
 }

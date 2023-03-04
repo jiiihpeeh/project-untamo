@@ -46,15 +46,6 @@ const PlayAlarm = () =>{
             clearTimeouts()
         }catch(err){}
     }
-
-    const snoozer = async () =>{
-        console.log("snoozed")
-
-        
-        snoozeAlarm()
-        removeAlarmObject()
-        setTimeout(() => {navigate('/alarms'); stopAudio()},100)
-    }
     
     const turnOff = async () => {
         console.log("turn OFF")
@@ -85,11 +76,14 @@ const PlayAlarm = () =>{
 
     useEffect(()=>{
         if(snoozeIt){
-            //console.log("snoozeIt ", snoozeIt)
-            snoozer()
+            console.log("snoozed")
+            snoozeAlarm()
+            removeAlarmObject()
+            setTimeout(() => {navigate('/alarms'); stopAudio()},100)
             setSnoozeIt(false)
         }
     },[snoozeIt])
+    
     const snoozePressFunction = (time: number) =>{
         if((pressTime > 0) && (time - pressTime > 200)){
             console.log("Press trigger")
