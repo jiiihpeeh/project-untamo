@@ -62,6 +62,7 @@ const UserWatcher = () => {
       if (runner){
         let afterChange = alarms.filter(alarm => alarm.id === runner.id)[0]
         const path = (window.location.pathname).replaceAll('/','').trim()
+        console.log("location ", path)
         if(afterChange){
           if(afterChange.snooze !== runner.snooze){
             //console.log(" ", path)

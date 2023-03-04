@@ -196,13 +196,13 @@ useTimeouts.getState().setSnoozeIt(false)
 const locationChecker = () => {
     clearTimeout(locationId)
     newLocation = window.location.pathname
-    if(location !== newLocation && newLocation.replaceAll('/','').endsWith('play-alarm')){
+    if(location !== newLocation && newLocation.replaceAll('/','').trim().endsWith('play-alarm')){
         console.log("location trigger")
         if(!useTimeouts.getState().snoozeIt){
             alarmToSnooze = setTimeout(() => { useTimeouts.getState().setSnoozeIt(true)
             }, 5*60*1000);            
         }
-    }else if (!newLocation.replaceAll('/','').endsWith('play-alarm')) {
+    }else if (!newLocation.replaceAll('/','').trim().endsWith('play-alarm')) {
         clearTimeout(alarmToSnooze)
         useTimeouts.getState().setSnoozeIt(false)
     }
