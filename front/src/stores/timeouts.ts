@@ -208,7 +208,9 @@ const locationChecker = () => {
     }
     if(location !== newLocation){
         if(location.replaceAll('/','').endsWith('play-alarm')){
-            useAudio.getState().stop()
+            if(useAudio.getState().plays){
+                useAudio.getState().stop()
+            }
         }
       location = newLocation
     }
