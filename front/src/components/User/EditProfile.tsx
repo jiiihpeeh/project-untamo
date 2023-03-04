@@ -61,6 +61,7 @@ function EditProfile() {
 
 	const onRegister = async () => {
 		editUserInfo(formData, changePassword)
+		setShowEditProfile(false)
 	}
 
 	const onCloseFixed = () => {
