@@ -188,7 +188,6 @@ const fetchDevices = async () => {
             }
         }
     }catch(err:any){
-        //console.log("Cannot fetch devices")
         notification("Devices", "Couldn't fetch the device list", Status.Error)
     }
 }
