@@ -68,6 +68,11 @@ const mongo_user=process.env.MONGODB_USERNAME;
 const mongo_password=process.env.MONGODB_PASSWORD;
 const mongo_url=process.env.MONGODB_URL;
 
+//const mongoAddress="mongodb://127.0.0.1:27017/untamo?retryWrites=true&w=majority"
+//console.log(mongoAddress)
+//mongoose.connect (mongoAddress).then( () => console.log(tStamppi(),"Connected to mongodb"),(err) => console.log(tStamppi(),"Failed to connect. Reason",err));
+
+
 mongoose.connect ("mongodb+srv://"+mongo_user+":"+mongo_password+"@"+mongo_url+"/untamodatabase?retryWrites=true&w=majority").then( () => console.log(tStamppi(),"Connected to mongodb"),(err) => console.log(tStamppi(),"Failed to connect. Reason",err));
 
 mongoose.set("toJSON",{virtuals:true});

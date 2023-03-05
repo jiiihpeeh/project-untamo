@@ -9,7 +9,9 @@ let Schema = mongoose.Schema({
     snooze:Array,
     tone: {type:String,default:'rooster'},
     active:{type:Boolean,default:true},
-    user:{type:String,index:true}
+    user:{type:String,index:true},
+    modified:{type: Number, default: Date.now()},
+    fingerprint:{type: String, default: ""}
 });
 
 Schema.virtual("id").get(function() {
