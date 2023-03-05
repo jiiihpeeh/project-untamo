@@ -69,7 +69,6 @@ const UserWatcher = () => {
       if (runner){
         let afterChange = alarms.filter(alarm => alarm.id === runner.id)[0]
         const path = (window.location.pathname).replaceAll('/','').trim()
-        console.log("location ", path)
         if(afterChange){
           if(afterChange.fingerprint !== fingerprint){
             console.log("change detected ")
@@ -79,7 +78,7 @@ const UserWatcher = () => {
               if(plays){
                 stop()
               }
-              notification("An alarm", "An alarm was interrupted by another device ")
+              notification("Alarm", "An alarm was interrupted by another device ")
             }
             clearAlarm() 
           }
