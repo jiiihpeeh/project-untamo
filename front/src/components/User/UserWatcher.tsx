@@ -28,7 +28,7 @@ const UserWatcher = () => {
   const plays = useAudio((state) => state.plays)
   const clearAlarm = useTimeouts((state)=> state.clearIdTimeout)
   const setReloadAlarmList = useAlarms((state)=>state.setReloadAlarmList) 
-
+  const fingerprint = useLogIn((state)=>state.fingerprint)
   const navigate = useNavigate()
   const { sendMessage, lastMessage } = useWebSocket(socketUrl, {
     onOpen: () => sendIdentity("reconnect"),
@@ -71,9 +71,8 @@ const UserWatcher = () => {
         const path = (window.location.pathname).replaceAll('/','').trim()
         console.log("location ", path)
         if(afterChange){
-          if(afterChange.snooze !== runner.snooze){
+          if(afterChange.fingerprint !== fingerprint){
             console.log("change detected ")
-            
             if(path.endsWith("play-alarm") ){
               await  sleep(600)
               navigate(extend("/alarms"))
@@ -82,11 +81,8 @@ const UserWatcher = () => {
               }
               notification("An alarm", "An alarm was interrupted by another device ")
             }
-            clearAlarm()
-            //clearAlarm()
-            
+            clearAlarm() 
           }
-          
         }
       }
       setReloadAlarmList()

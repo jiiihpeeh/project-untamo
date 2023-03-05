@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { WeekDay } from '../../../type'
 import { timePadding } from "./stringifyDate-Time";
 import { numberToWeekDay } from '../calcAlarmTime';
-import { useDevices } from '../../../stores';
+import { useDevices, useLogIn } from '../../../stores';
 import { stringifyDate, stringToDate } from './stringifyDate-Time';
 
 export enum AlarmCases {
@@ -11,6 +11,7 @@ export enum AlarmCases {
     Weekly = "weekly",
     Yearly = "yearly",
 }
+const fingerprint = () => useLogIn.getState().fingerprint
 
 const toggleWeekdays = (d : WeekDay, w : Array<WeekDay>) => {
     if(w.includes(d)){
@@ -65,6 +66,8 @@ type Alarm = {
     snooze : Array<number>,
     id : string,
     tone: string,
+    fingerprint: string,
+    modified: number
 }
 
 type AlarmStates = {
@@ -103,10 +106,13 @@ const initialDevice = () => {
     }
     return [] as Array<string>
 }
+
 const useAlarm = create<AlarmStates>((set, get) => (
     {
         occurence: AlarmCases.Once,
         dateFormat: '',
+        modified: 0,
+        fingerprint: fingerprint(),
         setOccurence: (occurence) => set( 
             {
                 occurence: occurence,
@@ -203,7 +209,9 @@ const useAlarm = create<AlarmStates>((set, get) => (
                             active : state.active,
                             snooze : state.snoozed,
                             id : state.id,
-                            tone: state.tone
+                            tone: state.tone,
+                            fingerprint: fingerprint(),
+                            modified: Date.now()
                     } as Alarm
                 }
             )
@@ -224,7 +232,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                     label: alarm.label,
                     snoozed: alarm.snooze,
                     date: stringToDate(alarm.date),
-                    tone: alarm.tone
+                    tone: alarm.tone,
                 }
             )
             if(alarm.occurence === AlarmCases.Once){

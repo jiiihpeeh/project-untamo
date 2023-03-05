@@ -15,7 +15,8 @@ type UseLogIn = {
     user: UserInfo,
     expire: number,
     tokenTime: number,
-    tones: Array<string>
+    tones: Array<string>,
+    fingerprint: string,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
     setSessionValid: (s: SessionStatus) => void,
@@ -295,6 +296,7 @@ const useLogIn = create<UseLogIn>()(
             expire: -1,
             tokenTime: -1,
             tones: [],
+            fingerprint: [...Array(16)].map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
             setToken: (s) => set(
                   { 
                     token : s

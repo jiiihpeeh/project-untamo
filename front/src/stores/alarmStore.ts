@@ -2,12 +2,12 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { WeekDay } from '../type.d'
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useTimeouts } from '../stores'
+import { getCommunicationInfo, useTimeouts, useLogIn } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
-
 const maxAlarmTime = 60*60*1000
+const fingerprint = () => useLogIn.getState().fingerprint
 
 type AlarmSerialized = {
     occurence : AlarmCases,
@@ -18,6 +18,8 @@ type AlarmSerialized = {
     weekdays: Array<WeekDay>,
     active: boolean,
     snooze: Array<number>,
+    fingerprint: string,
+    modified: number,
     _id: string,
     __v: number
 }
@@ -38,7 +40,9 @@ type Alarm = {
     weekdays: Array<WeekDay>,
     active: boolean,
     snooze: Array<number>,
-    tone: string
+    tone: string,
+    fingerprint: string,
+    modified: number
 }
 interface AlarmSerializedEdit extends AlarmSerialized {
   id: string 
@@ -90,6 +94,8 @@ const resetSnooze = async() => {
     return
   }
   alarm.snooze = [0]
+  alarm.fingerprint = fingerprint()
+  alarm.modified = Date.now()
   try {
     let res = await axios.put(`${server}/api/alarm/`+runAlarm.id, 
                                 alarm,  
@@ -124,7 +130,8 @@ const snoozer = async () =>{
   
   alarm.snooze = alarm.snooze.filter(snooze => snooze > (currentMoment - (60 * 60 * 1000)))
   alarm.snooze.push(currentMoment)
-
+  alarm.fingerprint = fingerprint()
+  alarm.modified = Date.now()
   try {
       let res = await axios.put(`${server}/api/alarm/`+runAlarm.id, 
                                   alarm, 
@@ -198,6 +205,8 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
       time: alarm.time,
       weekdays: alarm.weekdays,
       tone: alarm.tone,
+      fingerprint : fingerprint(),
+      modified : Date.now()
     }
     switch(alarm.occurence){
       case AlarmCases.Weekly:
@@ -254,7 +263,9 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
       time: alarm.time,
       weekdays: alarm.weekdays,
       id: alarm.id,
-      tone:alarm.tone
+      tone:alarm.tone,
+      fingerprint : fingerprint(),
+      modified : Date.now()
     }
     switch(alarm.occurence){
       case AlarmCases.Weekly:
@@ -356,6 +367,8 @@ const activityChange = async (id: string) => {
       }
       let alarm = alarmArr[0]
       alarm.active = !alarm.active
+      alarm.fingerprint = fingerprint()
+      alarm.modified = Date.now()
       const res = await axios.put(
                                     `${server}/api/alarm/`+alarm.id,alarm, 
                                         {
