@@ -61,7 +61,7 @@ const UserWatcher = () => {
       }
 
     }else{
-      wsTimeout = setTimeout(sendIdentity, 5000)
+      wsTimeout = setTimeout(()=>sendIdentity(mode), 5000)
     }
   } 
   useEffect(()=>{
