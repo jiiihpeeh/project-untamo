@@ -14,17 +14,17 @@ const  App =  () => {
   const checkSession = useLogIn((state) => state.validateSession)
   const check = useRef(false)
 
-	useEffect(() => {
-		const checker = async() =>{
+  useEffect(() => {
+    const checker = async() =>{
         if(!check.current){
           await sleep(5)
           checkSession()
           check.current = true
         }
 
-		}
-		checker()
-	},[sessionStatus])
+  }
+    checker()
+  },[sessionStatus])
   return (
     <ThemeProvider >
    
@@ -41,7 +41,7 @@ const  App =  () => {
 }
 
 
-export default App;
+export default App
 
 // const styles = StyleSheet.create({
 //   container: {
