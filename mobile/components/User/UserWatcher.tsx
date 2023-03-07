@@ -95,13 +95,14 @@ const UserWatcher = () => {
   // }, [alarms])
   useEffect(() => {
     const watcher = async () => { 
+      console.log(lastMessage)
       if (lastMessage !== null) {
         let msgData = JSON.parse(lastMessage.data)
         if(!msgData || !msgData.hasOwnProperty('url')){
           return
         }
       let urlSplit : Array<string> = msgData.url.split('/')
-
+      console.log(urlSplit)
       if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
         let runner : Alarm | undefined
         if (runAlarm){

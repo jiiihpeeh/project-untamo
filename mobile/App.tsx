@@ -5,7 +5,6 @@ import LogIn from './components/User/LogIn'
 import Notification from './components/Notification'
 import AlarmView from './components/Alarms/AlarmView'
 import { useLogIn } from './stores'
-import UserWatcher from './components/User/UserWatcher'
 import { SessionStatus } from './type'
 import sleep from './components/sleep'
 const  App =  () => {
@@ -32,7 +31,7 @@ const  App =  () => {
         <SafeAreaView style={{ flex: 1 }}>
         {(sessionStatus=== SessionStatus.Valid)?<AlarmView/>:<LogIn/> }
 
-        <UserWatcher/>
+        
         <Notification/>
         </SafeAreaView>
       <StatusBar/>
