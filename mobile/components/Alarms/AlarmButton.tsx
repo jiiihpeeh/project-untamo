@@ -105,9 +105,11 @@ const AlarmButton = (props: Props) => {
                 onPress={()=>onPress()}
             >
                 <Time/>
-                <Div    flex={1} 
-                        alignItems={"center"} 
-                        row={false}>
+                <Div    
+                    flex={1} 
+                    alignItems={"center"} 
+                    row={false}
+                >
                 <Text>
                     Once: {alarm.label}
                 </Text>
@@ -136,7 +138,9 @@ const AlarmButton = (props: Props) => {
                 <Text>
                     Daily: {alarm.label}
                 </Text>
-                    <Div row >
+                    <Div 
+                        row 
+                    >
                         <Div>
                             <Days/>
                         </Div>

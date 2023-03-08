@@ -13,24 +13,24 @@ const DeviceChecker = () => {
         return devices.map(device => 
                                         {
                                             return (
-                                                    <Div 
-                                                        key={`device-check-div-${device.id}`}
-                                                    >
-                                                        <Checkbox 
-                                                            key={`device-check-${device.id}`}
-                                                            checked={selectedDevices.includes(device.id)}   
-                                                            onPress={() => setSelectedDevices(device.id)}
-                                                            prefix={
-                                                                    <Text 
-                                                                        key={`device-check-text-${device.id}`}
-                                                                    >
-                                                                        {device.deviceName} {device.type}
-                                                                    </Text>} 
-                                                        />
-                                                    </Div>
+                                                        <Div 
+                                                            key={`device-check-div-${device.id}`}
+                                                        >
+                                                            <Checkbox 
+                                                                key={`device-check-${device.id}`}
+                                                                checked={selectedDevices.includes(device.id)}   
+                                                                onPress={() => setSelectedDevices(device.id)}
+                                                                prefix={
+                                                                        <Text 
+                                                                            key={`device-check-text-${device.id}`}
+                                                                        >
+                                                                            {device.deviceName} {device.type}
+                                                                        </Text>} 
+                                                            />
+                                                        </Div>
                                                     )
-                                    }
-        )
+                                        }
+                            )
     }
 
 
