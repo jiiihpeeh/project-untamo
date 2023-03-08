@@ -13,6 +13,7 @@ interface Props{
 const AlarmButton = (props: Props) => {
     const alarm = props.alarm
     const onPress = props.onPress
+
     const dayDisplay = (alarm: Alarm ) => {
         let dayArr = dayContinuationDays(alarm.weekdays)
         let dayList: Array<string> = []
@@ -21,6 +22,7 @@ const AlarmButton = (props: Props) => {
         }
         return dayList.join(', ')
     }
+
     const Time = () => {
             return(
                     <Text 
@@ -35,143 +37,145 @@ const AlarmButton = (props: Props) => {
     }
     const Weekdays = () => {
         return(
-            <Text 
-                fontSize="5xl" 
-                fontWeight="bold" 
-                mt="lg" 
-                color="gray"
+                <Text 
+                    fontSize="5xl" 
+                    fontWeight="bold" 
+                    mt="lg" 
+                    color="gray"
 
-            >
-                {dayDisplay(alarm)}
-            </Text>
+                >
+                    {dayDisplay(alarm)}
+                </Text>
         )
     }
     const Days = () => {
         return(
-            <Text 
-                fontSize="5xl" 
-                fontWeight="bold" 
-                mt="lg" 
-                color="gray"
-            >
-                Monday-Sunday
-            </Text>
+                <Text 
+                    fontSize="5xl" 
+                    fontWeight="bold" 
+                    mt="lg" 
+                    color="gray"
+                >
+                    Monday-Sunday
+                </Text>
         )
     }
     const Date = () => {
         return(
-            <Text 
-                fontSize="5xl" 
-                fontWeight="bold" 
-                mt="lg" 
-                color="gray"
-            >
-                {alarm.date}
-            </Text>
+                <Text 
+                    fontSize="5xl" 
+                    fontWeight="bold" 
+                    mt="lg" 
+                    color="gray"
+                >
+                    {alarm.date}
+                </Text>
         )
     }
     const Weekly = () => {
         return(
-            <Button 
-                m={10} 
-                bg={(alarm.active)?"yellow":"gray200"}
-                onPress={()=> onPress()} 
-            >
-                <Time/>
-                <Div 
-                    flex={1} 
-                    alignItems={"center"} 
-                    row={false}
+                <Button 
+                    m={10} 
+                    bg={(alarm.active)?"yellow":"gray200"}
+                    onPress={()=> onPress()} 
                 >
-                <Text>
-                    Weekly: {alarm.label}
-                </Text>
+                    <Time/>
                     <Div 
-                        row 
+                        flex={1} 
+                        alignItems={"center"} 
+                        row={false}
                     >
-                        <Div>
-                            <Weekdays/>
+                    <Text>
+                        Weekly: {alarm.label}
+                    </Text>
+                        <Div 
+                            row 
+                        >
+                            <Div>
+                                <Weekdays/>
+                            </Div>
                         </Div>
                     </Div>
-                </Div>
-            </Button>
+                </Button>
         )
     }
     const Once = () => {
         return(
-            <Button 
-                m={10} 
-                bg={(alarm.active)?"yellow":"gray200"}
-                onPress={()=>onPress()}
-            >
-                <Time/>
-                <Div    
-                    flex={1} 
-                    alignItems={"center"} 
-                    row={false}
+                <Button 
+                    m={10} 
+                    bg={(alarm.active)?"yellow":"gray200"}
+                    onPress={()=>onPress()}
                 >
-                <Text>
-                    Once: {alarm.label}
-                </Text>
-                    <Div row >
-                        <Div>
-                            <Date/>
+                    <Time/>
+                    <Div    
+                        flex={1} 
+                        alignItems={"center"} 
+                        row={false}
+                    >
+                    <Text>
+                        Once: {alarm.label}
+                    </Text>
+                        <Div 
+                            row
+                        >
+                            <Div>
+                                <Date/>
+                            </Div>
                         </Div>
                     </Div>
-                </Div>
-            </Button>
+                </Button>
         )
     }
     const Daily = () => {
         return(
-            <Button 
-                m={10} 
-                bg={(alarm.active)?"yellow":"gray200"}
-                onPress={()=> onPress()} 
-            >                
-                <Time/>
-                <Div 
-                    flex={1} 
-                    alignItems={"center"} 
-                    row={false}
-                >
-                <Text>
-                    Daily: {alarm.label}
-                </Text>
+                <Button 
+                    m={10} 
+                    bg={(alarm.active)?"yellow":"gray200"}
+                    onPress={()=> onPress()} 
+                >                
+                    <Time/>
                     <Div 
-                        row 
+                        flex={1} 
+                        alignItems={"center"} 
+                        row={false}
                     >
-                        <Div>
-                            <Days/>
+                    <Text>
+                        Daily: {alarm.label}
+                    </Text>
+                        <Div 
+                            row 
+                        >
+                            <Div>
+                                <Days/>
+                            </Div>
                         </Div>
                     </Div>
-                </Div>
-            </Button>
+                </Button>
         )
     }
     const Yearly = () => {
         return(
-            <Button 
-                m={10} 
-                bg={(alarm.active)?"yellow":"gray200"}
-                onPress={()=> onPress()} 
-            >
-                <Time/>
-                <Div 
-                    flex={1} 
-                    alignItems={"center"} 
-                    row={false}
+                <Button 
+                    m={10} 
+                    bg={(alarm.active)?"yellow":"gray200"}
+                    onPress={()=> onPress()} 
                 >
-                <Text>
-                    Yearly: {alarm.label}
-                </Text>
-                    <Div row >
-                        <Div>
-                            <Date/>
+                    <Time/>
+                    <Div 
+                        flex={1} 
+                        alignItems={"center"} 
+                        row={false}
+                    >
+                    <Text>
+                        Yearly: {alarm.label}
+                    </Text>
+                        <Div row >
+                            <Div>
+                                <Date/>
+                            </Div>
                         </Div>
                     </Div>
-                </Div>
-            </Button>
+                </Button>
         )
     }
     const RenderedButton = () => {
