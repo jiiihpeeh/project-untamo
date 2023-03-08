@@ -90,8 +90,16 @@ const Alarms = () => {
 
     return(
         <>  
-        <StatusBar barStyle="dark-content" />
-        <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar 
+            barStyle="dark-content" 
+        />
+        <SafeAreaView 
+            style={
+                        { 
+                            flex: 1 
+                        }
+                    }
+        >
         <Div 
             row 
             alignItems="center"
