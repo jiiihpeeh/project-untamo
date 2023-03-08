@@ -11,9 +11,9 @@ const DateModal = () => {
     const mode= useAlarm((state)=> state.pickerMode)
   
     const onChange = (event:  DateTimePickerEvent, selectedDate: Date) => {
-        if(date){
-            setDate(selectedDate)
-        }
+      if(date){
+          setDate(selectedDate)
+      }
     }
     
     const show = () => {

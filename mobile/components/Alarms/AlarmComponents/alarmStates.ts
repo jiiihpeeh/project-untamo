@@ -59,8 +59,6 @@ const alarmTimeInit = () => {
 	return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
 }
 
-
-
 type AlarmStates = {
     occurence : AlarmCases,
     setOccurence: (occurence : AlarmCases) => void,
@@ -82,10 +80,8 @@ type AlarmStates = {
     id: string,
     setId: (id:string) =>void,
     onAddOpen: () => void,
-    alarm: Alarm|undefined,
-    formAlarm: () => void,
     tone: string
-    alarmFromDialog: () => Alarm|undefined,
+    alarmFromDialog: () => Alarm,
     alarmToEditDialog: (alarm: Alarm) => void,
     dialogMode: DialogMode,
     setDialogMode: (mode:DialogMode) =>void,
@@ -187,30 +183,21 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 tone: 'rooster'
             }
         ),
-        alarm: undefined,
-        formAlarm: () => set(
-            state => (
-                {
-                    alarm: {
-                            occurence : state.occurence,
-                            label : state.label,
-                            time : state.time,
-                            date : stringifyDate(state.date),
-                            devices : state.devices,
-                            weekdays : state.weekdays,
-                            active : state.active,
-                            snooze : state.snoozed,
-                            id : state.id,
-                            tone: state.tone,
-                            fingerprint: fingerprint(),
-                            modified: Date.now()
-                    } as Alarm
-                }
-            )
-        ),
         alarmFromDialog:()=>{
-            get().formAlarm()
-            return get().alarm
+            return {
+                        occurence : get().occurence,
+                        label : get().label,
+                        time : get().time,
+                        date : stringifyDate(get().date),
+                        devices : get().devices,
+                        weekdays : get().weekdays,
+                        active : get().active,
+                        snooze : get().snoozed,
+                        id : get().id,
+                        tone: get().tone,
+                        fingerprint: fingerprint(),
+                        modified: Date.now()
+                    }
         },
         alarmToEditDialog: ( alarm) => {
             get().setOccurence(alarm.occurence)
@@ -254,6 +241,4 @@ const useAlarm = create<AlarmStates>((set, get) => (
     }
 ))
 
-
 export default useAlarm
-
