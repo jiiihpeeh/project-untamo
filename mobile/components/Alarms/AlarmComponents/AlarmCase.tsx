@@ -43,7 +43,9 @@ const AlarmCase = () => {
             mt={20}
             onPress={() => dropdownRef.current.open()}
           >
-            <Text>Select Alarm type: {alarmCase}</Text>
+            <Text>
+              Select Alarm type: {alarmCase}
+            </Text>
           </Button>
           <Dropdown
             ref={dropdownRef}

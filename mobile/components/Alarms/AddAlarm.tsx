@@ -19,124 +19,53 @@ const AddAlarm = () => {
         setShowDeleteAlarm(false)
         setDialogMode(DialogMode.Add)
     }
+    function capitalizeFirstLetter(str: string) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    const FabButtons = () => {
+        const cases = Object.values(AlarmCases).filter((item) => item)
+        return cases.map(alarmCase =>   {
+                                            return(
+                                                    <Button 
+                                                        p="none" 
+                                                        bg="transparent" 
+                                                        justifyContent="flex-end" 
+                                                        mb={20}
+                                                        key={alarmCase}
+                                                        onPress={() => launchDialog(alarmCase)}
+                                                    >
+                                                        <Div 
+                                                            rounded="sm" 
+                                                            bg="white" 
+                                                            p="sm"
+                                                        >
+                                                            <Text 
+                                                                fontSize="xl"
+                                                            >
+                                                                {capitalizeFirstLetter(alarmCase)}
+                                                            </Text>
+                                                        </Div>
+                                                        <Icon
+                                                            name="clock"
+                                                            color="blue600"
+                                                            h={100}
+                                                            w={100}
+                                                            rounded="circle"
+                                                            ml="md"
+                                                            bg="white"
+                                                        />
+                                                    </Button>
+                                            )
+                                        }
+                        )
+    }
     return(<>
         <Fab 
             bg="blue600" 
             h={65} 
             w={65}
         >
-            <Button 
-                p="none" 
-                bg="transparent" 
-                justifyContent="flex-end" 
-                mb={20}  
-                onPress={() => launchDialog(AlarmCases.Once)}
-            >
-                <Div 
-                    rounded="sm" 
-                    bg="white" 
-                    p="sm"
-                >
-                    <Text 
-                        fontSize="xl"
-                    >
-                        Once
-                    </Text>
-                </Div>
-                <Icon
-                    name="clock"
-                    color="blue600"
-                    h={100}
-                    w={100}
-                    rounded="circle"
-                    ml="md"
-                    bg="white"
-                />
-            </Button>
-            <Button 
-                p="none" 
-                bg="transparent" 
-                justifyContent="flex-end" 
-                mb={20}
-                onPress={() => launchDialog(AlarmCases.Weekly)}
-            >
-                <Div 
-                    rounded="sm" 
-                    bg="white" 
-                    p="sm"
-                >
-                    <Text 
-                        fontSize="xl"
-                    >
-                        Weekly
-                    </Text>
-                </Div>
-                <Icon
-                    name="clock"
-                    color="blue600"
-                    h={100}
-                    w={100}
-                    rounded="circle"
-                    ml="md"
-                    bg="white"
-                />
-            </Button>
-            <Button 
-                p="none" 
-                bg="transparent" 
-                justifyContent="flex-end" 
-                mb={20}
-                onPress={() => launchDialog(AlarmCases.Daily)}
-            >
-                <Div 
-                    rounded="sm" 
-                    bg="white" 
-                    p="sm"
-                >
-                    <Text 
-                        fontSize="xl"
-                    >
-                        Daily
-                    </Text>
-                </Div>
-                <Icon
-                    name="clock"
-                    color="blue600"
-                    h={100}
-                    w={100}
-                    rounded="circle"
-                    ml="md"
-                    bg="white"
-                />
-            </Button>
-            <Button 
-                p="none" 
-                bg="transparent" 
-                justifyContent="flex-end" 
-                mb={20}
-                onPress={() => launchDialog(AlarmCases.Yearly)}
-            >
-                <Div 
-                    rounded="sm" 
-                    bg="white" 
-                    p="sm"
-                >
-                    <Text 
-                        fontSize="xl"
-                    >
-                        Yearly
-                    </Text>
-                </Div>
-                <Icon
-                    name="clock"
-                    color="blue600"
-                    h={100}
-                    w={100}
-                    rounded="circle"
-                    ml="md"
-                    bg="white"
-                />
-            </Button>
+            {FabButtons()}
         </Fab>
         <AlarmSelector/>
         </>
