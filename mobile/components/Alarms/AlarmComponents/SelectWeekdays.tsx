@@ -4,31 +4,33 @@ import useAlarm from './alarmStates'
 import { View } from 'react-native'
 import { WeekDay } from '../../../type'
 
-const SelectedWeekdays = () => {
-    const selectedWeekdays = useAlarm((state)=>state.weekdays)
-    const setWeekdays = useAlarm((state)=>state.toggleWeekdays)
 
-    const WeekdayButton = (weekday: WeekDay, abbrev: string) => {
-        return(
-            <Div 
+
+function SelectedWeekdays() {
+    const selectedWeekdays = useAlarm((state) => state.weekdays)
+    const setWeekdays = useAlarm((state) => state.toggleWeekdays)
+
+    const WeekdayButton = (weekday : WeekDay, abbrev: string) => {
+        return (
+            <Div
                 alignItems='center'
                 key={abbrev}
             >
                 <View>
-                    <Button 
+                    <Button
                         ml={1}
                         mt={10}
-                        borderColor={'black'} 
-                        bg={(selectedWeekdays.includes(weekday))?"green":"gray" }
-                        onPress={() => setWeekdays(weekday)} 
+                        borderColor={'black'}
+                        bg={(selectedWeekdays.includes(weekday)) ? "green" : "gray"}
+                        onPress={() => setWeekdays(weekday)}
                         borderWidth={2}
-                        w={48} 
+                        w={48}
                         h={45}
                     >
-                        <Text 
+                        <Text
                             fontSize={9}
                         >
-                            {abbrev} 
+                            {abbrev}
                         </Text>
                     </Button>
                 </View>
@@ -36,24 +38,22 @@ const SelectedWeekdays = () => {
         )
     }
     const WeekDayButtons = () => {
-        const weekdays: Array<Array<string>> = [
-                                                    ["Monday","Mon"], 
-                                                    ["Tuesday","Tue"],  
-                                                    ["Wednesday","Wed"], 
-                                                    ["Thursday","Thu"], 
-                                                    ["Friday","Fri"], 
-                                                    ["Saturday","Sat"],
-                                                    ["Sunday","Sun"]
-                                                ]
-        return weekdays.map(day =>
-                                    {
-                                        const enumDay = day[0] as WeekDay
-                                        const abbrev = day[1] 
-                                        return WeekdayButton( enumDay, abbrev)
-                                    }
-                            )
+        let WeekDayTuple : [ day: WeekDay, abbrev: string]
+        const weekdays: Array<typeof WeekDayTuple> = [
+            [WeekDay.Monday, "Mon"],
+            [WeekDay.Tuesday, "Tue"],
+            [WeekDay.Wednesday, "Wed"],
+            [WeekDay.Thursday, "Thu"],
+            [WeekDay.Friday, "Fri"],
+            [WeekDay.Saturday, "Sat"],
+            [WeekDay.Sunday, "Sun"]
+        ]
+        return weekdays.map(day => {
+            return WeekdayButton(day[0], day[1])
+        }
+        )
     }
-    return(
+    return (
         <Div alignItems='center'>
             <Text textAlign='center'>Select Weekdays</Text>
             <Div row>
