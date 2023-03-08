@@ -52,7 +52,13 @@ const UserWatcher = () => {
     }
     if(token && token.length > 3){
       //console.log('sending credits')
-      sendMessage(JSON.stringify({mode:'client', token: token}))
+      sendMessage(JSON.stringify(
+                                  {
+                                    mode:'client', 
+                                    token: token
+                                  }
+                                )
+                  )
       if(mode === "reconnect"){
         await sleep(500)
         fetchAlarms()
