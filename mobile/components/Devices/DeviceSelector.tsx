@@ -3,8 +3,6 @@ import { Select, Button, Text , Dropdown} from "react-native-magnus"
 import { useDevices } from "../../stores"
 
 const DeviceSelector = () => {
-
-    const [openMenu, setOpenMenu] = useState(false)
     const  devices = useDevices((state)=>state.devices)
     const setCurrentDevice = useDevices((state)=>state.setCurrentDevice)
     const currentDevice = useDevices((state)=>state.currentDevice)
