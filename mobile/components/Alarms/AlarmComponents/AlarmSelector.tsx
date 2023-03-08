@@ -72,9 +72,10 @@ const AlarmSelector = () => {
                 top={20}
                 right={15}
                 rounded="circle"
-                onPress={() =>  {
-                                    setShowAlarmSelector(false)
-                                }
+                onPress={
+                            () =>   {
+                                        setShowAlarmSelector(false)
+                                    }
                         }
             >
                 <Icon 
@@ -93,9 +94,10 @@ const AlarmSelector = () => {
                     <Button 
                         flex={1} 
                         m={20} 
-                        onPress={() =>  {
-                                            postAlarm()
-                                        }
+                        onPress={
+                                    () =>   {
+                                                postAlarm()
+                                            }
                                 } 
                     >
                         OK
@@ -103,9 +105,10 @@ const AlarmSelector = () => {
                     <Button 
                         flex={1} 
                         m={20} 
-                        onPress={() =>  {
-                                            setShowAlarmSelector(false)
-                                        } 
+                        onPress={
+                                    () =>   {
+                                                setShowAlarmSelector(false)
+                                            } 
                                 }
                     > 
                         Cancel
@@ -117,10 +120,11 @@ const AlarmSelector = () => {
                         <Button 
                             m={20} 
                             bg="red" 
-                            onPress={() => {    
-                                                setToDelete(alarmId)
-                                                setShowDeleteAlarm(true)
-                                           }
+                            onPress={
+                                        () =>   {    
+                                                    setToDelete(alarmId)
+                                                    setShowDeleteAlarm(true)
+                                                }
                                     } 
                         > 
                             Delete

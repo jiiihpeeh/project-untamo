@@ -11,7 +11,7 @@ const ServerAddress = () => {
         <Button block m={10} 
                 onPress={() => setVisible(true)}
                 bg="green"
-                >
+        >
             Server Address
         </Button>
             <Modal isVisible={visible}>
@@ -21,12 +21,13 @@ const ServerAddress = () => {
                     onChangeText={text => setServer(text)} 
                     value={server}
                     mt={80}
-                    />
+                />
             <Button
                 block m={10}
-                onPress={() =>  {
-                                    setVisible(false)
-                                }
+                onPress={
+                            () =>  {
+                                        setVisible(false)
+                                    }
                         }
             >
                 OK

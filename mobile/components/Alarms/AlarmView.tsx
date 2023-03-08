@@ -9,17 +9,17 @@ const AlarmView = () => {
     const currentDevice = useDevices((state)=>state.currentDevice)
 
     return( <>
-          <StatusBar/>
-            <SafeAreaView 
-                style=  {
-                            { 
-                                flex: 1 
+                <StatusBar/>
+                <SafeAreaView 
+                    style=  {
+                                { 
+                                    flex: 1 
+                                }
                             }
-                        }
-            >
-                {(currentDevice && currentDevice.length >0)?<Alarms/>:<Welcome/>}
-                <UserWatcher/>
-            </SafeAreaView>
+                >
+                    {(currentDevice && currentDevice.length >0)?<Alarms/>:<Welcome/>}
+                    <UserWatcher/>
+                </SafeAreaView>
             </>
             )
 }
