@@ -7,9 +7,21 @@ const Message = () => {
     const setLabel = useAlarm((state)=>state.setLabel)
 
     return(
-        <Div row>
-            <Text>Message</Text>
-            <Input value={label} onChangeText= {(text) => setLabel(text)} style={{ flex: 1 }} m={10}/>
+        <Div 
+            row>
+            <Text>
+                Message
+            </Text>
+            <Input 
+                value={label} 
+                onChangeText= {(text) => setLabel(text)} 
+                style=  {
+                            { 
+                                flex: 1 
+                            }
+                        } 
+                m={10}
+            />
         </Div>          
     )
 }
