@@ -26,7 +26,7 @@ const DateModal = () => {
     const showFormat = () => {
         switch(mode){
             case PickerMode.Month:
-                return `${timePadding(date.getDate())}.${timePadding(date.getMonth() + 1)}.${timePadding(date.getFullYear())} `
+                return `${timePadding(date.getDate())}.${timePadding(date.getMonth() + 1)}.${timePadding(date.getFullYear(),4)} `
             default:
                 return `${timePadding(date.getDate())}.${timePadding(date.getMonth() + 1)}`
         }
