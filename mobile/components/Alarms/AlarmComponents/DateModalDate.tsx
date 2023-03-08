@@ -16,12 +16,14 @@ const DateModal = () => {
         }
     }
     const show = () => {
-      DateTimePickerAndroid.open({
-        value: date,
-        onChange,
-        mode: "date",
-        is24Hour: true,
-      })
+      DateTimePickerAndroid.open(
+                                    {
+                                        value: date,
+                                        onChange,
+                                        mode: "date",
+                                        is24Hour: true,
+                                    }
+                                )
     }
     const showFormat = () => {
         switch(mode){
