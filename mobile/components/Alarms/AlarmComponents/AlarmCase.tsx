@@ -1,7 +1,7 @@
 import React, { createRef} from "react"
 import { Dropdown, Button, Text } from "react-native-magnus"
-import useAlarm, { AlarmCases } from "./alarmStates"
-
+import useAlarm from "./alarmStates"
+import { AlarmCases } from "../../../type"
 const AlarmCase = () => {
     const dropdownRef : any = createRef()
     const alarmCase = useAlarm((state)=>state.occurence)

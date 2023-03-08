@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import useMessage, { Status } from './messageStore'
 import useTimeouts from './timeouts'
 import useLogIn from './loginStore'
+import { Alarm, AlarmCases } from '../type'
+
 
 const notification  = useMessage.getState().notification
 const maxAlarmTime = 60*60*1000
@@ -28,27 +30,8 @@ type AlarmSerialized = {
     _id: string,
     __v: number
 }
-export enum AlarmCases {
-    Once = "once",
-    Daily = "daily",
-    Weekly = "weekly",
-    Yearly = "yearly",
-}
 
-type Alarm = {
-    id: string,
-    occurence : AlarmCases,
-    time: string,
-    date: string,
-    devices: Array<string>,
-    label: string,
-    weekdays: Array<WeekDay>,
-    active: boolean,
-    snooze: Array<number>,
-    tone: string,
-    fingerprint: string,
-    modified: number
-}
+
 interface AlarmSerializedEdit extends AlarmSerialized {
   id: string 
 }

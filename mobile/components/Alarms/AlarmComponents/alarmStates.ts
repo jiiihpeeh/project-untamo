@@ -4,17 +4,16 @@ import { timePadding } from "./stringifyDate-Time"
 import { numberToWeekDay } from '../calcAlarmTime'
 import { useDevices, useLogIn } from '../../../stores'
 import { stringifyDate, stringToDate } from './stringifyDate-Time'
-
-export enum AlarmCases {
-    Once = "once",
-    Daily = "daily",
-    Weekly = "weekly",
-    Yearly = "yearly",
-}
+import { AlarmCases, Alarm } from '../../../type'
 
 export enum DialogMode {
     Edit,
-    Add
+    Add,
+}
+
+export enum PickerMode {
+    Month,
+    Year,
 }
 
 const fingerprint = () => useLogIn.getState().fingerprint
@@ -47,11 +46,11 @@ const timeValue = (t: string) => {
 const occurenceDateFormat = (cases:AlarmCases) =>{
     switch(cases){
         case AlarmCases.Once:
-            return 'date'
+            return PickerMode.Month
         case AlarmCases.Yearly:
-            return 'date-no-year'
+            return PickerMode.Year
         default:
-            return ''
+            return PickerMode.Month
     }
 }
 
@@ -61,24 +60,9 @@ const alarmTimeInit = () => {
 }
 
 
-type Alarm = {
-    occurence : AlarmCases,
-    label : string,
-    time : string,
-    date : string,
-    devices : Array<string>,
-    weekdays : Array<WeekDay>,
-    active : boolean,
-    snooze : Array<number>,
-    id : string,
-    tone: string,
-    fingerprint: string,
-    modified: number
-}
 
 type AlarmStates = {
     occurence : AlarmCases,
-    dateFormat: string,
     setOccurence: (occurence : AlarmCases) => void,
     label: string,
     setLabel: (label: string) => void,
@@ -105,6 +89,8 @@ type AlarmStates = {
     alarmToEditDialog: (alarm: Alarm) => void,
     dialogMode: DialogMode,
     setDialogMode: (mode:DialogMode) =>void,
+    pickerMode: PickerMode,
+    setPickerMode: (format: PickerMode)=> void
 }
 
 const initialDevice = () => {
@@ -118,13 +104,12 @@ const initialDevice = () => {
 const useAlarm = create<AlarmStates>((set, get) => (
     {
         occurence: AlarmCases.Once,
-        dateFormat: '',
         modified: 0,
         fingerprint: fingerprint(),
         setOccurence: (occurence) => set( 
             {
                 occurence: occurence,
-                dateFormat: occurenceDateFormat(occurence),
+                pickerMode: occurenceDateFormat(occurence),
             }
         ),
         label: "New Alarm",
@@ -258,6 +243,14 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 }
             )
         },
+        pickerMode: PickerMode.Month,
+        setPickerMode: (format)=> {
+            set(
+                {
+                    pickerMode: format
+                }
+            )
+        }
     }
 ))
 
