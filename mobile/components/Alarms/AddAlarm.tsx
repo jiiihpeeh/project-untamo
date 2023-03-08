@@ -8,7 +8,6 @@ import { usePopups } from "../../stores"
 const AddAlarm = () => {	
     const onAddOpen = useAlarm((state)=> state.onAddOpen)
     const setOccurence = useAlarm((state)=> state.setOccurence)
-    const setShowDeleteButton = useAlarm((state)=> state.setShowDeleteButton)
     const setDialogMode = useAlarm((state)=> state.setDialogMode)
     const setShowAlarmSelector = usePopups((state)=>state.setShowAlarmSelector)
     const setShowDeleteAlarm = usePopups((state)=>state.setShowDeleteAlarm)
