@@ -48,9 +48,9 @@ function SelectedWeekdays() {
             [WeekDay.Saturday, "Sat"],
             [WeekDay.Sunday, "Sun"]
         ]
-        return weekdays.map(day => {
-            return WeekdayButton(day[0], day[1])
-        }
+        return weekdays.map(day =>  {
+                                        return WeekdayButton(day[0], day[1])
+                                    }
         )
     }
     return (
