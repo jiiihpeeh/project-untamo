@@ -24,7 +24,7 @@ const AlarmYearly = () => {
                 </Div>
                 <Active/>
                 <DeviceChecker/>
-            </Div>
+             </Div>
        )
 }
 
