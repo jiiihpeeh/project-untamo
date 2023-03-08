@@ -1,29 +1,29 @@
 
-import React, { useState, useEffect } from "react";
-import { SafeAreaView, StatusBar, FlatList, StyleSheet } from "react-native";
-import { Div, Button, Icon, Modal, ThemeProvider, Text } from "react-native-magnus";
-import axios from "axios";
+import React, { useState, useEffect } from "react"
+import { SafeAreaView, StatusBar, FlatList, StyleSheet } from "react-native"
+import { Div, Button, Icon, Modal, ThemeProvider, Text } from "react-native-magnus"
+import axios from "axios"
 
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { BarCodeScanner } from 'expo-barcode-scanner'
 
 const QrWindow = (props) => {
-    const [hasPermission, setHasPermission] = useState(null);
-    const [scanned, setScanned] = useState(false);
+    const [hasPermission, setHasPermission] = useState(null)
+    const [scanned, setScanned] = useState(false)
   
     useEffect(() => {
       const getBarCodeScannerPermissions = async () => {
-        const { status } = await BarCodeScanner.requestPermissionsAsync();
-        setHasPermission(status === 'granted');
-      };
+        const { status } = await BarCodeScanner.requestPermissionsAsync()
+        setHasPermission(status === 'granted')
+      }
   
-      getBarCodeScannerPermissions();
-    }, []);
+      getBarCodeScannerPermissions()
+    }, [])
   
     const handleBarCodeScanned = ({ type, data }) => {
-      setScanned(true);
+      setScanned(true)
       props.setScanData(data) 
-      //alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-    };
+      //alert(`Bar code with type ${type} and data ${data} has been scanned!`)
+    }
   
     if (hasPermission === null) {
       return (<Text>Requesting for camera permission</Text>)
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
       flexDirection: 'column',
       justifyContent: 'center',
     },
-  });
+  })
   
 
-export default QrWindow;
+export default QrWindow

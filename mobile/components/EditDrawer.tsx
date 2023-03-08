@@ -1,11 +1,11 @@
-import { Drawer, Button, Icon, Text, Div } from 'react-native-magnus';
-import React from 'react';
+import { Drawer, Button, Icon, Text, Div } from 'react-native-magnus'
+import React from 'react'
 import DeviceSelector from "./Devices/DeviceSelector"
-import AddDevice from './Devices/AddDevice';
-import LogOut from './User/LogOut';
-import EditDevice from './Devices/EditDevice';
+import AddDevice from './Devices/AddDevice'
+import LogOut from './User/LogOut'
+import EditDevice from './Devices/EditDevice'
 const EditDrawer = () => {
-    const drawerRef : any = React.createRef();
+    const drawerRef : any = React.createRef()
     return(<>
         <Drawer ref={drawerRef} >
             <Div 
@@ -41,4 +41,4 @@ const EditDrawer = () => {
     </>)
 
 }
-export default EditDrawer;
+export default EditDrawer

@@ -1,8 +1,9 @@
-import { Text, Div, Button } from 'react-native-magnus';
-import React from 'react';
-import useAlarm from './alarmStates';
-import { View } from 'react-native';
-import { WeekDay } from '../../../type';
+import { Text, Div, Button } from 'react-native-magnus'
+import React from 'react'
+import useAlarm from './alarmStates'
+import { View } from 'react-native'
+import { WeekDay } from '../../../type'
+
 const SelectedWeekdays = () => {
     const selectedWeekdays = useAlarm((state)=>state.weekdays)
     const setWeekdays = useAlarm((state)=>state.toggleWeekdays)
@@ -60,5 +61,5 @@ const SelectedWeekdays = () => {
             </Div>
         </Div>
     )
-};
-export default SelectedWeekdays;
+}
+export default SelectedWeekdays

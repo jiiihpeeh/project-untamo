@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState } from "react"
+import { Button, Icon, Div,Text,  Input, Image, Modal, Dropdown } from 'react-native-magnus'
+import DeviceTypes from "./DeviceTypes"
+import { useDevices } from "../../stores"
+import useDeviceState from "./deviceStates"
 
-import { Button, Icon, Div,Text,  Input, Image, Modal, Dropdown } from 'react-native-magnus';
-import DeviceTypes from "./DeviceTypes";
-import { useDevices } from "../../stores";
-import useDeviceState from "./deviceStates";
 const AddDevice = () => {
     const deviceName = useDeviceState((state)=>state.deviceName)
     const setDeviceName = useDeviceState((state)=>state.setDeviceName)
@@ -17,7 +17,11 @@ const AddDevice = () => {
         <>
             <Button 
                 block m={10} 
-                onPress={() => {setVisible(true); reset()}} 
+                onPress={() => {
+                                    setVisible(true)
+                                    reset()
+                                }
+                        } 
                 bg={"teal"}
             >
                 Add a Device
@@ -36,7 +40,7 @@ const AddDevice = () => {
                         right={15}
                         rounded="circle"
                         onPress={() =>  {
-                                            setVisible(false);
+                                            setVisible(false)
                                         }
                         }
                     >
@@ -54,7 +58,12 @@ const AddDevice = () => {
                     />
                     <DeviceTypes/>            
                     <Button 
-                        onPress={()=>{addDevice(deviceName, deviceType);setVisible(false);reset()}}
+                        onPress={()=>{
+                                        addDevice(deviceName, deviceType)
+                                        setVisible(false)
+                                        reset()
+                                    }
+                                }
                         m={10}
                         disabled={!canAdd}
                     >
@@ -67,4 +76,4 @@ const AddDevice = () => {
 
 }
 
-export default AddDevice;
+export default AddDevice

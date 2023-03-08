@@ -5,7 +5,7 @@ import useAlarm from "./alarmStates"
 import { useDevices } from "../../../stores"
 
 const DeviceChecker = () => {
-    const devices  = useDevices((state)=>state.devices);
+    const devices  = useDevices((state)=>state.devices)
     const selectedDevices = useAlarm((state)=>state.devices)
     const setSelectedDevices = useAlarm((state)=>state.toggleDevices)
     
@@ -45,6 +45,6 @@ const DeviceChecker = () => {
         </ScrollView>
     )
 }
-export default DeviceChecker;
+export default DeviceChecker
 
 

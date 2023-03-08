@@ -6,7 +6,7 @@ import AlarmYearly from "./AlarmYearly"
 import AlarmCase from "./AlarmCase"
 import { SafeAreaView, StatusBar , ScrollView} from "react-native"
 import { Div, Button, Icon, Modal } from "react-native-magnus"
-import useAlarm, { DialogMode } from "./alarmStates";
+import useAlarm, { DialogMode } from "./alarmStates"
 import { AlarmCases } from "../../../type"
 import { usePopups, useAlarms } from "../../../stores"
 
@@ -125,6 +125,6 @@ const AlarmSelector = () => {
         </Modal>
         </SafeAreaView>
     </>)
-};
+}
 
-export default AlarmSelector;
+export default AlarmSelector

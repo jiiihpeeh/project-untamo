@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { WeekDay } from '../../../type'
-import { timePadding } from "./stringifyDate-Time";
-import { numberToWeekDay } from '../calcAlarmTime';
-import { useDevices, useLogIn } from '../../../stores';
-import { stringifyDate, stringToDate } from './stringifyDate-Time';
+import { timePadding } from "./stringifyDate-Time"
+import { numberToWeekDay } from '../calcAlarmTime'
+import { useDevices, useLogIn } from '../../../stores'
+import { stringifyDate, stringToDate } from './stringifyDate-Time'
 
 export enum AlarmCases {
     Once = "once",
@@ -34,13 +34,13 @@ const toggleDevices = (d : string|undefined, ds : Array<string>) => {
     return ds
 }
 const timeValue = (t: string) => {
-    let timeArr = `${t}`.split(':');
-    let minutes = parseInt(timeArr[1]);
-    let hours = parseInt(timeArr[0]);
+    let timeArr = `${t}`.split(':')
+    let minutes = parseInt(timeArr[1])
+    let hours = parseInt(timeArr[0])
     if(!isNaN(minutes) && !isNaN(hours)){
-        return `${timePadding(hours)}:${timePadding(minutes)}`;
+        return `${timePadding(hours)}:${timePadding(minutes)}`
     }else{
-        return "00:00";
+        return "00:00"
     }
 }
 
@@ -56,9 +56,9 @@ const occurenceDateFormat = (cases:AlarmCases) =>{
 }
 
 const alarmTimeInit = () => {
-	let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
-	return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`;
-};
+	let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000)
+	return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
+}
 
 
 type Alarm = {

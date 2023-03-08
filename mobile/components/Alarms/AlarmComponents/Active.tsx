@@ -1,5 +1,5 @@
-import { Toggle, Icon, Div, Text } from "react-native-magnus";
-import React from "react";
+import { Toggle, Icon, Div, Text } from "react-native-magnus"
+import React from "react"
 import useAlarm from "./alarmStates"
 
 const Active = () =>{
@@ -23,4 +23,4 @@ const Active = () =>{
             </Div>)
 }
 
-export default Active;
+export default Active

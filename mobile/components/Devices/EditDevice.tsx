@@ -1,10 +1,9 @@
-import React, { useEffect,  useState, createRef } from "react";
-
-import { Button, Icon, Div,Text,  Input, Image, Modal, Dropdown } from 'react-native-magnus';
-import DeviceTypes from "./DeviceTypes";
-import { ScrollView, TouchableHighlight } from 'react-native';
-import { useDevices } from "../../stores";
-import useDeviceState from "./deviceStates";
+import React, { useEffect,  useState, createRef } from "react"
+import { Button, Icon, Div,Text,  Input, Image, Modal, Dropdown } from 'react-native-magnus'
+import DeviceTypes from "./DeviceTypes"
+import { ScrollView, TouchableHighlight } from 'react-native'
+import { useDevices } from "../../stores"
+import useDeviceState from "./deviceStates"
 
 const EditDevice = () => {
     const deviceName = useDeviceState((state)=>state.deviceName)
@@ -18,8 +17,7 @@ const EditDevice = () => {
     const  devices = useDevices((state)=>state.devices)
     const editDevice = useDevices((state)=>state.editDevice)
     const canEdit = useDeviceState((state)=>state.canEdit)
-    const dropdownRef : any= createRef();    
-    
+    const dropdownRef : any= createRef()
 
     const deviceMap = () => {
         return devices.map(device => 
@@ -33,7 +31,7 @@ const EditDevice = () => {
                                               </Dropdown.Option>
                                         )
                                       }
-      )
+        )
     }
 
     return(
@@ -94,7 +92,7 @@ const EditDevice = () => {
                         right={15}
                         rounded="circle"
                         onPress={() => {
-                                            setVisible(false);
+                                            setVisible(false)
                                     }
                         }
                     >
@@ -128,7 +126,6 @@ const EditDevice = () => {
             </Modal>
         </>
     )
-
 }
 
-export default EditDevice;
+export default EditDevice

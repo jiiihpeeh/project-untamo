@@ -1,16 +1,14 @@
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
-import {
-    View,
-  } from 'react-native';
-import { timePadding } from './stringifyDate-Time';
-import { Button } from 'react-native-magnus';
+import { View,} from 'react-native'
+import { timePadding } from './stringifyDate-Time'
+import { Button } from 'react-native-magnus'
 const DateModal = (props) => {
-    //const [date, setDate] = useState(props.date);
+    //const [date, setDate] = useState(props.date)
   
     const onChange = (event, selectedDate) => {
-      const currentDate = selectedDate;
-      props.setDate(currentDate);
-    };
+      const currentDate = selectedDate
+      props.setDate(currentDate)
+    }
   
     const showMode = (currentMode) => {
       DateTimePickerAndroid.open({
@@ -18,16 +16,16 @@ const DateModal = (props) => {
         onChange,
         mode: currentMode,
         is24Hour: true,
-      });
-    };
+      })
+    }
   
     const showDatepicker = () => {
-      showMode('date');
-    };
+      showMode('date')
+    }
   
     const showTimepicker = () => {
-      showMode('time');
-    };
+      showMode('time')
+    }
   
     return (
       <View>
@@ -54,8 +52,7 @@ const DateModal = (props) => {
                 {`${timePadding(props.date.getHours())}:${timePadding(props.date.getMinutes())}`}
         </Button>}
       </View>
-    );
-  };
-
+    )
+  }
 
   export default DateModal

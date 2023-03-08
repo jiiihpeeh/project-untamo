@@ -1,10 +1,9 @@
-import React, { createRef} from "react";
-import { Dropdown, Button, Text } from "react-native-magnus";
-import useAlarm, { AlarmCases } from "./alarmStates";
-
+import React, { createRef} from "react"
+import { Dropdown, Button, Text } from "react-native-magnus"
+import useAlarm, { AlarmCases } from "./alarmStates"
 
 const AlarmCase = () => {
-    const dropdownRef : any = createRef();
+    const dropdownRef : any = createRef()
     const alarmCase = useAlarm((state)=>state.occurence)
     console.log(alarmCase, AlarmCase[alarmCase], Object.values(AlarmCases).filter((item) => item))
     const setAlarmCase = useAlarm((state)=>state.setOccurence)
@@ -61,4 +60,4 @@ const AlarmCase = () => {
     )
 }
 
-export default AlarmCase;
+export default AlarmCase

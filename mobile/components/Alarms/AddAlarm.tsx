@@ -1,10 +1,10 @@
-import { Fab, Button, Div, Text } from "react-native-magnus";
-import React, { useRef, useState, useContext, useEffect } from 'react';
-import Icon from "react-native-vector-icons/EvilIcons";
-import useAlarm, { DialogMode } from "./AlarmComponents/alarmStates";
-import AlarmSelector from "./AlarmComponents/AlarmSelector";
-import { AlarmCases } from "../../type";
-import { usePopups } from "../../stores";
+import { Fab, Button, Div, Text } from "react-native-magnus"
+import React, { useRef, useState, useContext, useEffect } from 'react'
+import Icon from "react-native-vector-icons/EvilIcons"
+import useAlarm, { DialogMode } from "./AlarmComponents/alarmStates"
+import AlarmSelector from "./AlarmComponents/AlarmSelector"
+import { AlarmCases } from "../../type"
+import { usePopups } from "../../stores"
 const AddAlarm = () => {	
     const onAddOpen = useAlarm((state)=> state.onAddOpen)
     const setOccurence = useAlarm((state)=> state.setOccurence)
@@ -144,4 +144,4 @@ const AddAlarm = () => {
     )
 }
 
-export default AddAlarm;
+export default AddAlarm

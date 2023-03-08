@@ -1,9 +1,7 @@
-//<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { DeviceType}  from '../type'
 import axios from "axios"
-//import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useAlarms } from "../stores"
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useMessage, {Status} from './messageStore'

@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
-import { SafeAreaView, StatusBar, FlatList } from "react-native";
-import { Div, Button, Icon, Modal, ThemeProvider, Text } from "react-native-magnus";
-import { useAlarms, usePopups } from "../../stores";
+import React, { useState } from "react"
+import { SafeAreaView, StatusBar, FlatList } from "react-native"
+import { Div, Button, Icon, Modal, ThemeProvider, Text } from "react-native-magnus"
+import { useAlarms, usePopups } from "../../stores"
 
 const DeleteAlarm = () => {
     const deleteAlarm = useAlarms((state)=>state.deleteAlarm)
@@ -57,9 +57,5 @@ const DeleteAlarm = () => {
 }
 
 
-
-
-
-
-export default DeleteAlarm;
+export default DeleteAlarm
 

@@ -1,15 +1,18 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
-//import { notification, Status } from '../components/notification'
 import axios from 'axios'
 import { SessionStatus, FormData} from '../type'
 import { UserInfo } from '../type'
-import { useServer, useDevices, useTimeouts, useFetchQR, useAlarms } from '../stores'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Status } from './messageStore'
 //import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "../audiostorage/audioDatabase"
 import useMessage from './messageStore'
+import useAlarms from './alarmStore'
+import useDevices from './deviceStore'
+import useServer from './serverStore'
+import useTimeouts from './timeouts'
+import useFetchQR from './QRStore'
 
 type UseLogIn = {
     token : string,

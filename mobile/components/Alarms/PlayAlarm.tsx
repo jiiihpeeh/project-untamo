@@ -1,32 +1,29 @@
-import React, {  useState, useContext, useEffect, useRef } from 'react';
-
-import { Audio } from 'expo-av';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, Image, Button, Div, Modal, Toggle } from "react-native-magnus";
-
-import { Animated, View, StyleSheet, SafeAreaView, Easing, TouchableHighlight, Dimensions } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, {  useState, useContext, useEffect, useRef } from 'react'
+import { Audio } from 'expo-av'
+import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Text, Image, Button, Div, Modal, Toggle } from "react-native-magnus"
+import { Animated, View, StyleSheet, SafeAreaView, Easing, TouchableHighlight, Dimensions } from 'react-native'
+import { useFocusEffect } from '@react-navigation/native'
 
 import Logo from './logo.svg'
 
 const  PlayAlarm = (props) => {
-  const [sound, setSound] = useState();
+  const [sound, setSound] = useState()
   const [ currentAlarm, setCurrentAlarm] = useState({})
 
 
-  const width = Dimensions.get('window').width;
-  const height = Dimensions.get('window').height;
-  const radiusMax = Math.min(width/1.5, height/1.5);
+  const width = Dimensions.get('window').width
+  const height = Dimensions.get('window').height
+  const radiusMax = Math.min(width/1.5, height/1.5)
 
   const playSound = async () => {
-    console.log('Loading Sound');
-    const { sound } = await Audio.Sound.createAsync( require('./rooster.mp3'), {isLooping: true } 
-    );
-    setSound(sound);
+    console.log('Loading Sound')
+    const { sound } = await Audio.Sound.createAsync( require('./rooster.mp3'), {isLooping: true } )
+    setSound(sound)
 
-    console.log('Playing Sound');
-    await sound.playAsync();
+    console.log('Playing Sound')
+    await sound.playAsync()
   }
 
 
@@ -35,88 +32,88 @@ const  PlayAlarm = (props) => {
     setTimeout(() => {setAlarmWindow(false)},100)
     if(currentAlarm){
       let currentAlarmMod = Object.assign({}, currentAlarm)
-      let currentMoment = Date.now();
+      let currentMoment = Date.now()
       if(currentAlarm.hasOwnProperty('snooze')){
-        currentAlarmMod.snooze = currentAlarmMod.snooze.filter(snooze => snooze > (currentMoment - (60 * 60 * 1000)));
-        currentAlarmMod.snooze.push(currentMoment);
+        currentAlarmMod.snooze = currentAlarmMod.snooze.filter(snooze => snooze > (currentMoment - (60 * 60 * 1000)))
+        currentAlarmMod.snooze.push(currentMoment)
       }else{
-        currentAlarmMod.snooze = [ currentAlarmMod ];
-      };
+        currentAlarmMod.snooze = [ currentAlarmMod ]
+      }
       try {
-        let res = await axios.put(`${server}/api/alarm/`+runAlarm, currentAlarmMod, {headers:{token:token}});
-        console.log(res.data);
+        let res = await axios.put(`${server}/api/alarm/`+runAlarm, currentAlarmMod, {headers:{token:token}})
+        console.log(res.data)
       }catch(err){
-        console.log("Couldn't update alarm info ", err);
-      };
-      let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm);
-      filterAlarms.push(currentAlarmMod);
-      setAlarms(filterAlarms);
+        console.log("Couldn't update alarm info ", err)
+      }
+      let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm)
+      filterAlarms.push(currentAlarmMod)
+      setAlarms(filterAlarms)
       try {
-        await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms));
+        await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms))
       }catch(err){
         console.log(err)
       }
       
-    };
-  };
+    }
+  }
 
   const turnOff = async (event) => {
     setTimeout(() => {setAlarmWindow(false)},100)
     if(currentAlarm){
       let currentAlarmMod = Object.assign({}, currentAlarm)
-      currentAlarmMod.snooze = [0];
+      currentAlarmMod.snooze = [0]
       try {
-        let res = await axios.put(`${server}/api/alarm/`+runAlarm, currentAlarmMod,  {headers:{token:token}});
-        console.log(res.data);
+        let res = await axios.put(`${server}/api/alarm/`+runAlarm, currentAlarmMod,  {headers:{token:token}})
+        console.log(res.data)
       }catch(err){
-        console.log("Couldn't update alarm info ", err);
+        console.log("Couldn't update alarm info ", err)
       }
-      let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm);
-      filterAlarms.push(currentAlarmMod);
-      setAlarms(filterAlarms);
+      let filterAlarms = alarms.filter(alarm => alarm._id !== runAlarm)
+      filterAlarms.push(currentAlarmMod)
+      setAlarms(filterAlarms)
       try{
-        await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms)); 
+        await AsyncStorage.setItem('alarms', JSON.stringify(filterAlarms))
       }catch(err){
-        console.log(err);
+        console.log(err)
       }
        
-    };
-  };
+    }
+  }
   useEffect(() => {
     const soundToggle = async () => {
       if(alarmWindow){
-        await playSound();
+        await playSound()
       }
       else{
         try{
-          await sound.stopAsync();
+          await sound.stopAsync()
         }catch(err){
-          console.log(err);
+          console.log(err)
         }
-        console.log("Bye");
+        console.log("Bye")
       }
     }
 
   const idToAlarm = () => {
     try{
-      setCurrentAlarm(alarms.filter(alarm => alarm._id === runAlarm)[0]);
+      setCurrentAlarm(alarms.filter(alarm => alarm._id === runAlarm)[0])
     }catch(err){
       return null
     }
   }
-  soundToggle();
+  soundToggle()
   if(alarmWindow){
-    idToAlarm();
-  };
+    idToAlarm()
+  }
   },[alarmWindow])
   useEffect(() => {
     return sound
       ? () => {
-          console.log('Unloading Sound');
-          sound.unloadAsync();
+          console.log('Unloading Sound')
+          sound.unloadAsync()
         }
-      : undefined;
-  }, [sound]);
+      : undefined
+  }, [sound])
 
 
 
@@ -167,12 +164,12 @@ const  PlayAlarm = (props) => {
       </Div>
         </Modal>
     </SafeAreaView>
-  );
+  )
 }
 
 
 
-export default PlayAlarm;
+export default PlayAlarm
 
 
 

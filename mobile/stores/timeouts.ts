@@ -1,5 +1,7 @@
 import { create } from 'zustand'
-import { useAlarms, useLogIn, useDevices } from '../stores'
+import useAlarms from './alarmStore'
+import useLogIn from './loginStore'
+import useDevices from './deviceStore'
 //This one detects resume
 
 var systemTime = Date.now()
@@ -200,7 +202,7 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
 //         console.log("location trigger")
 //         if(!useTimeouts.getState().snoozeIt){
 //             alarmToSnooze = setTimeout(() => { useTimeouts.getState().setSnoozeIt(true)
-//             }, 5*60*1000);            
+//             }, 5*60*1000)      
 //         }
 //     }else if (!newLocation.replaceAll('/','').trim().endsWith('play-alarm')) {
 //         clearTimeout(alarmToSnooze)

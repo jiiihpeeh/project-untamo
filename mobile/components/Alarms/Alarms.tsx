@@ -10,7 +10,7 @@ import EditDrawer from '../EditDrawer'
 import PlayAlarm from "./PlayAlarm"
 import AlarmWatcher from "./AlarmWatcher"
 import { useLogIn, useAlarms, useDevices , usePopups} from "../../stores"
-import useAlarm from "./AlarmComponents/alarmStates";
+import useAlarm from "./AlarmComponents/alarmStates"
 import { Alarm } from "../../type"
 import { DialogMode } from "./AlarmComponents/alarmStates"
 
@@ -27,7 +27,7 @@ const Alarms = () => {
 
 	const toggleActivity = useAlarms((state)=> state.toggleActivity)
 	const timeForNextLaunch = useAlarms((state)=> state.timeForNextLaunch)
-    const [ playAlarm, setPlayAlarm ] = useState(false);
+    const [ playAlarm, setPlayAlarm ] = useState(false)
     const setShowAlarmSelector = usePopups((state)=>state.setShowAlarmSelector)
     const setDialogMode = useAlarm((state)=>state.setDialogMode)
 
@@ -38,42 +38,42 @@ const Alarms = () => {
         setDialogMode(DialogMode.Edit)
     }
     const renderAlarms = () => {
-            let showAlarms = alarms;            
+            let showAlarms = alarms         
             if(!viewAllDevices){
-                showAlarms = showAlarms.filter(alarm => alarm.devices.includes(currentDevice));
+                showAlarms = showAlarms.filter(alarm => alarm.devices.includes(currentDevice))
             }
 
-            let viewableAlarmsSet = new Set<Alarm>;		
+            let viewableAlarmsSet = new Set<Alarm>
             let timeAlarmMap = new Map <number, Set<string>>()
             for(const secondFiltrate of showAlarms){
-                viewableAlarmsSet.add(secondFiltrate);
+                viewableAlarmsSet.add(secondFiltrate)
 				let timeStamp : number| null
                 try{
-                    timeStamp = timeForNextAlarm(secondFiltrate).getTime();
+                    timeStamp = timeForNextAlarm(secondFiltrate).getTime()
                 }catch(err){
                     timeStamp = null
                 }			
                  
                 if(timeStamp && secondFiltrate){
                     if(timeAlarmMap.has(timeStamp)){
-                        timeAlarmMap.set(timeStamp, timeAlarmMap.get(timeStamp).add(secondFiltrate.id) );
+                        timeAlarmMap.set(timeStamp, timeAlarmMap.get(timeStamp).add(secondFiltrate.id) )
                     }else{
-                        timeAlarmMap.set(timeStamp, new Set( [ secondFiltrate.id ]));
-                    };
-                };
-            };
-            let viewableAlarms = [...viewableAlarmsSet];
+                        timeAlarmMap.set(timeStamp, new Set( [ secondFiltrate.id ]))
+                    }
+                }
+            }
+            let viewableAlarms = [...viewableAlarmsSet]
 		
-            let timeMapArray = [...timeAlarmMap.keys()].sort(function(a, b){return a - b});
-            let sortedView: Array<Alarm> = [];
+            let timeMapArray = [...timeAlarmMap.keys()].sort(function(a, b){return a - b})
+            let sortedView: Array<Alarm> = []
             for(const item of timeMapArray){
                 for (const subitem of timeAlarmMap.get(item)){
-                    let filtration = viewableAlarms.filter(alarm => alarm.id === subitem)[0];
+                    let filtration = viewableAlarms.filter(alarm => alarm.id === subitem)[0]
                     if(filtration){
-                        sortedView.push(filtration);
-                    };
-                };
-            };
+                        sortedView.push(filtration)
+                    }
+                }
+            }
             return sortedView.map(alarm => 
                                             {
                                                 return(
@@ -137,4 +137,4 @@ const Alarms = () => {
     )
 }
 
-export default Alarms;
+export default Alarms

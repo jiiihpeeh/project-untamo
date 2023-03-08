@@ -24,4 +24,4 @@ const AlarmOnce = () => {
        )
 }
 
-export default AlarmOnce;
+export default AlarmOnce

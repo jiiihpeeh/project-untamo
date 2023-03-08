@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Button, Icon, Div,Text,  Input, Image, Modal } from 'react-native-magnus';
-import { useServer } from "../../stores";
+import { useState, useEffect } from "react"
+import { Button, Icon, Div,Text,  Input, Image, Modal } from 'react-native-magnus'
+import { useServer } from "../../stores"
 
 const ServerAddress = () => {
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState(false)
     const server = useServer((state)=> state.address)
     const setServer = useServer((state)=> state.setAddress)
 
@@ -25,7 +25,7 @@ const ServerAddress = () => {
             <Button
                 block m={10}
                 onPress={() => {
-                setVisible(false);
+                setVisible(false)
                 }}
             >
                 OK
@@ -34,4 +34,4 @@ const ServerAddress = () => {
     </>)
 }
 
-export default ServerAddress;
+export default ServerAddress

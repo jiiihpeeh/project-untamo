@@ -1,15 +1,15 @@
-import React ,  { useEffect } from "react";
-import { SafeAreaView, StatusBar } from "react-native";
+import React ,  { useEffect } from "react"
+import { SafeAreaView, StatusBar } from "react-native"
 import {
   ThemeProvider,
   Button,
   Icon,
   Snackbar,
   SnackbarRef,
-} from "react-native-magnus";
-import { useMessage } from "../stores";
+} from "react-native-magnus"
+import { useMessage } from "../stores"
 
-const snackbarRef  = React.createRef<any>();
+const snackbarRef  = React.createRef<any>()
 
 
 const Notification = () => {

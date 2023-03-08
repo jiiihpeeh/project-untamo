@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useState } from "react"
 import { Div, Button, Icon, Modal, ThemeProvider, Text } from "react-native-magnus"
-import { useLogIn } from "../../stores";
+import { useLogIn } from "../../stores"
 
 const LogOut = () => {
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState(false)
     const logOut = useLogIn((state)=> state.logOut)
 
     
@@ -58,9 +58,5 @@ const LogOut = () => {
 }
 
 
-
-
-
-
-export default LogOut;
+export default LogOut
 

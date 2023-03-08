@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
-
-
-import DeviceSelector from "./Devices/DeviceSelector";
-import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus';
-import AddDevice from "./Devices/AddDevice";
+import React, { useEffect, useState } from "react"
+import DeviceSelector from "./Devices/DeviceSelector"
+import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus'
+import AddDevice from "./Devices/AddDevice"
 
 const Welcome = () => {
 
@@ -23,4 +21,4 @@ const Welcome = () => {
     )
 }
 
-export default Welcome;
+export default Welcome

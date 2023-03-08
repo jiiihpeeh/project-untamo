@@ -19,9 +19,8 @@ const getCommunicationInfo = () => {
 
 
 
-const fingerprint = () =>  useLogIn.getState().fingerprint
 export 
     { 
-        useServer, useLogIn, useFetchQR, fingerprint, useMessage,
+        useServer, useLogIn, useFetchQR, useMessage,
         useDevices,useAlarms, useTimeouts, usePopups, getCommunicationInfo 
     }

@@ -1,13 +1,14 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { WeekDay } from '../type'
-//import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useTimeouts, useLogIn } from '../stores'
+import { getCommunicationInfo } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useMessage, { Status } from './messageStore'
+import useTimeouts from './timeouts'
+import useLogIn from './loginStore'
 
 const notification  = useMessage.getState().notification
 const maxAlarmTime = 60*60*1000

@@ -6,7 +6,8 @@ import Notification from './components/Notification'
 import AlarmView from './components/Alarms/AlarmView'
 import { useLogIn } from './stores'
 import { SessionStatus } from './type'
-import sleep from './components/sleep'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 const  App =  () => {
 
   const sessionStatus = useLogIn((state)=> state.sessionValid)
@@ -15,12 +16,11 @@ const  App =  () => {
 
   useEffect(() => {
     const checker = async() =>{
-        if(!check.current){
-          await sleep(5)
-          checkSession()
-          check.current = true
-        }
-
+      await AsyncStorage.getAllKeys()
+      if(!check.current){
+        checkSession()
+        check.current = true
+      }
   }
     checker()
   },[sessionStatus])
@@ -49,4 +49,4 @@ export default App
 //     alignItems: 'center',
 //     justifyContent: 'center',
 //   },
-// });
+// })

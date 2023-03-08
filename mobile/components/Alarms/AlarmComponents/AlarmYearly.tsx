@@ -5,6 +5,7 @@ import DeviceChecker from "./DeviceChecker"
 import Message from "./Message"
 import React from "react"
 import Active from './Active'
+
 const AlarmYearly = () => {
     return(
             <Div>
@@ -19,6 +20,6 @@ const AlarmYearly = () => {
                 <DeviceChecker/>
             </Div>
        )
-};
+}
 
-export default AlarmYearly;
+export default AlarmYearly

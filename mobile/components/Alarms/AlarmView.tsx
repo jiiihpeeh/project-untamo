@@ -1,9 +1,10 @@
-import React from 'react';
-import Welcome from './../Welcome';
-import Alarms from './Alarms';
-import { useDevices } from '../../stores';
-import { StatusBar, SafeAreaView  } from 'react-native';
-import UserWatcher from '../User/UserWatcher';
+import React from 'react'
+import Welcome from './../Welcome'
+import Alarms from './Alarms'
+import { useDevices } from '../../stores'
+import { StatusBar, SafeAreaView  } from 'react-native'
+import UserWatcher from '../User/UserWatcher'
+
 const AlarmView = () => {
     const currentDevice = useDevices((state)=>state.currentDevice)
 
@@ -23,4 +24,4 @@ const AlarmView = () => {
             )
 }
 
-export default AlarmView;
+export default AlarmView

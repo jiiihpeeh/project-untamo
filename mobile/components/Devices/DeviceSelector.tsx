@@ -1,7 +1,6 @@
-import { useState, useEffect, createRef, } from "react";
-
-import { Select, Button, Text , Dropdown} from "react-native-magnus";
-import { useDevices } from "../../stores";
+import { useState, useEffect, createRef, } from "react"
+import { Select, Button, Text , Dropdown} from "react-native-magnus"
+import { useDevices } from "../../stores"
 
 const DeviceSelector = () => {
 
@@ -12,7 +11,7 @@ const DeviceSelector = () => {
     const filteredCurrentDeviceName = devices.filter(device=> device.id === currentDevice)[0]
     const currentDeviceName = (filteredCurrentDeviceName)?filteredCurrentDeviceName.deviceName:''
     const selectButtonText = `Select a device ${(currentDeviceName.length >0)?`(current: ${currentDeviceName})`:''}`
-    const dropdownRef : any= createRef();    
+    const dropdownRef : any= createRef()
 
     const deviceMap = () => {
         return devices.map(device => 

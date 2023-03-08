@@ -1,11 +1,10 @@
-import { useEffect, useContext, useState } from "react";
-import DeviceSelector from "../Devices/DeviceSelector";
-import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus';
-
-import { dayContinuationDays } from "./calcAlarmTime";
-import { useAlarms, useLogIn, useDevices } from "../../stores";
+import { useEffect, useContext, useState } from "react"
+import DeviceSelector from "../Devices/DeviceSelector"
+import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus'
+import { dayContinuationDays } from "./calcAlarmTime"
+import { useAlarms, useLogIn, useDevices } from "../../stores"
 import {  Alarm, WeekDay, AlarmCases } from '../../type'
-import useAlarm from "./AlarmComponents/alarmStates";
+import useAlarm from "./AlarmComponents/alarmStates"
 
 interface Props{
     onPress: () => void
@@ -14,10 +13,10 @@ interface Props{
 const AlarmButton = (props: Props) => {
     const dayDisplay = (alarm: Alarm ) => {
         //console.log(alarm)
-        let dayArr = dayContinuationDays(alarm.weekdays);
-        let dayList: Array<string> = [];
+        let dayArr = dayContinuationDays(alarm.weekdays)
+        let dayList: Array<string> = []
         for(const day of dayArr){
-            dayList.push(day.join('-'));
+            dayList.push(day.join('-'))
         }
         //console.log(dayList)
         return dayList.join(', ')
@@ -174,4 +173,4 @@ const AlarmButton = (props: Props) => {
     )
 }
 
-export default AlarmButton;
+export default AlarmButton

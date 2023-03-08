@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { Menu, MenuButton, MenuList, Button, MenuItem, 
-     Center, IconButton, Text, Icon, Tooltip, Table, Tr, Td, Tbody } from "@chakra-ui/react";
-import { ChevronDownIcon } from  '@chakra-ui/icons';
+import React, { useState } from "react"
+// import { Menu, MenuButton, MenuList, Button, MenuItem, 
+//      Center, IconButton, Text, Icon, Tooltip, Table, Tr, Td, Tbody } from "@chakra-ui/react"
+// import { ChevronDownIcon } from  '@chakra-ui/icons'
 import useAlarm from './alarmStates'
-import { fetchAudioFiles } from '../../../audiostorage/audioDatabase'
-import { RepeatIcon} from '@chakra-ui/icons'
-import { BsFillPlayFill as PlayIcon} from 'react-icons/bs'
-import { MdStop as StopIcon} from 'react-icons/md'
-import { useAudio } from "../../../stores";
+// import { fetchAudioFiles } from '../../../audiostorage/audioDatabase'
+// import { RepeatIcon} from '@chakra-ui/icons'
+// import { BsFillPlayFill as PlayIcon} from 'react-icons/bs'
+// import { MdStop as StopIcon} from 'react-icons/md'
+//import { useAudio } from "../../../stores"
 
 const AlarmTone = () => {
-    const alarmTone = useAlarm((state)=> state.tone);
+/*     const alarmTone = useAlarm((state)=> state.tone)
     const tones = useAudio((state)=> state.tracks)
     const track = useAudio((state)=> state.track)
     const plays = useAudio((state) => state.plays)
@@ -19,7 +19,7 @@ const AlarmTone = () => {
     const stopAudio = useAudio((state)=>state.stop)
     const setLoop = useAudio((state)=>state.setLoop)
     const [closeOnSelect, setCloseOnSelect ] = useState(false)
-  
+   */
     const play = async (tone:string) =>{
         if(plays){
             stopAudio()
@@ -123,4 +123,4 @@ const AlarmTone = () => {
        )
 }
 
-export default AlarmTone;
+export default AlarmTone

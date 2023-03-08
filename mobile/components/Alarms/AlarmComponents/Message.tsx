@@ -1,6 +1,7 @@
-import { Text, Div, Input } from 'react-native-magnus';
-import React from "react";
-import useAlarm from './alarmStates';
+import { Text, Div, Input } from 'react-native-magnus'
+import React from "react"
+import useAlarm from './alarmStates'
+
 const Message = () => {
     const label = useAlarm((state)=>state.label)
     const setLabel = useAlarm((state)=>state.setLabel)
@@ -11,5 +12,5 @@ const Message = () => {
             <Input value={label} onChangeText= {(text) => setLabel(text)} style={{ flex: 1 }} m={10}/>
         </Div>          
     )
-};
-export default Message;
+}
+export default Message
