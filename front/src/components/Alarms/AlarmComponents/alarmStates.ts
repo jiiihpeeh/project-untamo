@@ -93,7 +93,7 @@ type AlarmStates = {
     setId: (id:string) =>void,
     onAddOpen: () => void,
     tone: string
-    alarmFromDialog: () => Alarm|undefined,
+    alarmFromDialog: () => Alarm,
     alarmToEditDialog: (alarm: Alarm) => void,
 }
 
