@@ -16,8 +16,8 @@ const  App =  () => {
 
   useEffect(() => {
     const checker = async() =>{
-      await AsyncStorage.getAllKeys()
       if(!check.current){
+        await AsyncStorage.getAllKeys()
         checkSession()
         check.current = true
       }
