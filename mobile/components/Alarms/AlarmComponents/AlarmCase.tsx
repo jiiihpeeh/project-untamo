@@ -1,4 +1,4 @@
-import React, { createRef} from "react"
+import React, { createRef } from "react"
 import { Dropdown, Button, Text } from "react-native-magnus"
 import useAlarm from "./alarmStates"
 import { AlarmCases } from "../../../type"
@@ -13,21 +13,21 @@ const AlarmCase = () => {
       return cases.map(item => 
                         {
                           return(
-                                <Dropdown.Option
-                                    block
-                                    bg="gray100"
-                                    color="blue600"
-                                    py="lg"
-                                    px="xl"
-                                    borderBottomWidth={1}
-                                    borderBottomColor="gray200"
-                                    justifyContent="center"
-                                    onPress={() =>  setAlarmCase(item)}
-                                    value=""
-                                    key={item}
-                                >
-                                  {item}
-                                </Dropdown.Option>
+                                  <Dropdown.Option
+                                      block
+                                      bg="gray100"
+                                      color="blue600"
+                                      py="lg"
+                                      px="xl"
+                                      borderBottomWidth={1}
+                                      borderBottomColor="gray200"
+                                      justifyContent="center"
+                                      onPress={() =>  setAlarmCase(item)}
+                                      value=""
+                                      key={item}
+                                  >
+                                    {item}
+                                  </Dropdown.Option>
                                 )
                         }
                       )

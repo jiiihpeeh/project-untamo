@@ -5,6 +5,7 @@ import DeviceChecker from "./DeviceChecker"
 import Message from "./Message"
 import React from "react"
 import Active from './Active'
+
 const AlarmWeekly = () => {
     return(
         <Div >

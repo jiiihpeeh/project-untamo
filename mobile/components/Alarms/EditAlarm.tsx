@@ -9,7 +9,8 @@ const EditAlarm = () => {
     return( <>       
                 <AlarmSelector/>
                 <DeleteAlarm/>
-            </>)
+            </>
+            )
 }
 
 export default EditAlarm

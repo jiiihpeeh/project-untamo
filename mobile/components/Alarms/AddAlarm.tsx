@@ -57,18 +57,19 @@ const AddAlarm = () => {
                                                     </Button>
                                             )
                                         }
-                        )
+        )
     }
-    return(<>
-        <Fab 
-            bg="blue600" 
-            h={65} 
-            w={65}
-        >
-            {FabButtons()}
-        </Fab>
-        <AlarmSelector/>
-        </>
+    return(
+            <>
+                <Fab 
+                    bg="blue600" 
+                    h={65} 
+                    w={65}
+                >
+                    {FabButtons()}
+                </Fab>
+                <AlarmSelector/>
+            </>
     )
 }
 

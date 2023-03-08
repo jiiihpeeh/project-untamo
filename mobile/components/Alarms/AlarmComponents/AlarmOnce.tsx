@@ -9,20 +9,20 @@ import Active from './Active'
 const AlarmOnce = () => {
     return(
             <Div>
-                <Message />
+                <Message/>
                 <Div 
                     alignItems='center'
                 >
-                <Div 
-                    row 
-                >
-                    <TimeSelector/>
                     <Div 
-                        ml={3}
+                        row 
                     >
-                        <DateSelector/>
+                        <TimeSelector/>
+                        <Div 
+                            ml={3}
+                        >
+                            <DateSelector/>
+                        </Div>
                     </Div>
-                </Div>
                 </Div>
                 <Active/>
                 <DeviceChecker/>

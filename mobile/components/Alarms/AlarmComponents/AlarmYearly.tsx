@@ -9,13 +9,13 @@ import Active from './Active'
 const AlarmYearly = () => {
     return(
             <Div>
-                <Message />
+                <Message/>
                 <Div 
                     row 
                     alignItems='center' 
                     ml={90}
                 >
-                    <TimeSelector  />
+                    <TimeSelector/>
                     <Div 
                         ml={15}
                     >
@@ -24,7 +24,7 @@ const AlarmYearly = () => {
                 </Div>
                 <Active/>
                 <DeviceChecker/>
-             </Div>
+            </Div>
        )
 }
 

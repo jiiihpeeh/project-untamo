@@ -10,9 +10,9 @@ const DateModalTime = () => {
     const setTime = useAlarm((state)=> state.setTime)
 
     const onChange = (event:  DateTimePickerEvent, date: Date) => {
-        if(date){
-            setTime(`${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`)
-        }
+      if(date){
+          setTime(`${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`)
+      }
     }
     const show = () => {
         const dateTime = new Date
