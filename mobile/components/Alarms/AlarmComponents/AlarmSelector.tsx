@@ -1,4 +1,4 @@
-import React,{ useEffect }  from "react"
+import React  from "react"
 import AlarmOnce from "./AlarmOnce"
 import AlarmWeekly from "./AlarmWeekly"
 import AlarmDaily from "./AlarmDaily"
@@ -36,9 +36,19 @@ const AlarmSelector = () => {
         setShowAlarmSelector(false)
     }
 
-    useEffect(()=>{
-        console.log("show selector",showAlarmSelector)
-    },[showAlarmSelector])
+    const renderCase = () => {
+        switch(alarmCase){
+            case AlarmCases.Once:
+                return(<AlarmOnce/>)
+            case AlarmCases.Weekly:
+                return(<AlarmWeekly/>)
+            case AlarmCases.Daily:
+                return(<AlarmDaily/>)
+            case AlarmCases.Yearly:
+                return(<AlarmYearly/>)
+        }
+    }
+
     return(<>
         <StatusBar 
             barStyle="dark-content" 
@@ -74,10 +84,7 @@ const AlarmSelector = () => {
             </Button>
             <Div >
                 <AlarmCase/>
-                {(alarmCase === AlarmCases.Once)? <AlarmOnce/>:<></>}
-                {(alarmCase === AlarmCases.Weekly)? <AlarmWeekly/>:<></>}
-                {(alarmCase === AlarmCases.Daily)? <AlarmDaily/>:<></>}
-                {(alarmCase === AlarmCases.Yearly)? <AlarmYearly/>:<></>}
+                {renderCase()}
             </Div>
             <Div 
                 alignItems="center"
