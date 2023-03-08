@@ -8,7 +8,8 @@ const Message = () => {
 
     return(
         <Div 
-            row>
+            row
+        >
             <Text>
                 Message
             </Text>
