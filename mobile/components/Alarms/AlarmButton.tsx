@@ -170,13 +170,21 @@ const AlarmButton = (props: Props) => {
             </Button>
         )
     }
-    console.log("alarm BUTTOn ",props)
+    const RenderedButton = () => {
+        switch(props.alarm.occurence){
+            case AlarmCases.Weekly:
+                return (<Weekly/>)
+            case AlarmCases.Once:
+                return (<Once/>)
+            case AlarmCases.Daily:
+                return (<Daily/>)
+            case AlarmCases.Yearly:
+                return(<Yearly/>)
+        }
+    }
     return(
         <>  
-            {(props.alarm.occurence === AlarmCases.Weekly)?<Weekly/>:<></>}
-            {(props.alarm.occurence === AlarmCases.Once)?<Once/>:<></>}
-            {(props.alarm.occurence === AlarmCases.Daily)?<Daily/>:<></>}
-            {(props.alarm.occurence ===  AlarmCases.Yearly)?<Yearly/>:<></>}            
+            {RenderedButton()}       
         </>
     )
 }
