@@ -78,9 +78,17 @@ const AlarmButton = (props: Props) => {
                 onPress={()=> props.onPress()} 
             >
                 <Time/>
-                <Div flex={1} alignItems={"center"} row={false}>
-                <Text>Weekly: {props.alarm.label}</Text>
-                    <Div row >
+                <Div 
+                    flex={1} 
+                    alignItems={"center"} 
+                    row={false}
+                >
+                <Text>
+                    Weekly: {props.alarm.label}
+                </Text>
+                    <Div 
+                        row 
+                    >
                         <Div>
                             <Weekdays/>
                         </Div>
@@ -100,7 +108,9 @@ const AlarmButton = (props: Props) => {
                 <Div    flex={1} 
                         alignItems={"center"} 
                         row={false}>
-                <Text>Once: {props.alarm.label}</Text>
+                <Text>
+                    Once: {props.alarm.label}
+                </Text>
                     <Div row >
                         <Div>
                             <Date/>
@@ -148,7 +158,9 @@ const AlarmButton = (props: Props) => {
                     alignItems={"center"} 
                     row={false}
                 >
-                <Text>Yearly: {props.alarm.label}</Text>
+                <Text>
+                    Yearly: {props.alarm.label}
+                </Text>
                     <Div row >
                         <Div>
                             <Date/>
@@ -161,14 +173,10 @@ const AlarmButton = (props: Props) => {
     console.log("alarm BUTTOn ",props)
     return(
         <>  
-            {props.alarm.occurence === AlarmCases.Weekly &&
-            <Weekly/>}
-            {props.alarm.occurence === AlarmCases.Once &&
-            <Once/>}
-            {props.alarm.occurence === AlarmCases.Daily &&
-            <Daily/>}
-            {props.alarm.occurence ===  AlarmCases.Yearly &&
-            <Yearly/>}            
+            {(props.alarm.occurence === AlarmCases.Weekly)?<Weekly/>:<></>}
+            {(props.alarm.occurence === AlarmCases.Once)?<Once/>:<></>}
+            {(props.alarm.occurence === AlarmCases.Daily)?<Daily/>:<></>}
+            {(props.alarm.occurence ===  AlarmCases.Yearly)?<Yearly/>:<></>}            
         </>
     )
 }

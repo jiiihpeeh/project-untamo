@@ -24,9 +24,10 @@ const ServerAddress = () => {
                     />
             <Button
                 block m={10}
-                onPress={() => {
-                setVisible(false)
-                }}
+                onPress={() =>  {
+                                    setVisible(false)
+                                }
+                        }
             >
                 OK
             </Button>

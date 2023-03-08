@@ -54,9 +54,17 @@ function SelectedWeekdays() {
         )
     }
     return (
-        <Div alignItems='center'>
-            <Text textAlign='center'>Select Weekdays</Text>
-            <Div row>
+        <Div 
+            alignItems='center'
+        >
+            <Text 
+                textAlign='center'
+            >
+                Select Weekdays
+            </Text>
+            <Div 
+                row
+            >
                 {WeekDayButtons()}
             </Div>
         </Div>

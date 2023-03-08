@@ -15,6 +15,7 @@ const DateModal = () => {
             setDate(selectedDate)
         }
     }
+    
     const show = () => {
       DateTimePickerAndroid.open(
                                     {
@@ -25,6 +26,7 @@ const DateModal = () => {
                                     }
                                 )
     }
+
     const showFormat = () => {
         switch(mode){
             case PickerMode.Month:

@@ -74,10 +74,10 @@ const AlarmSelector = () => {
             </Button>
             <Div >
                 <AlarmCase/>
-                {alarmCase === AlarmCases.Once && <AlarmOnce/>}
-                {alarmCase === AlarmCases.Weekly && <AlarmWeekly/>}
-                {alarmCase === AlarmCases.Daily && <AlarmDaily/>}
-                {alarmCase === AlarmCases.Yearly && <AlarmYearly/>}
+                {(alarmCase === AlarmCases.Once)? <AlarmOnce/>:<></>}
+                {(alarmCase === AlarmCases.Weekly)? <AlarmWeekly/>:<></>}
+                {(alarmCase === AlarmCases.Daily)? <AlarmDaily/>:<></>}
+                {(alarmCase === AlarmCases.Yearly)? <AlarmYearly/>:<></>}
             </Div>
             <Div 
                 alignItems="center"

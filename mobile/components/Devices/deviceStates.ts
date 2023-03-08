@@ -73,41 +73,73 @@ const useDeviceState = create<UseDeviceStates>((set, get) => ({
         const deviceName = get().deviceName
         const devices = useDevices.getState().devices
         if ((id.length === 0)|| (deviceName.length === 0)) {
-            set({ canEdit: false })
+            set(
+                { 
+                    canEdit: false 
+                }
+            )
             return
         }
         
         const deviceInfo = devices.filter(device=> id === device.id)[0]
         if(!deviceInfo ){
-            set({ canEdit: false })
+            set(
+                { 
+                    canEdit: false 
+                }
+            )
             return
         }
         
         const deviceNames = devices.filter(device=>deviceName === device.deviceName)
         if(deviceNames.length > 1){
-            set({ canEdit: false })
+            set(
+                { 
+                    canEdit: false 
+                }
+            )
             return
         }
         if(deviceNames.length === 1 ){
             if(id === deviceNames[0].id && type !== deviceNames[0].type){
-                set({ canEdit: true })
+                set(
+                    { 
+                        canEdit: true 
+                    }
+                )
                 return
             }else{
-                set({ canEdit: false })
+                set(
+                    { 
+                        canEdit: false 
+                    }
+                )
                 return
             }
         }
-        set({ canEdit: true })
+        set(
+            { 
+                canEdit: true 
+            }
+        )
     },
     canAdd: false,
     checkAdd: ()=> {
         const deviceName = get().deviceName
         const devices = useDevices.getState().devices
         if((deviceName.length ===0) || (devices.filter(device=> deviceName ===device.deviceName ).length > 0)){
-            set({ canAdd: false})
+            set(
+                { 
+                    canAdd: false
+                }
+            )
             return
         }
-        set({ canAdd: true})
+        set(
+            { 
+                canAdd: true
+            }
+        )
     },
 }
 ))
