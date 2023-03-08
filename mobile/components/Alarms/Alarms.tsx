@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus'
 import { ScrollView, TouchableHighlight, View, SafeAreaView, StatusBar } from 'react-native'
-import AddDevice from "../Devices/AddDevice"
 import AlarmButton from "./AlarmButton"
 import { timeForNextAlarm } from "./calcAlarmTime"
 import AddAlarm from "./AddAlarm"
@@ -9,23 +8,17 @@ import EditAlarm from "./EditAlarm"
 import EditDrawer from '../EditDrawer'
 import PlayAlarm from "./PlayAlarm"
 import AlarmWatcher from "./AlarmWatcher"
-import { useLogIn, useAlarms, useDevices , usePopups} from "../../stores"
+import { useAlarms, useDevices , usePopups} from "../../stores"
 import useAlarm from "./AlarmComponents/alarmStates"
 import { Alarm } from "../../type"
 import { DialogMode } from "./AlarmComponents/alarmStates"
 
 const Alarms = () => {
-    const userInfo = useLogIn((state)=> state.user)
-	const devices = useDevices((state)=> state.devices)
-	const viewableDevices = useDevices((state)=> state.viewableDevices)
 	const currentDevice  = useDevices((state)=> state.currentDevice)
 	const alarms = useAlarms((state)=> state.alarms)
 	const runAlarm = useAlarms((state)=> state.runAlarm)
-	const setToDelete = useAlarms((state)=> state.setToDelete)
 	const alarmToEditDialog = useAlarm((state)=> state.alarmToEditDialog)
-    const setShowDeleteAlarm = usePopups((state)=>state.setShowDeleteAlarm)
 
-	const toggleActivity = useAlarms((state)=> state.toggleActivity)
 	const timeForNextLaunch = useAlarms((state)=> state.timeForNextLaunch)
     const [ playAlarm, setPlayAlarm ] = useState(false)
     const setShowAlarmSelector = usePopups((state)=>state.setShowAlarmSelector)

@@ -1,5 +1,5 @@
 import { Fab, Button, Div, Text } from "react-native-magnus"
-import React, { useRef, useState, useContext, useEffect } from 'react'
+import React from 'react'
 import Icon from "react-native-vector-icons/EvilIcons"
 import useAlarm, { DialogMode } from "./AlarmComponents/alarmStates"
 import AlarmSelector from "./AlarmComponents/AlarmSelector"
