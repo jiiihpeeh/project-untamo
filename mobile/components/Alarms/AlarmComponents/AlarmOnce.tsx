@@ -20,9 +20,7 @@ const AlarmOnce = () => {
                     <Div 
                         ml={3}
                     >
-                        <DateSelector
-                             mode={'date'}
-                        />
+                        <DateSelector/>
                     </Div>
                 </Div>
                 </Div>

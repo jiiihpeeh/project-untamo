@@ -1,8 +1,7 @@
-import { createRef } from "react";
-
-import { Button, Dropdown, Text } from 'react-native-magnus';
-import { DeviceType } from "../../type";
-import useDeviceState from "./deviceStates";
+import { createRef } from "react"
+import { Button, Dropdown, Text } from 'react-native-magnus'
+import { DeviceType } from "../../type"
+import useDeviceState from "./deviceStates"
 
 const DeviceTypes = () => {
     const dropdownRef :any = createRef()
@@ -65,4 +64,4 @@ const DeviceTypes = () => {
         </Dropdown></>)
     }
 
-export default DeviceTypes;
+export default DeviceTypes

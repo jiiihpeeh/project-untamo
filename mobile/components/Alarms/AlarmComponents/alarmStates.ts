@@ -47,9 +47,9 @@ const timeValue = (t: string) => {
 const occurenceDateFormat = (cases:AlarmCases) =>{
     switch(cases){
         case AlarmCases.Once:
-            return 'dd.MM.yyy'
+            return 'date'
         case AlarmCases.Yearly:
-            return 'dd.MM'
+            return 'date-no-year'
         default:
             return ''
     }

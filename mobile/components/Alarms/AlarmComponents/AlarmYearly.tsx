@@ -19,9 +19,7 @@ const AlarmYearly = () => {
                     <Div 
                         ml={15}
                     >
-                        <DateSelector 
-                            mode={'date-no-year'}
-                        />
+                        <DateSelector/>
                     </Div>
                 </Div>
                 <Active/>
