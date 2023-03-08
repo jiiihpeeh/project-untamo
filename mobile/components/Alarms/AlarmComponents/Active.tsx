@@ -7,19 +7,29 @@ const Active = () =>{
     const setActive = useAlarm((state)=> state.setActive)
 
     return(
-            <Div alignItems="center" mb={10} mt={10}>
-                <Div row>
-                <Text mr={3}>Active</Text>
-                <Toggle
-                    on={active}
-                    onPress={() => setActive(!active)}
-                    bg="gray200"
-                    circleBg="blue500"
-                    activeBg="blue700"
-                    h={30}
-                    w={60}
-                />
-            </Div>
+            <Div 
+                alignItems="center" 
+                mb={10} 
+                mt={10}
+            >
+                <Div 
+                    row
+                >
+                    <Text 
+                        mr={3}
+                    >
+                        Active
+                    </Text>
+                    <Toggle
+                        on={active}
+                        onPress={() => setActive(!active)}
+                        bg="gray200"
+                        circleBg="blue500"
+                        activeBg="blue700"
+                        h={30}
+                        w={60}
+                    />
+                </Div>
             </Div>)
 }
 

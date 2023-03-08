@@ -15,7 +15,6 @@ const AlarmSelector = () => {
     const alarmId = useAlarm((state)=> state.id)
     const showAlarmSelector = usePopups((state)=>state.showAlarmSelector)
     const setShowAlarmSelector = usePopups((state)=>state.setShowAlarmSelector)
-    const showDeleteButton = useAlarm((state)=>state.showDeleteButton)
     const dialogMode = useAlarm((state)=>state.dialogMode)
     const setToDelete = useAlarms((state)=> state.setToDelete)
     const setShowDeleteAlarm = usePopups((state)=> state.setShowDeleteAlarm)
@@ -105,7 +104,7 @@ const AlarmSelector = () => {
                         Cancel
                     </Button>
                 </Div>
-                {showDeleteButton &&
+                { (dialogMode === DialogMode.Edit)?
                     <Div 
                         alignItems="center">
                         <Button 
@@ -119,7 +118,7 @@ const AlarmSelector = () => {
                         > 
                             Delete
                         </Button>
-                    </Div>} 
+                    </Div>:<></>} 
             </Div>
             </ScrollView>
         </Modal>

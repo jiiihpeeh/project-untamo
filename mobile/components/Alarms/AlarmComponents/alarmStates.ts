@@ -103,8 +103,6 @@ type AlarmStates = {
     tone: string
     alarmFromDialog: () => Alarm|undefined,
     alarmToEditDialog: (alarm: Alarm) => void,
-    showDeleteButton: boolean,
-    setShowDeleteButton: (to: boolean) =>void,
     dialogMode: DialogMode,
     setDialogMode: (mode:DialogMode) =>void,
 }
@@ -135,14 +133,6 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 label: label
             }
         ),
-        showDeleteButton: false,
-        setShowDeleteButton: (to) => {
-            set(
-                {
-                    showDeleteButton: to
-                }
-            )
-        },
         date: new Date(),
         setDate: (day:Date) =>  {
             set(
@@ -262,13 +252,6 @@ const useAlarm = create<AlarmStates>((set, get) => (
         },
         dialogMode: DialogMode.Add,
         setDialogMode: (mode:DialogMode) =>{
-            switch(mode){
-                case DialogMode.Add:
-                    get().setShowDeleteButton(false)
-                    break
-                default:
-                    get().setShowDeleteButton(true)
-            }
             set(
                 {
                     dialogMode: mode

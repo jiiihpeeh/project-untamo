@@ -10,10 +10,18 @@ const AlarmYearly = () => {
     return(
             <Div>
                 <Message />
-                <Div row alignItems='center' ml={90}>
+                <Div 
+                    row 
+                    alignItems='center' 
+                    ml={90}
+                >
                     <TimeSelector  />
-                    <Div ml={15}>
-                        <DateSelector mode={'date-no-year'}/>
+                    <Div 
+                        ml={15}
+                    >
+                        <DateSelector 
+                            mode={'date-no-year'}
+                        />
                     </Div>
                 </Div>
                 <Active/>
