@@ -11,14 +11,14 @@ interface Props{
     alarm: Alarm
 }
 const AlarmButton = (props: Props) => {
+    const alarm = props.alarm
+    const onPress = props.onPress
     const dayDisplay = (alarm: Alarm ) => {
-        //console.log(alarm)
         let dayArr = dayContinuationDays(alarm.weekdays)
         let dayList: Array<string> = []
         for(const day of dayArr){
             dayList.push(day.join('-'))
         }
-        //console.log(dayList)
         return dayList.join(', ')
     }
     const Time = () => {
@@ -29,7 +29,7 @@ const AlarmButton = (props: Props) => {
                         mt="lg" 
                         color="gray"
                     >
-                        {props.alarm.time}
+                        {alarm.time}
                     </Text>
                 )
     }
@@ -42,7 +42,7 @@ const AlarmButton = (props: Props) => {
                 color="gray"
 
             >
-                {dayDisplay(props.alarm)}
+                {dayDisplay(alarm)}
             </Text>
         )
     }
@@ -66,7 +66,7 @@ const AlarmButton = (props: Props) => {
                 mt="lg" 
                 color="gray"
             >
-                {props.alarm.date}
+                {alarm.date}
             </Text>
         )
     }
@@ -74,8 +74,8 @@ const AlarmButton = (props: Props) => {
         return(
             <Button 
                 m={10} 
-                bg={(props.alarm.active)?"yellow":"gray200"}
-                onPress={()=> props.onPress()} 
+                bg={(alarm.active)?"yellow":"gray200"}
+                onPress={()=> onPress()} 
             >
                 <Time/>
                 <Div 
@@ -84,7 +84,7 @@ const AlarmButton = (props: Props) => {
                     row={false}
                 >
                 <Text>
-                    Weekly: {props.alarm.label}
+                    Weekly: {alarm.label}
                 </Text>
                     <Div 
                         row 
@@ -101,15 +101,15 @@ const AlarmButton = (props: Props) => {
         return(
             <Button 
                 m={10} 
-                bg={(props.alarm.active)?"yellow":"gray200"}
-                onPress={()=>props.onPress()}
+                bg={(alarm.active)?"yellow":"gray200"}
+                onPress={()=>onPress()}
             >
                 <Time/>
                 <Div    flex={1} 
                         alignItems={"center"} 
                         row={false}>
                 <Text>
-                    Once: {props.alarm.label}
+                    Once: {alarm.label}
                 </Text>
                     <Div row >
                         <Div>
@@ -124,8 +124,8 @@ const AlarmButton = (props: Props) => {
         return(
             <Button 
                 m={10} 
-                bg={(props.alarm.active)?"yellow":"gray200"}
-                onPress={()=> props.onPress()} 
+                bg={(alarm.active)?"yellow":"gray200"}
+                onPress={()=> onPress()} 
             >                
                 <Time/>
                 <Div 
@@ -134,7 +134,7 @@ const AlarmButton = (props: Props) => {
                     row={false}
                 >
                 <Text>
-                    Daily: {props.alarm.label}
+                    Daily: {alarm.label}
                 </Text>
                     <Div row >
                         <Div>
@@ -149,8 +149,8 @@ const AlarmButton = (props: Props) => {
         return(
             <Button 
                 m={10} 
-                bg={(props.alarm.active)?"yellow":"gray200"}
-                onPress={()=> props.onPress()} 
+                bg={(alarm.active)?"yellow":"gray200"}
+                onPress={()=> onPress()} 
             >
                 <Time/>
                 <Div 
@@ -159,7 +159,7 @@ const AlarmButton = (props: Props) => {
                     row={false}
                 >
                 <Text>
-                    Yearly: {props.alarm.label}
+                    Yearly: {alarm.label}
                 </Text>
                     <Div row >
                         <Div>
@@ -171,7 +171,7 @@ const AlarmButton = (props: Props) => {
         )
     }
     const RenderedButton = () => {
-        switch(props.alarm.occurence){
+        switch(alarm.occurence){
             case AlarmCases.Weekly:
                 return (<Weekly/>)
             case AlarmCases.Once:

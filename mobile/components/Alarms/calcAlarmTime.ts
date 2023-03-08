@@ -13,7 +13,6 @@ const addDays = (date :Date, count:number) => {
 }
     
 export const weekDayToNumber = (weekDay: WeekDay):number => {
-    //console.log(weekDay)
     switch(weekDay){
         case WeekDay.Monday:
             return 1
@@ -56,7 +55,6 @@ export const numberToWeekDay = (number:number):WeekDay =>{
 }
 
 export const dayContinuation = (dayNumberList: Array<number>) => {
-   // console.log(dayNumberList)
     let dayNumbers = dayNumberList
     dayNumbers.sort(function(a, b){return a - b})
     let continuation: Array<Array<number>> = [] 
@@ -94,7 +92,6 @@ export const dayContinuation = (dayNumberList: Array<number>) => {
 }
 
 export const dayContinuationDays = (dayList: Array<WeekDay>) => {
-    //console.log('InpUT:', dayList)
     let dayNumberList: Array<number> = [] 
     for(const day of dayList){
         let d = weekDayToNumber(day)
@@ -201,7 +198,6 @@ export const nextAlarmWeekly = (timeString: string, weekdays: Array<WeekDay>) =>
 }
 
 export const timeForNextAlarm = (alarm: Alarm) => {
-
     switch(alarm.occurence){
         case AlarmCases.Once:
             return nextAlarmOnce(alarm.time, alarm.date) 
@@ -237,7 +233,6 @@ export const timeToNextAlarm = (alarm: Alarm) => {
         }else {
             launchTime = timeToAlarm
         }
-        //console.log(launchTime)
         return launchTime
     } 
     return snoozer
