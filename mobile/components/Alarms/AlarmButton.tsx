@@ -1,10 +1,7 @@
-import { useEffect, useContext, useState } from "react"
-import DeviceSelector from "../Devices/DeviceSelector"
+import React, { useEffect, useContext, useState } from "react"
 import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus'
 import { dayContinuationDays } from "./calcAlarmTime"
-import { useAlarms, useLogIn, useDevices } from "../../stores"
 import {  Alarm, WeekDay, AlarmCases } from '../../type'
-import useAlarm from "./AlarmComponents/alarmStates"
 
 interface Props{
     onPress: () => void
@@ -33,7 +30,7 @@ const AlarmButton = (props: Props) => {
                     >
                         {alarm.time}
                     </Text>
-                )
+            )
     }
     const Weekdays = () => {
         return(
