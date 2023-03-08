@@ -39,15 +39,15 @@ function SelectedWeekdays() {
     }
     const WeekDayButtons = () => {
         let WeekDayTuple : [ day: WeekDay, abbrev: string]
-        const weekdays: Array<typeof WeekDayTuple> = [
-            [WeekDay.Monday, "Mon"],
-            [WeekDay.Tuesday, "Tue"],
-            [WeekDay.Wednesday, "Wed"],
-            [WeekDay.Thursday, "Thu"],
-            [WeekDay.Friday, "Fri"],
-            [WeekDay.Saturday, "Sat"],
-            [WeekDay.Sunday, "Sun"]
-        ]
+        const weekdays: Array<typeof WeekDayTuple> =    [
+                                                            [WeekDay.Monday, "Mon"],
+                                                            [WeekDay.Tuesday, "Tue"],
+                                                            [WeekDay.Wednesday, "Wed"],
+                                                            [WeekDay.Thursday, "Thu"],
+                                                            [WeekDay.Friday, "Fri"],
+                                                            [WeekDay.Saturday, "Sat"],
+                                                            [WeekDay.Sunday, "Sun"]
+                                                        ]
         return weekdays.map(day =>  {
                                         return WeekdayButton(day[0], day[1])
                                     }
