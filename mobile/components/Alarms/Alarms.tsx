@@ -87,7 +87,7 @@ const Alarms = () => {
             barStyle="dark-content" 
         />
         <SafeAreaView 
-            style={
+            style=  {
                         { 
                             flex: 1 
                         }

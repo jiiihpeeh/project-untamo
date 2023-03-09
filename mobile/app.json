@@ -37,6 +37,9 @@
       "eas": {
         "projectId": "20dbf43f-e96c-40da-b2ad-ecdfde55f14b"
       }
-    }
+    },
+    "plugins": [
+      "react-native-background-fetch"
+    ]
   }
 }
