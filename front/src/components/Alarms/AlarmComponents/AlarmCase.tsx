@@ -18,9 +18,9 @@ const AlarmCase = () => {
                           return(
                                   <MenuItem  
                                     onClick={() => setAlarmCase(item)}
-                                    key={capitalizeFirstLetter(item)}
+                                    key={item}
                                   >
-                                    {item}
+                                    {capitalizeFirstLetter(item)}
                                   </MenuItem>
                                 )
                         }
