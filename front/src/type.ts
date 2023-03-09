@@ -46,3 +46,36 @@ export enum AdminAction {
     Admin= "admin",
     Delete="delete"
 }
+
+
+export declare type UserInfo = {
+    email: string,
+    screenName: string,
+    firstName: string,
+    lastName: string,
+    admin: boolean,
+    owner: boolean
+}
+
+
+export enum AlarmCases {
+    Once = "once",
+    Daily = "daily",
+    Weekly = "weekly",
+    Yearly = "yearly",
+}
+
+export type Alarm = {
+    occurence : AlarmCases,
+    time: string,
+    date: string,
+    devices: Array<string>,
+    label: string,
+    weekdays: Array<WeekDay>,
+    active: boolean,
+    snooze: Array<number>,
+    id: string,
+    tone: string,
+    fingerprint: string,
+    modified: number
+}

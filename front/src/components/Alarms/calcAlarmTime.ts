@@ -1,5 +1,5 @@
-import { WeekDay } from "../../type.d"
-import { Alarm, AlarmCases } from "../../vite-env.d"
+import { WeekDay } from "../../type"
+import { Alarm, AlarmCases } from "../../type"
 
 const addDays = (date :Date, count:number) => {
     let calculated = new Date(date.getTime() + (count * (24 * 60 * 60 * 1000)))

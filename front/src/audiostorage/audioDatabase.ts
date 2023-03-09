@@ -12,7 +12,6 @@ const getLocals = () => {
     return { token: token, server: server}
 }
 
-
 localForage.config({
     name        : 'untamo',
     storeName   : 'audio', 

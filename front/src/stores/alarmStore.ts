@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { WeekDay } from '../type.d'
+import { WeekDay, Alarm, AlarmCases } from '../type'
 import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useTimeouts, useLogIn } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
@@ -23,27 +23,7 @@ type AlarmSerialized = {
     _id: string,
     __v: number
 }
-export enum AlarmCases {
-    Once = "once",
-    Daily = "daily",
-    Weekly = "weekly",
-    Yearly = "yearly",
-}
 
-type Alarm = {
-    id: string,
-    occurence : AlarmCases,
-    time: string,
-    date: string,
-    devices: Array<string>,
-    label: string,
-    weekdays: Array<WeekDay>,
-    active: boolean,
-    snooze: Array<number>,
-    tone: string,
-    fingerprint: string,
-    modified: number
-}
 interface AlarmSerializedEdit extends AlarmSerialized {
   id: string 
 }

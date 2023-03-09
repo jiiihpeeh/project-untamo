@@ -2,8 +2,7 @@ import { timeForNextAlarm, timeToNextAlarm } from "./calcAlarmTime"
 import React,{ useEffect, useState } from "react"
 import { useToast, Button, VisuallyHidden } from "@chakra-ui/react"
 import { useLogIn, useAlarms, useDevices, usePopups } from '../../stores'
-import { SessionStatus } from "../../type.d"
-import { Alarm } from "../../vite-env.d"
+import { SessionStatus, Alarm } from "../../type"
 
 const AlarmNotification = ()  => {
     const [ alarm, setAlarm] = useState<Alarm>()

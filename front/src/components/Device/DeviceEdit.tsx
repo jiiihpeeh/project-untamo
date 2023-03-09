@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from "react"
-
 import { Menu, MenuItem,
          MenuList, MenuButton,
          Drawer, DrawerOverlay,
@@ -9,7 +8,7 @@ import { Menu, MenuItem,
          Input, Stack } from "@chakra-ui/react"
 import { ChevronDownIcon } from "@chakra-ui/icons"
 import { usePopups , useDevices } from "../../stores"
-import { DeviceType, Device } from "../../type.d"
+import { DeviceType, Device } from "../../type"
 
 
 const DeviceEdit = () => {
@@ -49,11 +48,13 @@ const DeviceEdit = () => {
     }
     useEffect(()=>{
       if(toEditDevice){
-        setDeviceEditInfo({
-                          deviceName: toEditDevice.deviceName,
-                          type: toEditDevice.type,
-                          id: toEditDevice.id
-                      })
+        setDeviceEditInfo(
+                            {
+                              deviceName: toEditDevice.deviceName,
+                              type: toEditDevice.type,
+                              id: toEditDevice.id
+                            }
+                          )
       }
     },[toEditDevice])
     return (

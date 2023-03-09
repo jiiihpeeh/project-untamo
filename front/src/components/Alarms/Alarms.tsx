@@ -3,9 +3,9 @@ import {  Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
 		  TableContainer, Center,Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
-import { WeekDay } from "../../type.d"
+import { WeekDay } from "../../type"
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
-import { Alarm, AlarmCases, Device } from "../../vite-env.d"
+import { Alarm, AlarmCases, Device } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"

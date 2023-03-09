@@ -5,7 +5,7 @@ import { Button, Table, Thead, Tbody, Tr,Th,Td,
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
 import { usePopups, useLogIn, useAdmin, extend } from "../../stores"
-import { AdminAction} from '../../type.d'
+import { AdminAction} from '../../type'
 
 const Admin = () => {
     const navigate = useNavigate()

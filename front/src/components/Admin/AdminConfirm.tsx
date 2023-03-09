@@ -5,7 +5,7 @@ import {
     AlertDialogFooter, Button } from '@chakra-ui/react'
 import React, { useRef, useEffect, useState } from 'react'
 import { useAdmin, usePopups } from '../../stores'
-import { AdminAction } from '../../type.d'
+import { AdminAction } from '../../type'
 
 const AdminChangeActivity = () => {
     const [ message, setMessage ] = useState({action:'', message:'', button:''})

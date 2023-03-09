@@ -3,8 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
-import { SessionStatus, FormData} from '../type.d'
-import { UserInfo } from '../vite-env'
+import { SessionStatus, FormData, UserInfo } from '../type'
 import { useServer, useDevices, useAdmin, useTimeouts, useFetchQR, useAlarms } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "../audiostorage/audioDatabase"
  

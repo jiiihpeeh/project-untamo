@@ -4,7 +4,7 @@ import sleep  from '../sleep'
 import { useServer, useLogIn, useDevices, useAlarms, useAudio, useTimeouts, extend } from '../../stores'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
-import { Alarm } from '../../vite-env.d'
+import { Alarm } from '../../type'
 
 var wsTimeout : NodeJS.Timeout | null | number
 

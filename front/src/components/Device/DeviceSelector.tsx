@@ -5,7 +5,7 @@ import { Button, Text, Menu, MenuButton, MenuList,
 import { ChevronDownIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import DeviceIcons from "./DeviceIcons"
 import { useDevices, usePopups } from "../../stores"
-import { Device } from "../../vite-env"
+import { Device } from "../../type"
 import { MenuType } from "../../stores/popUpStore"
 
 

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
 import { getCommunicationInfo, useLogIn } from '../stores'
-import { AdminAction} from '../type.d'
+import { AdminAction} from '../type'
 
 type Command = {
     action: AdminAction|null,

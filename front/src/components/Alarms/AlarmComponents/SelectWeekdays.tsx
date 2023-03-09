@@ -1,7 +1,7 @@
 import { Button, Flex, Center } from "@chakra-ui/react"   
 import React from 'react'
 import useAlarm from "./alarmStates"
-import { WeekDay } from '../../../type.d'
+import { WeekDay } from '../../../type'
 
 const SelectedWeekdays = () => {
     const weekdays = useAlarm((state)=> state.weekdays)
@@ -26,21 +26,20 @@ const SelectedWeekdays = () => {
         )
     }
     const WeekDayButtons = () => {
-        const weekdays: Array<Array<string>> = [
-                                                    ["Monday","Mon"], 
-                                                    ["Tuesday","Tue"],  
-                                                    ["Wednesday","Wed"], 
-                                                    ["Thursday","Thu"], 
-                                                    ["Friday","Fri"], 
-                                                    ["Saturday","Sat"],
-                                                    ["Sunday","Sun"]
-                                                ]
-        return weekdays.map(day =>
-                                    {
-                                        const enumDay = day[0] as WeekDay
-                                        return WeekdayButton( enumDay, day[1])
+        let WeekDayTuple : [ day: WeekDay, abbrev: string]
+        const weekdays: Array<typeof WeekDayTuple> =    [
+                                                            [WeekDay.Monday, "Mon"],
+                                                            [WeekDay.Tuesday, "Tue"],
+                                                            [WeekDay.Wednesday, "Wed"],
+                                                            [WeekDay.Thursday, "Thu"],
+                                                            [WeekDay.Friday, "Fri"],
+                                                            [WeekDay.Saturday, "Sat"],
+                                                            [WeekDay.Sunday, "Sun"]
+                                                        ]
+        return weekdays.map(day =>  {
+                                        return WeekdayButton(day[0], day[1])
                                     }
-                            )
+        )
     }
     return(
         <Center>

@@ -8,21 +8,23 @@ const TimeSelector = () => {
 
     return( <>
             <HStack>
-            <FormLabel>Time</FormLabel>
-            <Input 
-                type="time" 
-                autoComplete  = {"true"}
-                className="timeBox"
-                fontSize="50px" 
-                width="195px" 
-                height="70px"
-                borderRadius="0px"
-                borderStyle="solid"
-                borderWidth="5px"
-                onChange={(e) => setTime(e.target.value)}
-                textShadow='1px 2px gray'
-                value={time}
-            />
+                <FormLabel>
+                    Time
+                </FormLabel>
+                <Input 
+                    type="time" 
+                    autoComplete  = {"true"}
+                    className="timeBox"
+                    fontSize="50px" 
+                    width="195px" 
+                    height="70px"
+                    borderRadius="0px"
+                    borderStyle="solid"
+                    borderWidth="5px"
+                    onChange={(e) => setTime(e.target.value)}
+                    textShadow='1px 2px gray'
+                    value={time}
+                />
             </HStack>
             </>
     )

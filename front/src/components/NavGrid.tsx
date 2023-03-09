@@ -5,7 +5,7 @@ import Countdown from "react-countdown"
 import { timePadding } from "./Alarms/AlarmComponents/stringifyDate-Time"
 import { useNavigate } from 'react-router-dom'
 import { useLogIn, useAdmin, useTimeouts, usePopups, extend } from '../stores'
-import { SessionStatus } from '../type.d'
+import { SessionStatus } from '../type'
 import { MenuType } from '../stores/popUpStore'
 
 const NavGrid = () => {

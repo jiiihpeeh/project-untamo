@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
         Button, Box,Divider,} from '@chakra-ui/react'
 import { useLogIn, extend } from "../stores"
-import { SessionStatus } from "../type.d"
+import { SessionStatus } from "../type"
 import '../App.css'
 
 const LogIn = () => {

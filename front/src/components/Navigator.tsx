@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import React, { useEffect } from "react"
 import { useDevices, useLogIn, useAdmin, extend } from "../stores"
-import { SessionStatus } from "../type.d"
+import { SessionStatus } from "../type"
 
 const Navigator = () => {
     const currentDevice = useDevices((state)=> state.currentDevice)

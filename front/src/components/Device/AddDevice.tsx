@@ -7,7 +7,7 @@ import {  Drawer, DrawerBody,
           Input, Divider, Stack } from '@chakra-ui/react'
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useDevices, usePopups } from "../../stores"
-import { DeviceType } from "../../type.d"
+import { DeviceType } from "../../type"
 
 const AddDevice = () => {
   const btnRef = useRef<any>()
