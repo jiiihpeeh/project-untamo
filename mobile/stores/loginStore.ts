@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { getCommunicationInfo } from '../stores'
 import axios from 'axios'
 import { SessionStatus, FormData} from '../type'
 import { UserInfo } from '../type'
@@ -13,7 +12,16 @@ import useDevices from './deviceStore'
 import useServer from './serverStore'
 import useTimeouts from './timeouts'
 import useFetchQR from './QRStore'
+import useAudio from './audioStore'
 
+const getCommunicationInfo = () => {
+    const server = useServer.getState().address
+    const token = useLogIn.getState().token
+    return { 
+                server: server,
+                token: token
+           }
+}
 type UseLogIn = {
     token : string,
     signedIn: number,
@@ -238,6 +246,7 @@ const logIn = async(email: string, password: string) => {
                             }
                         )
         //fetchAudioFiles()
+        useAudio.getState().getTracks()
         useDevices.getState().fetchDevices()
         useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random()*7200000)

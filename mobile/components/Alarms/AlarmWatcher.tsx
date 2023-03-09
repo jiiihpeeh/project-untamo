@@ -1,6 +1,8 @@
 import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
-import { useDevices, useTimeouts, useAlarms} from "../../stores"
+import useDevices  from "../../stores/deviceStore"
+import useTimeouts  from "../../stores/timeouts"
+import useAlarms from "../../stores/alarmStore"
 
 const AlarmWatcher  = () => {
     const setTimeoutId = useTimeouts((state)=> state.setId)
@@ -19,6 +21,7 @@ const AlarmWatcher  = () => {
     useEffect(() => {
         
         const filterAlarms = () => {
+            console.log("alarm watcher called")
             setTimeForNextLaunch(-1)
             if(runAlarm){
                 if((runAlarm.active === false) || (currentDevice && (!runAlarm.devices.includes(currentDevice)))){
@@ -55,9 +58,10 @@ const AlarmWatcher  = () => {
                     if( runThis && (timed > 100)){
                         
                         setRunAlarm(runThis)
+                        let timeOutID = setTimeout(() => {console.log("ALARM")}, timed)
                         setTimeoutId(timeOutID)
-                        //let alarmDate =   new Date(timed + Date.now())
-                        //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
+                        let alarmDate =   new Date(timed + Date.now())
+                        console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
                         setTimeForNextLaunch(Math.ceil(timed/1000))
 
                      }  

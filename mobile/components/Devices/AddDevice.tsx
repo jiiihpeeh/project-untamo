@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Button, Icon, Div,Text,  Input, Image, Modal, Dropdown } from 'react-native-magnus'
 import DeviceTypes from "./DeviceTypes"
-import { useDevices } from "../../stores"
+import useDevices  from "../../stores/deviceStore"
 import useDeviceState from "./deviceStates"
 
 const AddDevice = () => {

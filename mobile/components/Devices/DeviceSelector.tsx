@@ -1,6 +1,6 @@
 import { useState, useEffect, createRef, } from "react"
 import { Select, Button, Text , Dropdown} from "react-native-magnus"
-import { useDevices } from "../../stores"
+import useDevices from "../../stores/deviceStore"
 
 const DeviceSelector = () => {
     const  devices = useDevices((state)=>state.devices)

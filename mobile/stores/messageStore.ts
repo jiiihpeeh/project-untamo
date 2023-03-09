@@ -7,21 +7,13 @@ export enum Status{
 }
 type UseMessage = {
     message: string,
-    setMessage: (message: string) => void,
     duration: number,
-    setDuration: (duration: number) => void,
     iconName: string,
-    setIconName: (icon: string) =>void,
     color: string,
-    setColor: (color: string) => void,
     fontSize: string|number,
-    setFontSize: (fontSize: string) => void,
     fontFamily: string,
-    setFontFamily: (fontFamily: string) => void,
     background: string,
-    setBackground: (background: string) => void,
     snackColor: string,
-    setSnackColor: (color:string)=>void,
     notification: (message: string, duration: number, status: Status )=> void,
     reset: () => void
 }
@@ -48,69 +40,13 @@ const defaultMessage =  {
                         }
 const useMessage = create<UseMessage>((set) => ({
         message: "",
-        setMessage: (message) => {
-            set(
-                {
-                    message: message
-                }
-            )
-        },
         duration: -1,
-        setDuration: (duration) => {
-            set(
-                {
-                    duration: duration
-                }
-            )
-        },
         iconName: "checkcircle",
-        setIconName: (icon) =>{
-            set(
-                {
-                    iconName: icon
-                }
-            )
-        },
         color: "white",
-        setColor: (color: string) => {
-            set(
-                {
-                    color: color
-                }
-            )
-        },
         fontSize: "md",
-        setFontSize: (fontSize) => {
-            set(
-                {
-                    fontSize: fontSize
-                }
-            )
-        },
         fontFamily: "AntDesign",
-        setFontFamily: (fontFamily) => {
-            set(
-                {
-                    fontFamily: fontFamily
-                }
-            )
-        },
         background:"green700",
-        setBackground:(color)  =>{
-            set(
-                {
-                    color: color
-                }
-            )
-        },
         snackColor: "white",
-        setSnackColor: (color)=>{
-            set(
-                {
-                    snackColor: color
-                }
-            )
-        },
         notification: (message, duration, status )=> {
             let color: string
             switch(status){

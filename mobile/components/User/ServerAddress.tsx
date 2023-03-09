@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Button, Icon, Div,Text,  Input, Image, Modal } from 'react-native-magnus'
-import { useServer } from "../../stores"
+import   useServer from "../../stores/serverStore"
 
 const ServerAddress = () => {
     const [visible, setVisible] = useState(false)

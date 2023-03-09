@@ -1,6 +1,16 @@
 import { create } from 'zustand'
 import axios from 'axios'
-import { getCommunicationInfo } from '../stores'
+import useServer from './serverStore'
+import useLogIn from './loginStore'
+
+const getCommunicationInfo = () => {
+    const server = useServer.getState().address
+    const token = useLogIn.getState().token
+    return { 
+                server: server,
+                token: token
+           }
+}
 
 type UseFetchQR = {
     fetchQR: boolean,

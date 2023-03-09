@@ -4,7 +4,9 @@ import Icon from "react-native-vector-icons/EvilIcons"
 import useAlarm, { DialogMode } from "./AlarmComponents/alarmStates"
 import AlarmSelector from "./AlarmComponents/AlarmSelector"
 import { AlarmCases } from "../../type"
-import { usePopups } from "../../stores"
+import usePopups  from "../../stores/popUpStore"
+
+
 const AddAlarm = () => {	
     const onAddOpen = useAlarm((state)=> state.onAddOpen)
     const setOccurence = useAlarm((state)=> state.setOccurence)

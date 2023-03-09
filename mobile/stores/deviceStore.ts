@@ -2,11 +2,22 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { DeviceType, Device}  from '../type'
 import axios from "axios"
-import { getCommunicationInfo, useAlarms } from "../stores"
+import useAlarms from './alarmStore'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useMessage, {Status} from './messageStore'
+import useServer from './serverStore'
+import useLogIn from './loginStore'
+
 const notification = useMessage.getState().notification
 
+const getCommunicationInfo = () => {
+    const server = useServer.getState().address
+    const token = useLogIn.getState().token
+    return { 
+                server: server,
+                token: token
+           }
+}
 type UseDevices = {
     devices: Array<Device>,
     viewableDevices: Array<string>,

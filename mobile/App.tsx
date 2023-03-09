@@ -4,7 +4,7 @@ import  React, { useState, useEffect, useRef } from 'react'
 import LogIn from './components/User/LogIn'
 import Notification from './components/Notification'
 import AlarmView from './components/Alarms/AlarmView'
-import { useLogIn } from './stores'
+import useLogIn  from './stores/loginStore'
 import { SessionStatus } from './type'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 

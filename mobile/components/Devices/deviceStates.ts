@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { Device, DeviceType } from '../../type'
-import { useDevices } from '../../stores'
+import  useDevices  from '../../stores/deviceStore'
 type UseDeviceStates = {
     deviceName: string,
     type: DeviceType,

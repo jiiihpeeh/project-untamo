@@ -2,7 +2,7 @@ import React, { useEffect,  useState, createRef } from "react"
 import { Button, Icon, Div,Text,  Input, Image, Modal, Dropdown } from 'react-native-magnus'
 import DeviceTypes from "./DeviceTypes"
 import { ScrollView, TouchableHighlight } from 'react-native'
-import { useDevices } from "../../stores"
+import useDevices from "../../stores/deviceStore"
 import useDeviceState from "./deviceStates"
 
 const EditDevice = () => {

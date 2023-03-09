@@ -7,7 +7,7 @@ import {
   Snackbar,
   SnackbarRef,
 } from "react-native-magnus"
-import { useMessage } from "../stores"
+import  useMessage from "../stores/messageStore"
 
 const snackbarRef  = React.createRef<any>()
 

@@ -2,7 +2,9 @@
 import React, { useState } from "react"
 import { SafeAreaView, StatusBar, FlatList } from "react-native"
 import { Div, Button, Icon, Modal, ThemeProvider, Text } from "react-native-magnus"
-import { useAlarms, usePopups } from "../../stores"
+import useAlarms from "../../stores/alarmStore"
+import usePopups from "../../stores/popUpStore"
+
 
 const DeleteAlarm = () => {
     const deleteAlarm = useAlarms((state)=>state.deleteAlarm)

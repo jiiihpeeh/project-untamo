@@ -8,7 +8,8 @@ import { SafeAreaView, StatusBar , ScrollView} from "react-native"
 import { Div, Button, Icon, Modal } from "react-native-magnus"
 import useAlarm, { DialogMode } from "./alarmStates"
 import { AlarmCases } from "../../../type"
-import { usePopups, useAlarms } from "../../../stores"
+import  usePopups  from "../../../stores/popUpStore"
+import  useAlarms  from "../../../stores/alarmStore"
 
 const AlarmSelector = () => {
     const alarmCase = useAlarm((state)=> state.occurence)

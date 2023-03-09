@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { WeekDay } from '../type'
-import { getCommunicationInfo } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
@@ -10,7 +9,14 @@ import useMessage, { Status } from './messageStore'
 import useTimeouts from './timeouts'
 import useLogIn from './loginStore'
 import { Alarm, AlarmCases } from '../type'
-
+const getCommunicationInfo = () => {
+  const server = useServer.getState().address
+  const token = useLogIn.getState().token
+  return { 
+              server: server,
+              token: token
+         }
+}
 
 const notification  = useMessage.getState().notification
 const maxAlarmTime = 60*60*1000

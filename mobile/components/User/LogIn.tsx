@@ -3,7 +3,7 @@ import ServerAddress from "./ServerAddress"
 import { Button, Icon, Div,Text,  Input, Image, Modal } from 'react-native-magnus'
 import { ScrollView, TouchableHighlight } from 'react-native'
 import QrWindow from './QrWindow'
-import { useLogIn } from "../../stores"
+import useLogIn from "../../stores/loginStore"
 
 const LogIn = () => {
   //const [visible, setVisible] = useState(false)

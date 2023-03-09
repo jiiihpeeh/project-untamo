@@ -2,7 +2,7 @@ import { Div, Checkbox, Text } from "react-native-magnus"
 import React  from 'react'
 import { ScrollView } from "react-native"
 import useAlarm from "./alarmStates"
-import { useDevices } from "../../../stores"
+import  useDevices   from "../../../stores/deviceStore"
 
 const DeviceChecker = () => {
     const devices  = useDevices((state)=>state.devices)

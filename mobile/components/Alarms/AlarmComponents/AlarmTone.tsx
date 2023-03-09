@@ -1,126 +1,70 @@
-import React, { useState } from "react"
-// import { Menu, MenuButton, MenuList, Button, MenuItem, 
-//      Center, IconButton, Text, Icon, Tooltip, Table, Tr, Td, Tbody } from "@chakra-ui/react"
-// import { ChevronDownIcon } from  '@chakra-ui/icons'
+import React, { createRef } from "react"
+import { Dropdown, Button, Text } from "react-native-magnus"
+import useAudio from '../../../stores/audioStore'
 import useAlarm from './alarmStates'
-// import { fetchAudioFiles } from '../../../audiostorage/audioDatabase'
-// import { RepeatIcon} from '@chakra-ui/icons'
-// import { BsFillPlayFill as PlayIcon} from 'react-icons/bs'
-// import { MdStop as StopIcon} from 'react-icons/md'
-//import { useAudio } from "../../../stores"
 
 const AlarmTone = () => {
-/*     const alarmTone = useAlarm((state)=> state.tone)
-    const tones = useAudio((state)=> state.tracks)
-    const track = useAudio((state)=> state.track)
-    const plays = useAudio((state) => state.plays)
-    const playAudio = useAudio((state) => state.play)
-    const setTrack = useAudio((state)=>state.setTrack)
-    const stopAudio = useAudio((state)=>state.stop)
-    const setLoop = useAudio((state)=>state.setLoop)
-    const [closeOnSelect, setCloseOnSelect ] = useState(false)
-   */
-    const play = async (tone:string) =>{
-        if(plays){
-            stopAudio()
-        }else{
-            setLoop(false)
-            setTrack(tone)
-            playAudio()
-        }
-    }
+    const dropdownRef : any = createRef()
+    const tracks = useAudio((state)=>state.tracks)
+    const track = useAlarm((state =>state.tone))
+    const setTrack = useAlarm((state =>state.setTone))
 
-    const menuTones = () => {
-        if(tones.length === 0){
-            fetchAudioFiles()
-        }
-        let modTones = tones
-        if(!tones.includes(alarmTone)){
-            modTones.push(alarmTone)
-        }
-        return modTones.map(tone => 
-            { return (
-                        <MenuItem 
-                            onClick={()=> useAlarm.setState( { tone: tone })}
-                            key={`audio-${tone}`}
-                            w="100%"
-                            closeOnSelect={closeOnSelect}
-                        >   
-                            <Table  
-                                id={`alarm-${tone}`} 
-                                key={`alarmKey-${tone}`} 
-                                variant="unstyled" 
-                                size="sm" 
-                                mb={"0px"} 
-                                mt={"0px"}
-                            >
-                                <Tbody>
-                                <Tr>
-                                    <Td>
-                                        <Tooltip 
-                                            label='Track name' 
-                                            fontSize='md'
-                                        >
-                                            <Text>
-                                                {tone} 
-                                            </Text>
-                                        </Tooltip>
-                                    </Td>
-                                    <Td
-                                        w="45px"
-                                        onMouseLeave= {(e)=>{setCloseOnSelect(true)}}
-                                        onMouseEnter={(e)=>{setCloseOnSelect(false)}}
-                                        onClick={(e)=>{play(tone)}}
-                                    >
-                                        <Tooltip 
-                                            label={(plays && (tone === track))?"Stop":'Play'}
-                                            fontSize='sm'
-                                        >
-                                            <IconButton  
-                                                icon={<Icon as={(plays && (tone === track) )?StopIcon:PlayIcon} />} 
-                                                ml="5.5%" 
-                                                colorScheme='cyan'
-                                                aria-label=''
-                                                size={"sm"}
-                                                isDisabled={!tones.includes(tone) || (plays && (tone !== track) )}
-                                            />
-                                        </Tooltip>
-                                    </Td>
-                                </Tr>
-                                </Tbody>
-                            </Table>
-                        </MenuItem>
-                    )
-            }
-        )
-    }
 
+    const alarmCases = () => {
+        let newTracks = tracks 
+        if(!tracks.includes(track)){
+            newTracks.push(track)
+        }
+
+        return newTracks.map(item => 
+                            {
+                                return(
+                                        <Dropdown.Option
+                                            block
+                                            bg="gray100"
+                                            color="gray"
+                                            py="lg"
+                                            px="xl"
+                                            borderBottomWidth={1}
+                                            borderBottomColor="gray200"
+                                            justifyContent="center"
+                                            onPress={() =>  setTrack(item)}
+                                            value=""
+                                            key={item}
+                                        >
+                                            {item}
+                                        </Dropdown.Option>
+                                    )
+                            }
+                        )
+    }
+    
     return(
-            <Center 
-                mb={'15px'} >
-            <Menu
-                matchWidth={true}
+        <>          
+            <Button
+                block
+                p="md"
+                color="white"
+                m={3}
+                mt={20}
+                bg="cyan"
+                onPress={() => dropdownRef.current.open()}
             >
-                <MenuButton 
-                    as={Button} 
-                    rightIcon={<ChevronDownIcon />}
-                >
-                    Choose the alarm tone: {alarmTone}
-                </MenuButton>
-                <MenuList>
-                    {menuTones()}
-                </MenuList>
-            </Menu>
-            <IconButton 
-                size='xs' 
-                icon={<RepeatIcon/>} 
-                ml="5.5%" 
-                colorScheme='blue'
-                aria-label=''
-                onClick= {() => {fetchAudioFiles()}}
-            />
-        </Center>
-       )
+            <Text>
+                Select a tone type: {track}
+            </Text>
+            </Button>
+            <Dropdown
+                ref={dropdownRef}
+                m="md"
+                pb="md"
+                bg="transparent"
+                showSwipeIndicator={false}
+                roundedTop="xl"
+            >
+                {alarmCases()}
+            </Dropdown>
+        </>
+    )
 }
-
 export default AlarmTone

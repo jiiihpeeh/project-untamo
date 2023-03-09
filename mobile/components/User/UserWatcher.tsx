@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
 import useWebSocket from 'react-native-use-websocket'
 import sleep  from '../sleep'
-import { useServer, useLogIn, useDevices, useAlarms, useTimeouts } from '../../stores'
+import useServer  from '../../stores/serverStore'
+import useLogIn  from '../../stores/loginStore'
+import useDevices  from '../../stores/deviceStore'
+import useAlarms from '../../stores/alarmStore'
+import useTimeouts  from '../../stores/timeouts'
+
+
 //import { notification } from '../notification'
 import { Alarm } from '../../type'
 

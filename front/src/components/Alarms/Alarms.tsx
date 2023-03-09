@@ -10,21 +10,19 @@ import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"
 import { CheckIcon } from "@chakra-ui/icons"
-
+import { shallow } from 'zustand/shallow'
 
 const Alarms = () => {
     const userInfo = useLogIn((state)=> state.user)
-	const devices = useDevices((state)=> state.devices)
-	const viewableDevices = useDevices((state)=> state.viewableDevices)
-	const currentDevice  = useDevices((state)=> state.currentDevice)
-	const alarms = useAlarms((state)=> state.alarms)
-	const runAlarm = useAlarms((state)=> state.runAlarm)
-	const setToDelete = useAlarms((state)=> state.setToDelete)
-	const setToEdit = useAlarms((state)=> state.setToEdit)
-	const setShowEdit = usePopups((state)=> state.setShowEditAlarm)
-	const setShowDelete = usePopups((state)=> state.setShowDeleteAlarm)
-	const toggleActivity = useAlarms((state)=> state.toggleActivity)
-	const timeForNextLaunch = useAlarms((state)=> state.timeForNextLaunch)
+	const [devices, viewableDevices, currentDevice] = useDevices(state => 
+		[ state.devices, state.viewableDevices, state.currentDevice ],  shallow)
+
+	const [alarms, runAlarm, setToDelete, setToEdit, timeForNextLaunch, toggleActivity ] = useAlarms(state => 
+		[ state.alarms, state.runAlarm, state.setToDelete, state.setToEdit, state.timeForNextLaunch, state.toggleActivity ],  shallow)
+
+	const [ setShowEdit, setShowDelete ] = usePopups((state)=> 
+		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
+		
 	const [ showTooltip, setShowTooltip] = useState("")
 
 	const FooterText = () => {

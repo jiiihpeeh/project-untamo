@@ -8,10 +8,13 @@ import EditAlarm from "./EditAlarm"
 import EditDrawer from '../EditDrawer'
 import PlayAlarm from "./PlayAlarm"
 import AlarmWatcher from "./AlarmWatcher"
-import { useAlarms, useDevices , usePopups} from "../../stores"
+import  useAlarms from "../../stores/alarmStore"
+import  useDevices  from "../../stores/deviceStore"
+import   usePopups from "../../stores/popUpStore"
 import useAlarm from "./AlarmComponents/alarmStates"
 import { Alarm } from "../../type"
 import { DialogMode } from "./AlarmComponents/alarmStates"
+import ShowAlarm from "./ShowAlarm"
 
 const Alarms = () => {
 	const currentDevice  = useDevices((state)=> state.currentDevice)
@@ -25,6 +28,8 @@ const Alarms = () => {
     const setDialogMode = useAlarm((state)=>state.setDialogMode)
 
     const [ viewAllDevices, setViewAllDevices ] = useState(false)
+    const [ showAlarm, setShowAlarm ] = useState(false)
+
     const launchEdit = (alarm: Alarm) => {
         alarmToEditDialog(alarm) 
         setShowAlarmSelector(true)
@@ -120,6 +125,11 @@ const Alarms = () => {
         </Div>
         <ScrollView>
             {renderAlarms()}
+            <Button
+                onPress={()=> setShowAlarm(true)}
+            >
+                Show Alarm
+            </Button>
         </ScrollView>
         <Div 
             alignItems="flex-end" 
@@ -132,8 +142,10 @@ const Alarms = () => {
         <EditDrawer/>
         {/* <Button onPress={() => setAlarmWindow(true)}> Alarm</Button> */}
         {/* <PlayAlarm/> */}
-        {/* <AlarmWatcher/> */}
+        {/* <ShowAlarm showAlarm={showAlarm} setShowAlarm={setShowAlarm}/> */}
+        <AlarmWatcher/>
         </SafeAreaView>
+
         </>
     )
 }

@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { WeekDay } from '../../../type'
 import { timePadding } from "./stringifyDate-Time"
 import { numberToWeekDay } from '../calcAlarmTime'
-import { useDevices, useLogIn } from '../../../stores'
+import useLogIn from '../../../stores/loginStore'
+import useDevices from '../../../stores/deviceStore'
 import { stringifyDate, stringToDate } from './stringifyDate-Time'
 import { AlarmCases, Alarm } from '../../../type'
 
@@ -80,7 +81,8 @@ type AlarmStates = {
     id: string,
     setId: (id:string) =>void,
     onAddOpen: () => void,
-    tone: string
+    tone: string,
+    setTone: (track: string) => void,
     alarmFromDialog: () => Alarm,
     alarmToEditDialog: (alarm: Alarm) => void,
     dialogMode: DialogMode,
@@ -169,6 +171,13 @@ const useAlarm = create<AlarmStates>((set, get) => (
             }
         ),
         tone: 'rooster',
+        setTone: (track) =>{
+            set(
+                {
+                    tone: track
+                }
+            )
+        },
         onAddOpen: () => set (
             {
                 occurence: AlarmCases.Weekly,

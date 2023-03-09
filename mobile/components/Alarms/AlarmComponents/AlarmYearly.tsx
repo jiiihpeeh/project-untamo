@@ -5,6 +5,7 @@ import DeviceChecker from "./DeviceChecker"
 import Message from "./Message"
 import React from "react"
 import Active from './Active'
+import AlarmTone from './AlarmTone'
 
 const AlarmYearly = () => {
     return(
@@ -23,6 +24,8 @@ const AlarmYearly = () => {
                     </Div>
                 </Div>
                 <Active/>
+                <AlarmTone/>
+
                 <DeviceChecker/>
             </Div>
        )
