@@ -295,7 +295,7 @@ const useLogIn = create<UseLogIn>()(
             expire: -1,
             tokenTime: -1,
             tones: [],
-            fingerprint: [...Array(Math.floor(Math.random() * 5 ) + 8)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
+            fingerprint: [...Array(Math.floor(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             setToken: (s) => set(
                   { 
                     token : s
