@@ -64,7 +64,8 @@ const useMessage = create<UseMessage>((set) => ({
                 {
                     message: message,
                     duration: duration,
-                    color: color
+                    color: color,
+                    background: color
                 }
                 
             )

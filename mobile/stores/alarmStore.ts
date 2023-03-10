@@ -9,6 +9,8 @@ import useMessage, { Status } from './messageStore'
 import useTimeouts from './timeouts'
 import useLogIn from './loginStore'
 import { Alarm, AlarmCases } from '../type'
+import useServer from './serverStore'
+
 const getCommunicationInfo = () => {
   const server = useServer.getState().address
   const token = useLogIn.getState().token

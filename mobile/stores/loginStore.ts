@@ -246,7 +246,7 @@ const logIn = async(email: string, password: string) => {
                             }
                         )
         //fetchAudioFiles()
-        useAudio.getState().getTracks()
+        useAudio.getState().fetchTracks()
         useDevices.getState().fetchDevices()
         useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random()*7200000)
@@ -313,7 +313,7 @@ const useLogIn = create<UseLogIn>()(
             expire: -1,
             tokenTime: -1,
             tones: [],
-            fingerprint:[...Array(Math.floor(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
+            fingerprint:[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             setToken: (s) => set(
                   { 
                     token : s

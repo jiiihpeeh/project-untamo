@@ -14,7 +14,7 @@ const AlarmYearly = () => {
                 <Div 
                     row 
                     alignItems='center' 
-                    ml={90}
+                    ml={180}
                 >
                     <TimeSelector/>
                     <Div 

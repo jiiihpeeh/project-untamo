@@ -89,7 +89,7 @@ type UseAudio = {
     track: string,
     tracks: Array<string>,
 
-    getTracks: () => void,
+    fetchTracks: () => void,
     setTracks: (tracks: Array<string>) => void,
     // setTrack: (track: string)=>void,
     // play: ()=> void,
@@ -132,7 +132,7 @@ const useAudio = create<UseAudio>((set, get) => (
     {
         track: "rooster",
         tracks: [],
-        getTracks: () => {
+        fetchTracks: () => {
             fetchAudioFiles()
         },
         setTracks: (tracks:Array<string>) => {

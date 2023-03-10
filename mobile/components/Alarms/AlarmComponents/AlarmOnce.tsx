@@ -13,16 +13,14 @@ const AlarmOnce = () => {
                 <Message/>
                 <Div 
                     alignItems='center'
+                    row 
+                    ml={180}
                 >
+                    <TimeSelector/>
                     <Div 
-                        row 
+                        ml={15}
                     >
-                        <TimeSelector/>
-                        <Div 
-                            ml={3}
-                        >
-                            <DateSelector/>
-                        </Div>
+                        <DateSelector/>
                     </Div>
                 </Div>
                 <AlarmTone/>
