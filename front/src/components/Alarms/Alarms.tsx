@@ -101,7 +101,7 @@ const Alarms = () => {
 		return sortedView.map(({ id, occurence, time, weekdays, date, label, devices, active },key) => {
 			return (
 					<Tr 
-						key={`alarm-item-${id}-${key}-row`}
+						key={`alarm-item-${key}-row`}
 						onMouseEnter={()=> timeTooltip(id )}
 					>	
 						<Td>
@@ -111,7 +111,7 @@ const Alarms = () => {
 							}
 						</Td>
 						<Td
-							key={`occurence-${id}-${key}`}
+							key={`occurence-${key}`}
 						>	
 							<Tooltip
 								label={showTooltip}
@@ -121,7 +121,7 @@ const Alarms = () => {
 							
 						</Td>
 						<Td
-							key={`time-${id}-${key}`}
+							key={`time-${key}`}
 						>
 							<Tooltip
 								label={showTooltip}
@@ -130,7 +130,7 @@ const Alarms = () => {
 							</Tooltip>
 						</Td>
 						<Td
-							key={`weekdays-${id}-${key}`}
+							key={`weekdays-${key}`}
 						>
 							<Tooltip
 								label={showTooltip}
@@ -139,7 +139,7 @@ const Alarms = () => {
 							</Tooltip>
 						</Td>
 						<Td
-							key={`dateView-${id}-${key}`}
+							key={`dateView-${key}`}
 						>
 							<Tooltip
 								label={showTooltip}
@@ -148,7 +148,7 @@ const Alarms = () => {
 							</Tooltip>
 						</Td>
 						<Td
-							key={`label-${id}`}
+							key={`label-${key}`}
 						>
 							<Tooltip
 								label={showTooltip}
@@ -157,7 +157,7 @@ const Alarms = () => {
 							</Tooltip>
 						</Td>
 						<Td
-							key={`devices-${id}-${key}`}
+							key={`devices-${key}`}
 						>
 							<Tooltip
 								label={showTooltip}
@@ -166,12 +166,12 @@ const Alarms = () => {
 							</Tooltip>
 						</Td>
 						<Td
-							key={`active-column-${id}-${key}`}
+							key={`active-column-${key}`}
 						>
 							<Center>
 								<Switch 
-										name={`alarm-switch-${alarms[key].id}`}
-										key={`alarm-active-${id}-${key}`}
+										name={`alarm-switch-${key}`}
+										key={`alarm-active-${key}`}
 										isChecked={active}
 										size='md' 
 										onChange={() => toggleActivity(id)}
@@ -180,19 +180,19 @@ const Alarms = () => {
 							</Center>
 						</Td>
 						<Td
-							key={`editColumn-${id}`}
+							key={`editColumn-${key}`}
 						>
 							<Tooltip 
 								label='Edit alarm' 
 								fontSize='md'
-								key={`edit-tip-${id}-${key}`}
+								key={`edit-tip-${key}`}
 							>
 							<IconButton 
 								size='xs' 
 								icon={<EditIcon/>} 
 								ml="5.5%" 
 								aria-label=''
-								key={`edit-${id}-${key}`}
+								key={`edit-${key}`}
 								onClick= {() => { setToEdit(id); setShowEdit(true)}}
 							/>
 							</Tooltip>
@@ -203,7 +203,7 @@ const Alarms = () => {
 							<Tooltip 
 								label='Delete alarm' 
 								fontSize='md'
-								key={`delete-tip-${id}-${key}`}
+								key={`delete-tip-${key}`}
 							>
 							<IconButton 
 								size='xs' 

@@ -48,7 +48,10 @@ const UserWatcher = () => {
 
   const sendIdentity = async (mode:string) => {
     if(wsTimeout){
-      clearTimeout(wsTimeout)
+      try{
+        clearTimeout(wsTimeout)
+      }catch(e:any){}
+      
     }
     if(token && token.length > 3){
       //console.log('sending credits')
