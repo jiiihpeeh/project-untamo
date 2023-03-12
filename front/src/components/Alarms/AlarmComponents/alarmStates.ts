@@ -29,7 +29,7 @@ const toggleDevices = (d : string|undefined, ds : Array<string>) => {
 }
 const timeValue = (t: string, oldTime : string) => {
     let timeArr = `${t}`.split(':')
-    if(!(timeArr.length !== 2)){
+    if(timeArr.length !== 2){
         return oldTime
     }
     let minutes : number
