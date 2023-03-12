@@ -28,11 +28,20 @@ const toggleDevices = (d : string|undefined, ds : Array<string>) => {
     return ds
 }
 const timeValue = (t: string, oldTime : string) => {
-    let timeArr = `${t}`.split(':');
-    let minutes = parseInt(timeArr[1]);
-    let hours = parseInt(timeArr[0]);
+    let timeArr = `${t}`.split(':')
+    if(!(timeArr.length !== 2)){
+        return oldTime
+    }
+    let minutes : number
+    let hours : number
+    try{
+       minutes = parseInt(timeArr[1])
+       hours = parseInt(timeArr[0])
+    } catch(err:any){
+        return oldTime
+    }
     if(!isNaN(minutes) && !isNaN(hours) && hours < 24 && hours >=0 && minutes >=0 && minutes < 60 ){
-        return `${timePadding(hours)}:${timePadding(minutes)}`;
+        return `${timePadding(hours)}:${timePadding(minutes)}`
     }else{
         return oldTime
     }
