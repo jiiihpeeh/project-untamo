@@ -42,7 +42,7 @@ const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>
 
 
 const fetchAlarms = async () => {
-    let fetchedAlarms = [] as Array<Alarm>
+    let fetchedAlarms : Array<Alarm> = []
     const {server, token} = getCommunicationInfo()
 
     try{
