@@ -10,8 +10,7 @@ const TimeSelector = () => {
   
     const testHandler = useCallback((e: CustomEvent) => {
         setTime(`${e.detail.hour}:${e.detail.minutes}`)
-    }, []);
-  
+    }, [])
   
     useEffect(() => {
       const tm = (tmRef.current as unknown) as HTMLDivElement;
@@ -43,13 +42,14 @@ const TimeSelector = () => {
                         className='timepicker-ui-input'
                         defaultValue={time}
                         fontSize="50px" 
-                        width="195px" 
+                        width="170px" 
                         height="70px"
                         borderRadius="sm"
                         borderStyle="solid"
                         borderWidth="5px"
                         textShadow='1px 2px gray'
                         textAlign={"center"}
+                        value={time}
                     />
                 </Center>
             </Box>

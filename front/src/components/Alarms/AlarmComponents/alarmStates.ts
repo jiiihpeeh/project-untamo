@@ -27,14 +27,14 @@ const toggleDevices = (d : string|undefined, ds : Array<string>) => {
     }
     return ds
 }
-const timeValue = (t: string) => {
+const timeValue = (t: string, oldTime : string) => {
     let timeArr = `${t}`.split(':');
     let minutes = parseInt(timeArr[1]);
     let hours = parseInt(timeArr[0]);
-    if(!isNaN(minutes) && !isNaN(hours)){
+    if(!isNaN(minutes) && !isNaN(hours) && hours < 24 && hours >=0 && minutes >=0 && minutes < 60 ){
         return `${timePadding(hours)}:${timePadding(minutes)}`;
     }else{
-        return "00:00";
+        return oldTime
     }
 }
 
@@ -52,7 +52,7 @@ const occurenceDateFormat = (cases:AlarmCases) =>{
 const alarmTimeInit = () => {
 	let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
 	return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`;
-};
+}
 
 
 type Alarm = {
@@ -135,7 +135,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
         time: "00:00",
         setTime: (time) => set(
             {
-                time: timeValue(time)
+                time: timeValue(time, get().time)
             }
         ),
         devices: [],
