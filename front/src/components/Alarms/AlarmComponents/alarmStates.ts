@@ -11,6 +11,12 @@ export enum AlarmCases {
     Weekly = "weekly",
     Yearly = "yearly",
 }
+
+export enum Direction {
+    Increase,
+    Decrease
+}
+
 const fingerprint = () => useLogIn.getState().fingerprint
 
 const toggleWeekdays = (d : WeekDay, w : Array<WeekDay>) => {
@@ -46,6 +52,34 @@ const timeValue = (t: string, oldTime : string) => {
         return oldTime
     }
 }
+
+const changeTime = (oldTime: string, direction: Direction) => {
+    let timeArr = `${oldTime}`.split(':')
+    if(timeArr.length !== 2){
+        return oldTime
+    }
+    let minutes : number
+    let hours : number
+    try{
+       minutes = parseInt(timeArr[1])
+       hours = parseInt(timeArr[0])
+    } catch(err:any){
+        return oldTime
+    }
+    let date = new Date()
+    date.setHours(hours)
+    date.setMinutes(minutes)
+    date.setSeconds(0)
+    let newDate : number
+    if(direction === Direction.Decrease){
+       newDate = date.getTime() - (60 * 1000)
+    }else{
+        newDate = date.getTime() + (60 * 1000)
+    }
+    date.setTime(newDate)
+    return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
+}
+
 
 const occurenceDateFormat = (cases:AlarmCases) =>{
     switch(cases){
@@ -87,6 +121,7 @@ type AlarmStates = {
     setLabel: (label: string) => void,
     time: string,
     setTime: (time:string) => void,
+    changeTime:(direction: Direction) => void,
     date: Date,
     setDate: (d:Date) => void,
     devices: Array<string>,
@@ -147,6 +182,13 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 time: timeValue(time, get().time)
             }
         ),
+        changeTime:(direction: Direction) => {
+            set(
+                {
+                    time: changeTime(get().time,direction)
+                }
+            )
+        },
         devices: [],
         setDevices: (deviceIds) => set(
                 {
