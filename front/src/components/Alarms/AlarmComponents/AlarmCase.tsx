@@ -1,7 +1,8 @@
 import React from "react";
 import { Menu, MenuButton, MenuList, Button, MenuItem, Center} from "@chakra-ui/react";
 import { ChevronDownIcon } from  '@chakra-ui/icons';
-import useAlarm, { AlarmCases } from './alarmStates'
+import useAlarm from './alarmStates'
+import { AlarmCases }  from "../../../type"
 
 const AlarmCase = () => {
     const alarmCase = useAlarm((state)=> state.occurence);

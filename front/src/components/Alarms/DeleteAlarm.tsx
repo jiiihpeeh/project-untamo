@@ -1,8 +1,7 @@
-import {
-	Button, AlertDialog, 
-	AlertDialogBody,AlertDialogFooter, 
-	AlertDialogHeader,AlertDialogContent, 
-	AlertDialogOverlay } from '@chakra-ui/react'
+import { Button, AlertDialog, 
+		AlertDialogBody,AlertDialogFooter, 
+		AlertDialogHeader,AlertDialogContent, 
+		AlertDialogOverlay } from '@chakra-ui/react'
 import React, { useRef } from 'react'
 import {  useAlarms, usePopups } from '../../stores'
 

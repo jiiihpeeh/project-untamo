@@ -5,7 +5,8 @@ import AlarmDaily from "./AlarmDaily"
 import AlarmYearly from "./AlarmYearly"
 import AlarmCase from "./AlarmCase"
 import { Divider } from "@chakra-ui/react"
-import useAlarm, { AlarmCases } from "./alarmStates"
+import useAlarm from "./alarmStates"
+import { AlarmCases }  from "../../../type"
 
 const AlarmSelector = () => {
     const alarmCase = useAlarm((state)=> state.occurence)

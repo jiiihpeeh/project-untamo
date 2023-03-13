@@ -1,20 +1,13 @@
 import { create } from 'zustand'
-import { WeekDay } from '../../../type'
-import { timePadding } from "./stringifyDate-Time";
-import { numberToWeekDay } from '../calcAlarmTime';
-import { useDevices, useLogIn } from '../../../stores';
-import { stringifyDate, stringToDate } from './stringifyDate-Time';
+import { WeekDay, AlarmCases } from '../../../type'
+import { timePadding } from "./stringifyDate-Time"
+import { numberToWeekDay } from '../calcAlarmTime'
+import { useDevices, useLogIn } from '../../../stores'
+import { stringifyDate, stringToDate } from './stringifyDate-Time'
 
-export enum AlarmCases {
-    Once = "once",
-    Daily = "daily",
-    Weekly = "weekly",
-    Yearly = "yearly",
-}
-
-export enum Direction {
-    Increase,
-    Decrease
+export const enum Direction {
+    Increase="inc",
+    Decrease="dec"
 }
 
 const fingerprint = () => useLogIn.getState().fingerprint
@@ -53,7 +46,7 @@ const timeValue = (t: string, oldTime : string) => {
     }
 }
 
-const changeTime = (oldTime: string, direction: Direction) => {
+const changeTime = (oldTime: string, direction: Direction, multiplier: number) => {
     let timeArr = `${oldTime}`.split(':')
     if(timeArr.length !== 2){
         return oldTime
@@ -71,10 +64,13 @@ const changeTime = (oldTime: string, direction: Direction) => {
     date.setMinutes(minutes)
     date.setSeconds(0)
     let newDate : number
-    if(direction === Direction.Decrease){
-       newDate = date.getTime() - (60 * 1000)
-    }else{
-        newDate = date.getTime() + (60 * 1000)
+    switch(direction){
+        case Direction.Decrease:
+            newDate = date.getTime() - ( multiplier  * 60 * 1000)
+            break
+        case Direction.Increase:
+            newDate = date.getTime() + ( multiplier  * 60 * 1000)
+            break
     }
     date.setTime(newDate)
     return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
@@ -121,7 +117,7 @@ type AlarmStates = {
     setLabel: (label: string) => void,
     time: string,
     setTime: (time:string) => void,
-    changeTime:(direction: Direction) => void,
+    changeTime:(direction: Direction, multiplier: number) => void,
     date: Date,
     setDate: (d:Date) => void,
     devices: Array<string>,
@@ -182,10 +178,10 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 time: timeValue(time, get().time)
             }
         ),
-        changeTime:(direction: Direction) => {
+        changeTime:(direction, multiplier) => {
             set(
                 {
-                    time: changeTime(get().time,direction)
+                    time: changeTime(get().time,direction, multiplier)
                 }
             )
         },
