@@ -47,6 +47,8 @@ type Popup = {
     setShowDeviceMenu: (show: boolean, id: string, type: MenuType) => void,
     showToast: boolean,
     setShowToast: (to:boolean) => void
+    showTimepicker: boolean,
+    setShowTimepicker: (to:boolean) => void
 }
 const menuDefault: MenuPlacer = {show:false, style: {}, element: null, type: MenuType.Menu}
 const getOffset = (show: boolean, id: string, type: MenuType) => {
@@ -251,6 +253,14 @@ const usePopups = create<Popup>((set) => ({
                         showToast: to
                     }
                 )
+        },
+        showTimepicker: false,
+        setShowTimepicker: (to:boolean) => {
+            set(
+                {
+                    showTimepicker : to
+                }
+            )
         },
     }
 ))
