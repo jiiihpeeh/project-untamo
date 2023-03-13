@@ -324,10 +324,6 @@ const Alarms = () => {
 						</Table>
 					</TableContainer>
 				</Container>
-				<HStack
-                	width={400}
-            	>
-           		 </HStack>
 				<AddAlarmButton/>
 			</>
 		)
