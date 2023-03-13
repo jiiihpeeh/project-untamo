@@ -24,15 +24,7 @@ const Alarms = () => {
 		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
 		
 	const [ showTooltip, setShowTooltip] = useState("")
-    const numberStrArray = (n:number) => {
-        let arr : Array<string> = []
-        for(let i = 0; i<n; i++){
-            arr.push(`${i}`)
-        }
-        return arr
-    }
-    let hours = numberStrArray(24)
-    let minutes = numberStrArray(60)
+
 	const FooterText = () => {
 		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
 			return "No alarms for this device"
@@ -333,9 +325,9 @@ const Alarms = () => {
 					</TableContainer>
 				</Container>
 				<HStack
-                width={400}
-            >
-            </HStack>
+                	width={400}
+            	>
+           		 </HStack>
 				<AddAlarmButton/>
 			</>
 		)
