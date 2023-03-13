@@ -14,6 +14,8 @@ export default defineConfig({
         clueless: resolve(__dirname, 'clueless/index.html'),
         register: resolve(__dirname, 'register/index.html'),
       },
+      
     },
+      minify: true,
   },
 })

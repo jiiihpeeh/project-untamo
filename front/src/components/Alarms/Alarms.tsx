@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import {  Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
-		  TableContainer, Center,Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
+		  TableContainer, Center,Switch, Tooltip, IconButton, Text, HStack } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
 import { WeekDay } from "../../type"
@@ -24,7 +24,15 @@ const Alarms = () => {
 		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
 		
 	const [ showTooltip, setShowTooltip] = useState("")
-
+    const numberStrArray = (n:number) => {
+        let arr : Array<string> = []
+        for(let i = 0; i<n; i++){
+            arr.push(`${i}`)
+        }
+        return arr
+    }
+    let hours = numberStrArray(24)
+    let minutes = numberStrArray(60)
 	const FooterText = () => {
 		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
 			return "No alarms for this device"
@@ -324,6 +332,10 @@ const Alarms = () => {
 						</Table>
 					</TableContainer>
 				</Container>
+				<HStack
+                width={400}
+            >
+            </HStack>
 				<AddAlarmButton/>
 			</>
 		)
