@@ -42,10 +42,15 @@ import { usePopups } from '../../../stores';
 
     return (
       <>
-        <Modal isOpen={showTimepicker} onClose={()=>setShowTimepicker(false)}>
+        <Modal 
+            isOpen={showTimepicker} 
+            onClose={()=>setShowTimepicker(false)}
+        >
           <ModalOverlay />
           <ModalContent>
-            <ModalHeader>Set Time</ModalHeader>
+            <ModalHeader>
+                Set Time
+            </ModalHeader>
             <ModalCloseButton />
             <ModalBody>
             <HStack>
@@ -80,10 +85,8 @@ import { usePopups } from '../../../stores';
                 //@ts-ignore
                 onChange={ value => setParsedTime({...parsedTime, minutes: value}) }
             />
-            
             </HStack>
             </ModalBody>
-  
             <ModalFooter>
                 <Button 
                     colorScheme='blue' 
