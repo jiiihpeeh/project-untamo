@@ -4,12 +4,11 @@ import {  Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
 import { WeekDay } from "../../type"
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
+import { DeleteIcon, EditIcon, CheckIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases, Device } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"
-import { CheckIcon } from "@chakra-ui/icons"
 import { shallow } from 'zustand/shallow'
 
 const Alarms = () => {

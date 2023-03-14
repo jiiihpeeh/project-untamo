@@ -8,16 +8,16 @@ import AlarmTone from "./AlarmTone";
 
 const AlarmYearly = () => {
     return(
-        <Center>
-            <Stack>
-                <Message />
-                <TimeSelector/>
-                <DateSelector/>
-                <DeviceChecker/>
-                <AlarmTone/>
-            </Stack>
-        </Center>
-       )
+            <Center>
+                <Stack>
+                    <Message />
+                    <TimeSelector/>
+                    <DateSelector/>
+                    <DeviceChecker/>
+                    <AlarmTone/>
+                </Stack>
+            </Center>
+            )
 };
 
 export default AlarmYearly;

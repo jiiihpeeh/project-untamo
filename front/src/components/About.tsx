@@ -23,7 +23,7 @@ const About = () => {
 				<ModalCloseButton />
 				<ModalBody>
 				<Text>
-					This project aims to implement a syncronizable cross device alarm clock implementation.
+					This project aims to implement s cross device alarm clock implementation with synchronization.
 				</Text>
 				</ModalBody>
 

@@ -31,9 +31,4 @@ const DeviceIcons = (props: Props) => {
   return(<Icon as={iconized(props.device)} />)
 }
 
-
-
-
-
-
 export default DeviceIcons

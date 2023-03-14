@@ -1,8 +1,6 @@
-import { useDisclosure, Button,
-		Drawer,DrawerBody,DrawerFooter,
-		DrawerHeader,DrawerOverlay,
-		DrawerContent, DrawerCloseButton,
-		} from '@chakra-ui/react'
+import { useDisclosure, Button, Drawer,DrawerBody,
+		 DrawerFooter, DrawerHeader,DrawerOverlay,
+		 DrawerContent, DrawerCloseButton, } from '@chakra-ui/react'
 import React, { useEffect, useRef } from 'react'
 import AlarmSelector from './AlarmComponents/AlarmSelector'
 import { useAlarms, usePopups } from '../../stores'
