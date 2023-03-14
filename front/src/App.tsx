@@ -48,9 +48,7 @@ function App() {
 		checker()
 	},[])
 	
-	
 	return (
-		
 		<div className="App">
 			{/* <AppAlert/> */}
 			<NavGrid/>

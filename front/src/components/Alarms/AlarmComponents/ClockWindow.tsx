@@ -10,6 +10,7 @@ import { timePadding } from './stringifyDate-Time'
 import useAlarm from './alarmStates'
 import React, { useEffect, useState, useRef } from 'react'
 import { usePopups } from '../../../stores'
+import sleep from '../../sleep';
 
 function ClockWindow() {
     const time = useAlarm((state)=> state.time)
@@ -19,6 +20,7 @@ function ClockWindow() {
     const minuteSlider = useRef<HTMLDivElement>(null)
     const hourSlider = useRef<HTMLDivElement>(null)
     const separator = useRef<HTMLDivElement>(null)
+
     const [ parsedTime, setParsedTime ] = useState({hours: 0, minutes: 0})
     const [ hourStyle, setHourStyle ] = useState<React.CSSProperties>({})
     const [ minuteStyle, setMinuteStyle ] = useState<React.CSSProperties>({})
@@ -28,8 +30,16 @@ function ClockWindow() {
         setTime(`${timePadding(Math.floor(parsedTime.hours))}:${timePadding(Math.floor(parsedTime.minutes))}`)
     }    
     useEffect(()=>{
-        let timeArr = time.split(":")
-        setParsedTime({hours: Math.round(parseInt(timeArr[0])), minutes: Math.round(parseInt(timeArr[1]))})  
+        const setParsed = async () => {
+            let timeArr = time.split(":")
+            //setParsedTime({hours: Math.round(parseInt(timeArr[0])), minutes: Math.round(parseInt(timeArr[1]))})
+            //await sleep(5)
+            setParsedTime({hours: Math.round(parseInt(timeArr[0])+0.001), minutes: Math.round(parseInt(timeArr[1]))})  
+            await sleep(80)
+            setParsedTime({hours: Math.round(parseInt(timeArr[0])-0.001), minutes: Math.round(parseInt(timeArr[1]))}) 
+        }
+ 
+        setParsed()
     }, [time, showTimepicker])
 
     useEffect(()=>{
@@ -41,10 +51,10 @@ function ClockWindow() {
     },[parsedTime])
 
     return (
-      <>
         <Modal 
             isOpen={showTimepicker} 
             onClose={()=>setShowTimepicker(false)}
+            id="ClockWindow"
         >
           <ModalOverlay />
           <ModalContent>
@@ -129,7 +139,6 @@ function ClockWindow() {
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </>
     )
   }
 
