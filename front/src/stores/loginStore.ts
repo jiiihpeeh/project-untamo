@@ -234,7 +234,8 @@ const logIn = async(email: string, password: string) => {
         notification("Logged In", "Successfully logged in")
     }catch(err:any){
         notification("Log In", "Log In Failed", Status.Error)
-        console.error(err)
+        useLogIn.setState({sessionValid: SessionStatus.NotValid})
+        //console.error(err)
     }
 }
 const logOutProcedure = async () => {

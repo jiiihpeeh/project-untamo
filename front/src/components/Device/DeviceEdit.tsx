@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react"
-import { Menu, MenuItem,
-         MenuList, MenuButton,
+import { Menu, MenuItem,  MenuList, MenuButton,
          Drawer, DrawerOverlay,
          DrawerContent, DrawerHeader,
          DrawerBody, DrawerFooter,
@@ -21,10 +20,15 @@ const DeviceEdit = () => {
     const showEdit = usePopups((state)=> state.showEditDevice)
     const setToEdit = useDevices((state) => state.setToEdit) 
     const toEditDevice = useDevices((state)=> state.toEdit)
+    const inputTime = useRef<number>(Date.now())
     const types = Object.values(DeviceType).filter((item) => item)
 
     const mouseSelect = (e:number) =>{
-      console.log("huu")
+      const now = Date.now()
+      if(now - inputTime.current  < 200){
+          return
+      }
+      inputTime.current = now
       let index = types.indexOf(deviceEditInfo.type)
       if( e < 0 && index +1 < types.length){
         setDeviceEditInfo({...deviceEditInfo, type: types[index + 1]})

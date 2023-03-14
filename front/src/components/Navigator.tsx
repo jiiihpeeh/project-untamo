@@ -11,7 +11,8 @@ const Navigator = () => {
     const  navigate = useNavigate()
 
 	useEffect(() =>{
-        //console.log(sessionStatus, currentDevice,adminNavigate)
+        //console.log(sessionStatus, currentDevice,adminNavigate)        
+
 		if(sessionStatus !== SessionStatus.Valid){
 			navigate(extend('/login'))
 		}else if(sessionStatus === SessionStatus.Valid &&!currentDevice) {
@@ -19,6 +20,7 @@ const Navigator = () => {
 		}else if(sessionStatus === SessionStatus.Valid  && currentDevice){
             navigate(extend('/alarms'))
         }
+
 	},[sessionStatus, currentDevice])
     useEffect(() =>{
         if(sessionStatus === SessionStatus.Valid && adminNavigate){

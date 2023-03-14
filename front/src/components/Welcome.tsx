@@ -1,9 +1,11 @@
-import React from "react"
+import React, { useEffect} from "react"
 import { useNavigate } from "react-router-dom"
 import { Text, Grid, GridItem, Button } from '@chakra-ui/react'
 import { useLogIn, useDevices, usePopups, extend } from "../stores"
 import { MenuType } from "../stores/popUpStore"
 import { ChevronDownIcon } from  '@chakra-ui/icons';
+import { SessionStatus } from "../type"
+
 
 const Welcome = () => {
     const userInfo = useLogIn((state)=> state.user)
@@ -11,11 +13,14 @@ const Welcome = () => {
     const setShowAddDevice = usePopups((state)=> state.setShowAddDevice)
     const setShowDeviceSelector = usePopups((state)=> state.setShowDeviceSelector)
     const showDeviceSelector = usePopups((state)=> state.showDeviceSelector.show)
+    const sessionStatus = useLogIn((state)=> state.sessionValid)
     const  navigate = useNavigate()
     
     const DeviceLayout = () => {
         if(!devices || devices.length === 0){
-            return(<Grid key="Welcome-Grid-no-Devices">
+            return(<Grid 
+                        key="Welcome-Grid-no-Devices"
+                    >
                     <GridItem>
                         <Button 
                             colorScheme='green' 
@@ -30,7 +35,9 @@ const Welcome = () => {
             )
         }else {
             return(
-                    <Grid key="Welcome-Grid-Devices">
+                    <Grid 
+                        key="Welcome-Grid-Devices"
+                    >
                         <GridItem>
                             <Button
                                 id="Welcome-DeviceSelector"
@@ -64,6 +71,11 @@ const Welcome = () => {
             )
         }
     }
+    useEffect(()=>{
+        if(sessionStatus === SessionStatus.NotValid){
+            navigate(extend("/login"))
+        }
+    },[sessionStatus])
     
     return(
         <>{(userInfo.screenName.length > 0)? 

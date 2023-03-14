@@ -10,9 +10,9 @@ export enum WeekDay  {
 
 
 export enum SessionStatus {
-    NotValid = 0,
-    Valid,
-    Unknown
+    NotValid = "not-valid",
+    Valid = "valid",
+    Unknown = "unknown"
 }
 
 export enum DeviceType {

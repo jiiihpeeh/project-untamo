@@ -10,15 +10,21 @@ import { useDevices, usePopups } from "../../stores"
 import { DeviceType } from "../../type"
 
 const AddDevice = () => {
-  const btnRef = useRef<any>()
+  const btnRef = useRef<any>(null)
   const [ deviceName, setDeviceName ] = useState('')
   const addDevice = useDevices((state) => state.addDevice)
   const [deviceType, setDeviceType] = useState(DeviceType.Browser)
   const showAddDevice = usePopups((state)=> state.showAddDevice)
   const setShowAddDevice = usePopups((state)=> state.setShowAddDevice)
+  const inputTime = useRef<number>(Date.now())
   const types = Object.values(DeviceType).filter((item) => item)
 
   const mouseSelect = (e:number) =>{
+    const now = Date.now()
+    if(now - inputTime.current  < 80){
+        return
+    }
+    inputTime.current = now
     let index = types.indexOf(deviceType)
     if( e < 0 && index +1 < types.length){
       setDeviceType(types[index + 1])

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef} from "react";
 import { Menu, MenuButton, MenuList, Button, MenuItem, Center} from "@chakra-ui/react";
 import { ChevronDownIcon } from  '@chakra-ui/icons';
 import useAlarm from './alarmStates'
@@ -8,11 +8,17 @@ const AlarmCase = () => {
     const alarmCase = useAlarm((state)=> state.occurence);
     const setAlarmCase = useAlarm((state)=> state.setOccurence)
     const cases = Object.values(AlarmCases).filter((item) => item)
+    const inputTime = useRef<number>(Date.now())
 
     function capitalizeFirstLetter(str: string) {
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
     const mouseSelect = (e:number) =>{
+      const now = Date.now()
+      if(now - inputTime.current  < 200){
+          return
+      }
+      inputTime.current = now
       let index = cases.indexOf(alarmCase)
       if( e < 0 && index +1 < cases.length){
         setAlarmCase(cases[index + 1])
