@@ -34,7 +34,9 @@ function ClockWindow() {
         const setParsed = async () => {
             let timeArr = time.split(":")
             setParsedTime({hours: Math.round(parseInt(timeArr[0])+0.001), minutes: Math.round(parseInt(timeArr[1]))})  
-            await sleep(120)
+            await sleep(2)
+            setParsedTime({hours: Math.round(parseInt(timeArr[0])+0.003), minutes: Math.round(parseInt(timeArr[1]))}) 
+            await sleep(250)
             setParsedTime({hours: Math.round(parseInt(timeArr[0])), minutes: Math.round(parseInt(timeArr[1]))}) 
         }
         setParsed()
