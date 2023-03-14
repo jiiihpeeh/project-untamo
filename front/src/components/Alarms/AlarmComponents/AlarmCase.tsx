@@ -7,13 +7,22 @@ import { AlarmCases }  from "../../../type"
 const AlarmCase = () => {
     const alarmCase = useAlarm((state)=> state.occurence);
     const setAlarmCase = useAlarm((state)=> state.setOccurence)
+    const cases = Object.values(AlarmCases).filter((item) => item)
 
     function capitalizeFirstLetter(str: string) {
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
-
+    const mouseSelect = (e:number) =>{
+      let index = cases.indexOf(alarmCase)
+      if( e < 0 && index +1 < cases.length){
+        setAlarmCase(cases[index + 1])
+      }
+      if( e > 0 && index > 0){
+        setAlarmCase(cases[index - 1])
+      }
+    } 
     const alarmCases = () => {
-      const cases = Object.values(AlarmCases).filter((item) => item)
+     
       return cases.map(item => 
                         {
                           return(
@@ -37,6 +46,7 @@ const AlarmCase = () => {
             rightIcon={
                         <ChevronDownIcon />
                       }
+            onWheel={e => mouseSelect(e.deltaY)}
           >
             Choose the alarm type: {alarmCase}
           </MenuButton>

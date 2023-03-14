@@ -16,20 +16,31 @@ const AddDevice = () => {
   const [deviceType, setDeviceType] = useState(DeviceType.Browser)
   const showAddDevice = usePopups((state)=> state.showAddDevice)
   const setShowAddDevice = usePopups((state)=> state.setShowAddDevice)
-  interface DeviceTypeName{
-    type: DeviceType
-  }
-  const MenuActionItem = (item: DeviceTypeName) => {
-    return(
-      <MenuItem  
-        onClick={() => setDeviceType(item.type)} 
-        key={`type-${item.type}`}
-      > 
-        {item.type}
-      </MenuItem>
-    )
-  }
+  const types = Object.values(DeviceType).filter((item) => item)
 
+  const mouseSelect = (e:number) =>{
+    let index = types.indexOf(deviceType)
+    if( e < 0 && index +1 < types.length){
+      setDeviceType(types[index + 1])
+    }
+    if( e > 0 && index > 0){
+      setDeviceType(types[index - 1])
+    }
+  } 
+  const menuActionItems = () => {
+    return types.map(type =>{
+                              return (
+                                        <MenuItem
+                                          onClick={()=>{setDeviceType(type)}}
+                                          key={`add-${type}`}
+                                        >
+                                          {type}
+                                        </MenuItem>
+                                    )
+                            }
+                    )
+  }  
+  
   const requestDevice = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.currentTarget.disabled = true
     addDevice(deviceName, deviceType)
@@ -72,28 +83,12 @@ const AddDevice = () => {
                   <MenuButton 
                     as={Button} 
                     rightIcon={<ChevronDownIcon />}
+                    onWheel={e=>mouseSelect(e.deltaY)}
                   >
                     Device type: {deviceType}
                   </MenuButton>
                   <MenuList>
-                    <MenuActionItem 
-                      type = {DeviceType.Browser}
-                    />
-                    <MenuActionItem 
-                      type ={DeviceType.Phone}
-                    />
-                    <MenuActionItem 
-                      type ={DeviceType.Desktop}
-                    />
-                    <MenuActionItem 
-                      type ={DeviceType.Tablet}
-                    />
-                    <MenuActionItem 
-                      type ={DeviceType.IoT}
-                    />
-                    <MenuActionItem 
-                      type ={DeviceType.Other}
-                    />
+                    {menuActionItems()}
                   </MenuList>
                 </Menu>
                 </Stack>
