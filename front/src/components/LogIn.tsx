@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
-        Button, Box,Divider,} from '@chakra-ui/react'
-import { useLogIn, extend } from "../stores"
+        Button, Box,Divider, Heading} from '@chakra-ui/react'
+import { useLogIn, extend,usePopups } from "../stores"
 import { SessionStatus } from "../type"
 import '../App.css'
 
 const LogIn = () => {
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const logIn = useLogIn((state) => state.logIn)
+    const isMobile = usePopups((state) => state.isMobile)
 
 
     const [formData, setFormData] = useState({
@@ -55,7 +56,7 @@ const LogIn = () => {
         <form>
         <Box 
             className='UserForm'
-            width={"85%"}
+            width={(isMobile)?screen.width*0.90:500}
         >
         <FormControl 
             onSubmit={onSubmit} 

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Input, InputGroup,Box,
          InputRightAddon, FormControl,
          FormLabel, Text, Button } from '@chakra-ui/react'
-import { useServer, extend } from '../../stores'
+import { useServer, extend, usePopups } from '../../stores'
 import useRegister from './RegisterBackend'
 import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons';
 import '../../App.css'
@@ -39,7 +39,8 @@ const Register = () => {
     const setPasswordTimeout = useRegister((state)=>state.setFormTimeOut)
     const clearPasswordTimeout = useRegister((state)=>state.clearFormTimeout)
     const setFormCheck = useRegister((state)=>state.setFormCheck)
-   
+    const isMobile = usePopups((state) => state.isMobile)
+
     const wsServer = useServer((state) => state.wsAddress)
     const wsURL = wsServer+'/register-check'
     const navigate = useNavigate()
@@ -124,7 +125,7 @@ const Register = () => {
         <Box 
             bg='lightgray' 
             className='UserForm' 
-            width={"85%"}
+            width={(isMobile)?screen.width*0.90:500}
         >
             <FormControl 
                 width="95%" 
@@ -208,7 +209,7 @@ const Register = () => {
                     onClick={()=>register()}
                     isDisabled={!(passwordCheck && formCheck && password === confirmPassword && password.length > 5)}
                 >
-                    Submit
+                    Register
                 </Button>
             </FormControl> 
         </Box>

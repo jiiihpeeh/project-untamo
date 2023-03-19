@@ -15,13 +15,17 @@ const NavGrid = () => {
     const setShowAbout = usePopups((state)=> state.setShowAbout)
     const setShowServerEdit = usePopups((state)=> state.setShowServerEdit)
     const clearAdminTimeout = useTimeouts((state)=> state.clearAdminTimeout)
+    const showLogIn = useTimeouts((state)=> state.showLogIn)
     const setAdminTimeout = useTimeouts((state)=> state.setAdminID)
     const setShowUserMenu = usePopups((state)=> state.setShowUserMenu)
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
     const showDeviceMenu =  usePopups((state)=> state.showDeviceMenu)
     const showUserMenu = usePopups((state)=> state.showUserMenu)
+    const isMobile = usePopups((state)=> state.isMobile)
+
     const [ validItems, setValidItems ] = useState(["login", "register", "about"])
     const [ showAdmin, setShowAdmin ] = useState(false)
+    
     const navigate  = useNavigate()
 
     interface TextArg {
@@ -56,11 +60,17 @@ const NavGrid = () => {
             if(sessionStatus === SessionStatus.Valid){
                 setValidItems(["alarms", "devices", 'user'])
             } else {
-                setValidItems(["login", "register",'server', "about"])        
+                if(showLogIn){
+                    setValidItems(["login",'server', "about"])    
+                }else{
+                    setValidItems(["register",'server', "about"])    
+
+                }
+                    
             }
         }
         constructGrid()
-    },[sessionStatus])
+    },[sessionStatus, showLogIn])
 
     
     useEffect(()=> {
@@ -140,7 +150,7 @@ const NavGrid = () => {
                     onClick={()=> setShowServerEdit(true)}
                 >
                     <Text as='b'>
-                        Server Location
+                        {(isMobile)?`Server`:`Server Location`}
                     </Text>
                 </Link>
             </>}
