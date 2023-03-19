@@ -8,7 +8,6 @@ import { useDevices, usePopups } from "../../stores"
 import { Device } from "../../type"
 import { MenuType } from "../../stores/popUpStore"
 
-
 const DeviceSelector = () => {
   const devices = useDevices((state)=> state.devices)
   const currentDevice = useDevices((state)=> state.currentDevice)

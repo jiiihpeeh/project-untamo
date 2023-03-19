@@ -1,10 +1,11 @@
 import React, { useState, useRef } from "react"
-import {  Drawer, DrawerBody,  
-          DrawerFooter, DrawerHeader,
-          DrawerOverlay, DrawerContent,
-          DrawerCloseButton, Button, Menu,
-          MenuButton, MenuList,MenuItem,
-          Input, Divider, Stack } from '@chakra-ui/react'
+import { Menu, MenuItem,  MenuList, MenuButton,
+  Button, Divider,
+  Input, Stack, Modal,
+   ModalOverlay, ModalContent,
+   ModalHeader,  ModalFooter,
+   ModalBody, ModalCloseButton
+ } from '@chakra-ui/react'  
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useDevices, usePopups } from "../../stores"
 import { DeviceType } from "../../type"
@@ -21,7 +22,7 @@ const AddDevice = () => {
 
   const mouseSelect = (e:number) =>{
     const now = Date.now()
-    if(now - inputTime.current  < 80){
+    if(now - inputTime.current  < 200){
         return
     }
     inputTime.current = now
@@ -53,27 +54,27 @@ const AddDevice = () => {
     setShowAddDevice(false)
     setDeviceName("")
   }
-  const onDrawerClose = () => {
+  const onModalClose = () => {
     setShowAddDevice(false)
   }
 
   return (
         <>
-          <Drawer
+          <Modal
             isOpen={showAddDevice}
-            placement='right'
-            onClose={onDrawerClose}
+            isCentered
+            onClose={onModalClose}
             finalFocusRef={btnRef}
             key='xs'
           >
-            <DrawerOverlay />
-            <DrawerContent>
-              <DrawerCloseButton />
-              <DrawerHeader>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalCloseButton />
+              <ModalHeader>
                 Insert Device Name
-              </DrawerHeader>
+              </ModalHeader>
     
-              <DrawerBody>
+              <ModalBody>
                 <Stack>
                 <Input 
                   placeholder='Device name'  
@@ -98,12 +99,12 @@ const AddDevice = () => {
                   </MenuList>
                 </Menu>
                 </Stack>
-              </DrawerBody>
-              <DrawerFooter>
+              </ModalBody>
+              <ModalFooter>
                 <Button 
                   variant='outline' 
                   mr={3} 
-                  onClick={onDrawerClose}
+                  onClick={onModalClose}
                 >
                   Cancel
                 </Button>
@@ -113,9 +114,9 @@ const AddDevice = () => {
                 >
                   Add
                 </Button>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
         </>
       )
 }

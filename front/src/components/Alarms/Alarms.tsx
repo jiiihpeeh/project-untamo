@@ -1,6 +1,7 @@
+import { Card, CardHeader, CardBody, CardFooter, Stack, StackDivider, Box, VStack, HStack, Divider, Flex, Spacer } from '@chakra-ui/react'
 import React, { useState } from "react"
 import {  Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
-		  TableContainer, Center,Switch, Tooltip, IconButton, Text, HStack } from '@chakra-ui/react'
+		  TableContainer, Center,Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
 import { WeekDay } from "../../type"
@@ -10,6 +11,7 @@ import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"
 import { shallow } from 'zustand/shallow'
+import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
 
 const Alarms = () => {
     const userInfo = useLogIn((state)=> state.user)
@@ -23,6 +25,11 @@ const Alarms = () => {
 		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
 		
 	const [ showTooltip, setShowTooltip] = useState("")
+	const [ showButtons, setShowButtons] = useState("")
+
+    function capitalizeFirstLetter(str: string) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      }
 
 	const FooterText = () => {
 		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
@@ -51,7 +58,7 @@ const Alarms = () => {
 			   }
 	}
 	
-	const renderAlarms = () => {
+	const renderCards = () => {
 		let viewableAlarmsSet = new Set<Alarm> ()		
 		let timeAlarmMap = new Map <number, Set<string>>()
 		for(const filtrate of viewableDevices){
@@ -96,126 +103,243 @@ const Alarms = () => {
 			const time = timeToUnits(Math.round(timeMs/1000))
 			setShowTooltip(`${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)}`)
 		} 
-
+        const occurenceInfo = (occurence: AlarmCases, weekdays: Array<WeekDay>, date: string)=> {
+            switch(occurence){
+                case AlarmCases.Weekly:
+                    return(
+                        <Box>
+                        <Heading size='xs' textTransform='uppercase'>
+                            Weekdays
+                        </Heading>
+                        <Text pt='2' fontSize='sm'>
+                            {weekdayDisplay(weekdays, date)}
+                        </Text>
+                        </Box>)
+                case AlarmCases.Once:
+                    return(
+                        <Box>
+                        <Heading size='xs' textTransform='uppercase'>
+                            Date
+                        </Heading>
+                        <Text pt='2' fontSize='sm'>
+                            {`${date} ${weekdayDisplay(weekdays, date)}`}
+                        </Text>
+                    </Box>
+                    )
+                case AlarmCases.Yearly:
+                    return(
+                        <Box>
+                        <Heading size='xs' textTransform='uppercase'>
+                            Date
+                        </Heading>
+                        <Text pt='2' fontSize='sm'>
+                            {`${date} ${weekdayDisplay(weekdays, date)}`}
+                        </Text>
+                    </Box>
+                    )
+            }
+        }
 		return sortedView.map(({ id, occurence, time, weekdays, date, label, devices, active },key) => {
 			return (
-					<Tr 
-						key={`alarm-item-${key}-row`}
-						onMouseEnter={()=> timeTooltip(id )}
-					>	
-						<Td>
-							{(id === ((runAlarm)?runAlarm.id:'')) ?<CheckIcon 
-																		color={"green.900"}
-																	/>:''
-							}
-						</Td>
-						<Td
-							key={`occurence-${key}`}
-						>	
-							<Tooltip
-								label={showTooltip}
-							>
-								{occurence}
-							</Tooltip>
+                    <Card
+                        key={key}
+                        backgroundColor={(!active)?'gray.100':((key % 2 === 0)?'cyan.100':'yellow.100')}
+                        onMouseLeave={()=>{setShowButtons(""); console.log("left")}}
+                        onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
+                        mb={"5px"}
+                    >
+                        
+                        <CardBody>
+                            <Tooltip label={showTooltip}>                               
+                                <CardHeader >
+                                    {`${capitalizeFirstLetter(occurence)}: `} {<Text as="b">{label}</Text>}
+                                </CardHeader> 
+                            </Tooltip>
+                            <HStack divider={<StackDivider />}>
+                            <Box>
+                                
+                                <Heading size='xl' textTransform='uppercase'>
+                                    {time}
+                                </Heading>
+                               
+                            </Box>
+                            <Box>
+                                <Heading size='xs' textTransform='uppercase'>
+                                    Devices
+                                </Heading>
+                                <Text pt='2' fontSize='sm'>
+                                    {mapDeviceIDsToNames(devices)}
+                                </Text>
+                            </Box>
+                                {occurenceInfo(occurence, weekdays, date)}
+
+                            </HStack>
+                            <Collapse in={showButtons === id} animateOpacity>
+                                <Flex mt={"10px"}>
+                                    <Box>
+                                        <Heading size='xs' textTransform='uppercase' mb="4px">
+                                            Edit
+                                        </Heading>
+                                        <IconButton 
+                                            size='md' 
+                                            icon={<EditIcon/>} 
+                                            ml="5.5%" 
+                                            aria-label=''
+                                            key={`edit-${key}`}
+                                            onClick= {() => { setToEdit(id); setShowEdit(true)}}
+                                        />
+                                    </Box>
+                                    <Spacer/>
+                                    <Box>
+
+                                        <Heading size='xs' textTransform='uppercase' mb="4px">
+                                            Active
+                                        </Heading>
+                                        <Switch 
+                                            name={`alarm-switch-${key}`}
+                                            key={`alarm-active-${key}`}
+                                            isChecked={active}
+                                            size='md' 
+                                            onChange={() => {toggleActivity(id); setShowEdit(false)}}
+                                        />					
+                                    </Box>
+                                    <Spacer />
+                                    <Box >
+                                        <Heading size='xs' textTransform='uppercase' mb="4px">
+                                            Delete
+                                        </Heading>
+                                        <IconButton 
+                                            size='md' 
+                                            icon={<DeleteIcon/>} 
+                                            ml="5.5%" 
+                                            colorScheme='red'
+                                            aria-label=''
+                                            onClick= {() => { setShowEdit(false); setToDelete(id);  setShowDelete(true)}}
+                                            key={`delete-${id}-${key}`}
+                                        />
+                                    </Box>
+                                </Flex>
+                            </Collapse>
+                        </CardBody>
+
+                    </Card>
+				// 	<Tr 
+				// 		key={`alarm-item-${key}-row`}
+				// 		onMouseEnter={()=> timeTooltip(id )}
+				// 	>	
+				// 		<Td>
+				// 			{(id === ((runAlarm)?runAlarm.id:'')) ?<CheckIcon 
+				// 														color={"green.900"}
+				// 													/>:''
+				// 			}
+				// 		</Td>
+				// 		<Td
+				// 			key={`occurence-${key}`}
+				// 		>	
+				// 			<Tooltip
+				// 				label={showTooltip}
+				// 			>
+				// 				{occurence}
+				// 			</Tooltip>
 							
-						</Td>
-						<Td
-							key={`time-${key}`}
-						>
-							<Tooltip
-								label={showTooltip}
-							>
-								{time}
-							</Tooltip>
-						</Td>
-						<Td
-							key={`weekdays-${key}`}
-						>
-							<Tooltip
-								label={showTooltip}
-							>
-								{weekdayDisplay(weekdays, date)}
-							</Tooltip>
-						</Td>
-						<Td
-							key={`dateView-${key}`}
-						>
-							<Tooltip
-								label={showTooltip}
-							>
-								{dateView(date, occurence)}
-							</Tooltip>
-						</Td>
-						<Td
-							key={`label-${key}`}
-						>
-							<Tooltip
-								label={showTooltip}
-							>
-								{label}
-							</Tooltip>
-						</Td>
-						<Td
-							key={`devices-${key}`}
-						>
-							<Tooltip
-								label={showTooltip}
-							>
-								{mapDeviceIDsToNames(devices)}
-							</Tooltip>
-						</Td>
-						<Td
-							key={`active-column-${key}`}
-						>
-							<Center>
-								<Switch 
-										name={`alarm-switch-${key}`}
-										key={`alarm-active-${key}`}
-										isChecked={active}
-										size='md' 
-										onChange={() => toggleActivity(id)}
-										//key={`active-${id}`}
-								/>
-							</Center>
-						</Td>
-						<Td
-							key={`editColumn-${key}`}
-						>
-							<Tooltip 
-								label='Edit alarm' 
-								fontSize='md'
-								key={`edit-tip-${key}`}
-							>
-							<IconButton 
-								size='xs' 
-								icon={<EditIcon/>} 
-								ml="5.5%" 
-								aria-label=''
-								key={`edit-${key}`}
-								onClick= {() => { setToEdit(id); setShowEdit(true)}}
-							/>
-							</Tooltip>
-						</Td>
-						<Td
-							key={`deleteColumn-${id}`}
-						>
-							<Tooltip 
-								label='Delete alarm' 
-								fontSize='md'
-								key={`delete-tip-${key}`}
-							>
-							<IconButton 
-								size='xs' 
-								icon={<DeleteIcon/>} 
-								ml="5.5%" 
-								colorScheme='red'
-								aria-label=''
-								onClick= {() => { setToDelete(id); setShowDelete(true)}}
-								key={`delete-${id}-${key}`}
-							/>
-							</Tooltip>
-						</Td>
-				</Tr>
+				// 		</Td>
+				// 		<Td
+				// 			key={`time-${key}`}
+				// 		>
+				// 			<Tooltip
+				// 				label={showTooltip}
+				// 			>
+				// 				{time}
+				// 			</Tooltip>
+				// 		</Td>
+				// 		<Td
+				// 			key={`weekdays-${key}`}
+				// 		>
+				// 			<Tooltip
+				// 				label={showTooltip}
+				// 			>
+				// 				{weekdayDisplay(weekdays, date)}
+				// 			</Tooltip>
+				// 		</Td>
+				// 		<Td
+				// 			key={`dateView-${key}`}
+				// 		>
+				// 			<Tooltip
+				// 				label={showTooltip}
+				// 			>
+				// 				{dateView(date, occurence)}
+				// 			</Tooltip>
+				// 		</Td>
+				// 		<Td
+				// 			key={`label-${key}`}
+				// 		>
+				// 			<Tooltip
+				// 				label={showTooltip}
+				// 			>
+				// 				{label}
+				// 			</Tooltip>
+				// 		</Td>
+				// 		<Td
+				// 			key={`devices-${key}`}
+				// 		>
+				// 			<Tooltip
+				// 				label={showTooltip}
+				// 			>
+				// 				{mapDeviceIDsToNames(devices)}
+				// 			</Tooltip>
+				// 		</Td>
+				// 		<Td
+				// 			key={`active-column-${key}`}
+				// 		>
+				// 			<Center>
+				// 				<Switch 
+				// 						name={`alarm-switch-${key}`}
+				// 						key={`alarm-active-${key}`}
+				// 						isChecked={active}
+				// 						size='md' 
+				// 						onChange={() => toggleActivity(id)}
+				// 						//key={`active-${id}`}
+				// 				/>
+				// 			</Center>
+				// 		</Td>
+				// 		<Td
+				// 			key={`editColumn-${key}`}
+				// 		>
+				// 			<Tooltip 
+				// 				label='Edit alarm' 
+				// 				fontSize='md'
+				// 				key={`edit-tip-${key}`}
+				// 			>
+				// 			<IconButton 
+				// 				size='xs' 
+				// 				icon={<EditIcon/>} 
+				// 				ml="5.5%" 
+				// 				aria-label=''
+				// 				key={`edit-${key}`}
+				// 				onClick= {() => { setToEdit(id); setShowEdit(true)}}
+				// 			/>
+				// 			</Tooltip>
+				// 		</Td>
+				// 		<Td
+				// 			key={`deleteColumn-${id}`}
+				// 		>
+				// 			<Tooltip 
+				// 				label='Delete alarm' 
+				// 				fontSize='md'
+				// 				key={`delete-tip-${key}`}
+				// 			>
+				// 			<IconButton 
+				// 				size='xs' 
+				// 				icon={<DeleteIcon/>} 
+				// 				ml="5.5%" 
+				// 				colorScheme='red'
+				// 				aria-label=''
+				// 				onClick= {() => { setToDelete(id); setShowDelete(true)}}
+				// 				key={`delete-${id}-${key}`}
+				// 			/>
+				// 			</Tooltip>
+				// 		</Td>
+				// </Tr>
 		)})
     }
 	const dateView = (date: string, occurence: AlarmCases) => {
@@ -254,74 +378,8 @@ const Alarms = () => {
 
 	return (
 			<>
-				<Container 
-					bg='blue.200' 
-					maxW='fit-content'
-					key="alarms-Container"
-					id="Alarm-Container"
-				>
-					<Heading 
-						as='h3' 
-						size='sm'
-						key="alarms-Header"
-					>
-						List of Alarms for selected devices for user {userInfo.screenName}. Currently on {currentDevice ? mapDeviceIDsToNames([currentDevice]):''}.
-					</Heading>
-					<TableContainer
-						key="Alarms-Header-Table-Container"
-					>
-						<Table 
-							variant='striped' 
-							colorScheme='teal' 
-							size='sm' 
-							className="table-tiny" 
-							id='table-Alarms'
-							key="Alarms-Header-Table"
-						>
-							<TableCaption>
-								<Text as='b'>
-									{FooterText()}
-								</Text>
-							</TableCaption>
-							<Thead>
-								<Tr >
-									<Th>
-										Next
-									</Th>
-									<Th >
-										Occurence
-									</Th>
-									<Th 
-										isNumeric
-									>
-										Time
-									</Th>
-									<Th >
-										Weekday
-									</Th>
-									<Th >
-										date
-									</Th>
-									<Th >
-										Label
-									</Th>
-									<Th >
-										Devices
-									</Th>
-									<Th >
-										Active
-									</Th>
-									<Th >
-									</Th>
-									<Th >
-									</Th>
-								</Tr>
-							</Thead>
-						<Tbody > 
-							{renderAlarms()} 
-						</Tbody>
-						</Table>
-					</TableContainer>
+				<Container>
+                    {renderCards()}
 				</Container>
 				<AddAlarmButton/>
 			</>

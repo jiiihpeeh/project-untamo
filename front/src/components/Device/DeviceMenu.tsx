@@ -1,13 +1,11 @@
-import { Link, Text,Menu, MenuButton, Box,
-         MenuList, MenuItem, MenuGroup,
-         MenuDivider,  MenuOptionGroup, Checkbox, IconButton,
-         Tooltip, Table, Tr, Td, Tbody } from '@chakra-ui/react'
+import { Text, Checkbox, IconButton,Modal, Button,ModalOverlay,ModalContent,ModalHeader,ModalBody, Th, Thead,ModalCloseButton, useDisclosure, VStack,  Radio,
+         Tooltip, Table, Tr, Td, Tbody, Center } from '@chakra-ui/react'
 import React from 'react'
 import { useDevices, usePopups } from '../../stores'
 import { EditIcon, DeleteIcon, ChevronRightIcon} from '@chakra-ui/icons'
-import { MenuType } from "../../stores/popUpStore"
-import { Icon } from "@chakra-ui/react"
+
 import DeviceIcons from "./DeviceIcons"
+
 
 const DeviceMenu = () => {
     const viewableDevices = useDevices((state)=> state.viewableDevices)
@@ -16,6 +14,10 @@ const DeviceMenu = () => {
     const setShowEdit = usePopups((state) => state.setShowEditDevice)
     const devices = useDevices((state) => state.devices)
     const setToDelete = useDevices((state)=>state.setToDelete)
+    const setCurrentDevice = useDevices((state)=>state.setCurrentDevice)
+    const currentDevice = useDevices((state)=>state.currentDevice)
+
+
     const setToEdit = useDevices((state)=>state.setToEdit)
     const setShowAddDevice = usePopups((state)=> state.setShowAddDevice)
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
@@ -23,8 +25,10 @@ const DeviceMenu = () => {
     const setShowQRDialog = usePopups((state)=> state.setShowQRDialog)
     const showDeviceSelector = usePopups((state)=> state.showDeviceSelector)
     const setShowDeviceSelector = usePopups((state)=> state.setShowDeviceSelector)
+    const { isOpen, onOpen, onClose } = useDisclosure()
 
-
+    const initialRef = React.useRef(null)
+    const finalRef = React.useRef(null)
     const openDelete = async(value:string) => {
         let delDevice = devices.filter(dev => dev.id === value)[0]
         if(delDevice){
@@ -34,10 +38,6 @@ const DeviceMenu = () => {
         }
 
     }
-    const closeMenu = () => {
-		setShowDeviceMenu(false, "userMenu", MenuType.Menu)
-        setShowDeviceSelector(false, "userMenu", MenuType.Menu)
-	}
 
     const openEdit = async(value:string) => {
         let editDevice = devices.filter(dev => dev.id === value)[0]
@@ -48,46 +48,34 @@ const DeviceMenu = () => {
         }
 
       }
-    const deviceIsChecked = (event:React.MouseEvent<HTMLAnchorElement, MouseEvent>, ID:string) => {
-        event.preventDefault()
-        toggleViewableDevices(ID)
-    } 
+
     const deviceMenu = ()=> {
         return devices.map(deviceItem => {
             let ID = deviceItem.id
             return(
-                <MenuItem 
-                        value={ID} 
-                        id={`dev-id-${ID}`} 
-                        key={`dev-id-${ID}`}  
-                >
-                    <Table  
-                        id={`linkView-${ID}`} 
-                        key={`viewedDevice-${ID}`} 
-                        variant="unstyled" 
-                        size="sm" 
-                        mb={"0px"} 
-                        mt={"0px"}
-                    >
-                        <Tbody>
+
                         <Tr>
                         <Td>
-                            <Link  
-                                onClick={(e)=>deviceIsChecked(e,ID)} 
-                            >
-                            <Checkbox
-                                isChecked={viewableDevices.includes(ID)}
-                            >
-                            <Tooltip 
-                                label={deviceItem.type} 
-                                fontSize='md'
-                            >
-                                <Text>
-                                    {deviceItem.deviceName} <DeviceIcons device={deviceItem.type}/>
-                                </Text>
-                            </Tooltip>
-                            </Checkbox>
-                            </Link>
+                            <Text>
+                                {deviceItem.deviceName} <DeviceIcons device={deviceItem.type}/>
+                            </Text>
+                        </Td>
+                        <Td>
+                            <Center>
+                                <Checkbox
+                                    isChecked={viewableDevices.includes(deviceItem.id)}
+                                    onChange={()=>toggleViewableDevices(deviceItem.id)} 
+                                >
+                                </Checkbox>
+                            </Center>
+                        </Td>
+                        <Td>
+                            <Center>
+                                <Radio 
+                                    isChecked={currentDevice === ID} 
+                                    onClick={()=>setCurrentDevice(ID)}
+                                />
+                            </Center>
                         </Td>
                         <Td>
                             <Tooltip 
@@ -123,86 +111,66 @@ const DeviceMenu = () => {
                             </Tooltip>
                         </Td>
                         </Tr>
-                        </Tbody>
-                    </Table>
-                </MenuItem>
             )})
     }
-    
+
     return(
-        <Menu 
-            id="DeviceMenu"
-            isOpen={showDeviceMenu.show}
-        >
-        <div>
-            <MenuButton 
-                as={Box} 
-				size="sm"
-                style= {showDeviceMenu.style}
-            />
-        </div>
-        <MenuList
-            onMouseLeave={() =>{addEventListener("click", closeMenu,{once:true})}}
-            onMouseEnter={() =>{removeEventListener("click", closeMenu)}}
-        >
-            <MenuItem 
-                alignContent={"center"}
-                closeOnSelect={false}
-            >                
-                <Text
-                    id="Menu-DeviceSelector"
-                    onClick={()=>setShowDeviceSelector(
-                                                        !showDeviceSelector.show, 
-                                                        "Menu-DeviceSelector", 
-                                                        MenuType.SubMenu
-                                                        )
-                            }
-                    align={"center"}
-                    w="100%"
-                >
-                    Select Device
-                </Text>
-                <Icon>
-                    <ChevronRightIcon/>
-                </Icon>
-            </MenuItem>
-            <MenuDivider />
-            <MenuOptionGroup 
-                type={'checkbox'} 
+            <Modal 
+                isOpen={showDeviceMenu} 
+                onClose={() => setShowDeviceMenu(!showDeviceMenu)}
+                isCentered
             >
-            <MenuGroup 
-                title='Viewable devices' 
-            >
-                {deviceMenu()}
-            </MenuGroup>
-            </MenuOptionGroup>
-            <MenuDivider />
-            <MenuGroup 
-                title="Add a device"
-            >
-                <MenuItem>
-                    <Text 
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>
+                        Device Options
+                    </ModalHeader>
+                    <ModalCloseButton/>
+                    <ModalBody>
+                        <Table 
+                            size="sm"
+                        >
+                        <Thead>
+                            <Tr>
+                                <Th>Device</Th>
+                                <Th>View</Th>
+                                <Th>Current</Th>
+                                <Th>Edit</Th>
+                                <Th>Delete</Th>
+                            </Tr>
+                        </Thead>
+                            <Tbody>
+                                {deviceMenu()}
+                            </Tbody>
+                        </Table>
+                    <VStack mt={"5px"}>
+                    <Button
                         onClick={()=>setShowQRDialog(true)}
-                        w="100%"
-                        align={"center"}
                     >
-                        Pair a device (QR code)
-                    </Text>
-                </MenuItem>
-                <MenuItem>
-                    <Text 
+                        <Text 
+                            w="100%"
+                            align={"center"}
+                        >
+                            Pair a device (QR code)
+                        </Text>
+                    </Button>
+                    <Button
                         onClick={()=>setShowAddDevice(true)} 
-                        id="add-device-button"
-                        key="add-device-button"
-                        w="100%"
-                        align={"center"}
                     >
-                        Add a device
-                    </Text>
-                </MenuItem>
-            </MenuGroup>
-        </MenuList>
-        </Menu>
+                        <Text 
+                            id="add-device-button"
+                            key="add-device-button"
+                            w="100%"
+                            align={"center"}
+                        >
+                            Add a device
+                        </Text>
+                    </Button>
+                    </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+
     )
 
 }

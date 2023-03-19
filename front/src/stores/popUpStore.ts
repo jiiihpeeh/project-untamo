@@ -41,20 +41,23 @@ type Popup = {
     setShowAdminLogIn: (to: boolean) => void,
     showServerEdit: boolean,
     setShowServerEdit: (to: boolean) => void,
-    showUserMenu: MenuPlacer,
-    setShowUserMenu: (show: boolean, id: string, type: MenuType) => void,
-    showDeviceMenu: MenuPlacer,
-    setShowDeviceMenu: (show: boolean, id: string, type: MenuType) => void,
+    showUserMenu: boolean,
+    setShowUserMenu: (show: boolean ) => void,
+    showDeviceMenu: boolean,
+    setShowDeviceMenu: (show: boolean) =>void,
     showToast: boolean,
     setShowToast: (to:boolean) => void
     showTimepicker: boolean,
     setShowTimepicker: (to:boolean) => void
+    isMobile: boolean
+    setMobile: (to: boolean) => void
 }
 const menuDefault: MenuPlacer = {show:false, style: {}, element: null, type: MenuType.Menu}
 const getOffset = (show: boolean, id: string, type: MenuType) => {
     const style:  React.CSSProperties = {
         top: "100px",
-        left: "500px",
+        left: (usePopups.getState().isMobile)?"":"500px",
+        margin: (usePopups.getState().isMobile)?"auto":"",
         position: "absolute"
     }
     let element  : HTMLElement | null = document.getElementById(id);
@@ -70,11 +73,11 @@ const getOffset = (show: boolean, id: string, type: MenuType) => {
     const rect = element.getBoundingClientRect();
     //console.log(rect)
     if(type === MenuType.Menu){
-        style.left = rect.left + window.scrollX
+        style.left = (usePopups.getState().isMobile)?window.screen.width/10:rect.left + window.scrollX
         style.top= rect.bottom + window.scrollY
 
     }else{
-        style.left = rect.right + window.scrollX
+        style.left = (usePopups.getState().isMobile)?window.screen.width/10:rect.left + window.scrollX
         style.top= rect.bottom + window.scrollY
     }
     return  {
@@ -228,21 +231,19 @@ const usePopups = create<Popup>((set) => ({
                 }
             )
         },
-        showUserMenu: menuDefault,
-        setShowUserMenu: (show, id, type) => {
-            const menu = getOffset(show, id, type)
+        showUserMenu: false,
+        setShowUserMenu: (show) => {
             set(
                 {
-                    showUserMenu: menu
+                    showUserMenu: show
                 }
             )
         },
-        showDeviceMenu: menuDefault,
-        setShowDeviceMenu: (show, id, type) => {
-            const menu = getOffset(show, id, type)
+        showDeviceMenu: false,
+        setShowDeviceMenu: (show ) => {
             set(
                     {
-                        showDeviceMenu: menu
+                        showDeviceMenu: show
                     }
                 )
         },
@@ -262,6 +263,14 @@ const usePopups = create<Popup>((set) => ({
                 }
             )
         },
+        isMobile: false,
+        setMobile: (to: boolean) => {
+            set(
+                {
+                    isMobile: to
+                }
+            )
+        }
     }
 ))
 

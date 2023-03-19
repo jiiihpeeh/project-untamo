@@ -16,6 +16,7 @@ const LogOut = () => {
             isOpen={showLogOut}
             leastDestructiveRef={cancelRef}
             onClose={()=>setShowLogOut(false)}
+            isCentered
         >
           <AlertDialogOverlay>
             <AlertDialogContent>

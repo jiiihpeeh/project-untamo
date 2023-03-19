@@ -14,6 +14,7 @@ const About = () => {
 		<Modal 
 			isOpen={showAbout} 
 			onClose={()=>setShowAbout(false)}
+			isCentered
 		>
 			<ModalOverlay />
 			<ModalContent>
@@ -23,7 +24,7 @@ const About = () => {
 				<ModalCloseButton />
 				<ModalBody>
 				<Text>
-					This project aims to implement s cross device alarm clock implementation with synchronization.
+					This project aims to implement a cross device alarm clock with synchronization capabilities.
 				</Text>
 				</ModalBody>
 

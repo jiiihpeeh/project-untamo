@@ -32,6 +32,7 @@ const DeviceDelete = () => {
               leastDestructiveRef={cancelRef}
               onClose={onClose}
               id="DeviceDeletePopUp"
+              isCentered
         >
         <AlertDialogOverlay>
           <AlertDialogContent>

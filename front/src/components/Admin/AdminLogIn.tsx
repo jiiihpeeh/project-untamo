@@ -26,6 +26,7 @@ const AdminLogin = () => {
           returnFocusOnClose={false}
           isOpen={showAdminLogIn}
           onClose={()=>setShowAdminLogIn(false)}
+          isCentered
         >
           <ModalContent>
               <ModalHeader 

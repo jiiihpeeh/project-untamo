@@ -18,8 +18,8 @@ const NavGrid = () => {
     const setAdminTimeout = useTimeouts((state)=> state.setAdminID)
     const setShowUserMenu = usePopups((state)=> state.setShowUserMenu)
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
-    const showDeviceMenu =  usePopups((state)=> state.showDeviceMenu.show)
-    const showUserMenu = usePopups((state)=> state.showUserMenu.show)
+    const showDeviceMenu =  usePopups((state)=> state.showDeviceMenu)
+    const showUserMenu = usePopups((state)=> state.showUserMenu)
     const [ validItems, setValidItems ] = useState(["login", "register", "about"])
     const [ showAdmin, setShowAdmin ] = useState(false)
     const navigate  = useNavigate()
@@ -122,7 +122,7 @@ const NavGrid = () => {
                 <div>
                     <Link 
                         key="deviceMenu-link"
-                        onClick={()=> setShowDeviceMenu(!showDeviceMenu, "link-DeviceMenu", MenuType.Menu)}
+                        onClick={()=> setShowDeviceMenu(!showDeviceMenu)}
                     >   
                         <Text 
                             as="b"
@@ -180,7 +180,7 @@ const NavGrid = () => {
                         name={userInfo.screenName} 
                         size='sm'
                         id="avatar-button"
-                        onClick={()=> setShowUserMenu(!showUserMenu, "avatar-button", MenuType.Menu)}
+                        onClick={()=> setShowUserMenu(!showUserMenu)}
                     />
                 </div>
             </>}

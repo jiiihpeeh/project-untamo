@@ -5,7 +5,7 @@ import {
 	DrawerCloseButton,FormLabel,
 	FormControl, Input,Checkbox,
 	Accordion,AccordionItem,Box,
-	AccordionButton,AccordionPanel,
+	AccordionButton,AccordionPanel, Flex, Spacer,
 	} from '@chakra-ui/react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useLogIn, usePopups } from '../../stores'
@@ -27,6 +27,7 @@ const emptyForm : FormData= {
 function EditProfile() {
 	const setShowEditProfile = usePopups((state) => state.setShowEditProfile)	
 	const showEditProfile = usePopups((state) => state.showEditProfile)
+	const isMobile = usePopups((state)=> state.isMobile)
 
 	const btnRef = useRef<HTMLButtonElement>(null)
 	const editUserInfo = useLogIn((state)=> state.editUser)
@@ -105,9 +106,10 @@ function EditProfile() {
 		<>
 		<Drawer
 			isOpen={showEditProfile}
-			placement='right'
+			placement='left'
 			onClose={onCloseFixed}
 			finalFocusRef={btnRef}
+			size={(isMobile)?'full':'md'}
 		>
 		<DrawerOverlay />
 		<DrawerContent>
@@ -234,9 +236,7 @@ function EditProfile() {
 			
 			</FormControl>
 			</form>
-
-			</DrawerBody>
-			<DrawerFooter>
+			<Flex m={"15%"}>
 				<Button 
 					variant='outline' mr={3} 
 					onClick={onCloseFixed} 
@@ -244,6 +244,7 @@ function EditProfile() {
 				>
 					Cancel
 				</Button>
+				<Spacer/>
 				<Button 
 					colorScheme='green' 
 					onClick={() =>onRegister()} 
@@ -251,7 +252,8 @@ function EditProfile() {
 				>
 					Save
 				</Button>
-			</DrawerFooter>
+			</Flex>
+			</DrawerBody>
 		</DrawerContent>
 		</Drawer>
 	</>

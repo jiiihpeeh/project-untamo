@@ -19,6 +19,7 @@ const QRPairingDialog = () => {
         isOpen={showQRDialog} 
         onClose={()=>setShowQRDialog(false)} 
         size="sm"
+        isCentered
       >
         <ModalOverlay />
         <ModalContent>

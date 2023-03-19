@@ -2,7 +2,10 @@ import { useDisclosure,Button, Text,
 		Tooltip,Drawer, DrawerBody,
 		DrawerFooter,DrawerHeader,
 		DrawerOverlay,DrawerContent,
-		DrawerCloseButton, } from '@chakra-ui/react'
+		DrawerCloseButton,
+		Center,
+		Flex,
+		Spacer, } from '@chakra-ui/react'
 import React, { useEffect, useRef } from 'react'
 import AlarmSelector from './AlarmComponents/AlarmSelector'
 import useAlarm from './AlarmComponents/alarmStates'
@@ -17,6 +20,7 @@ function AddAlarm() {
 	const showAddAlarm = usePopups((state)=>state.showAddAlarm)
 	const setShowAddAlarm = usePopups((state)=>state.setShowAddAlarm)
 	const alarmFromDialog = useAlarm((state)=> state.alarmFromDialog) 
+	const isMobile = usePopups((state)=> state.isMobile)
 
 	const onAdd = async (event:any) => {
 		event.currentTarget.disabled = true
@@ -46,7 +50,7 @@ function AddAlarm() {
 			placement='left'
 			onClose={onDrawerClose}
 			finalFocusRef={btnRef}
-			size={'md'}
+			size={(isMobile)?'full':'md'}
 		>
 		<DrawerOverlay />
 		<DrawerContent>
@@ -56,23 +60,24 @@ function AddAlarm() {
 			</DrawerHeader>	
 			<DrawerBody>
 				<AlarmSelector/>
+				<Flex m={"15%"}>
+					<Button 
+						variant='outline' 
+						mr={3} 
+						onClick={onDrawerClose} 
+						colorScheme="red"
+					>
+						Cancel
+					</Button>
+					<Spacer/>
+					<Button 
+						colorScheme='green' 
+						onClick={onAdd}
+					>
+							Save
+					</Button>
+				</Flex>
 			</DrawerBody>
-			<DrawerFooter>
-				<Button 
-					variant='outline' 
-					mr={3} 
-					onClick={onDrawerClose} 
-					colorScheme="red"
-				>
-					Cancel
-				</Button>
-				<Button 
-					colorScheme='green' 
-					onClick={onAdd}
-				>
-						Save
-				</Button>
-			</DrawerFooter>
 		</DrawerContent>
 	</Drawer>	
 	</>

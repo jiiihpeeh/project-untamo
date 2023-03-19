@@ -15,7 +15,7 @@ import Admin from './components/Admin/Admin'
 import AppAlert from './components/AppAlert'
 import DeleteAlarm from './components/Alarms/DeleteAlarm'
 import EditAlarm from './components/Alarms/EditAlarm'
-import { useLogIn } from './stores'
+import { useLogIn, usePopups } from './stores'
 import { SessionStatus } from './type'
 import Navigator from './components/Navigator'
 import DeviceDelete from './components/Device/DeviceDelete'
@@ -32,10 +32,13 @@ import UserMenu from './components/User/UserMenu'
 import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
 import { extend } from './stores'
+import { isMobile } from 'react-device-detect';
+
 import './App.css'
 
 function App() {
 	const checkSession = useLogIn((state) => state.validateSession)
+	const setMobile = usePopups((state) => state.setMobile)
 	const check = useRef(false)
 
 	useEffect(() => {
@@ -43,6 +46,7 @@ function App() {
 			if(!check.current){
 				check.current = true
 				checkSession()
+				setMobile(isMobile)
 			}
 		}
 		checker()
@@ -82,7 +86,7 @@ function App() {
 			<AddAlarm/>
 
 			<Navigator/>
-			<AlarmNotification/>
+			{/* <AlarmNotification/> */}
 			<About/>
 			<ServerLocation/>
     </div>

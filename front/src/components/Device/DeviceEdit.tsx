@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from "react"
 import { Menu, MenuItem,  MenuList, MenuButton,
-         Drawer, DrawerOverlay,
-         DrawerContent, DrawerHeader,
-         DrawerBody, DrawerFooter,
-         DrawerCloseButton, Button, Divider,
-         Input, Stack } from "@chakra-ui/react"
+         Button, Divider,
+         Input, Stack, Modal,
+          ModalOverlay, ModalContent,
+          ModalHeader,  ModalFooter,
+          ModalBody, ModalCloseButton
+        } from '@chakra-ui/react'         
 import { ChevronDownIcon } from "@chakra-ui/icons"
 import { usePopups , useDevices } from "../../stores"
 import { DeviceType, Device } from "../../type"
@@ -73,65 +74,60 @@ const DeviceEdit = () => {
       }
     },[toEditDevice])
     return (
-          <>
-            <Drawer
-              isOpen={showEdit}
-              placement='right'
-              onClose={()=>cancelEdit()}
-              finalFocusRef={btnRef}
-              key='xs'
-              id="Device-EditDrawer"
-            >
-              <DrawerOverlay />
-              <DrawerContent>
-                <DrawerCloseButton />
-                <DrawerHeader>
-                  Insert Device Name
-                </DrawerHeader>
-      
-                <DrawerBody>
-                  <Stack>
-                  <Input 
-                    placeholder='Device name'  
-                    value={deviceEditInfo.deviceName} 
-                    onChange={(event) => setDeviceEditInfo({...deviceEditInfo, deviceName: event.target.value})}
-                  />
-                  <Divider orientation='vertical'/>
-                  <Menu
-                    matchWidth={true}
-                  >
-                    <MenuButton 
-                      as={Button} 
-                      rightIcon={<ChevronDownIcon />}
-                      onWheel={e=>mouseSelect(e.deltaY)}
+              <Modal 
+                blockScrollOnMount={false} 
+                isOpen={showEdit} 
+                onClose={()=>cancelEdit()}
+                isCentered
+              >
+                <ModalOverlay />
+                <ModalContent>
+                  <ModalHeader>
+                    Edit Device
+                  </ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody>
+                    <Stack>
+                      <Input 
+                        placeholder='Device name'  
+                        value={deviceEditInfo.deviceName} 
+                        onChange={(event) => setDeviceEditInfo({...deviceEditInfo, deviceName: event.target.value})}
+                      />
+                      <Divider orientation='vertical'/>
+                      <Menu
+                        matchWidth={true}
+                      >
+                        <MenuButton 
+                          as={Button} 
+                          rightIcon={<ChevronDownIcon />}
+                          onWheel={e=>mouseSelect(e.deltaY)}
+                        >
+                          Device type: {deviceEditInfo.type}
+                        </MenuButton>
+                        <MenuList>
+                          {menuActionItems()}
+                      </MenuList>
+                      </Menu>
+                    </Stack>
+                  </ModalBody>
+
+                  <ModalFooter>
+                    <Button 
+                      variant='outline' 
+                      mr={3} 
+                      onClick={()=>cancelEdit()}
                     >
-                      Device type: {deviceEditInfo.type}
-                    </MenuButton>
-                    <MenuList>
-                      {menuActionItems()}
-                  </MenuList>
-                  </Menu>
-                  </Stack>
-                </DrawerBody>
-  
-                <DrawerFooter>
-                  <Button 
-                    variant='outline' 
-                    mr={3} 
-                    onClick={()=>cancelEdit()}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    colorScheme='blue' 
-                    onClick={(e) =>requestDeviceEdit(e)}
-                  >
-                    Edit
-                  </Button>
-                </DrawerFooter>
-              </DrawerContent>
-            </Drawer>
-          </>
+                      Cancel
+                    </Button>
+                    <Button 
+                      colorScheme='blue' 
+                      onClick={(e) =>requestDeviceEdit(e)}
+                    >
+                      Edit
+                    </Button>
+                  </ModalFooter>
+                </ModalContent>
+              </Modal>
         )
   }
   

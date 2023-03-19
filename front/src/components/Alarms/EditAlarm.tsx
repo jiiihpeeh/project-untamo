@@ -1,6 +1,6 @@
 import { useDisclosure, Button, Drawer,DrawerBody,
 		 DrawerFooter, DrawerHeader,DrawerOverlay,
-		 DrawerContent, DrawerCloseButton, } from '@chakra-ui/react'
+		 DrawerContent, DrawerCloseButton, Flex, Spacer } from '@chakra-ui/react'
 import React, { useEffect, useRef } from 'react'
 import AlarmSelector from './AlarmComponents/AlarmSelector'
 import { useAlarms, usePopups } from '../../stores'
@@ -9,11 +9,13 @@ import useAlarm  from './AlarmComponents/alarmStates'
 const EditAlarm = () => {
 	const editAlarm = useAlarms((state)=> state.editAlarm)
 	const showEdit = usePopups((state)=> state.showEditAlarm)
+	const isMobile = usePopups((state)=> state.isMobile)
 	const toEdit = useAlarms((state)=> state.toEdit)
 	const alarms = useAlarms((state)=> state.alarms) 
 	const alarmFromDialog = useAlarm((state)=> state.alarmFromDialog) 
 	const setShowEdit = usePopups((state)=> state.setShowEditAlarm) 
 	const alarmToEditDialog = useAlarm((state)=> state.alarmToEditDialog) 
+
 
 	const btnRef = useRef<any>(null)
 	const { onOpen, onClose } = useDisclosure()
@@ -48,7 +50,7 @@ const EditAlarm = () => {
 				placement='left'
 				onClose={onDrawerClose}
 				finalFocusRef={btnRef}
-				size={'md'}
+				size={(isMobile)?'full':"md"}
 			>
 				<DrawerOverlay />
 				<DrawerContent>
@@ -58,8 +60,7 @@ const EditAlarm = () => {
 					</DrawerHeader>	
 					<DrawerBody>
 						<AlarmSelector/>
-					</DrawerBody>
-					<DrawerFooter>
+					<Flex m={"15%"}>
 						<Button 
 							variant='outline' 
 							mr={3} 
@@ -68,13 +69,15 @@ const EditAlarm = () => {
 						>
 							Cancel
 						</Button>
+						<Spacer/>
 						<Button 
 							colorScheme='green' 
 							onClick={onEdit}
 						>
-							Save
+								Save
 						</Button>
-					</DrawerFooter>
+					</Flex>
+					</DrawerBody>
 				</DrawerContent>
 			</Drawer>
 		</>

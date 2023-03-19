@@ -1,7 +1,7 @@
 import { Button, AlertDialog, 
 		AlertDialogBody,AlertDialogFooter, 
 		AlertDialogHeader,AlertDialogContent, 
-		AlertDialogOverlay } from '@chakra-ui/react'
+		AlertDialogOverlay, Box } from '@chakra-ui/react'
 import React, { useRef } from 'react'
 import {  useAlarms, usePopups } from '../../stores'
 
@@ -15,11 +15,12 @@ function DeleteAlarm() {
 	let alarm = alarms.filter(a => a.id === toDelete)[0]
 	const cancelRef = useRef<HTMLButtonElement>(null)
 
-	return ( <>{alarm && <>
+	return ( <>{alarm && <Box >
         <AlertDialog
             isOpen={showDelete}
             leastDestructiveRef={cancelRef}
             onClose={() => {setShowDelete(false)}}
+			isCentered
         >
 			<AlertDialogOverlay>
 				<AlertDialogContent>
@@ -50,7 +51,7 @@ function DeleteAlarm() {
 				</AlertDialogContent>
 			</AlertDialogOverlay>
 		</AlertDialog>
-		</>}</>
+		</Box>}</>
 		)
 	}
 
