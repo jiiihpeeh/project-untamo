@@ -55,12 +55,13 @@ const LogIn = () => {
         <form>
         <Box 
             className='UserForm'
+            width={"85%"}
         >
         <FormControl 
             onSubmit={onSubmit} 
             width="95%" 
             margin="0 auto" 
-            mt="1%"
+            mt="5%"
         >
             <FormLabel 
                 htmlFor="email" 

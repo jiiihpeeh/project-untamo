@@ -26,7 +26,7 @@ const DeviceDelete = () => {
         setDeleteId(toDelete.id)
       }
     },[toDelete])
-    return (<>
+    return (
         <AlertDialog
               isOpen={showDelete}
               leastDestructiveRef={cancelRef}
@@ -69,7 +69,6 @@ const DeviceDelete = () => {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
-    </>
     )
   }
 export default DeviceDelete  

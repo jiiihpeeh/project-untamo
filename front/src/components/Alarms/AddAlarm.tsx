@@ -44,8 +44,7 @@ function AddAlarm() {
 
 
 	return (
-		<>
-		<Drawer
+ 		<Drawer
 			isOpen={showAddAlarm}
 			placement='left'
 			onClose={onDrawerClose}
@@ -80,8 +79,7 @@ function AddAlarm() {
 			</DrawerBody>
 		</DrawerContent>
 	</Drawer>	
-	</>
-	)
+ 	)
 }
 
 export default AddAlarm

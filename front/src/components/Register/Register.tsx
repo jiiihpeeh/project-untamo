@@ -124,6 +124,7 @@ const Register = () => {
         <Box 
             bg='lightgray' 
             className='UserForm' 
+            width={"85%"}
         >
             <FormControl 
                 width="95%" 

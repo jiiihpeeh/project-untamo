@@ -44,8 +44,7 @@ const EditAlarm = () => {
 		
 	},[showEdit])
 	return (
-		<>
-			<Drawer
+ 			<Drawer
 				isOpen={showEdit}
 				placement='left'
 				onClose={onDrawerClose}
@@ -80,8 +79,7 @@ const EditAlarm = () => {
 					</DrawerBody>
 				</DrawerContent>
 			</Drawer>
-		</>
-	)
+ 	)
 }
 
 export default EditAlarm

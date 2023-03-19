@@ -90,8 +90,7 @@ const PlayAlarm = () =>{
         }
     }
     return(
-        <>
-        <Stack align='center'>
+         <Stack align='center'>
             <Heading 
                 as="h1" 
                 size='4xl' 
@@ -146,8 +145,7 @@ const PlayAlarm = () =>{
                 onChange={(e)=>turnOff()}
             />
         </Stack>
-        </> 
-    )
+     )
 }
 export default PlayAlarm
 

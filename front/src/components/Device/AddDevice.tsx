@@ -59,7 +59,6 @@ const AddDevice = () => {
   }
 
   return (
-        <>
           <Modal
             isOpen={showAddDevice}
             isCentered
@@ -117,7 +116,6 @@ const AddDevice = () => {
               </ModalFooter>
             </ModalContent>
           </Modal>
-        </>
       )
 }
 
