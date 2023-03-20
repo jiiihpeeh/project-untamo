@@ -215,7 +215,7 @@ export const timeForNextAlarm = (alarm: Alarm) => {
     }
 }
 
-export const timeToNextAlarm = (alarm: Alarm) => {    
+export const timeToNextAlarm = (alarm: Alarm, withSnooze: boolean = true) => {    
     let snoozer = Infinity
     if(!alarm){
         return snoozer
@@ -242,4 +242,17 @@ export const timeToNextAlarm = (alarm: Alarm) => {
         return launchTime
     } 
     return snoozer
+}
+
+export 	const timeToUnits = (time: number) => {
+    const days = Math.floor(time/ (60*60*24))
+    const hours = Math.floor((time - days * (60*60*24))/(60*60))
+    const minutes = Math.floor((time - days * (60*60*24) - hours *60*60)/(60)) 
+    const seconds = Math.round((time - days * (60*60*24) - hours *60*60 - minutes*60))
+    return {
+                seconds: seconds,
+                minutes: minutes,
+                hours: hours,
+                days: days
+           }
 }

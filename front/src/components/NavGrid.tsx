@@ -1,5 +1,5 @@
 import {Link as ReachLink} from 'react-router-dom'
-import { Text, Link, Spacer, HStack, Avatar } from '@chakra-ui/react'
+import { Text, Link, Spacer, HStack, Avatar, Flex } from '@chakra-ui/react'
 import React, { useState, useEffect } from "react"
 import Countdown from "react-countdown"
 import { timePadding } from "./Alarms/AlarmComponents/stringifyDate-Time"
@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom'
 import { useLogIn, useAdmin, useTimeouts, usePopups, extend } from '../stores'
 import { SessionStatus } from '../type'
 import { MenuType } from '../stores/popUpStore'
+import AlarmPop from './Alarms/AlarmFollower'
+import sleep from './sleep'
 
 const NavGrid = () => {
     const adminTime = useAdmin((state) => state.time )
@@ -15,7 +17,6 @@ const NavGrid = () => {
     const setShowAbout = usePopups((state)=> state.setShowAbout)
     const setShowServerEdit = usePopups((state)=> state.setShowServerEdit)
     const clearAdminTimeout = useTimeouts((state)=> state.clearAdminTimeout)
-    const showLogIn = useTimeouts((state)=> state.showLogIn)
     const setAdminTimeout = useTimeouts((state)=> state.setAdminID)
     const setShowUserMenu = usePopups((state)=> state.setShowUserMenu)
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
@@ -31,22 +32,10 @@ const NavGrid = () => {
     interface TextArg {
         text: string
     }
-    const FlexLink = (item: TextArg) => {
-        let titled = item.text.charAt(0).toUpperCase() + item.text.slice(1)
-        return (<>
-                <Link 
-                    as={ReachLink} 
-                    to={extend(`/${item.text}`)} 
-                    id={`link-${item.text}`} 
-                >
-                    <Text 
-                        as='b'
-                    >
-                        {titled}
-                    </Text>
-                </Link>
-        </>)
+    const capitalize = (s:string)=>{
+        return s.charAt(0).toUpperCase() + s.slice(1)
     }
+
     interface TimeOutput{
         minutes: number,
         seconds: number
@@ -56,21 +45,22 @@ const NavGrid = () => {
     }
    
     useEffect(() => {
-        const constructGrid = () => {
+        const constructGrid = async() => {
             if(sessionStatus === SessionStatus.Valid){
                 setValidItems(["alarms", "devices", 'user'])
             } else {
-                if(showLogIn){
+                setValidItems(["register",'server', "about"])  
+                await sleep(15)
+                let isLogIn = window.location.pathname.replaceAll("/","").endsWith("login")
+                if(!isLogIn){
                     setValidItems(["login",'server', "about"])    
                 }else{
-                    setValidItems(["register",'server', "about"])    
-
-                }
-                    
+                    setValidItems(["register",'server', "about"])
+                }  
             }
         }
         constructGrid()
-    },[sessionStatus, showLogIn])
+    },[sessionStatus])
 
     
     useEffect(()=> {
@@ -94,42 +84,56 @@ const NavGrid = () => {
         
     },[adminTime, navigate])
  
-    return (<>
-        <HStack 
-            mt="5px" 
-            mb="5px" 
-            display="flex" 
-            alignItems="center" 
-            justifyContent="space-between" 
-            background="radial-gradient(circle, rgba(52,124,228,0.5704482476584384) 0%, rgba(157,182,225,0) 100%)"
-        >
-            <Text>
-                Untamo
-            </Text>
-            { validItems.includes('login') && <>
-                <Spacer/>
-                <FlexLink 
-                    text='login' 
-                    key={'navGrid-login'}
-                />
-            </>}
-            {validItems.includes('register') && <>
-                <Spacer/>
-                <FlexLink 
-                    text='register' 
-                    key={'navGrid-register'}
-                />
-            </>}
-            {validItems.includes('alarms') && <>
-                <Spacer/>
-                <FlexLink 
-                    text='alarms' 
-                    key={'navGrid-alarms'}
-                />
-            </>}
-            {validItems.includes('devices') && <>
-                <Spacer/>
-                <div>
+    return (
+            <Flex 
+                mt="5px" 
+                mb="5px" 
+                display="flex" 
+                alignItems="center"
+                pos="relative" 
+                position="static"
+                justifyContent="space-between" 
+                background="radial-gradient(circle, rgba(52,124,228,0.5704482476584384) 0%, rgba(157,182,225,0) 100%)"
+            >
+                <Text>
+                    Untamo
+                </Text>
+                { validItems.includes('login') && <>
+                    <Spacer/>
+                    <Link 
+                        as={ReachLink} 
+                        to={extend(`/login`)} 
+                        id={`link-login`} 
+                        onClick={()=> setValidItems([...validItems,'register'].filter(l => l !== 'login'))}
+                    >
+                        <Text 
+                            as='b'
+                        >
+                            LogIn
+                        </Text>
+                    </Link>
+                </>}
+                {validItems.includes('register') && <>
+                    <Spacer/>
+                    <Link 
+                        as={ReachLink} 
+                        to={extend(`/register`)} 
+                        id={`link-register`} 
+                        onClick={()=> setValidItems([...validItems,'login'].filter(l => l !== 'register'))}
+                    >
+                        <Text 
+                            as='b'
+                        >
+                            Register
+                        </Text>
+                    </Link>
+                </>}
+                {validItems.includes('alarms') && <>
+                    <Spacer/>
+                    <AlarmPop/>
+                </>}
+                {validItems.includes('devices') && <>
+                    <Spacer/>
                     <Link 
                         key="deviceMenu-link"
                         onClick={()=> setShowDeviceMenu(!showDeviceMenu)}
@@ -142,62 +146,60 @@ const NavGrid = () => {
                         </Text>
 
                     </Link>
-                </div>
-            </>}
-            {validItems.includes('server') && <>
-                <Spacer/>
-                <Link
-                    onClick={()=> setShowServerEdit(true)}
-                >
-                    <Text as='b'>
-                        {(isMobile)?`Server`:`Server Location`}
-                    </Text>
-                </Link>
-            </>}
-            {validItems.includes('about') && <>
-                <Spacer/>
-                <Link 
-                    onClick={()=>setShowAbout(true)}
-                >
-                    <Text as='b'>
-                        About
-                    </Text>
-				</Link></>}
-            {showAdmin && <>
-                <Spacer/>
-                <Link 
-                    key="admin-link"
-                    as={ReachLink} 
-                    to={`/admin`} 
-                    id={`link-admin`} 
-                >
-                    <Text  
-                        color='red' 
-                        as='b'
-                    >
-                        <Countdown  
-                            date={adminTime}
-                            renderer={timeOutput}
-                        />
-                    </Text>
-                </Link>
-            </>}
-            {validItems.includes('user') && <>
-                <Spacer/>
-                <div>
+                </>}
+                {validItems.includes('server') && <>
+                    <Spacer/>
                     <Link
-                        as={Avatar} 
-                        name={userInfo.screenName} 
-                        size='sm'
-                        id="avatar-button"
-                        onClick={()=> setShowUserMenu(!showUserMenu)}
-                    />
-                </div>
-            </>}
-                <Spacer/>
-                </HStack>
-            </>
-            )
+                        onClick={()=> setShowServerEdit(true)}
+                    >
+                        <Text as='b'>
+                            {(isMobile)?`Server`:`Server Location`}
+                        </Text>
+                    </Link>
+                </>}
+                {validItems.includes('about') && <>
+                    <Spacer/>
+                    <Link 
+                        onClick={()=>setShowAbout(true)}
+                    >
+                        <Text as='b'>
+                            About
+                        </Text>
+                    </Link></>}
+                {showAdmin && <>
+                    <Spacer/>
+                    <Link 
+                        key="admin-link"
+                        as={ReachLink} 
+                        to={`/admin`} 
+                        id={`link-admin`} 
+                    >
+                        <Text  
+                            color='red' 
+                            as='b'
+                        >
+                            <Countdown  
+                                date={adminTime}
+                                renderer={timeOutput}
+                            />
+                        </Text>
+                    </Link>
+                </>}
+                {validItems.includes('user') && <>
+                    <Spacer/>
+                    <div>
+                        <Link
+                            as={Avatar} 
+                            name={userInfo.screenName} 
+                            size='sm'
+                            id="avatar-button"
+                            onClick={()=> setShowUserMenu(!showUserMenu)}
+                        />
+                    </div>
+                </>}
+                    <Spacer/>
+            </Flex>
+        )
     
 }
 

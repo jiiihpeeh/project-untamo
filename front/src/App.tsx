@@ -33,7 +33,7 @@ import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
 import { extend } from './stores'
 import { isMobile } from 'react-device-detect';
-
+import sleep from './components/sleep'
 import './App.css'
 
 function App() {
@@ -44,29 +44,31 @@ function App() {
 	useEffect(() => {
 		const checker = async() =>{
 			if(!check.current){
+				await sleep(5)
 				check.current = true
 				checkSession()
-				setMobile(isMobile)
 			}
 		}
 		checker()
 	},[])
-	
+	useEffect(()=>{
+		setMobile(isMobile)
+	},[isMobile])
 	return (
 		<div className="App">
 			{/* <AppAlert/> */}
 			<NavGrid/>
 			<Routes>
-					<Route path ={extend("/alarms")} element={<Alarms/>}/>
-					<Route path={extend("/about")} element={<About/>}/>
-					<Route path={extend("/login")} element={<LogIn/>}/>
-					<Route path={extend("/register")} element={<Register/>}/>
-					<Route path={extend("/welcome")} element={<Welcome/>}/>
-					<Route path={extend("/play-alarm")} element={<PlayAlarm/>}/>
-					<Route path={extend("/clueless")} element={<Clueless/>}/>
-					<Route path={extend("/admin")} element={<Admin/>}/>
-					<Route path={extend("/")} element={<Navigate to={extend("/login")} /> } />
-					<Route path="*" element={<Navigate to={extend("/clueless")} /> } />
+				<Route path ={extend("/alarms")} element={<Alarms/>}/>
+				<Route path={extend("/about")} element={<About/>}/>
+				<Route path={extend("/login")} element={<LogIn/>}/>
+				<Route path={extend("/register")} element={<Register/>}/>
+				<Route path={extend("/welcome")} element={<Welcome/>}/>
+				<Route path={extend("/play-alarm")} element={<PlayAlarm/>}/>
+				<Route path={extend("/clueless")} element={<Clueless/>}/>
+				<Route path={extend("/admin")} element={<Admin/>}/>
+				<Route path={extend("/")} element={<Navigate to={extend("/login")} /> } />
+				<Route path="*" element={<Navigate to={extend("/clueless")} /> } />
 			</Routes>
 			<GenerateQRPairingKey/>
 			<AlarmWatcher/>
@@ -84,7 +86,6 @@ function App() {
 			<UserMenu/>
 			<DeviceMenu/>
 			<AddAlarm/>
-
 			<Navigator/>
 			{/* <AlarmNotification/> */}
 			<About/>

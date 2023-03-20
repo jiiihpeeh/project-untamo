@@ -4,6 +4,7 @@ import { Input , FormControl,FormLabel,
         Button, Box,Divider, Heading} from '@chakra-ui/react'
 import { useLogIn, extend,usePopups } from "../stores"
 import { SessionStatus } from "../type"
+import QrScanner from 'qr-scanner'
 import '../App.css'
 
 const LogIn = () => {

@@ -18,42 +18,21 @@ function ClockWindow() {
     const setTime = useAlarm((state)=> state.setTime)
     const showTimepicker = usePopups((state)=> state.showTimepicker)
     const setShowTimepicker = usePopups((state)=> state.setShowTimepicker)
-
-
     const [ parsedTime, setParsedTime ] = useState({hours: 0, minutes: 0})
-
-
 
     const acceptTime = () => {
         setTime(`${timePadding(Math.floor(parsedTime.hours))}:${timePadding(Math.floor(parsedTime.minutes))}`)
     }    
     useEffect(()=>{
-        //bit hacky way to align numbers
         const setParsed = async () => {
             let timeArr = time.split(":")
-            setParsedTime(parsedTime => {
-                                            return {
-                                                        hours: Math.round(parseInt(timeArr[0])+0.001), 
-                                                        minutes: Math.round(parseInt(timeArr[1]))
-                                                    }
-                                        }
-                            )  
-            await sleep(10)
-            setParsedTime(parsedTime => {
-                                            return {
-                                                        hours: Math.round(parseInt(timeArr[0])+0.003), 
-                                                        minutes: Math.round(parseInt(timeArr[1]))
-                                                    }
-                                        }
-                        )             
-            await sleep(250)
             setParsedTime(parsedTime => {
                                             return {
                                                         hours: Math.round(parseInt(timeArr[0])), 
                                                         minutes: Math.round(parseInt(timeArr[1]))
                                                     }
                                         }
-                        ) 
+                            ) 
         }
         if(showTimepicker){
             setParsed()
@@ -174,11 +153,8 @@ function ClockWindow() {
                                 </Center>  
                             </Td>
                         </Tr>
-                    </Tbody>
-                    
-
+                    </Tbody>                    
                 </Table>
-
             </ModalBody>
             <ModalFooter>
                 <Button 

@@ -12,6 +12,7 @@ import { timeToNextAlarm } from "./calcAlarmTime"
 import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"
 import { shallow } from 'zustand/shallow'
 import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
+import { timeToUnits } from './calcAlarmTime'
 
 const Alarms = () => {
     const userInfo = useLogIn((state)=> state.user)
@@ -43,19 +44,6 @@ const Alarms = () => {
 			return `Time left to next alarm: ${timePadding(units.hours)}:${timePadding(units.minutes)}`
 		}
 		return `Time left to next alarm:  ${units.days} days ${timePadding(units.hours)}:${timePadding(units.minutes)}`
-	}
-
-	const timeToUnits = (time: number) => {
-		const days = Math.floor(time/ (60*60*24))
-		const hours = Math.floor((time - days * (60*60*24))/(60*60))
-		const minutes = Math.floor((time - days * (60*60*24) - hours *60*60)/(60)) 
-		const seconds = Math.round((time - days * (60*60*24) - hours *60*60 - minutes*60))
-		return {
-					seconds: seconds,
-					minutes: minutes,
-					hours: hours,
-					days: days
-			   }
 	}
 	
 	const renderCards = () => {
@@ -144,7 +132,7 @@ const Alarms = () => {
                     <Card
                         key={key}
                         backgroundColor={(!active)?'gray.100':((key % 2 === 0)?'cyan.100':'yellow.100')}
-                        onMouseLeave={()=>{setShowButtons(""); console.log("left")}}
+                        onMouseLeave={()=>{setShowButtons("")}}
                         onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
                         mb={"5px"}
                     >

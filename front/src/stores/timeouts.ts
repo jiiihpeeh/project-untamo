@@ -43,8 +43,6 @@ type UseTimeout = {
     snoozeIt: boolean,
     setSnoozeIt: (status:boolean) => void,
     clear: () => void
-    showLogIn:boolean
-    setShowLogIn: (to:boolean) =>void
 }
 
 const clearAlarmTimeout = () => {
@@ -180,14 +178,6 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
                 }
             )
         },
-        showLogIn:true,
-        setShowLogIn: (to:boolean) =>{
-            set (
-                {
-                showLogIn: to
-                }
-            )
-        },
         clear:() =>{
             clearAlarmTimeout()
             clearAdminTimeout()
@@ -225,12 +215,12 @@ const locationChecker = () => {
         }
         location = newLocation
     }
-    if(newLocation.replaceAll('/','').trim().endsWith('login')){
+/*     if(newLocation.replaceAll('/','').trim().endsWith('login')){
         useTimeouts.getState().setShowLogIn(false)
     }else{
         useTimeouts.getState().setShowLogIn(true)
     }
-    locationId = setTimeout(locationChecker,300)
+    locationId = setTimeout(locationChecker,300) */
 }
 
 locationChecker()

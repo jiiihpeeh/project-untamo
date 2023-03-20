@@ -1,9 +1,9 @@
-import { Text, Checkbox, IconButton,Modal, Button,ModalOverlay,ModalContent,ModalHeader,ModalBody, Th, Thead,ModalCloseButton, useDisclosure, VStack,  Radio,
-         Tooltip, Table, Tr, Td, Tbody, Center } from '@chakra-ui/react'
+import { Text, Checkbox, IconButton,Modal, Button,ModalOverlay,
+        ModalContent,ModalHeader,ModalBody, Th, Thead,ModalCloseButton,
+        VStack,  Radio, Tr, Td, Tbody, Center, Table, Tooltip } from '@chakra-ui/react'
 import React from 'react'
 import { useDevices, usePopups } from '../../stores'
 import { EditIcon, DeleteIcon, ChevronRightIcon} from '@chakra-ui/icons'
-
 import DeviceIcons from "./DeviceIcons"
 
 
@@ -23,12 +23,7 @@ const DeviceMenu = () => {
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
     const showDeviceMenu = usePopups((state)=> state.showDeviceMenu)
     const setShowQRDialog = usePopups((state)=> state.setShowQRDialog)
-    const showDeviceSelector = usePopups((state)=> state.showDeviceSelector)
-    const setShowDeviceSelector = usePopups((state)=> state.setShowDeviceSelector)
-    const { isOpen, onOpen, onClose } = useDisclosure()
 
-    const initialRef = React.useRef(null)
-    const finalRef = React.useRef(null)
     const openDelete = async(value:string) => {
         let delDevice = devices.filter(dev => dev.id === value)[0]
         if(delDevice){
@@ -53,10 +48,9 @@ const DeviceMenu = () => {
         return devices.map(deviceItem => {
             let ID = deviceItem.id
             return(
-
-                        <Tr>
+                    <Tr key={ID}>
                         <Td>
-                            <Text>
+                            <Text size={"xs"}>
                                 {deviceItem.deviceName} <DeviceIcons device={deviceItem.type}/>
                             </Text>
                         </Td>
@@ -88,7 +82,6 @@ const DeviceMenu = () => {
                                 value = {ID}
                                 onClick={(e) =>openEdit(ID)} 
                                 icon={<EditIcon />} 
-                                ml="5.5%" 
                                 aria-label=""
                             />
                             </Tooltip>
@@ -103,14 +96,12 @@ const DeviceMenu = () => {
                                 size='xs'
                                 value = {ID}
                                 onClick={(e)=> openDelete(ID)} 
-                                icon={<DeleteIcon
-                                    />} 
-                                ml="5.5%"  
+                                icon={<DeleteIcon/>} 
                                 aria-label=""
                             />
                             </Tooltip>
                         </Td>
-                        </Tr>
+                    </Tr>
             )})
     }
 
@@ -133,8 +124,8 @@ const DeviceMenu = () => {
                         <Thead>
                             <Tr>
                                 <Th>Device</Th>
-                                <Th>View</Th>
-                                <Th>Current</Th>
+                                <Th>Show</Th>
+                                <Th>Opt</Th>
                                 <Th>Edit</Th>
                                 <Th>Delete</Th>
                             </Tr>
@@ -143,34 +134,33 @@ const DeviceMenu = () => {
                                 {deviceMenu()}
                             </Tbody>
                         </Table>
-                    <VStack mt={"5px"}>
-                    <Button
-                        onClick={()=>setShowQRDialog(true)}
-                    >
-                        <Text 
-                            w="100%"
-                            align={"center"}
-                        >
-                            Pair a device (QR code)
-                        </Text>
-                    </Button>
-                    <Button
-                        onClick={()=>setShowAddDevice(true)} 
-                    >
-                        <Text 
-                            id="add-device-button"
-                            key="add-device-button"
-                            w="100%"
-                            align={"center"}
-                        >
-                            Add a device
-                        </Text>
-                    </Button>
-                    </VStack>
+                        <VStack mt={"5px"}>
+                            <Button
+                                onClick={()=>setShowQRDialog(true)}
+                            >
+                                <Text 
+                                    w="100%"
+                                    align={"center"}
+                                >
+                                    Pair a device (QR code)
+                                </Text>
+                            </Button>
+                            <Button
+                                onClick={()=>setShowAddDevice(true)} 
+                            >
+                                <Text 
+                                    id="add-device-button"
+                                    key="add-device-button"
+                                    w="100%"
+                                    align={"center"}
+                                >
+                                    Add a device
+                                </Text>
+                            </Button>
+                        </VStack>
                     </ModalBody>
                 </ModalContent>
             </Modal>
-
     )
 
 }
