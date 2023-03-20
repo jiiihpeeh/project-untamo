@@ -1,8 +1,8 @@
-import React, { useLayoutEffect, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
-import {  useAlarms, useTimeouts, useAudio, extend } from '../../stores'
+import {  useAlarms, useTimeouts, useAudio, extend, usePopups } from '../../stores'
 import alarmClockString from './logo.svg?raw'
 import '../../App.css'
 
@@ -10,7 +10,8 @@ const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'imag
 
 
 const PlayAlarm = () =>{
-    const [ clockSize, setClockSize ] = useState(Math.min(window.innerWidth, window.innerHeight) * 0.35)
+    const windowSize = usePopups((state)=>state.windowSize)
+    const [ clockSize, setClockSize ] = useState(Math.min(windowSize.width, windowSize.height) * 0.35)
     const runAlarm =  useAlarms((state)=> state.runAlarm)
     const runOtherSnooze = useAlarms((state)=> state.runOtherSnooze)
     const setRunOtherSnooze = useAlarms((state)=> state.setRunOtherSnooze)
@@ -25,16 +26,12 @@ const PlayAlarm = () =>{
     const clearRunTimeout = useTimeouts((state)=>state.clearRunAlarmID)
     const snoozeIt = useTimeouts((state)=>state.snoozeIt)
     const setSnoozeIt = useTimeouts((state)=>state.setSnoozeIt)
+
     const [ pressTime, setPressTime ] = useState(0)
     
-    useLayoutEffect(() => {
-        function updateSize() {
-            setClockSize(Math.min(window.innerWidth, window.innerHeight) * 0.35)
-        }
-        window.addEventListener('resize', updateSize)
-        updateSize()
-        return () => window.removeEventListener('resize', updateSize)
-    }, [])
+    useEffect(() => {
+        setClockSize(Math.min(windowSize.width, windowSize.height) * 0.35)
+    }, [windowSize])
 
     const navigate = useNavigate()
     

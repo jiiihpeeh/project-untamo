@@ -215,7 +215,7 @@ export const timeForNextAlarm = (alarm: Alarm) => {
     }
 }
 
-export const timeToNextAlarm = (alarm: Alarm, withSnooze: boolean = true) => {    
+export const timeToNextAlarm = (alarm: Alarm) => {    
     let snoozer = Infinity
     if(!alarm){
         return snoozer

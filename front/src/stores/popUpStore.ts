@@ -12,6 +12,10 @@ export type MenuPlacer = {
     element : HTMLElement | null 
     type: MenuType
 }
+export type WindowSize = {
+    width: number,
+    height: number
+}
 type Popup = {
     showEditDevice: boolean,
     setShowEditDevice: (to: boolean) => void,
@@ -51,6 +55,8 @@ type Popup = {
     setShowTimepicker: (to:boolean) => void
     isMobile: boolean
     setMobile: (to: boolean) => void
+    windowSize: WindowSize,
+    setWindowSize: (width: number, height: number) => void
 }
 const menuDefault: MenuPlacer = {show:false, style: {}, element: null, type: MenuType.Menu}
 const getOffset = (show: boolean, id: string, type: MenuType) => {
@@ -268,6 +274,17 @@ const usePopups = create<Popup>((set) => ({
             set(
                 {
                     isMobile: to
+                }
+            )
+        },
+        windowSize: {width: window.screen.width, height: window.screen.height},
+        setWindowSize: (width: number, height: number) => {
+            set(
+                { windowSize:
+                                {
+                                    width: width,
+                                    height: height
+                                }
                 }
             )
         }

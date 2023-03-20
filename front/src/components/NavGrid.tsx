@@ -1,6 +1,6 @@
 import {Link as ReachLink} from 'react-router-dom'
-import { Text, Link, Spacer, HStack, Avatar, Flex } from '@chakra-ui/react'
-import React, { useState, useEffect } from "react"
+import { Text, Link, Spacer, HStack, Avatar, Flex, Box } from '@chakra-ui/react'
+import React, { useState, useEffect, useLayoutEffect } from "react"
 import Countdown from "react-countdown"
 import { timePadding } from "./Alarms/AlarmComponents/stringifyDate-Time"
 import { useNavigate } from 'react-router-dom'
@@ -22,12 +22,23 @@ const NavGrid = () => {
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
     const showDeviceMenu =  usePopups((state)=> state.showDeviceMenu)
     const showUserMenu = usePopups((state)=> state.showUserMenu)
+    const windowSize = usePopups((state)=> state.windowSize)
+    const setWindowSize = usePopups((state)=> state.setWindowSize)
+
     const isMobile = usePopups((state)=> state.isMobile)
 
     const [ validItems, setValidItems ] = useState(["login", "register", "about"])
     const [ showAdmin, setShowAdmin ] = useState(false)
     
     const navigate  = useNavigate()
+    useLayoutEffect(() => {
+        function updateSize() {
+            setWindowSize(window.innerWidth, window.innerHeight)
+        }
+        window.addEventListener('resize', updateSize)
+        updateSize()
+        return () => window.removeEventListener('resize', updateSize)
+    }, [])
 
     interface TextArg {
         text: string
@@ -86,14 +97,16 @@ const NavGrid = () => {
  
     return (
             <Flex 
-                mt="5px" 
-                mb="5px" 
                 display="flex" 
                 alignItems="center"
-                pos="relative" 
-                position="static"
-                justifyContent="space-between" 
-                background="radial-gradient(circle, rgba(52,124,228,0.5704482476584384) 0%, rgba(157,182,225,0) 100%)"
+                position="fixed"
+                justifyContent="space-between"
+                as="header"
+                width={10}
+                zIndex={500}
+                alignContent={"left"}
+                background="radial-gradient(circle, rgba(52,124,228,0.5704482476584384) 50%, rgba(157,182,225,0) 100%)"
+                style={{width:windowSize.width, left:0,right:windowSize.width, top:0}}
             >
                 <Text>
                     Untamo

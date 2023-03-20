@@ -34,6 +34,7 @@ import AddAlarm from './components/Alarms/AddAlarm'
 import { extend } from './stores'
 import { isMobile } from 'react-device-detect';
 import sleep from './components/sleep'
+import { Container } from '@chakra-ui/react'
 import './App.css'
 
 function App() {
@@ -55,42 +56,44 @@ function App() {
 		setMobile(isMobile)
 	},[isMobile])
 	return (
-		<div className="App">
+		<Container className="App">
 			{/* <AppAlert/> */}
 			<NavGrid/>
-			<Routes>
-				<Route path ={extend("/alarms")} element={<Alarms/>}/>
-				<Route path={extend("/about")} element={<About/>}/>
-				<Route path={extend("/login")} element={<LogIn/>}/>
-				<Route path={extend("/register")} element={<Register/>}/>
-				<Route path={extend("/welcome")} element={<Welcome/>}/>
-				<Route path={extend("/play-alarm")} element={<PlayAlarm/>}/>
-				<Route path={extend("/clueless")} element={<Clueless/>}/>
-				<Route path={extend("/admin")} element={<Admin/>}/>
-				<Route path={extend("/")} element={<Navigate to={extend("/login")} /> } />
-				<Route path="*" element={<Navigate to={extend("/clueless")} /> } />
-			</Routes>
-			<GenerateQRPairingKey/>
-			<AlarmWatcher/>
-			<UserWatcher/>
-			<DeleteAlarm/>
-			<EditAlarm/>
-			<DeviceDelete/>
-			<DeviceEdit/>
-			<AddDevice/>
-			<DeviceSelector/>
-			<QRPairingDialog/>
-			<LogOut/>
-			<EditProfile/>
-			<AdminLogin/>
-			<UserMenu/>
-			<DeviceMenu/>
-			<AddAlarm/>
-			<Navigator/>
-			{/* <AlarmNotification/> */}
-			<About/>
-			<ServerLocation/>
-    </div>
+			<Container as="main" mt="52px" >
+				<Routes>
+					<Route path ={extend("/alarms")} element={<Alarms/>}/>
+					<Route path={extend("/about")} element={<About/>}/>
+					<Route path={extend("/login")} element={<LogIn/>}/>
+					<Route path={extend("/register")} element={<Register/>}/>
+					<Route path={extend("/welcome")} element={<Welcome/>}/>
+					<Route path={extend("/play-alarm")} element={<PlayAlarm/>}/>
+					<Route path={extend("/clueless")} element={<Clueless/>}/>
+					<Route path={extend("/admin")} element={<Admin/>}/>
+					<Route path={extend("/")} element={<Navigate to={extend("/login")} /> } />
+					<Route path="*" element={<Navigate to={extend("/clueless")} /> } />
+				</Routes>
+				<GenerateQRPairingKey/>
+				<AlarmWatcher/>
+				<UserWatcher/>
+				<DeleteAlarm/>
+				<EditAlarm/>
+				<DeviceDelete/>
+				<DeviceEdit/>
+				<AddDevice/>
+				<DeviceSelector/>
+				<QRPairingDialog/>
+				<LogOut/>
+				<EditProfile/>
+				<AdminLogin/>
+				<UserMenu/>
+				<DeviceMenu/>
+				<AddAlarm/>
+				<Navigator/>
+				{/* <AlarmNotification/> */}
+				<About/>
+				<ServerLocation/>
+			</Container>
+    </Container>
 	)
 }
 

@@ -1,5 +1,5 @@
 import { Button, Text, Tooltip, Link } from '@chakra-ui/react'
-import React, { useEffect,  useState, useLayoutEffect } from 'react'
+import React, { useEffect,  useState } from 'react'
 import { useAlarms, usePopups } from '../../stores'
 
 
@@ -7,6 +7,7 @@ function AddAlarmButton() {
 
 	const alarms = useAlarms((state)=>state.alarms)
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
+	const windowSize = usePopups((state)=>state.windowSize)
 
 	const [ buttonPosition, setButtonPosition ] = useState<React.CSSProperties>({})
 
@@ -23,12 +24,10 @@ function AddAlarmButton() {
 							)			
 		}
 	}
-	useLayoutEffect(() => {
-        window.addEventListener('resize', updatePosition)
-    }, [])
+
 	useEffect(() => {
 		updatePosition()
-	},[alarms])
+	},[alarms, windowSize])
 
 
 	return (
