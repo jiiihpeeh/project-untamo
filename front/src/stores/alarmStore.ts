@@ -24,6 +24,19 @@ type AlarmSerialized = {
     __v: number
 }
 
+function haveSameData(obj1 :Alarm, obj2 : Alarm) {
+  const obj1Length = Object.keys(obj1).length
+  const obj2Length = Object.keys(obj2).length
+
+  if (obj1Length === obj2Length) {
+      return Object.keys(obj1).every(
+        //@ts-ignore
+          key => obj2.hasOwnProperty(key) && obj2[key] === obj1[key])
+  }
+  return false
+}
+
+
 interface AlarmSerializedEdit extends AlarmSerialized {
   id: string 
 }
@@ -43,6 +56,7 @@ const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>
 
 const fetchAlarms = async () => {
     let fetchedAlarms : Array<Alarm> = []
+    let alarms = useAlarms.getState().alarms
     const {server, token} = getCommunicationInfo()
 
     try{
@@ -55,11 +69,27 @@ const fetchAlarms = async () => {
                 }
         )
         fetchedAlarms = alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
+        const newIds = fetchedAlarms.map(alarm => alarm.id)
+        const oldIds = alarms.map(alarm => alarm.id)
+        const toDelete = oldIds.filter(id => !newIds.includes(id) )
+        if(toDelete.length > 0){
+          alarms = alarms.filter(alarm => !toDelete.includes(alarm.id))
+          useAlarms.setState({alarms: alarms})
+        }
+        for(const item of fetchedAlarms){
+          let preFetched = alarms.filter(alarm => alarm.id === item.id)[0]
+    
+          if(preFetched && !haveSameData(preFetched, item)){
+            useAlarms.setState({alarms: [ ...alarms.filter(alarm => alarm.id !== item.id), item]})
+          }else if(!preFetched){
+            alarms.push(item)
+            useAlarms.setState({alarms: alarms })
+          }
+        }
     }catch(err){
         //console.log("Cannot fetch alarms")
         notification("Alarms", "Couldn't fetch the alarm list", Status.Error)
     }
-    useAlarms.setState({ alarms: fetchedAlarms})
 }
 
 const resetSnooze = async() => {
