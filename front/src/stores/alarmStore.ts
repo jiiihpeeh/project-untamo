@@ -6,7 +6,12 @@ import { getCommunicationInfo, useTimeouts, useLogIn } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
-import sleep from '../components/sleep'
+import alarmClockString from './logo.svg?raw'
+
+const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
+
+
+//import { isEqual } from 'lodash'
 const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
@@ -25,13 +30,12 @@ type AlarmSerialized = {
     __v: number
 }
 
-function haveSameData(obj1 :Alarm, obj2 : Alarm) {
+function isEqual(obj1 :any, obj2 : any) {
   const obj1Length = Object.keys(obj1).length
   const obj2Length = Object.keys(obj2).length
 
   if (obj1Length === obj2Length) {
       return Object.keys(obj1).every(
-        //@ts-ignore
           key => obj2.hasOwnProperty(key) && obj2[key] === obj1[key])
   }
   return false
@@ -57,36 +61,40 @@ const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>
 
 const fetchAlarms = async () => {
     let fetchedAlarms : Array<Alarm> = []
-    let alarms = useAlarms.getState().alarms
     const {server, token} = getCommunicationInfo()
 
     try{
         let res = await axios.get(`${server}/api/alarms`,
-                {
-                    headers: 
-                      {
-                        token: token
-                      }
-                }
-        )
+                                                          {
+                                                              headers: 
+                                                                        {
+                                                                          token: token
+                                                                        }
+                                                          }
+                                  )
         fetchedAlarms = alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
+        let alarms = useAlarms.getState().alarms
         const newIds = fetchedAlarms.map(alarm => alarm.id)
         const oldIds = alarms.map(alarm => alarm.id)
         const toDelete = oldIds.filter(id => !newIds.includes(id) )
+        let change = false
         if(toDelete.length > 0){
           alarms = alarms.filter(alarm => !toDelete.includes(alarm.id))
-          useAlarms.setState({alarms: [...alarms]})
+          change = true
         }
         for(const item of fetchedAlarms){
           let preFetched = alarms.filter(alarm => alarm.id === item.id)[0]
     
-          if(preFetched && !haveSameData(preFetched, item)){
-            useAlarms.setState({alarms: [ ...alarms.filter(alarm => alarm.id !== item.id), item]})
+          if(preFetched && !isEqual(preFetched, item)){
             alarms = [ ...alarms.filter(alarm => alarm.id !== item.id), item]
+            change = true
           }else if(!preFetched){
-            useAlarms.setState({alarms: [...alarms, item] })
             alarms = [...alarms, item]
+            change = true
           }
+        }
+        if(change){
+          useAlarms.setState({ alarms: [...alarms] })
         }
     }catch(err){
         //console.log("Cannot fetch alarms")
@@ -146,13 +154,13 @@ const snoozer = async () =>{
   alarm.modified = Date.now()
   try {
       let res = await axios.put(`${server}/api/alarm/`+runAlarm.id, 
-                                  alarm, 
-                                  {
-                                    headers:
-                                            {
-                                              token:token
-                                            }
-                                  }
+                                                                  alarm, 
+                                                                  {
+                                                                    headers:
+                                                                            {
+                                                                              token:token
+                                                                            }
+                                                                  }
                                 )
       //console.log(res.data)
   }catch(err:any){
@@ -188,6 +196,7 @@ type UseAlarms =  {
   setTimeForNextLaunch: (ms:number)=>void,
   reloadAlarmList: boolean,
   setReloadAlarmList: () => void,
+  logo: string,
   clear: () => void,
 }
 
@@ -525,6 +534,7 @@ const useAlarms = create<UseAlarms>()(
                   }
                 )
             },
+            logo: alarmClock,
           }
       ),
 

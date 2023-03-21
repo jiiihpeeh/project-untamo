@@ -3,16 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
 import {  useAlarms, useTimeouts, useAudio, extend, usePopups } from '../../stores'
-import alarmClockString from './logo.svg?raw'
 import '../../App.css'
-
-const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
 
 const PlayAlarm = () =>{
     const windowSize = usePopups((state)=>state.windowSize)
     const [ clockSize, setClockSize ] = useState(Math.min(windowSize.width, windowSize.height) * 0.35)
     const runAlarm =  useAlarms((state)=> state.runAlarm)
+    const alarmClock = useAlarms((state)=> state.logo)
     const runOtherSnooze = useAlarms((state)=> state.runOtherSnooze)
     const setRunOtherSnooze = useAlarms((state)=> state.setRunOtherSnooze)
     const resetSnooze = useAlarms((state)=> state.resetSnooze)

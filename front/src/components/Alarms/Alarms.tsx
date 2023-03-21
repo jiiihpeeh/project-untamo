@@ -137,6 +137,7 @@ const Alarms = () => {
                         onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
                         mb={"5px"}
 						id={`alarmCardContainer-${key}`}
+						size={"sm"}
                     >
                         
                         <CardBody>

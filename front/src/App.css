@@ -78,7 +78,23 @@ input.Register, textarea {
       transform: rotate(25deg);
     }
   }
-
+  .LogoClock {
+    animation: rotation 2s infinite linear
+    }
+  
+    @keyframes rotation {
+  
+      25% {
+        transform: rotate(-15deg);
+      }
+      50% {
+        transform: scale(.92);
+      }
+      75% {
+        transform: rotate(15deg);
+      }
+    }
+  
   .UserForm {
     background-color: lightgray;
     width: 30em;

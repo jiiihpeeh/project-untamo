@@ -1,16 +1,18 @@
 import {Link as ReachLink} from 'react-router-dom'
-import { Text, Link, Spacer, HStack, Avatar, Flex, Box } from '@chakra-ui/react'
+import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect } from "react"
 import Countdown from "react-countdown"
 import { timePadding } from "./Alarms/AlarmComponents/stringifyDate-Time"
 import { useNavigate } from 'react-router-dom'
-import { useLogIn, useAdmin, useTimeouts, usePopups, extend } from '../stores'
+import { useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms } from '../stores'
 import { SessionStatus } from '../type'
 import { MenuType } from '../stores/popUpStore'
 import AlarmPop from './Alarms/AlarmFollower'
 import sleep from './sleep'
+import './../App.css'
 
 const NavGrid = () => {
+    const logo = useAlarms((state)=>state.logo)
     const adminTime = useAdmin((state) => state.time )
     const sessionStatus  = useLogIn((state) => state.sessionValid)
     const userInfo  = useLogIn((state) => state.user)
@@ -108,6 +110,13 @@ const NavGrid = () => {
                 background="radial-gradient(circle, rgba(52,124,228,0.5704482476584384) 50%, rgba(157,182,225,0) 100%)"
                 style={{width:windowSize.width, left:0,right:windowSize.width, top:0}}
             >
+                
+                <Image 
+                    ml={"2px"}
+                    src={logo}
+                    height={"50px"}
+                    className='LogoClock'
+                />
                 <Text>
                     Untamo
                 </Text>
