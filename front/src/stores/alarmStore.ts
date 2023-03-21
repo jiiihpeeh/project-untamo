@@ -6,6 +6,7 @@ import { getCommunicationInfo, useTimeouts, useLogIn } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
+import sleep from '../components/sleep'
 const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
@@ -74,16 +75,17 @@ const fetchAlarms = async () => {
         const toDelete = oldIds.filter(id => !newIds.includes(id) )
         if(toDelete.length > 0){
           alarms = alarms.filter(alarm => !toDelete.includes(alarm.id))
-          useAlarms.setState({alarms: alarms})
+          useAlarms.setState({alarms: [...alarms]})
         }
         for(const item of fetchedAlarms){
           let preFetched = alarms.filter(alarm => alarm.id === item.id)[0]
     
           if(preFetched && !haveSameData(preFetched, item)){
             useAlarms.setState({alarms: [ ...alarms.filter(alarm => alarm.id !== item.id), item]})
+            alarms = [ ...alarms.filter(alarm => alarm.id !== item.id), item]
           }else if(!preFetched){
-            alarms.push(item)
-            useAlarms.setState({alarms: alarms })
+            useAlarms.setState({alarms: [...alarms, item] })
+            alarms = [...alarms, item]
           }
         }
     }catch(err){
