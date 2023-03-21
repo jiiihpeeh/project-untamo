@@ -172,9 +172,9 @@ const Alarms = () => {
                                             Edit
                                         </Heading>
                                         <IconButton 
-                                            size='md' 
-                                            icon={<EditIcon/>} 
-                                            ml="5.5%" 
+                                            size='xs' 
+                                            icon={<EditIcon/>}
+											colorScheme='orange'
                                             aria-label=''
                                             key={`edit-${key}`}
                                             onClick= {() => { setToEdit(id); setShowEdit(true)}}
@@ -190,7 +190,7 @@ const Alarms = () => {
                                             name={`alarm-switch-${key}`}
                                             key={`alarm-active-${key}`}
                                             isChecked={active}
-                                            size='md' 
+                                            size='sm' 
                                             onChange={() => {toggleActivity(id); setShowEdit(false)}}
                                         />					
                                     </Box>
@@ -200,9 +200,8 @@ const Alarms = () => {
                                             Delete
                                         </Heading>
                                         <IconButton 
-                                            size='md' 
+                                            size='xs' 
                                             icon={<DeleteIcon/>} 
-                                            ml="5.5%" 
                                             colorScheme='red'
                                             aria-label=''
                                             onClick= {() => { setShowEdit(false); setToDelete(id);  setShowDelete(true)}}
