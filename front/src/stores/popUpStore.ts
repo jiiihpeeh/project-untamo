@@ -31,8 +31,6 @@ type Popup = {
     setShowAdminConfirm: (to: boolean) => void,
     showAddDevice: boolean,
     setShowAddDevice: (to: boolean) => void,
-    showDeviceSelector: MenuPlacer,
-    setShowDeviceSelector: (show: boolean, id: string, type: MenuType) => void,
     showQRDialog: boolean,
     setShowQRDialog: (to: boolean) => void,
     showLogOut: boolean,
@@ -167,15 +165,6 @@ const usePopups = create<Popup>((set) => ({
             set( 
                 {
                     showAddDevice: to
-                }
-            )
-        },
-        showDeviceSelector: menuDefault,
-        setShowDeviceSelector: (show, id, type) => {
-            const menu = getOffset(show, id, type)
-            set( 
-                {
-                    showDeviceSelector: menu
                 }
             )
         },

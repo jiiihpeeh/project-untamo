@@ -104,6 +104,7 @@ const AlarmTone = () => {
                 <MenuButton 
                     as={Button} 
                     rightIcon={<ChevronDownIcon />}
+                    width="100%"
                 >
                     Choose the alarm tone: {alarmTone}
                 </MenuButton>

@@ -66,7 +66,6 @@ const PlayAlarm = () =>{
         }else{
             clearRunTimeout()
         }
-        
     },[runAlarm])
 
     useEffect(()=>{
@@ -85,6 +84,14 @@ const PlayAlarm = () =>{
             setSnoozeIt(true)
             setPressTime(0)
         }
+    }
+    const userPressStart = (e:any)=>{
+        e.preventDefault()
+        setPressTime(Date.now())
+    }
+    const userPressStop = (e:any)=>{
+        e.preventDefault()
+        snoozePressFunction(Date.now())
     }
     return(
          <Stack align='center'>
@@ -108,7 +115,6 @@ const PlayAlarm = () =>{
             >
                 Snooze the Alarm by clicking the clock below
             </Heading>
-
             <IconButton  
                 width={clockSize} 
                 height={clockSize} 
@@ -119,8 +125,10 @@ const PlayAlarm = () =>{
                 aria-label=""
                 value=""
                 id="Snooze-Button"
-                onMouseDown={()=>setPressTime(Date.now())}
-                onMouseUp={() => snoozePressFunction(Date.now())}
+                onMouseDown={userPressStart}
+                onMouseUp={userPressStop}
+                onTouchStart={userPressStart}
+                onTouchEnd={userPressStop}
             >
                 <Image 
                     src={alarmClock}  

@@ -10,7 +10,7 @@ const AlarmCase = () => {
     const cases = Object.values(AlarmCases).filter((item) => item)
     const inputTime = useRef<number>(Date.now())
 
-    function capitalizeFirstLetter(str: string) {
+    function capitalize(str: string) {
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
     const mouseSelect = (e:number) =>{
@@ -36,7 +36,7 @@ const AlarmCase = () => {
                                     onClick={() => setAlarmCase(item)}
                                     key={item}
                                   >
-                                    {capitalizeFirstLetter(item)}
+                                    {capitalize(item)}
                                   </MenuItem>
                                 )
                         }

@@ -12,7 +12,8 @@ const SelectedWeekdays = () => {
             <Button m="3px" 
                     borderColor={'black'} 
                     bgColor={(weekdays.includes(weekday))?"green":"gray.500" }
-                    onClick={() => toggleWeekdays(weekday)} 
+                    onClick={() => toggleWeekdays(weekday)}
+                    onTouchEnd={(e)=>console.log(e)} 
                     borderRadius={'md'}
                     borderWidth={'2px'}
                     colorScheme="orange"
@@ -28,13 +29,13 @@ const SelectedWeekdays = () => {
     const WeekDayButtons = () => {
         let WeekDayTuple : [ day: WeekDay, abbrev: string]
         const weekdays: Array<typeof WeekDayTuple> =    [
-                                                            [WeekDay.Monday, "Mon"],
-                                                            [WeekDay.Tuesday, "Tue"],
-                                                            [WeekDay.Wednesday, "Wed"],
-                                                            [WeekDay.Thursday, "Thu"],
-                                                            [WeekDay.Friday, "Fri"],
-                                                            [WeekDay.Saturday, "Sat"],
-                                                            [WeekDay.Sunday, "Sun"]
+                                                            [ WeekDay.Monday, "Mon" ] ,
+                                                            [ WeekDay.Tuesday, "Tue" ],
+                                                            [ WeekDay.Wednesday, "Wed" ],
+                                                            [ WeekDay.Thursday, "Thu" ],
+                                                            [ WeekDay.Friday, "Fri" ],
+                                                            [ WeekDay.Saturday, "Sat" ],
+                                                            [ WeekDay.Sunday, "Sun" ]
                                                         ]
         return weekdays.map(day =>  {
                                         return WeekdayButton(day[0], day[1])

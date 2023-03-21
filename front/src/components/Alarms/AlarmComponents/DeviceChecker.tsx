@@ -1,8 +1,8 @@
 import { Center, Checkbox, HStack, Text, 
-    Table,Thead, Tbody,Tr,Th,Td,TableContainer } from "@chakra-ui/react";   
-import React from 'react';
-import { useDevices } from "../../../stores";
-import useAlarm from "./alarmStates";
+    Table,Thead, Tbody,Tr,Th,Td,TableContainer } from "@chakra-ui/react" 
+import React from 'react'
+import { useDevices } from "../../../stores"
+import useAlarm from "./alarmStates"
 
 const DeviceChecker = () => {
     const devices  = useDevices((state)=>state.devices);
@@ -39,7 +39,6 @@ const DeviceChecker = () => {
     }
 
     return(
-        <>
         <Center>
             <TableContainer>
             <Table>
@@ -55,7 +54,6 @@ const DeviceChecker = () => {
             </Table>
             </TableContainer>
         </Center>
-        </>
-    );
-};
-export default DeviceChecker;
+    )
+}
+export default DeviceChecker

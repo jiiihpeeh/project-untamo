@@ -7,6 +7,7 @@ import { EditIcon, DeleteIcon, ChevronRightIcon} from '@chakra-ui/icons'
 import DeviceIcons from "./DeviceIcons"
 
 
+
 const DeviceMenu = () => {
     const viewableDevices = useDevices((state)=> state.viewableDevices)
     const toggleViewableDevices = useDevices((state)=>state.toggleViewableDevices)
@@ -16,8 +17,6 @@ const DeviceMenu = () => {
     const setToDelete = useDevices((state)=>state.setToDelete)
     const setCurrentDevice = useDevices((state)=>state.setCurrentDevice)
     const currentDevice = useDevices((state)=>state.currentDevice)
-
-
     const setToEdit = useDevices((state)=>state.setToEdit)
     const setShowAddDevice = usePopups((state)=> state.setShowAddDevice)
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)

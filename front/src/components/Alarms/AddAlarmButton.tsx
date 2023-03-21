@@ -1,25 +1,26 @@
-import { Button, Text, Tooltip, Link } from '@chakra-ui/react'
+import { Button, Text, Tooltip, Link, Box } from '@chakra-ui/react'
 import React, { useEffect,  useState } from 'react'
 import { useAlarms, usePopups } from '../../stores'
 
-
-function AddAlarmButton() {
-
+interface Props{
+	mounting: HTMLDivElement | null
+}
+function AddAlarmButton(props: Props) {
+	const mounting = props.mounting
 	const alarms = useAlarms((state)=>state.alarms)
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
 	const windowSize = usePopups((state)=>state.windowSize)
-
 	const [ buttonPosition, setButtonPosition ] = useState<React.CSSProperties>({})
-
-	const updatePosition = () =>{
-		const element = document.getElementById("Alarm-Container")
-		if(element){
-			const rect = element.getBoundingClientRect()
+	
+	const updatePosition = async() =>{
+		if(mounting){
+			const rect = mounting.getBoundingClientRect()
+			let add = (windowSize.width-rect.right < 65)?-21:0
 			setButtonPosition(
 								{
-									top: rect.bottom  + window.scrollY,
-									left: rect.right  + window.scrollX,
-									position: "absolute"
+									bottom: windowSize.height *0.05 ,
+									left: rect.right + add,								
+									position: "fixed"
 								}
 							)			
 		}
@@ -27,34 +28,27 @@ function AddAlarmButton() {
 
 	useEffect(() => {
 		updatePosition()
-	},[alarms, windowSize])
+	},[alarms, windowSize, mounting])
 
-
+	
 	return (
-		<Link 
-            onClick={()=>setShowAddAlarm(true)}
-        >
-			<Tooltip 
-				label='Add an alarm' 
-				fontSize='md'
+			<Button 
+				style={buttonPosition}
+				size='xl' 
+				//ml="5.5%" 
+				borderRadius={"50%"} 
+				colorScheme="green"
+				width={"50px"} 
+				height={"50px"}
+				onClick={()=>setShowAddAlarm(true)}
+				shadow={"dark-lg"}
 			>
-            	<Button 
-					size='xl' 
-					ml="5.5%" 
-					borderRadius={"50%"} 
-                    colorScheme="green"
-					width={"50px"} 
-					height={"50px"}
-					style={buttonPosition}
+				<Text
+					color="white"
 				>
-					<Text
-						color="white"
-					>
-						+ 
-					</Text>
-				</Button>
-			</Tooltip>
-		</Link>
+					+ 
+				</Text>
+			</Button>
 	)
 }
 

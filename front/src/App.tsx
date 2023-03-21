@@ -22,7 +22,6 @@ import DeviceDelete from './components/Device/DeviceDelete'
 import DeviceEdit from './components/Device/DeviceEdit'
 import AlarmNotification from './components/Alarms/AlarmNotification'
 import AddDevice from './components/Device/AddDevice'
-import DeviceSelector from './components/Device/DeviceSelector'
 import QRPairingDialog from './components/QR/QRPairingDialog'
 import LogOut from './components/User/LogOut'
 import EditProfile from './components/User/EditProfile'
@@ -80,7 +79,6 @@ function App() {
 				<DeviceDelete/>
 				<DeviceEdit/>
 				<AddDevice/>
-				<DeviceSelector/>
 				<QRPairingDialog/>
 				<LogOut/>
 				<EditProfile/>

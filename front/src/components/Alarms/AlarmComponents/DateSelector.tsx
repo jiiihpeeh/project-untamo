@@ -1,13 +1,12 @@
-import { SingleDatepicker } from "chakra-dayzed-datepicker";
-import { Center, FormLabel , Flex } from "@chakra-ui/react";
+import { SingleDatepicker } from "chakra-dayzed-datepicker"
+import { Center, FormLabel , Flex } from "@chakra-ui/react"
 import React from "react";
-import useAlarm from "./alarmStates";
-
+import useAlarm from "./alarmStates"
 
 const DateSelector = () => {
-    const date = useAlarm((state)=>state.date);
+    const date = useAlarm((state)=>state.date)
     const dateFormat = useAlarm((state)=>state.dateFormat);
-    const setDate = useAlarm((state)=>state.setDate);
+    const setDate = useAlarm((state)=>state.setDate)
     return(
         <Flex>
             <Center>
@@ -29,4 +28,4 @@ const DateSelector = () => {
         
     )
 };
-export default DateSelector;
+export default DateSelector

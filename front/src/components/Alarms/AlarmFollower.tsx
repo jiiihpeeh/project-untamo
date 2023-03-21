@@ -20,20 +20,23 @@ const AlarmPop = () =>{
     const [ setShowEdit, setShowDelete ] = usePopups((state)=> 
 		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
     const [ noSnooze, setNoSnooze ] = useState(true)
+    const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
+
     const navigate = useNavigate()
 
     const footerText = () => {
 		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
 			return "No alarms for this device"
 		}
+        let addBtn = (<Button onClick={()=>setShowAddAlarm(true)}  width="100%" >Add Alarm</Button>)
 		const units = timeToUnits(timeForNextLaunch)
 		if(units.days === 0){
 			if(units.hours === 0){
-				return `Time left to next alarm: ${timePadding(units.minutes)}:${timePadding(units.seconds)}`
+				return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.minutes)}:{timePadding(units.seconds)}</Text> {addBtn} </Box>)
 			} 
-			return `Time left to next alarm: ${timePadding(units.hours)}:${timePadding(units.minutes)}`
+			return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.hours)}:{timePadding(units.minutes)}  </Text>{addBtn}</Box>)
 		}
-		return `Time left to next alarm:  ${units.days} days ${timePadding(units.hours)}:${timePadding(units.minutes)}`
+		return (<Box> <Text alignContent={"center"}>Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} </Text>{addBtn} </Box>)
 	}
     const timerInfo = () =>{
         return (
@@ -64,7 +67,7 @@ const AlarmPop = () =>{
         }
     },[runAlarm, alarms])
     return(
-        <Popover>
+        <Popover  >
             <PopoverTrigger>
             <Link>
                 <Text as="b">
