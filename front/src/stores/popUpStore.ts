@@ -289,7 +289,7 @@ const usePopups = create<Popup>((set, get) => ({
                 }
             )
         },
-        windowSize: {width: window.screen.width, height: window.screen.height, landscape: false},
+        windowSize: {width: window.screen.width, height: window.screen.height, landscape: [-90,90].includes(window.orientation)},
         setWindowSize: (width , height , landscape) => {
             set(
                 { windowSize:
