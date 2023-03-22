@@ -19,7 +19,7 @@ const About = () => {
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>
-					About
+					About Untamo
 				</ModalHeader>
 				<ModalCloseButton />
 				<ModalBody>

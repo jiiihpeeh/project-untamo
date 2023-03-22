@@ -72,7 +72,7 @@ const UserMenu = () => {
 						m={"2%"}
 					>
 							<Text as='b'>
-								About
+								About Untamo
 							</Text>
 					</Button> 
 			</ModalBody>

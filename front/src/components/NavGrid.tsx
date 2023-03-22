@@ -7,7 +7,7 @@ import { SessionStatus } from '../type'
 import { timePadding } from './Alarms/AlarmComponents/stringifyDate-Time'
 import Countdown from "react-countdown"
 import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
-
+import { ChevronDownIcon } from  '@chakra-ui/icons'
 import sleep from './sleep'
 import './../App.css'
 
@@ -30,7 +30,6 @@ const NavGrid = () => {
     const setWindowSize = usePopups((state)=> state.setWindowSize)
     const setNavigationTriggered = usePopups((state)=>state.setNavigationTriggered)
     const plays = useAudio((state)=> state.plays)
-
     const isMobile = usePopups((state)=> state.isMobile)
 
     const [ validItems, setValidItems ] = useState(["login", "register", "about"])
@@ -39,7 +38,7 @@ const NavGrid = () => {
     const navigate  = useNavigate()
     useLayoutEffect(() => {
         function updateSize() {
-            setWindowSize(window.innerWidth, window.innerHeight)
+            setWindowSize(window.innerWidth, window.innerHeight, [-90,90].includes(window.orientation))
             setNavigationTriggered()
         }
         window.addEventListener('resize', updateSize)
@@ -59,13 +58,14 @@ const NavGrid = () => {
         seconds: number
     }
     const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)})</Text>)
+        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(addressEndsWith("admin"))?<Icon as={ChevronDownIcon} />:""}</Text>)
     }
-     
+
     useEffect(() => {
         const constructGrid = async() => {
             if(sessionStatus === SessionStatus.Valid){
                 setValidItems(["alarms", "devices", 'user'])
+                await sleep(5)
                 setNavigationTriggered()
             } else {
                 setValidItems(["register",'server', "about"])  
@@ -85,8 +85,9 @@ const NavGrid = () => {
 
     
     useEffect(()=> {
-        const adminTimeOut = () =>{
+        const adminTimeOut = async() =>{
             setShowAdmin(false)
+            await sleep(5)
             setNavigationTriggered()
             if(window.location.pathname === '/admin'){
                 navigate(extend('/alarms'))
@@ -104,11 +105,9 @@ const NavGrid = () => {
         }
         let tID = setTimeout(adminTimeOut, adminTime - Date.now())
         setAdminTimeout(tID)
-        
     },[adminTime, navigate])
  
     return (
-        
             <Flex 
                 display="flex" 
                 alignItems="center"
@@ -122,7 +121,7 @@ const NavGrid = () => {
                 style={{width:windowSize.width, left:0,right:windowSize.width, top:0}}
             >
                 <HStack
-                    
+                    ml="1%"
                 >
                     <Image 
                         ml={"2px"}
@@ -132,9 +131,9 @@ const NavGrid = () => {
                         draggable="false"
                         pointerEvents={"none"}
                     />
-                    <Text>
+                    {((isMobile && windowSize.landscape) ||  !isMobile ) && <Text>
                         Untamo
-                    </Text>
+                    </Text>}
                 </HStack>
                 { validItems.includes('login') && <>
                     <Spacer/>
@@ -176,10 +175,9 @@ const NavGrid = () => {
                         onClick={()=>(addressEndsWith("alarms"))?setShowAlarmPop(true):{}}
                     >
                         <Text as="b">
-                            Alarms {(plays)?<Icon as={PlayIcon} />:""}
+                            Alarms {(plays)?<Icon as={PlayIcon} />:""}{(addressEndsWith("alarms"))?<Icon as={ChevronDownIcon} />:""}
                         </Text>
                     </Link>
-                    
                 </>}
                 {validItems.includes('devices') && <>
                     <Spacer/>
@@ -209,9 +207,10 @@ const NavGrid = () => {
                 {validItems.includes('about') && <>
                     <Spacer/>
                     <Link 
+                        mr={"4%"}
                         onClick={()=>setShowAbout(true)}
                     >
-                        <Text as='b'>
+                        <Text as='b' >
                             About
                         </Text>
                     </Link></>}
@@ -235,7 +234,7 @@ const NavGrid = () => {
                 </>}
                 {validItems.includes('user') && <>
                     <Spacer/>
-                    <div>
+                    <Box mr="4%">
                         <Link
                             as={Avatar} 
                             name={userInfo.screenName} 
@@ -243,12 +242,10 @@ const NavGrid = () => {
                             id="avatar-button"
                             onClick={()=> setShowUserMenu(!showUserMenu)}
                         />
-                    </div>
+                    </Box>
                 </>}
-                    <Spacer/>
             </Flex>
         )
-    
 }
 
 export default NavGrid

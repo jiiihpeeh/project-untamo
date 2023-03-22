@@ -15,6 +15,7 @@ export type MenuPlacer = {
 export type WindowSize = {
     width: number,
     height: number
+    landscape:boolean
 }
 type Popup = {
     showEditDevice: boolean,
@@ -58,7 +59,7 @@ type Popup = {
     isMobile: boolean
     setMobile: (to: boolean) => void
     windowSize: WindowSize,
-    setWindowSize: (width: number, height: number) => void
+    setWindowSize: (width: number, height: number, landscape: boolean) => void
     navigationTriggered: number,
     setNavigationTriggered: () => void,
 }
@@ -288,13 +289,14 @@ const usePopups = create<Popup>((set, get) => ({
                 }
             )
         },
-        windowSize: {width: window.screen.width, height: window.screen.height},
-        setWindowSize: (width: number, height: number) => {
+        windowSize: {width: window.screen.width, height: window.screen.height, landscape: false},
+        setWindowSize: (width , height , landscape) => {
             set(
                 { windowSize:
                                 {
                                     width: width,
-                                    height: height
+                                    height: height,
+                                    landscape: landscape
                                 }
                 }
             )
