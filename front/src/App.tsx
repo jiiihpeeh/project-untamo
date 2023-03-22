@@ -34,6 +34,8 @@ import { extend } from './stores'
 import { isMobile } from 'react-device-detect';
 import sleep from './components/sleep'
 import { Container } from '@chakra-ui/react'
+import AlarmPop from './components/Alarms/AlarmFollower'
+import AdminPop from './components/Admin/AdminPop'
 import './App.css'
 
 function App() {
@@ -90,6 +92,8 @@ function App() {
 				{/* <AlarmNotification/> */}
 				<About/>
 				<ServerLocation/>
+				<AlarmPop/>
+				<AdminPop/> 
 			</Container>
     </Container>
 	)

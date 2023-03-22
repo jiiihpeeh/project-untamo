@@ -1,9 +1,8 @@
 import {  Popover, PopoverTrigger, Button, Portal, PopoverContent, HStack,
-          PopoverHeader, PopoverArrow, PopoverCloseButton, PopoverBody,
-          PopoverFooter, Link, Text, Icon, Heading, VStack, Box, Center } from '@chakra-ui/react'
+          PopoverHeader, PopoverArrow, PopoverBody, PopoverAnchor, Input,
+          PopoverFooter, Link, Text, Icon, VStack, Box, Center } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { useAudio, extend, useDevices, useAlarms, usePopups } from '../../stores'
-import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
 import React from 'react'
 import { shallow } from 'zustand/shallow'
 import { timePadding } from './AlarmComponents/stringifyDate-Time'
@@ -17,10 +16,11 @@ const AlarmPop = () =>{
 		[ state.alarms, state.runAlarm, state.setToDelete, state.setToEdit, state.timeForNextLaunch, state.toggleActivity, state.resetSnooze ],  shallow)
     const [devices, viewableDevices, currentDevice] = useDevices(state => 
         [ state.devices, state.viewableDevices, state.currentDevice ],  shallow)
-    const [ setShowEdit, setShowDelete ] = usePopups((state)=> 
-		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
+    const [ showAdminPop, setShowAdminPop,showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups((state)=> 
+		[state.showAdminPop, state.setShowAdminPop, state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
     const [ noSnooze, setNoSnooze ] = useState(true)
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
+    const [ posStyle, setPosStyle ] = useState<React.CSSProperties>({})
 
     const navigate = useNavigate()
 
@@ -39,6 +39,8 @@ const AlarmPop = () =>{
 		}
 		return (<Box> <Text alignContent={"center"}>Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} </Text> {addBtn} </Box>)
 	}
+
+
     const timerInfo = () =>{
         return (
                 <VStack>
@@ -67,32 +69,39 @@ const AlarmPop = () =>{
             setNoSnooze(Math.abs(epochAlarm-timeToAlarm) < 20)
         }
     },[runAlarm, alarms])
+    useEffect(()=>{
+        let elem = document.getElementById("link-alarm")
+        if(elem){
+            let coords = elem.getBoundingClientRect()
+            setPosStyle({left: coords.left + coords.width/2, top:coords.top - coords.height +10, position:"absolute"})
+        }
+    },[navigationTriggered])
     return(
-        <Popover  >
-            <PopoverTrigger>
-            <Link>
-                <Text as="b">
-                    Alarms {(plays)?<Icon as={PlayIcon} />:""}
-                </Text>
-            </Link>
-            </PopoverTrigger>
-            <Portal>
-                <PopoverContent>
-                <PopoverArrow />
-                <PopoverHeader>
-                    <Center>
-                        Alarm Info
-                    </Center>
-                </PopoverHeader>
-                {runAlarm && <PopoverBody  backgroundColor={"blue.300"}>
-                    {timerInfo()}
-                </PopoverBody>}
-                <PopoverFooter  backgroundColor={"gray.300"}>
-                    {footerText()}
-                </PopoverFooter>
-                </PopoverContent>
-            </Portal>
-        </Popover>        
+            <Popover
+                isOpen={showAlarmPop}
+                onClose={()=>setShowAlarmPop(false)}
+            >
+            <PopoverAnchor>
+                <Box style={posStyle}>
+                </Box>
+            </PopoverAnchor>
+                <Portal>
+                    <PopoverContent>
+                    <PopoverArrow />
+                    <PopoverHeader>
+                        <Center>
+                            Alarm Info
+                        </Center>
+                    </PopoverHeader>
+                    {runAlarm && <PopoverBody  backgroundColor={"blue.300"}>
+                        {timerInfo()}
+                    </PopoverBody>}
+                    <PopoverFooter  backgroundColor={"gray.300"}>
+                        {footerText()}
+                    </PopoverFooter>
+                    </PopoverContent>
+                </Portal>
+            </Popover>        
     )
 }
 

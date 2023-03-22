@@ -1,11 +1,13 @@
 import { Link as ReachLink } from 'react-router-dom'
-import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image } from '@chakra-ui/react'
+import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image, Icon } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useNavigate } from 'react-router-dom'
-import { useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms } from '../stores'
+import { useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio } from '../stores'
 import { SessionStatus } from '../type'
-import AlarmPop from './Alarms/AlarmFollower'
-import AdminPop from './Admin/AdminPop'
+import { timePadding } from './Alarms/AlarmComponents/stringifyDate-Time'
+import Countdown from "react-countdown"
+import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
+
 import sleep from './sleep'
 import './../App.css'
 
@@ -21,9 +23,13 @@ const NavGrid = () => {
     const setShowUserMenu = usePopups((state)=> state.setShowUserMenu)
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
     const showDeviceMenu =  usePopups((state)=> state.showDeviceMenu)
+    const setShowAdminPop = usePopups((state)=> state.setShowAdminPop)
+    const setShowAlarmPop = usePopups((state)=> state.setShowAlarmPop)
     const showUserMenu = usePopups((state)=> state.showUserMenu)
     const windowSize = usePopups((state)=> state.windowSize)
     const setWindowSize = usePopups((state)=> state.setWindowSize)
+    const setNavigationTriggered = usePopups((state)=>state.setNavigationTriggered)
+    const plays = useAudio((state)=> state.plays)
 
     const isMobile = usePopups((state)=> state.isMobile)
 
@@ -34,30 +40,43 @@ const NavGrid = () => {
     useLayoutEffect(() => {
         function updateSize() {
             setWindowSize(window.innerWidth, window.innerHeight)
+            setNavigationTriggered()
         }
         window.addEventListener('resize', updateSize)
         updateSize()
         return () => window.removeEventListener('resize', updateSize)
     }, [])
 
+    const addressEndsWith = (end:string) => {
+        return window.location.pathname.replaceAll("/","").endsWith(end)
+    }
 
     const capitalize = (s:string)=>{
         return s.charAt(0).toUpperCase() + s.slice(1)
     }
-
-   
+    interface TimeOutput{
+        minutes: number,
+        seconds: number
+    }
+    const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
+        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)})</Text>)
+    }
+     
     useEffect(() => {
         const constructGrid = async() => {
             if(sessionStatus === SessionStatus.Valid){
                 setValidItems(["alarms", "devices", 'user'])
+                setNavigationTriggered()
             } else {
                 setValidItems(["register",'server', "about"])  
                 await sleep(15)
                 let isLogIn = window.location.pathname.replaceAll("/","").endsWith("login")
                 if(!isLogIn){
-                    setValidItems(["login",'server', "about"])    
+                    setValidItems(["login",'server', "about"])
+                    setNavigationTriggered() 
                 }else{
                     setValidItems(["register",'server', "about"])
+                    setNavigationTriggered()
                 }  
             }
         }
@@ -68,6 +87,7 @@ const NavGrid = () => {
     useEffect(()=> {
         const adminTimeOut = () =>{
             setShowAdmin(false)
+            setNavigationTriggered()
             if(window.location.pathname === '/admin'){
                 navigate(extend('/alarms'))
             }
@@ -77,16 +97,18 @@ const NavGrid = () => {
         }catch(err){}
         if(adminTime > Date.now()){
             setShowAdmin(true)
+            setNavigationTriggered()
         }else{
             setShowAdmin(false)
+            setNavigationTriggered()
         }
-        
         let tID = setTimeout(adminTimeOut, adminTime - Date.now())
         setAdminTimeout(tID)
         
     },[adminTime, navigate])
  
     return (
+        
             <Flex 
                 display="flex" 
                 alignItems="center"
@@ -99,18 +121,21 @@ const NavGrid = () => {
                 background="radial-gradient(circle, rgba(52,124,228,0.5704482476584384) 50%, rgba(157,182,225,0) 100%)"
                 style={{width:windowSize.width, left:0,right:windowSize.width, top:0}}
             >
-                
-                <Image 
-                    ml={"2px"}
-                    src={logo}
-                    height={"50px"}
-                    className='LogoClock'
-                    draggable="false"
-                    pointerEvents={"none"}
-                />
-                <Text>
-                    Untamo
-                </Text>
+                <HStack
+                    
+                >
+                    <Image 
+                        ml={"2px"}
+                        src={logo}
+                        height={"50px"}
+                        className='LogoClock'
+                        draggable="false"
+                        pointerEvents={"none"}
+                    />
+                    <Text>
+                        Untamo
+                    </Text>
+                </HStack>
                 { validItems.includes('login') && <>
                     <Spacer/>
                     <Link 
@@ -147,9 +172,12 @@ const NavGrid = () => {
                         key="alarms-link"
                         as={ReachLink} 
                         to={extend(`/alarms`)} 
-                        id={`link-admin`} 
+                        id={`link-alarm`} 
+                        onClick={()=>(addressEndsWith("alarms"))?setShowAlarmPop(true):{}}
                     >
-                        <AlarmPop/>
+                        <Text as="b">
+                            Alarms {(plays)?<Icon as={PlayIcon} />:""}
+                        </Text>
                     </Link>
                     
                 </>}
@@ -194,8 +222,15 @@ const NavGrid = () => {
                         as={ReachLink} 
                         to={extend(`/admin`)} 
                         id={`link-admin`} 
+                        onClick={()=>(addressEndsWith("admin"))?setShowAdminPop(true):{}}
                     >
-                        <AdminPop/>
+                        <Text as="b" color={"red"}>
+                            Admin 
+                        </Text>
+                        <Countdown  
+                                date={adminTime}
+                                renderer={timeOutput}
+                        />
                     </Link>
                 </>}
                 {validItems.includes('user') && <>

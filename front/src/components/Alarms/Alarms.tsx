@@ -132,7 +132,7 @@ const Alarms = () => {
 			return (
                     <Card
                         key={key}
-                        backgroundColor={(!active)?'gray.100':((key % 2 === 0)?'cyan.100':'yellow.100')}
+                        backgroundColor={(!active)?'gray.100':((key % 2 === 0)?'yellow.100':'cyan.100')}
                         onMouseLeave={()=>{setShowButtons("")}}
                         onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
                         mb={"5px"}

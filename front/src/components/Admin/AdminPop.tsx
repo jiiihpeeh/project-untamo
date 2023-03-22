@@ -1,9 +1,7 @@
 import {  Popover, PopoverTrigger, Button, Portal, PopoverContent,
-    PopoverHeader, PopoverArrow, PopoverBody, Link, Text, Center } from '@chakra-ui/react'
+    PopoverHeader, PopoverArrow, PopoverBody, Link, Text, Center, PopoverAnchor, Box } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { useAdmin } from '../../stores'
-import {Link as ReachLink} from 'react-router-dom'
-import Countdown from "react-countdown"
+import { useAdmin, usePopups } from '../../stores'
 import React, { useState, useEffect } from 'react'
 import { timePadding } from '../Alarms/AlarmComponents/stringifyDate-Time'
 import sleep from '../sleep'
@@ -12,31 +10,31 @@ const AdminPop = () =>{
     const adminTime = useAdmin((state) => state.time )
     const setAdminTime = useAdmin((state) => state.setTime)
     const setAdminToken = useAdmin((state)=> state.setToken)
+    const showAdminPop = usePopups((state)=> state.showAdminPop)
+    const setShowAdminPop = usePopups((state)=> state.setShowAdminPop)
+
+    const navigationTriggered = usePopups((state)=> state.navigationTriggered)
+    const [ posStyle, setPosStyle ] = useState<React.CSSProperties>({})
+
     const navigate = useNavigate()
 
-    
-    interface TimeOutput{
-        minutes: number,
-        seconds: number
-    }
-    const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)})</Text>)
-    }
-   
+    useEffect(()=>{
+        let elem = document.getElementById("link-admin")
+        if(elem){
+            let coords = elem.getBoundingClientRect()
+            setPosStyle({left: coords.left  + coords.width/2, top: coords.top - coords.height +10, position:"absolute"})
+        }
+    },[navigationTriggered])
     return(
-            <Popover  >
-                <PopoverTrigger>
-                <Link>
-                    <Text as="b" color={"red"}>
-                        Admin 
-                    </Text>
-                    <Countdown  
-                            date={adminTime}
-                            renderer={timeOutput}
-                    />
-                </Link>
-                </PopoverTrigger>
-                <Portal>
+            <Popover  
+                isOpen={showAdminPop}
+                onClose={()=>setShowAdminPop(false)}
+            >
+            <PopoverAnchor>
+                <Box style={posStyle}>
+                </Box>
+            </PopoverAnchor>
+                <Portal >
                     <PopoverContent>
                     <PopoverArrow />
                     <PopoverHeader>
@@ -47,7 +45,7 @@ const AdminPop = () =>{
                     <PopoverBody>
                         <Center>
                             <Button 
-                                onClick={()=>{setAdminToken(''); setAdminTime(0)}} 
+                                onClick={()=>{setAdminToken(''); setAdminTime(0); setShowAdminPop(false)}} 
                                 //m="10px"
                                 key="End-Admin"
                             >

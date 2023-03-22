@@ -21,6 +21,10 @@ type Popup = {
     setShowEditDevice: (to: boolean) => void,
     showDeleteDevice: boolean,
     setShowDeleteDevice: (to: boolean) => void,
+    showAlarmPop: boolean,
+    setShowAlarmPop: (to: boolean) => void,
+    showAdminPop: boolean,
+    setShowAdminPop: (to: boolean) => void,
     showEditAlarm: boolean,
     setShowEditAlarm: (to: boolean) => void,
     showAddAlarm: boolean,
@@ -55,6 +59,8 @@ type Popup = {
     setMobile: (to: boolean) => void
     windowSize: WindowSize,
     setWindowSize: (width: number, height: number) => void
+    navigationTriggered: number,
+    setNavigationTriggered: () => void,
 }
 const menuDefault: MenuPlacer = {show:false, style: {}, element: null, type: MenuType.Menu}
 const getOffset = (show: boolean, id: string, type: MenuType) => {
@@ -92,7 +98,7 @@ const getOffset = (show: boolean, id: string, type: MenuType) => {
             }
   }
 
-const usePopups = create<Popup>((set) => ({
+const usePopups = create<Popup>((set, get) => ({
         showEditDevice: false,
         setShowEditDevice: (to) => {
             if(to){
@@ -111,6 +117,22 @@ const usePopups = create<Popup>((set) => ({
             set( 
                 {
                     showDeleteDevice: to
+                }
+            )
+        },
+        showAlarmPop: false,
+        setShowAlarmPop: (to: boolean) => {
+            set(
+                {
+                    showAlarmPop: to
+                }
+            )
+        },
+        showAdminPop: false,
+        setShowAdminPop: (to: boolean) => {
+            set(
+                {
+                    showAdminPop: to
                 }
             )
         },
@@ -274,6 +296,14 @@ const usePopups = create<Popup>((set) => ({
                                     width: width,
                                     height: height
                                 }
+                }
+            )
+        },
+        navigationTriggered: 0,
+        setNavigationTriggered:() =>{
+            set (
+                {
+                    navigationTriggered: (get().navigationTriggered + 1 % 2)
                 }
             )
         }
