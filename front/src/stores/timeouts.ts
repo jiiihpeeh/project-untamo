@@ -10,10 +10,12 @@ const compareTime = () =>{
     const currentTime = Date.now()
     
     if(currentTime - systemTime > 6000){
+        useAlarms.setState({alarms: [...useAlarms.getState().alarms]})
         //console.log("interval trigger")
         useDevices.getState().fetchDevices()
         useLogIn.getState().getUserInfo()
         useAlarms.getState().fetchAlarms()
+        
     }
     systemTime = currentTime
     timeOut = setInterval(compareTime, 5000)

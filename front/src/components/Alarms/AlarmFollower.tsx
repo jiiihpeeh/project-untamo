@@ -25,10 +25,11 @@ const AlarmPop = () =>{
     const navigate = useNavigate()
 
     const footerText = () => {
-		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
-			return "No alarms for this device"
-		}
         let addBtn = (<Button onClick={()=>setShowAddAlarm(true)}  width="100%" >Add Alarm</Button>)
+		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
+			return (<Box> <Text alignContent={"center"}>No alarms for this device</Text> {addBtn} </Box>) 
+		}
+        
 		const units = timeToUnits(timeForNextLaunch)
 		if(units.days === 0){
 			if(units.hours === 0){
@@ -36,7 +37,7 @@ const AlarmPop = () =>{
 			} 
 			return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.hours)}:{timePadding(units.minutes)}  </Text>{addBtn}</Box>)
 		}
-		return (<Box> <Text alignContent={"center"}>Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} </Text>{addBtn} </Box>)
+		return (<Box> <Text alignContent={"center"}>Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} </Text> {addBtn} </Box>)
 	}
     const timerInfo = () =>{
         return (
@@ -83,9 +84,9 @@ const AlarmPop = () =>{
                         Alarm Info
                     </Center>
                 </PopoverHeader>
-                <PopoverBody  backgroundColor={"blue.300"}>
+                {runAlarm && <PopoverBody  backgroundColor={"blue.300"}>
                     {timerInfo()}
-                </PopoverBody>
+                </PopoverBody>}
                 <PopoverFooter  backgroundColor={"gray.300"}>
                     {footerText()}
                 </PopoverFooter>

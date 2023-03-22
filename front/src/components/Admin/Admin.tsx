@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button, Table, Thead, Tbody, Tr,Th,Td,
-         TableContainer, Switch, IconButton} from "@chakra-ui/react"
+         TableContainer, Switch, IconButton, Box, HStack, VStack } from "@chakra-ui/react"
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
 import { usePopups, useLogIn, useAdmin, extend } from "../../stores"
@@ -109,21 +109,27 @@ const Admin = () => {
         //console.log(userData)
         renderUsers()
     },[usersData, renderUsers])
-    return(<>
+    return(<Box>
+            <VStack>
                 <Button 
                     onClick={getUsersData}  
-                    m="30px"
+                    mt="30px"
                     key="userDataGet"
                 >
                     Update User List
                 </Button>
+            </VStack>
                 <TableContainer
                     key="TableContainer"
+                    width={"100%"}
+                    style={{left:0, position:"absolute"}}
                 >
                 <Table 
-                    variant='simple'
+                    variant='striped'
                     key="userTable"
                     id="Admin-Table"
+                    alignContent={"center"}
+                    alignItems={"center"}
                 >
                     <Thead
                         key="table-Header"
@@ -165,14 +171,8 @@ const Admin = () => {
                 </Table>
                 </TableContainer>
                 <AdminConfirm/>
-                <Button 
-                    onClick={()=>{setAdminToken(''); setAdminTime(0)}} 
-                    m="10px"
-                    key="End-Admin"
-                >
-                    End Admin Session
-                </Button>
-           </>
+
+           </Box>
         )
 }
 

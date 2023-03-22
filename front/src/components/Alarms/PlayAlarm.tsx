@@ -131,6 +131,8 @@ const PlayAlarm = () =>{
                 <Image 
                     src={alarmClock}  
                     width='60%'
+                    draggable="false"
+                    pointerEvents={"none"}
                 />
             </IconButton>
             <Spacer />

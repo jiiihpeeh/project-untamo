@@ -174,7 +174,7 @@ const Alarms = () => {
                                         <IconButton 
                                             size='xs' 
                                             icon={<EditIcon/>}
-											colorScheme='orange'
+                                            colorScheme='orange'
                                             aria-label=''
                                             key={`edit-${key}`}
                                             onClick= {() => { setToEdit(id); setShowEdit(true)}}

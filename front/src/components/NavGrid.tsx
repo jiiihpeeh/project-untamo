@@ -1,13 +1,11 @@
-import {Link as ReachLink} from 'react-router-dom'
+import { Link as ReachLink } from 'react-router-dom'
 import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect } from "react"
-import Countdown from "react-countdown"
-import { timePadding } from "./Alarms/AlarmComponents/stringifyDate-Time"
 import { useNavigate } from 'react-router-dom'
 import { useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms } from '../stores'
 import { SessionStatus } from '../type'
-import { MenuType } from '../stores/popUpStore'
 import AlarmPop from './Alarms/AlarmFollower'
+import AdminPop from './Admin/AdminPop'
 import sleep from './sleep'
 import './../App.css'
 
@@ -42,20 +40,11 @@ const NavGrid = () => {
         return () => window.removeEventListener('resize', updateSize)
     }, [])
 
-    interface TextArg {
-        text: string
-    }
+
     const capitalize = (s:string)=>{
         return s.charAt(0).toUpperCase() + s.slice(1)
     }
 
-    interface TimeOutput{
-        minutes: number,
-        seconds: number
-    }
-    const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return `Admin (${timePadding(minutes)}:${timePadding(seconds)})`
-    }
    
     useEffect(() => {
         const constructGrid = async() => {
@@ -116,6 +105,8 @@ const NavGrid = () => {
                     src={logo}
                     height={"50px"}
                     className='LogoClock'
+                    draggable="false"
+                    pointerEvents={"none"}
                 />
                 <Text>
                     Untamo
@@ -152,7 +143,15 @@ const NavGrid = () => {
                 </>}
                 {validItems.includes('alarms') && <>
                     <Spacer/>
-                    <AlarmPop/>
+                    <Link 
+                        key="alarms-link"
+                        as={ReachLink} 
+                        to={extend(`/alarms`)} 
+                        id={`link-admin`} 
+                    >
+                        <AlarmPop/>
+                    </Link>
+                    
                 </>}
                 {validItems.includes('devices') && <>
                     <Spacer/>
@@ -193,18 +192,10 @@ const NavGrid = () => {
                     <Link 
                         key="admin-link"
                         as={ReachLink} 
-                        to={`/admin`} 
+                        to={extend(`/admin`)} 
                         id={`link-admin`} 
                     >
-                        <Text  
-                            color='red' 
-                            as='b'
-                        >
-                            <Countdown  
-                                date={adminTime}
-                                renderer={timeOutput}
-                            />
-                        </Text>
+                        <AdminPop/>
                     </Link>
                 </>}
                 {validItems.includes('user') && <>
