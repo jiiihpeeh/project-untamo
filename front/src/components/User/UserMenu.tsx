@@ -1,12 +1,6 @@
 import React from "react"
-import { Text, Checkbox, IconButton,Modal, Button,ModalOverlay,ModalContent,ModalHeader,ModalBody, Th, Thead,ModalCloseButton, useDisclosure, VStack,  Radio,
-	Tooltip, Table, Tr, Td, Tbody, Center } from '@chakra-ui/react'
-import { Menu,  Box,
-         MenuButton,MenuList,
-		 MenuItem,MenuGroup,
-		 MenuDivider} from '@chakra-ui/react'
+import { Text, Modal, Button,ModalOverlay,ModalContent,ModalHeader,ModalBody,  ModalCloseButton } from '@chakra-ui/react'
 import { useLogIn, usePopups } from "../../stores"
-import { MenuType } from "../../stores/popUpStore"
 
 const UserMenu = () => {
 	const userInfo = useLogIn((state)=>state.user)
@@ -16,9 +10,6 @@ const UserMenu = () => {
 	const setShowAdminLogIn = usePopups((state) => state.setShowAdminLogIn)
 	const showUserMenu = usePopups((state)=> state.showUserMenu)
 	const setShowUserMenu = usePopups((state)=> state.setShowUserMenu)
-	const closeMenu = () => {
-		setShowUserMenu(false)
-	}
 
 	return (
 		<Modal 

@@ -2,16 +2,7 @@ import { create } from 'zustand'
 import useFetchQR from './QRStore'
 import useAlarm from '../components/Alarms/AlarmComponents/alarmStates'
 
-export enum MenuType{
-    Menu = "menu",
-    SubMenu = "submenu"
-}
-export type MenuPlacer = {
-    show: boolean,
-    style: React.CSSProperties,
-    element : HTMLElement | null 
-    type: MenuType
-}
+
 export type WindowSize = {
     width: number,
     height: number
@@ -63,41 +54,6 @@ type Popup = {
     navigationTriggered: number,
     setNavigationTriggered: () => void,
 }
-const menuDefault: MenuPlacer = {show:false, style: {}, element: null, type: MenuType.Menu}
-const getOffset = (show: boolean, id: string, type: MenuType) => {
-    const style:  React.CSSProperties = {
-        top: "100px",
-        left: (usePopups.getState().isMobile)?"":"500px",
-        margin: (usePopups.getState().isMobile)?"auto":"",
-        position: "absolute"
-    }
-    let element  : HTMLElement | null = document.getElementById(id);
-    //console.log(id)
-    if(!element){
-      return {
-                show: show,
-                style: style,
-                element : element,
-                type: type
-             }   
-    }
-    const rect = element.getBoundingClientRect();
-    //console.log(rect)
-    if(type === MenuType.Menu){
-        style.left = (usePopups.getState().isMobile)?window.screen.width/10:rect.left + window.scrollX
-        style.top= rect.bottom + window.scrollY
-
-    }else{
-        style.left = (usePopups.getState().isMobile)?window.screen.width/10:rect.left + window.scrollX
-        style.top= rect.bottom + window.scrollY
-    }
-    return  {
-                show: show,
-                style: style,
-                element : element,
-                type: type 
-            }
-  }
 
 const usePopups = create<Popup>((set, get) => ({
         showEditDevice: false,
