@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Button, Table, Thead, Tbody, Tr,Th,Td,
-         TableContainer, Switch, IconButton, Box, HStack, VStack } from "@chakra-ui/react"
+import { Button, Table, Thead, Tbody, Tr,Th,Td, TableContainer,
+         Switch, IconButton, Box, VStack } from "@chakra-ui/react"
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
 import { usePopups, useLogIn, useAdmin, extend } from "../../stores"
@@ -11,14 +11,10 @@ const Admin = () => {
     const navigate = useNavigate()
     const userInfo = useLogIn((state)=> state.user)
     const sessionStatus = useLogIn((state) => state.sessionValid)
-
-    const setAdminToken = useAdmin((state)=> state.setToken)
     const adminTime = useAdmin((state)=> state.time)
-    const setAdminTime = useAdmin((state)=> state.setTime)
     const usersData = useAdmin((state)=> state.usersData)
     const getUsersData = useAdmin((state)=> state.getUsersData)
     const setConfirmOpen = usePopups((state)=>state.setShowAdminConfirm)
-
 
     const userActive = (id: string, active:boolean, owner: boolean, currentUser: boolean, key:number) =>{
         return(
@@ -102,11 +98,9 @@ const Admin = () => {
         const getInfo = async () =>{
            getUsersData()
         }
-        //console.log(userData)
         getInfo()
     },[])
     useEffect(() => {
-        //console.log(userData)
         renderUsers()
     },[usersData, renderUsers])
     return(<Box>

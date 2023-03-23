@@ -24,7 +24,10 @@ const NavGrid = () => {
     const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
     const showDeviceMenu =  usePopups((state)=> state.showDeviceMenu)
     const setShowAdminPop = usePopups((state)=> state.setShowAdminPop)
+    const showAdminPop = usePopups((state)=> state.showAdminPop)
     const setShowAlarmPop = usePopups((state)=> state.setShowAlarmPop)
+    const showAlarmPop = usePopups((state)=> state.showAlarmPop)
+
     const showUserMenu = usePopups((state)=> state.showUserMenu)
     const windowSize = usePopups((state)=> state.windowSize)
     const setWindowSize = usePopups((state)=> state.setWindowSize)
@@ -167,12 +170,12 @@ const NavGrid = () => {
                 </>}
                 {validItems.includes('alarms') && <>
                     <Spacer/>
-                    <Link 
+                    <Link
                         key="alarms-link"
                         as={ReachLink} 
-                        to={extend(`/alarms`)} 
+                        to={(!addressEndsWith("play-alarm"))?extend(`/alarms`):extend(`/play-alarm`)} 
                         id={`link-alarm`} 
-                        onClick={()=>(addressEndsWith("alarms"))?setShowAlarmPop(true):{}}
+                        onClick={()=>(addressEndsWith("alarms") )?setShowAlarmPop(!showAlarmPop):{}}
                     >
                         <Text as="b">
                             Alarms {(plays)?<Icon as={PlayIcon} />:""}{(addressEndsWith("alarms"))?<Icon as={ChevronDownIcon} />:""}
@@ -221,7 +224,7 @@ const NavGrid = () => {
                         as={ReachLink} 
                         to={extend(`/admin`)} 
                         id={`link-admin`} 
-                        onClick={()=>(addressEndsWith("admin"))?setShowAdminPop(true):{}}
+                        onClick={()=>(addressEndsWith("admin") )?setShowAdminPop(!showAdminPop):{}}
                     >
                         <Text as="b" color={"red"}>
                             Admin 

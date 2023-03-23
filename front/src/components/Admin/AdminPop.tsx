@@ -1,10 +1,8 @@
-import {  Popover, PopoverTrigger, Button, Portal, PopoverContent,
-    PopoverHeader, PopoverArrow, PopoverBody, Link, Text, Center, PopoverAnchor, Box } from '@chakra-ui/react'
+import {  Popover, Button, Portal, PopoverContent, PopoverHeader,
+           PopoverArrow, PopoverBody, Center, PopoverAnchor, Box } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { useAdmin, usePopups } from '../../stores'
 import React, { useState, useEffect } from 'react'
-import { timePadding } from '../Alarms/AlarmComponents/stringifyDate-Time'
-import sleep from '../sleep'
 
 const AdminPop = () =>{
     const adminTime = useAdmin((state) => state.time )
@@ -31,8 +29,7 @@ const AdminPop = () =>{
                 onClose={()=>setShowAdminPop(false)}
             >
             <PopoverAnchor>
-                <Box style={posStyle}>
-                </Box>
+                <Box style={posStyle} />
             </PopoverAnchor>
                 <Portal >
                     <PopoverContent>

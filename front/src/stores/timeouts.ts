@@ -1,30 +1,23 @@
 import { create } from 'zustand'
 import { useAlarms, useLogIn, useDevices, useAudio } from '../stores'
-//This one detects resume
-
+ 
 var systemTime = Date.now()
 var timeOut : NodeJS.Timeout
 
 const compareTime = () =>{
     clearTimeout(timeOut)
-    const currentTime = Date.now()
-    
+    const currentTime = Date.now()    
     if(currentTime - systemTime > 6000){
+        useAlarms.getState().setReloadAlarmList()
         useAlarms.setState({alarms: [...useAlarms.getState().alarms]})
-        //console.log("interval trigger")
         useDevices.getState().fetchDevices()
         useLogIn.getState().getUserInfo()
         useAlarms.getState().fetchAlarms()
-        
     }
     systemTime = currentTime
     timeOut = setInterval(compareTime, 5000)
 }
-
 compareTime()
-
-
-
 
 type UseTimeout = {
     id: NodeJS.Timeout|undefined,

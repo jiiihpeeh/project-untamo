@@ -34,7 +34,7 @@ import { extend } from './stores'
 import { isMobile } from 'react-device-detect';
 import sleep from './components/sleep'
 import { Container } from '@chakra-ui/react'
-import AlarmPop from './components/Alarms/AlarmFollower'
+import AlarmPop from './components/Alarms/AlarmPop'
 import AdminPop from './components/Admin/AdminPop'
 import './App.css'
 

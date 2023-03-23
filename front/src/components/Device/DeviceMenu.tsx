@@ -26,22 +26,18 @@ const DeviceMenu = () => {
     const openDelete = async(value:string) => {
         let delDevice = devices.filter(dev => dev.id === value)[0]
         if(delDevice){
-            //console.log(delDevice)
             setToDelete(delDevice)
             setShowDelete(true)
         }
-
     }
 
     const openEdit = async(value:string) => {
         let editDevice = devices.filter(dev => dev.id === value)[0]
         if(editDevice){
-            //console.log(editDevice)
             setToEdit(editDevice)
             setShowEdit(true)
         }
-
-      }
+    }
 
     const deviceMenu = ()=> {
         return devices.map(deviceItem => {

@@ -5,12 +5,7 @@ import { DeviceType}  from '../type'
 import axios from "axios"
 import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useAlarms } from "../stores"
-
-interface Device {
-    id: string,
-    deviceName: string,
-    type: DeviceType
-}
+import {Device} from '../type'
 
 type UseDevices = {
     devices: Array<Device>,
@@ -119,16 +114,16 @@ const addDevice = async (name: string, type: DeviceType)=> {
     
     try{
         let res = await axios.post(`${server}/api/device`, 
-                                    {
-                                        deviceName: name, 
-                                        type: type
-                                    }, 
-                                    {
-                                    headers: 
-                                        {
-                                            token: token
-                                        }
-                                    }
+                                                            {
+                                                                deviceName: name, 
+                                                                type: type
+                                                            }, 
+                                                            {
+                                                            headers: 
+                                                                {
+                                                                    token: token
+                                                                }
+                                                            }
                                 )
     
         interface Resp{
@@ -166,12 +161,12 @@ const fetchDevices = async () => {
     let fetchedDevices = [] as Array<Device>
     try{
         let res = await axios.get(`${server}/api/devices`,
-            {
-                headers: 
-                    {
-                        token: token
-                    }
-            }
+                                                            {
+                                                                headers: 
+                                                                    {
+                                                                        token: token
+                                                                    }
+                                                            }
         )
         let devices = res.data as Array<Device>
         //console.log(devices)
@@ -222,17 +217,17 @@ const deviceEdit = async (id: string , name: string, type: DeviceType) => {
 
       try{
         let res = await axios.put(`${server}/api/device/`+ editDevice.id,
-                                        {
-                                            deviceName: editDevice.deviceName, 
-                                            type: editDevice.type, 
-                                            id: editDevice.id 
-                                        }, 
-                                        {
-                                            headers: 
-                                                        {
-                                                            token: token
-                                                        }
-                                        }
+                                                                        {
+                                                                            deviceName: editDevice.deviceName, 
+                                                                            type: editDevice.type, 
+                                                                            id: editDevice.id 
+                                                                        }, 
+                                                                        {
+                                                                            headers: 
+                                                                                        {
+                                                                                            token: token
+                                                                                        }
+                                                                        }
                                     )
         let devicesFiltered = devices.filter(device => device.id !== editDevice.id)            
         notification("Device", "A device was updated")
@@ -262,12 +257,12 @@ const deleteDevice = async (id: string ) => {
     const deleteDevice = deleteDevices[0]
     try {
         let res = await axios.delete( `${server}/api/device/` + deleteDevice.id, 
-                                        {
-                                            headers: 
-                                                        {
-                                                            token: token
-                                                        }
-                                        } 
+                                                                                {
+                                                                                    headers: 
+                                                                                                {
+                                                                                                    token: token
+                                                                                                }
+                                                                                } 
                                     )
         //console.log(res.data)
         const currentDevice = useDevices.getState().currentDevice

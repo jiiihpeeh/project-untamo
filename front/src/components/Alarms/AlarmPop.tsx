@@ -1,23 +1,23 @@
-import {  Popover, PopoverTrigger, Button, Portal, PopoverContent, HStack,
-          PopoverHeader, PopoverArrow, PopoverBody, PopoverAnchor, Input,
-          PopoverFooter, Link, Text, Icon, VStack, Box, Center } from '@chakra-ui/react'
+import {  Popover,  Button, Portal, PopoverContent, HStack,
+          PopoverHeader, PopoverArrow, PopoverBody, PopoverAnchor, 
+          PopoverFooter, Text, VStack, Box, Center } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { useAudio, extend, useDevices, useAlarms, usePopups } from '../../stores'
+import { useAudio,  useDevices, useAlarms, usePopups } from '../../stores'
 import React from 'react'
 import { shallow } from 'zustand/shallow'
 import { timePadding } from './AlarmComponents/stringifyDate-Time'
 import { timeToUnits, timeForNextAlarm, timeToNextAlarm } from './calcAlarmTime'
 import { useState, useEffect } from 'react'
-import sleep from '../sleep'
 
 const AlarmPop = () =>{
-    const plays= useAudio((state)=> state.plays)
-    const [alarms, runAlarm, setToDelete, setToEdit, timeForNextLaunch, toggleActivity, resetSnooze ] = useAlarms(state => 
-		[ state.alarms, state.runAlarm, state.setToDelete, state.setToEdit, state.timeForNextLaunch, state.toggleActivity, state.resetSnooze ],  shallow)
-    const [devices, viewableDevices, currentDevice] = useDevices(state => 
-        [ state.devices, state.viewableDevices, state.currentDevice ],  shallow)
-    const [ showAdminPop, setShowAdminPop,showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups((state)=> 
-		[state.showAdminPop, state.setShowAdminPop, state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
+    const plays = useAudio((state)=> state.plays)
+    const stop = useAudio((state)=> state.stop)
+
+    const [alarms, runAlarm, setToEdit, timeForNextLaunch,  resetSnooze ] = useAlarms(state => 
+		[ state.alarms, state.runAlarm, state.setToEdit, state.timeForNextLaunch, state.resetSnooze ],  shallow)
+    const [currentDevice] = useDevices(state =>  [ state.currentDevice ],  shallow)
+    const [ showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups((state)=> 
+		[ state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
     const [ noSnooze, setNoSnooze ] = useState(true)
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
     const [ posStyle, setPosStyle ] = useState<React.CSSProperties>({})
@@ -60,8 +60,26 @@ const AlarmPop = () =>{
                         </Button>}
                     </HStack>
                 </VStack>
+
         )
     }
+    const turnOff = () => {
+        if(plays){
+            return(
+                <Center>
+                    <Button 
+                        onClick={stop} 
+                        m={"3px"}
+                    >
+                        Turn off Sound
+                    </Button> 
+                </Center>           
+            )
+        }else{
+            return(<></>)
+        }
+    }
+
     useEffect(()=>{
         if(runAlarm){
             let epochAlarm = timeToNextAlarm(runAlarm)
@@ -82,8 +100,7 @@ const AlarmPop = () =>{
                 onClose={()=>setShowAlarmPop(false)}
             >
             <PopoverAnchor>
-                <Box style={posStyle}>
-                </Box>
+                <Box style={posStyle} />
             </PopoverAnchor>
                 <Portal>
                     <PopoverContent>
@@ -95,6 +112,7 @@ const AlarmPop = () =>{
                     </PopoverHeader>
                     {runAlarm && <PopoverBody  backgroundColor={"blue.300"}>
                         {timerInfo()}
+                        {turnOff()}
                     </PopoverBody>}
                     <PopoverFooter  backgroundColor={"gray.300"}>
                         {footerText()}

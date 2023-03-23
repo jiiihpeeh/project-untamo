@@ -1,7 +1,7 @@
 import React, { useEffect} from "react"
 import { useNavigate } from "react-router-dom"
 import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList,
-     Tooltip, MenuItem , Spacer, HStack, VStack } from '@chakra-ui/react'
+         Tooltip, MenuItem , Spacer, HStack, VStack } from '@chakra-ui/react'
 import { useLogIn, useDevices, extend } from "../stores"
 import usePopups from "../stores/popUpStore"
 import { ChevronDownIcon } from  '@chakra-ui/icons';
@@ -18,7 +18,7 @@ const Welcome = () => {
     const sessionStatus = useLogIn((state)=> state.sessionValid)
     const setShowAddDevice = usePopups(state => state.setShowAddDevice)
     const  navigate = useNavigate()
-    
+
     const menuDevices =  () => {
         return devices.map((device) => {
                                         return(
