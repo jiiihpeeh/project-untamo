@@ -1,6 +1,6 @@
-import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer } from '@chakra-ui/react'
-import React, { useState, useRef } from "react"
-import {  Container, Heading, Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text } from '@chakra-ui/react'
+import React, { useState, useRef, useCallback, useEffect } from "react"
+import {  Container, Heading, Switch, Tooltip, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
 import { WeekDay } from "../../type"
@@ -13,10 +13,12 @@ import { shallow } from 'zustand/shallow'
 import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
 import { capitalize } from '../../utils'
+//import { useResizeDetector } from 'react-resize-detector'
 
 const Alarms = () => {
     const userInfo = useLogIn((state)=> state.user)
 	const containerRef =useRef<HTMLDivElement>(null)
+	const refreshRate = useRef<number|undefined>(100)
 	const [devices, viewableDevices, currentDevice] = useDevices(state => 
 		[ state.devices, state.viewableDevices, state.currentDevice ],  shallow)
 
@@ -29,20 +31,7 @@ const Alarms = () => {
 	const [ showTooltip, setShowTooltip] = useState("")
 	const [ showButtons, setShowButtons] = useState("")
 
-	const FooterText = () => {
-		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
-			return "No alarms for this device"
-		}
-		const units = timeToUnits(timeForNextLaunch)
-		if(units.days === 0){
-			if(units.hours === 0){
-				return `Time left to next alarm: ${timePadding(units.minutes)}:${timePadding(units.seconds)}`
-			} 
-			return `Time left to next alarm: ${timePadding(units.hours)}:${timePadding(units.minutes)}`
-		}
-		return `Time left to next alarm:  ${units.days} days ${timePadding(units.hours)}:${timePadding(units.minutes)}`
-	}
-	
+
 	const renderCards = () => {
 		let viewableAlarmsSet = new Set<Alarm> ()		
 		let timeAlarmMap = new Map <number, Set<string>>()
@@ -212,15 +201,7 @@ const Alarms = () => {
 		)})
 		
     }
-	const dateView = (date: string, occurence: AlarmCases) => {
-		let datePieces = date.split('-')
-		if(occurence === AlarmCases.Yearly){
-			return `${datePieces[2]}.${datePieces[1]}`
-		}else if (occurence === AlarmCases.Once){
-			return `${datePieces[2]}.${datePieces[1]}.${datePieces[0]}`
-		}
-		return ""
-	}
+	
 	const mapDeviceIDsToNames = (deviceIDs : Array<string>) =>{
 		let filteredDevices = devices.filter(device => deviceIDs.includes(device.id))
 		let filteredDeviceNames: Array<string> = [] 
@@ -248,10 +229,15 @@ const Alarms = () => {
 
 	return (
 			<>
-				<Container id={`alarmCardContainer`} ref={containerRef} >
+				<Container 
+					id={`alarmCardContainer`} 
+					ref={containerRef}
+				>
                     {renderCards()}
 				</Container>
-				<AddAlarmButton mounting={containerRef.current}/>
+				<AddAlarmButton 
+					mounting={containerRef}
+				/>
 			</>
 		)
 }

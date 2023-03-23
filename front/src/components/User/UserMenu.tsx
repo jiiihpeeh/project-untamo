@@ -44,7 +44,7 @@ const UserMenu = () => {
 							m={"2%"}
 							bg={"red"}
 						>
-							Admin LogIn
+							Admin Log In
 						</Button></>}
 					<Button	
 						onClick={()=>{setShowLogOut(true);setShowUserMenu(!showUserMenu)}} 
@@ -73,30 +73,3 @@ const UserMenu = () => {
 }
 
 export default UserMenu
-
-
-				{/* {userInfo.admin && <>
-						<Text 
-							mr={5} 
-							onClick={()=>{setShowAdminLogIn(true)}}
-							w={"100%"}
-						>
-							Admin LogIn
-						</Text>
-						<Text	
-							onClick={()=>setShowLogOut(true)} 
-							id="logout-button" 
-							w={"100%"}
-						>
-							<Text as='b'>
-								Log Out
-							</Text>
-						</Text>
-						<Text 
-							onClick={()=>{setShowAbout(true)}}
-							w={"100%"}
-						>
-							<Text as='b'>
-								About
-							</Text>
-						</Text> */}

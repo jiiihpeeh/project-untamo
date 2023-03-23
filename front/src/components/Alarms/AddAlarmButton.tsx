@@ -3,7 +3,7 @@ import React, { useEffect,  useState } from 'react'
 import { useAlarms, usePopups } from '../../stores'
 
 interface Props{
-	mounting: HTMLDivElement | null
+	mounting: React.RefObject<HTMLDivElement>
 }
 function AddAlarmButton(props: Props) {
 	const mounting = props.mounting
@@ -13,8 +13,8 @@ function AddAlarmButton(props: Props) {
 	const [ buttonPosition, setButtonPosition ] = useState<React.CSSProperties>({})
 	
 	const updatePosition = async() =>{
-		if(mounting){
-			const rect = mounting.getBoundingClientRect()
+		if(mounting.current){
+			const rect = mounting.current.getBoundingClientRect()
 			let add = (windowSize.width-rect.right < 65)?-21:0
 			setButtonPosition(
 								{
@@ -28,9 +28,9 @@ function AddAlarmButton(props: Props) {
 
 	useEffect(() => {
 		updatePosition()
-	},[alarms, windowSize, mounting])
+	},[alarms, windowSize, mounting ])
 
-	
+
 	return (
 			<Button 
 				style={buttonPosition}
