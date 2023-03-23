@@ -26,7 +26,7 @@ type UseDevices = {
 }
 const useDevices = create<UseDevices>()(
     persist(
-      (set) => (
+      (set, get) => (
             {
                 devices: [],
                 viewableDevices: [],

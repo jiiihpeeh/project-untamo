@@ -2,7 +2,7 @@ import {  Popover,  Button, Portal, PopoverContent, HStack,
           PopoverHeader, PopoverArrow, PopoverBody, PopoverAnchor, 
           PopoverFooter, Text, VStack, Box, Center } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { useAudio,  useDevices, useAlarms, usePopups } from '../../stores'
+import { useAudio,  useDevices, useAlarms, usePopups, useLogIn } from '../../stores'
 import React from 'react'
 import { shallow } from 'zustand/shallow'
 import { timePadding } from './AlarmComponents/stringifyDate-Time'
@@ -10,12 +10,15 @@ import { timeToUnits, timeForNextAlarm, timeToNextAlarm } from './calcAlarmTime'
 import { useState, useEffect } from 'react'
 
 const AlarmPop = () =>{
+    const userInfo = useLogIn((state)=> state.user)
     const plays = useAudio((state)=> state.plays)
     const stop = useAudio((state)=> state.stop)
 
     const [alarms, runAlarm, setToEdit, timeForNextLaunch,  resetSnooze ] = useAlarms(state => 
 		[ state.alarms, state.runAlarm, state.setToEdit, state.timeForNextLaunch, state.resetSnooze ],  shallow)
-    const [currentDevice] = useDevices(state =>  [ state.currentDevice ],  shallow)
+    const currentDevice = useDevices(state =>  state.currentDevice)
+    const devices = useDevices(state =>  state.devices)
+
     const [ showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups((state)=> 
 		[ state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
     const [ noSnooze, setNoSnooze ] = useState(true)
@@ -94,6 +97,13 @@ const AlarmPop = () =>{
             setPosStyle({left: coords.left + coords.width/2, top:coords.top - coords.height +10, position:"absolute"})
         }
     },[navigationTriggered])
+
+    const getCurrentDevice = () =>{
+        if(currentDevice){
+            return devices.filter(d =>d.id === currentDevice)[0].deviceName
+        }
+        return ""
+    }
     return(
             <Popover
                 isOpen={showAlarmPop}
@@ -107,7 +117,7 @@ const AlarmPop = () =>{
                     <PopoverArrow />
                     <PopoverHeader>
                         <Center>
-                            Alarm Info
+                        Alarms for {userInfo.screenName} on {getCurrentDevice()}
                         </Center>
                     </PopoverHeader>
                     {runAlarm && <PopoverBody  backgroundColor={"blue.300"}>

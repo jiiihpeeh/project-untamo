@@ -16,14 +16,12 @@ import { capitalize } from '../../utils'
 //import { useResizeDetector } from 'react-resize-detector'
 
 const Alarms = () => {
-    const userInfo = useLogIn((state)=> state.user)
 	const containerRef =useRef<HTMLDivElement>(null)
-	const refreshRate = useRef<number|undefined>(100)
-	const [devices, viewableDevices, currentDevice] = useDevices(state => 
-		[ state.devices, state.viewableDevices, state.currentDevice ],  shallow)
+	const [devices, viewableDevices] = useDevices(state => 
+		[ state.devices, state.viewableDevices ],  shallow)
 
-	const [alarms, runAlarm, setToDelete, setToEdit, timeForNextLaunch, toggleActivity ] = useAlarms(state => 
-		[ state.alarms, state.runAlarm, state.setToDelete, state.setToEdit, state.timeForNextLaunch, state.toggleActivity ],  shallow)
+	const [alarms, setToDelete, setToEdit, toggleActivity ] = useAlarms(state => 
+		[ state.alarms, state.setToDelete, state.setToEdit,  state.toggleActivity ],  shallow)
 
 	const [ setShowEdit, setShowDelete ] = usePopups((state)=> 
 		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
