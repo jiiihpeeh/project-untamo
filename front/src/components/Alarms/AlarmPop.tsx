@@ -100,7 +100,8 @@ const AlarmPop = () =>{
 
     const getCurrentDevice = () =>{
         if(currentDevice){
-            return devices.filter(d =>d.id === currentDevice)[0].deviceName
+            let device = devices.filter(d =>d.id === currentDevice)[0]
+            return (device)?device.deviceName:""
         }
         return ""
     }
