@@ -110,7 +110,8 @@ const NavGrid = () => {
  
     return (
             <Flex 
-                display="flex" 
+                display="flex"
+                id="NavBar"
                 alignItems="center"
                 position="fixed"
                 justifyContent="space-between"

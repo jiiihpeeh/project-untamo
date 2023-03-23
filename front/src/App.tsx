@@ -60,7 +60,7 @@ function App() {
 		<Container className="App">
 			{/* <AppAlert/> */}
 			<NavGrid/>
-			<Container as="main" mt="52px" >
+			<Container as="main" mt="52px" id="App-Container" >
 				<Routes>
 					<Route path ={extend("/alarms")} element={<Alarms/>}/>
 					<Route path={extend("/about")} element={<About/>}/>
