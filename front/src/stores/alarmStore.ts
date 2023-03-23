@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { WeekDay, Alarm, AlarmCases } from '../type'
+import { WeekDay, Alarm, AlarmCases, SessionStatus } from '../type'
 import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useTimeouts, useLogIn } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
 import alarmClockString from './logo.svg?raw'
+import { isEqual } from '../utils'
 
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
@@ -28,17 +29,6 @@ type AlarmSerialized = {
     modified: number,
     _id: string,
     __v: number
-}
-
-function isEqual(obj1 :any, obj2 : any) {
-  const obj1Length = Object.keys(obj1).length
-  const obj2Length = Object.keys(obj2).length
-
-  if (obj1Length === obj2Length) {
-      return Object.keys(obj1).every(
-          key => obj2.hasOwnProperty(key) && obj2[key] === obj1[key])
-  }
-  return false
 }
 
 
@@ -98,7 +88,7 @@ const fetchAlarms = async () => {
         }
     }catch(err){
         //console.log("Cannot fetch alarms")
-        notification("Alarms", "Couldn't fetch the alarm list", Status.Error)
+        (useLogIn.getState().sessionValid === SessionStatus.Valid )?notification("Alarms", "Couldn't fetch the alarm list", Status.Error):{}
     }
 }
 

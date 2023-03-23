@@ -11,7 +11,7 @@ const LogIn = () => {
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const logIn = useLogIn((state) => state.logIn)
     const isMobile = usePopups((state) => state.isMobile)
-
+    const windowSize = usePopups((state)=>state.windowSize)
 
     const [formData, setFormData] = useState({
         email: "",
@@ -57,7 +57,7 @@ const LogIn = () => {
         <form>
         <Box 
             className='UserForm'
-            width={(isMobile)?screen.width*0.90:500}
+            width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
         >
         <FormControl 
             onSubmit={onSubmit} 

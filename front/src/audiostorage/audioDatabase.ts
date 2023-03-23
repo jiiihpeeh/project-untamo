@@ -5,6 +5,7 @@ import { notification, Status } from '../components/notification';
 import rooster from './rooster.json';
 import localForage from 'localforage';
 import { useLogIn, useServer, useAudio } from '../stores'
+import { SessionStatus } from '../type';
 
 const getLocals = () => {
     const token = useLogIn.getState().token
@@ -54,7 +55,7 @@ export const fetchAudio = async (audio: string) => {
             //console.log(`Dowloaded audio: ${audio}`);
         } catch(err){
             //console.log(`Couldn't fetch audio ${audio}`);
-            notification("Audio File", `Couldn't download a file ${audio}`, Status.Error);
+            (useLogIn.getState().sessionValid === SessionStatus.Valid)?notification("Audio File", `Couldn't download a file ${audio}`, Status.Error):{}
         }
     }
 }
@@ -91,7 +92,7 @@ export const fetchAudioFiles = async () => {
 
         } catch(err){
             //console.log(`Couldn't fetch resources listing`);
-            notification("Alarm sounds", "Failed to get a listing", Status.Error);
+            (useLogIn.getState().sessionValid === SessionStatus.Valid)?notification("Alarm sounds", "Failed to get a listing", Status.Error):{}
         }
     }   
 };

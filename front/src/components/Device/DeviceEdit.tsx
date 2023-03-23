@@ -1,22 +1,17 @@
 import React, { useRef, useState, useEffect } from "react"
 import { Menu, MenuItem,  MenuList, MenuButton,
-         Button, Divider,
-         Input, Stack, Modal,
-          ModalOverlay, ModalContent,
-          ModalHeader,  ModalFooter,
-          ModalBody, ModalCloseButton
-        } from '@chakra-ui/react'         
+         Button, Divider, Input, Stack, Modal,
+         ModalOverlay, ModalContent,
+         ModalHeader,  ModalFooter,
+         ModalBody, ModalCloseButton} from '@chakra-ui/react'         
 import { ChevronDownIcon } from "@chakra-ui/icons"
 import { usePopups , useDevices } from "../../stores"
 import { DeviceType, Device } from "../../type"
-
+import { isEqual } from "../../utils"
 
 const DeviceEdit = () => {
-    const btnRef = useRef<HTMLButtonElement>(null)
-    
     const [ deviceEditInfo, setDeviceEditInfo ] = useState<Device>({id:'', deviceName:'', type:DeviceType.Browser})
     const deviceEdit  = useDevices((state)=> state.editDevice)
-    
     const setShowEdit = usePopups((state)=> state.setShowEditDevice)
     const showEdit = usePopups((state)=> state.showEditDevice)
     const setToEdit = useDevices((state) => state.setToEdit) 
@@ -64,13 +59,7 @@ const DeviceEdit = () => {
     }
     useEffect(()=>{
       if(toEditDevice){
-        setDeviceEditInfo(
-                            {
-                              deviceName: toEditDevice.deviceName,
-                              type: toEditDevice.type,
-                              id: toEditDevice.id
-                            }
-                          )
+        setDeviceEditInfo(toEditDevice)
       }
     },[toEditDevice])
     return (
@@ -122,6 +111,7 @@ const DeviceEdit = () => {
                     <Button 
                       colorScheme='blue' 
                       onClick={(e) =>requestDeviceEdit(e)}
+                      isDisabled={isEqual(toEditDevice, deviceEditInfo)}
                     >
                       Edit
                     </Button>

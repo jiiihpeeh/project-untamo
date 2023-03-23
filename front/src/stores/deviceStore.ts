@@ -1,10 +1,10 @@
 //<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { DeviceType}  from '../type'
+import { DeviceType, SessionStatus}  from '../type'
 import axios from "axios"
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useAlarms } from "../stores"
+import { getCommunicationInfo, useAlarms, useLogIn } from "../stores"
 import {Device} from '../type'
 
 type UseDevices = {
@@ -183,7 +183,7 @@ const fetchDevices = async () => {
             }
         }
     }catch(err:any){
-        notification("Devices", "Couldn't fetch the device list", Status.Error)
+        (useLogIn.getState().sessionValid === SessionStatus.Valid)?notification("Devices", "Couldn't fetch the device list", Status.Error):{}
     }
 }
 

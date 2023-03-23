@@ -53,9 +53,7 @@ const NavGrid = () => {
         return window.location.pathname.replaceAll("/","").endsWith(end)
     }
 
-    const capitalize = (s:string)=>{
-        return s.charAt(0).toUpperCase() + s.slice(1)
-    }
+
     interface TimeOutput{
         minutes: number,
         seconds: number

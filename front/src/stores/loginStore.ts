@@ -84,7 +84,7 @@ const refreshToken = async () =>{
         const randomTime = Math.ceil(Math.random()*7200000)
         setTimeout(refreshToken,2*24*60*60*1000 + randomTime)
     }catch(err){
-        notification("Session", "Failed to update token.", Status.Error)
+        (useLogIn.getState().sessionValid === SessionStatus.Valid)?notification("Session", "Failed to update token.", Status.Error):{}
     }
 }
 

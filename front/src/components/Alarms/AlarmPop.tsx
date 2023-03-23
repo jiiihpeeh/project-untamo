@@ -25,7 +25,7 @@ const AlarmPop = () =>{
     const navigate = useNavigate()
 
     const footerText = () => {
-        let addBtn = (<Button onClick={()=>setShowAddAlarm(true)}  width="100%" >Add Alarm</Button>)
+        let addBtn = (<Button onClick={()=>setShowAddAlarm(true)}  width="100%" >Add an Alarm</Button>)
 		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
 			return (<Box> <Text alignContent={"center"}>No alarms for this device</Text> {addBtn} </Box>) 
 		}
@@ -51,7 +51,7 @@ const AlarmPop = () =>{
                         <Button 
                             onClick={()=> {(runAlarm)?setToEdit(runAlarm.id):{}; (runAlarm)?setShowEdit(true):{}}}
                         >
-                            Edit Alarm
+                            Edit the Alarm
                         </Button> 
                         {(!noSnooze) && <Button 
                             onClick={resetSnooze}

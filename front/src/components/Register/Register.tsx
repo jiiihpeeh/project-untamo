@@ -40,6 +40,7 @@ const Register = () => {
     const clearPasswordTimeout = useRegister((state)=>state.clearFormTimeout)
     const setFormCheck = useRegister((state)=>state.setFormCheck)
     const isMobile = usePopups((state) => state.isMobile)
+    const windowSize = usePopups((state)=>state.windowSize)
 
     const wsServer = useServer((state) => state.wsAddress)
     const wsURL = wsServer+'/register-check'
@@ -125,7 +126,7 @@ const Register = () => {
         <Box 
             bg='lightgray' 
             className='UserForm' 
-            width={(isMobile)?screen.width*0.90:500}
+            width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
         >
             <FormControl 
                 width="95%" 

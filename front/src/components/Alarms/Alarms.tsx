@@ -1,7 +1,6 @@
-import { Card, CardHeader, CardBody, CardFooter, Stack, StackDivider, Box, VStack, HStack, Divider, Flex, Spacer } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer } from '@chakra-ui/react'
 import React, { useState, useRef } from "react"
-import {  Container, Heading, Table, Thead, Tbody,Tr, Th,Td, TableCaption,
-		  TableContainer, Center,Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
+import {  Container, Heading, Switch, Tooltip, IconButton, Text } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
 import { WeekDay } from "../../type"
@@ -13,6 +12,7 @@ import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"
 import { shallow } from 'zustand/shallow'
 import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
+import { capitalize } from '../../utils'
 
 const Alarms = () => {
     const userInfo = useLogIn((state)=> state.user)
@@ -28,10 +28,6 @@ const Alarms = () => {
 		
 	const [ showTooltip, setShowTooltip] = useState("")
 	const [ showButtons, setShowButtons] = useState("")
-
-    function capitalize(str: string) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-      }
 
 	const FooterText = () => {
 		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){

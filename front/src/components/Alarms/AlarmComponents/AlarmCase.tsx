@@ -3,6 +3,7 @@ import { Menu, MenuButton, MenuList, Button, MenuItem, Center} from "@chakra-ui/
 import { ChevronDownIcon } from  '@chakra-ui/icons';
 import useAlarm from './alarmStates'
 import { AlarmCases }  from "../../../type"
+import { capitalize } from "../../../utils";
 
 const AlarmCase = () => {
     const alarmCase = useAlarm((state)=> state.occurence);
@@ -10,9 +11,6 @@ const AlarmCase = () => {
     const cases = Object.values(AlarmCases).filter((item) => item)
     const inputTime = useRef<number>(Date.now())
 
-    function capitalize(str: string) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
     const mouseSelect = (e:number) =>{
       const now = Date.now()
       if(now - inputTime.current  < 200){
