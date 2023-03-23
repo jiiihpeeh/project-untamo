@@ -30,17 +30,23 @@ import ServerLocation from './components/ServerLocation'
 import UserMenu from './components/User/UserMenu'
 import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
-import { extend } from './stores'
+import { extend, useSettings } from './stores'
 import { isMobile } from 'react-device-detect';
 import sleep from './components/sleep'
 import { Container } from '@chakra-ui/react'
 import AlarmPop from './components/Alarms/AlarmPop'
 import AdminPop from './components/Admin/AdminPop'
+import Settings from './components/User/Settings'
 import './App.css'
 
 function App() {
 	const checkSession = useLogIn((state) => state.validateSession)
 	const setMobile = usePopups((state) => state.setMobile)
+	const navHeight = useSettings((state)=> state.height)
+	const navBarTop = useSettings((state)=> state.navBarTop)
+	const mb = useSettings((state)=> state.mb)
+	const mt = useSettings((state)=> state.mt)
+
 	const check = useRef(false)
 
 	useEffect(() => {
@@ -56,11 +62,20 @@ function App() {
 	useEffect(()=>{
 		setMobile(isMobile)
 	},[isMobile])
+	useEffect(()=>{
+		//setMobile(isMobile)
+	},[navBarTop])
+
 	return (
 		<Container className="App">
 			{/* <AppAlert/> */}
 			<NavGrid/>
-			<Container as="main" mt="52px" id="App-Container" >
+			<Container 
+				as="main" 
+				mt={`${mt+2}px`} 
+				mb={`${mb+navHeight}px`} 
+				id="App-Container" 
+			>
 				<Routes>
 					<Route path ={extend("/alarms")} element={<Alarms/>}/>
 					<Route path={extend("/about")} element={<About/>}/>
@@ -93,8 +108,9 @@ function App() {
 				<About/>
 				<ServerLocation/>
 				<AlarmPop/>
-				<AdminPop/> 
+				<AdminPop/>
 			</Container>
+		<Settings/>
     </Container>
 	)
 }

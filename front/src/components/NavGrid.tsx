@@ -1,15 +1,16 @@
 import { Link as ReachLink } from 'react-router-dom'
-import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image, Icon } from '@chakra-ui/react'
+import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image, Icon, IconProps } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useNavigate } from 'react-router-dom'
-import { useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio } from '../stores'
+import { useSettings, useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio } from '../stores'
 import { SessionStatus } from '../type'
 import { timePadding } from './Alarms/AlarmComponents/stringifyDate-Time'
 import Countdown from "react-countdown"
 import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
-import { ChevronDownIcon } from  '@chakra-ui/icons'
+import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'
 import sleep from './sleep'
 import './../App.css'
+import { IconType } from 'react-icons'
 
 const NavGrid = () => {
     const logo = useAlarms((state)=>state.logo)
@@ -27,16 +28,19 @@ const NavGrid = () => {
     const showAdminPop = usePopups((state)=> state.showAdminPop)
     const setShowAlarmPop = usePopups((state)=> state.setShowAlarmPop)
     const showAlarmPop = usePopups((state)=> state.showAlarmPop)
-
     const showUserMenu = usePopups((state)=> state.showUserMenu)
     const windowSize = usePopups((state)=> state.windowSize)
     const setWindowSize = usePopups((state)=> state.setWindowSize)
     const setNavigationTriggered = usePopups((state)=>state.setNavigationTriggered)
     const plays = useAudio((state)=> state.plays)
     const isMobile = usePopups((state)=> state.isMobile)
-
+	const setShowSettings = usePopups((state)=> state.setShowSettings)
+	const showSettings = usePopups((state)=> state.showSettings)
+	const navBarTop = useSettings((state)=> state.navBarTop)
+    const navHeight = useSettings((state)=> state.height)
     const [ validItems, setValidItems ] = useState(["login", "register", "about"])
     const [ showAdmin, setShowAdmin ] = useState(false)
+    const [ pointing, setPointing ] = useState<any>(Down)
     
     const navigate  = useNavigate()
     useLayoutEffect(() => {
@@ -59,7 +63,7 @@ const NavGrid = () => {
         seconds: number
     }
     const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(addressEndsWith("admin"))?<Icon as={ChevronDownIcon} />:""}</Text>)
+        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(addressEndsWith("admin"))?<Icon as={Down} />:""}</Text>)
     }
 
     useEffect(() => {
@@ -84,7 +88,10 @@ const NavGrid = () => {
         constructGrid()
     },[sessionStatus])
 
-    
+    useEffect(()=>{
+        setNavigationTriggered()
+        setPointing((navBarTop)?Down:Up)
+    },[navBarTop])
     useEffect(()=> {
         const adminTimeOut = async() =>{
             setShowAdmin(false)
@@ -119,11 +126,13 @@ const NavGrid = () => {
                 width={10}
                 zIndex={500}
                 alignContent={"left"}
-                background="radial-gradient(circle, rgba(52,124,228,0.5704482476584384) 50%, rgba(157,182,225,0) 100%)"
-                style={{width:windowSize.width, left:0,right:windowSize.width, top:0}}
+                background="radial-gradient(circle, rgba(52,124,228,0.57044825) 50%, rgba(157,182,225,0) 100%)"
+                style={{width:windowSize.width, left:0,right:windowSize.width, bottom: 0, top: (navBarTop)?0:windowSize.height- navHeight, height:navHeight }}
+
             >
                 <HStack
                     ml="1%"
+                    onClick={()=>setShowSettings(!showSettings)}
                 >
                     <Image 
                         ml={"2px"}
@@ -177,7 +186,7 @@ const NavGrid = () => {
                         onClick={()=>(addressEndsWith("alarms") )?setShowAlarmPop(!showAlarmPop):{}}
                     >
                         <Text as="b">
-                            Alarms {(plays)?<Icon as={PlayIcon} />:""}{(addressEndsWith("alarms"))?<Icon as={ChevronDownIcon} />:""}
+                            Alarms {(plays)?<Icon as={PlayIcon} />:""}{(addressEndsWith("alarms"))?<Icon as={pointing} />:""}
                         </Text>
                     </Link>
                 </>}

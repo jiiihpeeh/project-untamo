@@ -1,10 +1,13 @@
 import {  Popover, Button, Portal, PopoverContent, PopoverHeader,
            PopoverArrow, PopoverBody, Center, PopoverAnchor, Box } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { useAdmin, usePopups } from '../../stores'
+import { useAdmin, usePopups, useSettings } from '../../stores'
 import React, { useState, useEffect } from 'react'
 
 const AdminPop = () =>{
+    const windowSize = usePopups((state)=> state.windowSize)
+	const navBarTop = useSettings((state)=> state.navBarTop)
+	const navHeight = useSettings((state)=> state.height)
     const adminTime = useAdmin((state) => state.time )
     const setAdminTime = useAdmin((state) => state.setTime)
     const setAdminToken = useAdmin((state)=> state.setToken)
@@ -22,7 +25,7 @@ const AdminPop = () =>{
         if(elem && navBar){
             let coords = elem.getBoundingClientRect()
             let navCoords = navBar.getBoundingClientRect()
-            setPosStyle({left: coords.left + coords.width/2, top: navCoords.height, position:"fixed"})
+            setPosStyle({left: coords.left + coords.width/2, top: (navBarTop)?navHeight:windowSize.height- navHeight, position:"fixed"})
         }
     },[navigationTriggered])
     return(

@@ -7,6 +7,7 @@ import useDevices from './stores/deviceStore'
 import useTimeouts from './stores/timeouts'
 import usePopups from './stores/popUpStore'
 import useAudio from './stores/audioStore'
+import useSettings from './stores/settingsStore'
 
 const getCommunicationInfo = () => {
     const server = useServer.getState().address
@@ -24,6 +25,6 @@ const extend = (path: string) => {
 const fingerprint = () =>  useLogIn.getState().fingerprint
 export 
     { 
-        useServer, useLogIn, useFetchQR, useAdmin, useAudio, extend, fingerprint,
-        useDevices,useAlarms, useTimeouts, usePopups, getCommunicationInfo 
+        useServer, useLogIn, useFetchQR, useAdmin, extend, fingerprint, getCommunicationInfo,
+        useDevices,useAlarms, useTimeouts, usePopups , useSettings, useAudio,
     }

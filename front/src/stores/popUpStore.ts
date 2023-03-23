@@ -11,6 +11,8 @@ export type WindowSize = {
 type Popup = {
     showEditDevice: boolean,
     setShowEditDevice: (to: boolean) => void,
+    showSettings: boolean,
+    setShowSettings: (to: boolean) => void,
     showDeleteDevice: boolean,
     setShowDeleteDevice: (to: boolean) => void,
     showAlarmPop: boolean,
@@ -66,6 +68,14 @@ const usePopups = create<Popup>((set, get) => ({
             set( 
                 {
                     showEditDevice: to
+                }
+            )
+        },
+        showSettings: false,
+        setShowSettings: (to: boolean) => {
+            set(
+                {
+                    showSettings: to
                 }
             )
         },

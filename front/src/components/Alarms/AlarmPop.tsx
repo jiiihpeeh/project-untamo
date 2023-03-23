@@ -2,14 +2,17 @@ import {  Popover,  Button, Portal, PopoverContent, HStack,
           PopoverHeader, PopoverArrow, PopoverBody, PopoverAnchor, 
           PopoverFooter, Text, VStack, Box, Center } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { useAudio,  useDevices, useAlarms, usePopups, useLogIn } from '../../stores'
-import React from 'react'
+import { useAudio,  useDevices, useAlarms, usePopups, useLogIn, useSettings } from '../../stores'
 import { shallow } from 'zustand/shallow'
 import { timePadding } from './AlarmComponents/stringifyDate-Time'
 import { timeToUnits, timeForNextAlarm, timeToNextAlarm } from './calcAlarmTime'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const AlarmPop = () =>{
+    const windowSize = usePopups((state)=> state.windowSize)
+	const navBarTop = useSettings((state)=> state.navBarTop)
+	const navHeight = useSettings((state)=> state.height)
+
     const userInfo = useLogIn((state)=> state.user)
     const plays = useAudio((state)=> state.plays)
     const stop = useAudio((state)=> state.stop)
@@ -95,10 +98,9 @@ const AlarmPop = () =>{
         let navBar = document.getElementById("NavBar")
         if(elem && navBar){
             let coords = elem.getBoundingClientRect()
-            let navCoords = navBar.getBoundingClientRect()
-            setPosStyle({left: coords.left + coords.width/2, top: navCoords.height, position:"fixed"})
+            setPosStyle({left: coords.left + coords.width/2, top: (navBarTop)?navHeight:windowSize.height- navHeight, position:"fixed"})
         }
-    },[navigationTriggered])
+    },[navigationTriggered ])
 
     const getCurrentDevice = () =>{
         if(currentDevice){
