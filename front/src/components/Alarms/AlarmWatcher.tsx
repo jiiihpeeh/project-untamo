@@ -24,13 +24,12 @@ const AlarmWatcher  = () => {
         const filterAlarms = () => {
             setTimeForNextLaunch(-1)
             if(runAlarm){
-                if((runAlarm.active === false) || (currentDevice && (!runAlarm.devices.includes(currentDevice)))){
+                if((runAlarm.active === false) || alarms.filter(a => a.id == runAlarm.id).length === 0 || (currentDevice && (!runAlarm.devices.includes(currentDevice)))){
                     setRunAlarm('')
                 }
             }
             if(!runOtherSnooze && (window.location.pathname === '/play-alarm/') && runAlarm ) { 
-                let currentRunArr = alarms.filter(alarm => alarm.id === runAlarm.id) 
-            
+                let currentRunArr = alarms.filter(alarm => alarm.id === runAlarm.id)
                 if (currentRunArr.length === 1){
                     let timeNow = new Date().getTime()
                     let diff = timeNow - Math.max(...currentRunArr[0].snooze) 
@@ -54,9 +53,7 @@ const AlarmWatcher  = () => {
                     clearAlarmTimeout()
                     let runThis =  idTimeOutMap.get(minTime)
                     let timed = timeToNextAlarm(alarms.filter(alarm => alarm.id === runThis)[0])
-                    
                     if( runThis && (timed > 100)){
-                        
                         setRunAlarm(runThis)
                         let timeOutID = setTimeout(() => { navigate(extend('/play-alarm/')) }, timed)
                         setTimeoutId(timeOutID)

@@ -44,7 +44,8 @@ const useSettings = create<UseSettings>()(
                     set(
                         {
                             mt: 0,
-                            mb: get().height                       }
+                            mb: get().height                       
+                        }
                     )
                 }
             },

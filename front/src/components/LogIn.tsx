@@ -55,59 +55,59 @@ const LogIn = () => {
     },[formData])
     return (
         <form>
-        <Box 
-            className='UserForm'
-            width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
-        >
-        <FormControl 
-            onSubmit={onSubmit} 
-            width="95%" 
-            margin="0 auto" 
-            mt="5%"
-        >
-            <FormLabel 
-                htmlFor="email" 
-                className="FormLabel"  
-                mt="1%" 
-                mb="1%" 
+            <Box 
+                className='UserForm'
+                width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
             >
-                Email
-            </FormLabel>
-            <Input 
-                type="email"
-                name="email"
-                id="email"
-                onChange={(e) =>onChange(e)}
-                value={formData.email}
-                className="Register"
-            />
-            <FormLabel 
-                htmlFor='password' 
-                className="FormLabel"
-            >
-                Password
-            </FormLabel>
-            <Input 
-                type="password"
-                name="password"
-                id="password"
-                onChange= {(e) =>onChange(e)}
-                value={formData.password}
-                className="Register"
-            />
-            <Divider />
-            <Button 
-                type="submit" 
-                id="submit" 
-                onClick={() =>onSubmit()} 
-                mt="1%" 
-                mb="1%" 
-                isDisabled={!canSubmit}
-            >
-                Log In 
-            </Button>
-        </FormControl> 
-        </Box>
+                <FormControl 
+                    onSubmit={onSubmit} 
+                    width="95%" 
+                    margin="0 auto" 
+                    mt="5%"
+                >
+                    <FormLabel 
+                        htmlFor="email" 
+                        className="FormLabel"  
+                        mt="1%" 
+                        mb="1%" 
+                    >
+                        Email
+                    </FormLabel>
+                    <Input 
+                        type="email"
+                        name="email"
+                        id="email"
+                        onChange={(e) =>onChange(e)}
+                        value={formData.email}
+                        className="Register"
+                    />
+                    <FormLabel 
+                        htmlFor='password' 
+                        className="FormLabel"
+                    >
+                        Password
+                    </FormLabel>
+                    <Input 
+                        type="password"
+                        name="password"
+                        id="password"
+                        onChange= {(e) =>onChange(e)}
+                        value={formData.password}
+                        className="Register"
+                    />
+                    <Divider />
+                    <Button 
+                        type="submit" 
+                        id="submit" 
+                        onClick={() =>onSubmit()} 
+                        mt="1%" 
+                        mb="1%" 
+                        isDisabled={!canSubmit}
+                    >
+                        Log In 
+                    </Button>
+                </FormControl> 
+            </Box>
         </form>
     )
 }

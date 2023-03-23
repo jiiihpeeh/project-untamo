@@ -54,11 +54,11 @@ const AlarmPop = () =>{
                         Coming Up: {(runAlarm)?`${runAlarm.time}`:""}
                     </Text>
                     <HStack>
-                        <Button 
+                        {runAlarm && <Button 
                             onClick={()=> {(runAlarm)?setToEdit(runAlarm.id):{}; (runAlarm)?setShowEdit(true):{}}}
                         >
                             Edit the Alarm
-                        </Button> 
+                        </Button>}
                         {(!noSnooze) && <Button 
                             onClick={resetSnooze}
                         >
