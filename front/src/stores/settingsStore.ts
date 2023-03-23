@@ -1,13 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
-type NavPos = {
-    top: string,
-    bottom: string
-}
-
-const navTop = { top: "0px", bottom: "0px" }
-const navBottom = { bottom: "1000px", top: "900px" }
 
 type UseSettings =  {
     navBarTop: boolean,
@@ -16,7 +9,6 @@ type UseSettings =  {
     mt: number,
     setNavBarTop: (to: boolean) => void
     setHeight: (n:number) => void,
-    navPos : NavPos
 }
 
 const useSettings = create<UseSettings>()(
@@ -24,7 +16,6 @@ const useSettings = create<UseSettings>()(
       (set, get) => (
           {
             navBarTop: true,
-            navPos: navTop,
             height: 56,
             mt: 56,
             mb:0,
@@ -65,6 +56,9 @@ const useSettings = create<UseSettings>()(
           partialize: (state) => (
               { 
                 navBarTop: state.navBarTop,
+                mt: state.mt,
+                mb: state.mb,
+                height: state.height
               }
           ),
       }
