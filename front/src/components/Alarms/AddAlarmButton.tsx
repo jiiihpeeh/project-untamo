@@ -19,7 +19,7 @@ function AddAlarmButton(props: Props) {
 			let add = (windowSize.width-rect.right < 65)?-21:0
 			setButtonPosition(
 								{
-									bottom: (navBarTop)?windowSize.height *0.05:windowSize.height *0.90 ,
+									bottom: (navBarTop)?windowSize.height *0.05:Math.min(windowSize.height -60, windowSize.height *0.90),
 									left: rect.right + add,								
 									position: "fixed"
 								}

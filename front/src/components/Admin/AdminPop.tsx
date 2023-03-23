@@ -24,7 +24,6 @@ const AdminPop = () =>{
         let navBar = document.getElementById("NavBar")
         if(elem && navBar){
             let coords = elem.getBoundingClientRect()
-            let navCoords = navBar.getBoundingClientRect()
             setPosStyle({left: coords.left + coords.width/2, top: (navBarTop)?navHeight:windowSize.height- navHeight, position:"fixed"})
         }
     },[navigationTriggered])
