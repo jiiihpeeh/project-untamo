@@ -18,9 +18,11 @@ const AdminPop = () =>{
 
     useEffect(()=>{
         let elem = document.getElementById("link-admin")
-        if(elem){
+        let navBar = document.getElementById("NavBar")
+        if(elem && navBar){
             let coords = elem.getBoundingClientRect()
-            setPosStyle({left: coords.left  + coords.width/2, top: coords.top - coords.height +10, position:"absolute"})
+            let navCoords = navBar.getBoundingClientRect()
+            setPosStyle({left: coords.left + coords.width/2, top: navCoords.height, position:"fixed"})
         }
     },[navigationTriggered])
     return(
