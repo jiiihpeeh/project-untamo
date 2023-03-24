@@ -9,6 +9,7 @@ import Countdown from "react-countdown"
 import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
 import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'
 import sleep from './sleep'
+import { urlEnds } from '../utils'
 import './../App.css'
 import { IconType } from 'react-icons'
 
@@ -40,7 +41,7 @@ const NavGrid = () => {
     const navHeight = useSettings((state)=> state.height)
     const [ validItems, setValidItems ] = useState(["login", "register", "about"])
     const [ showAdmin, setShowAdmin ] = useState(false)
-    const [ pointing, setPointing ] = useState<any>(Down)
+    const [ pointing, setPointing ] = useState<typeof Down>(Down)
     
     const navigate  = useNavigate()
     useLayoutEffect(() => {
@@ -53,17 +54,12 @@ const NavGrid = () => {
         return () => window.removeEventListener('resize', updateSize)
     }, [])
 
-    const addressEndsWith = (end:string) => {
-        return window.location.pathname.replaceAll("/","").endsWith(end)
-    }
-
-
     interface TimeOutput{
         minutes: number,
         seconds: number
     }
     const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(addressEndsWith("admin"))?<Icon as={Down} />:""}</Text>)
+        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds("admin"))?<Icon as={pointing} />:""}</Text>)
     }
 
     useEffect(() => {
@@ -75,7 +71,7 @@ const NavGrid = () => {
             } else {
                 setValidItems(["register",'server', "about"])  
                 await sleep(15)
-                let isLogIn = window.location.pathname.replaceAll("/","").endsWith("login")
+                let isLogIn = urlEnds("login")
                 if(!isLogIn){
                     setValidItems(["login",'server', "about"])
                     setNavigationTriggered() 
@@ -97,7 +93,7 @@ const NavGrid = () => {
             setShowAdmin(false)
             await sleep(5)
             setNavigationTriggered()
-            if(window.location.pathname === '/admin'){
+            if(urlEnds('/admin')){
                 navigate(extend('/alarms'))
             }
         }
@@ -128,11 +124,11 @@ const NavGrid = () => {
                 alignContent={"left"}
                 background="radial-gradient(circle, rgba(52,124,228,0.57044825) 50%, rgba(157,182,225,0) 100%)"
                 style={{width:windowSize.width, left:0,right:windowSize.width, bottom: 0, top: (navBarTop)?0:windowSize.height- navHeight, height:navHeight }}
-
             >
                 <HStack
                     ml="1%"
                     onClick={()=>setShowSettings(!showSettings)}
+                    cursor={"pointer"}
                 >
                     <Image 
                         ml={"2px"}
@@ -181,12 +177,12 @@ const NavGrid = () => {
                     <Link
                         key="alarms-link"
                         as={ReachLink} 
-                        to={(!addressEndsWith("play-alarm"))?extend(`/alarms`):extend(`/play-alarm`)} 
+                        to={(!urlEnds("play-alarm"))?extend(`/alarms`):extend(`/play-alarm`)} 
                         id={`link-alarm`} 
-                        onClick={()=>(addressEndsWith("alarms") )?setShowAlarmPop(!showAlarmPop):{}}
+                        onClick={()=>(urlEnds("alarms") )?setShowAlarmPop(!showAlarmPop):{}}
                     >
                         <Text as="b">
-                            Alarms {(plays)?<Icon as={PlayIcon} />:""}{(addressEndsWith("alarms"))?<Icon as={pointing} />:""}
+                            Alarms {(plays)?<Icon as={PlayIcon} />:""}{(urlEnds("alarms"))?<Icon as={pointing} />:""}
                         </Text>
                     </Link>
                 </>}
@@ -232,7 +228,7 @@ const NavGrid = () => {
                         as={ReachLink} 
                         to={extend(`/admin`)} 
                         id={`link-admin`} 
-                        onClick={()=>(addressEndsWith("admin") )?setShowAdminPop(!showAdminPop):{}}
+                        onClick={()=>(urlEnds("admin") )?setShowAdminPop(!showAdminPop):{}}
                     >
                         <Text as="b" color={"red"}>
                             Admin 

@@ -80,7 +80,7 @@ const UserWatcher = () => {
         const path = (window.location.pathname).replaceAll('/','').trim()
         if(afterChange){
           if(afterChange.fingerprint !== fingerprint){
-            console.log("change detected ")
+            //console.log("change detected ")
             if(path.endsWith("play-alarm") ){
               await  sleep(600)
               navigate(extend("/alarms"))

@@ -20,3 +20,8 @@ export function isEqual(obj1 :any, obj2 : any) {
 export const capitalize = (s:string)=>{
     return s.charAt(0).toUpperCase() + s.slice(1)
 }
+
+export const urlEnds = (path: string) => {
+    const urlParts = window.location.pathname.split("/").filter(u => u !== "")
+    return urlParts[urlParts.length -1] === path
+}

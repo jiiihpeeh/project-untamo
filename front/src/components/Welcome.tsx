@@ -4,7 +4,7 @@ import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList,
          Tooltip, MenuItem , Spacer, HStack, VStack } from '@chakra-ui/react'
 import { useLogIn, useDevices, extend } from "../stores"
 import usePopups from "../stores/popUpStore"
-import { ChevronDownIcon } from  '@chakra-ui/icons';
+import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
 import { SessionStatus } from "../type"
 
 import DeviceIcons from "./Device/DeviceIcons"
@@ -69,7 +69,7 @@ const Welcome = () => {
                             >
                                 <MenuButton 
                                     as={Button} 
-                                    rightIcon={<ChevronDownIcon />}
+                                    rightIcon={<Down/>}
                                 >
                                     Select a Device
                                 </MenuButton>

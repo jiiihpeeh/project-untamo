@@ -193,7 +193,7 @@ const locationChecker = () => {
     clearTimeout(locationId)
     newLocation = window.location.pathname
     if(location !== newLocation && newLocation.replaceAll('/','').trim().endsWith('play-alarm')){
-        console.log("location trigger")
+        //console.log("location trigger")
         if(!useTimeouts.getState().snoozeIt){
             alarmToSnooze = setTimeout(() => { useTimeouts.getState().setSnoozeIt(true)
             }, 5*60*1000);            

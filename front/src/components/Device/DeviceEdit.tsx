@@ -4,7 +4,7 @@ import { Menu, MenuItem,  MenuList, MenuButton,
          ModalOverlay, ModalContent,
          ModalHeader,  ModalFooter,
          ModalBody, ModalCloseButton} from '@chakra-ui/react'         
-import { ChevronDownIcon } from "@chakra-ui/icons"
+import { ChevronDownIcon as Down } from "@chakra-ui/icons"
 import { usePopups , useDevices } from "../../stores"
 import { DeviceType, Device } from "../../type"
 import { isEqual } from "../../utils"
@@ -88,7 +88,7 @@ const DeviceEdit = () => {
                       >
                         <MenuButton 
                           as={Button} 
-                          rightIcon={<ChevronDownIcon />}
+                          rightIcon={<Down/>}
                           onWheel={e=>mouseSelect(e.deltaY)}
                         >
                           Device type: {deviceEditInfo.type}

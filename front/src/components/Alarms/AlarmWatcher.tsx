@@ -2,6 +2,7 @@ import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { useNavigate } from "react-router-dom"
 import { useDevices, useTimeouts, useAlarms, useAudio, extend } from "../../stores"
+import { urlEnds } from "../../utils"
 
 const AlarmWatcher  = () => {
     const setTimeoutId = useTimeouts((state)=> state.setId)
@@ -28,7 +29,7 @@ const AlarmWatcher  = () => {
                     setRunAlarm('')
                 }
             }
-            if(!runOtherSnooze && (window.location.pathname === '/play-alarm/') && runAlarm ) { 
+            if(!runOtherSnooze && urlEnds('play-alarm') && runAlarm ) { 
                 let currentRunArr = alarms.filter(alarm => alarm.id === runAlarm.id)
                 if (currentRunArr.length === 1){
                     let timeNow = new Date().getTime()

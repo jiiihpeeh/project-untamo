@@ -1,6 +1,6 @@
 import React, { useRef} from "react";
 import { Menu, MenuButton, MenuList, Button, MenuItem, Center} from "@chakra-ui/react";
-import { ChevronDownIcon } from  '@chakra-ui/icons';
+import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
 import useAlarm from './alarmStates'
 import { AlarmCases }  from "../../../type"
 import { capitalize } from "../../../utils";
@@ -48,7 +48,7 @@ const AlarmCase = () => {
           <MenuButton 
             as={Button} 
             rightIcon={
-                        <ChevronDownIcon />
+                        <Down/>
                       }
             onWheel={e => mouseSelect(e.deltaY)}
           >

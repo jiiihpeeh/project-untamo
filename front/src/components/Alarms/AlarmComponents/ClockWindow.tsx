@@ -11,7 +11,7 @@ import useAlarm from './alarmStates'
 import React, { useEffect, useState, useRef } from 'react'
 import { usePopups } from '../../../stores'
 import sleep from '../../sleep';
-import { ChevronDownIcon,ChevronUpIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon as Down,ChevronUpIcon as Up } from '@chakra-ui/icons'
 
 function ClockWindow() {
     const time = useAlarm((state)=> state.time)
@@ -97,7 +97,7 @@ function ClockWindow() {
                                     </Heading>
                                     <VStack ml={"2%"}>
                                     <IconButton 
-                                        icon={<ChevronUpIcon/>}
+                                        icon={<Up/>}
                                         aria-label=""
                                         size={"sm"}
                                         rounded={"md"}
@@ -105,7 +105,7 @@ function ClockWindow() {
 
                                     />
                                     <IconButton 
-                                        icon={<ChevronDownIcon/>}
+                                        icon={<Down/>}
                                         aria-label=""
                                         size={"sm"}
                                         rounded={"md"}
@@ -136,14 +136,14 @@ function ClockWindow() {
                                     </Heading>
                                     <VStack ml={"2%"}>
                                     <IconButton 
-                                        icon={<ChevronUpIcon/>}
+                                        icon={<Up/>}
                                         aria-label=""
                                         size={"sm"}
                                         rounded={"md"}
                                         onClick={()=>setParsedTime({...parsedTime, minutes: (parsedTime.minutes + 1) % 60})}
                                     />
                                     <IconButton 
-                                        icon={<ChevronDownIcon/>}
+                                        icon={<Down/>}
                                         aria-label=""
                                         size={"sm"}
                                         rounded={"md"}

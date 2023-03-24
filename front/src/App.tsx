@@ -43,7 +43,6 @@ function App() {
 	const checkSession = useLogIn((state) => state.validateSession)
 	const setMobile = usePopups((state) => state.setMobile)
 	const navHeight = useSettings((state)=> state.height)
-	const navBarTop = useSettings((state)=> state.navBarTop)
 	const mb = useSettings((state)=> state.mb)
 	const mt = useSettings((state)=> state.mt)
 
@@ -62,9 +61,6 @@ function App() {
 	useEffect(()=>{
 		setMobile(isMobile)
 	},[isMobile])
-	useEffect(()=>{
-		//setMobile(isMobile)
-	},[navBarTop])
 
 	return (
 		<Container className="App">

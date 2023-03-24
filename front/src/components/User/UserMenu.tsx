@@ -19,14 +19,11 @@ const UserMenu = () => {
 		>
         <ModalOverlay />
 		<ModalContent>
-
-                    <ModalHeader>
-                        User Actions
-                    </ModalHeader>
-                    <ModalCloseButton/>
-                    <ModalBody>
-			
-	
+				<ModalHeader>
+					User Actions
+				</ModalHeader>
+				<ModalCloseButton/>
+				<ModalBody>
 					<Button 
 						onClick={()=>{setShowEditProfile(true);setShowUserMenu(!showUserMenu)}}
 						w={"100%"}
