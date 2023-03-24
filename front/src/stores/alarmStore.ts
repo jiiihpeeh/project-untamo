@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { WeekDay, Alarm, AlarmCases, SessionStatus } from '../type'
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useTimeouts, useLogIn } from '../stores'
+import { getCommunicationInfo, useTimeouts, useLogIn, validSession } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
@@ -88,7 +88,7 @@ const fetchAlarms = async () => {
         }
     }catch(err){
         //console.log("Cannot fetch alarms")
-        (useLogIn.getState().sessionValid === SessionStatus.Valid )?notification("Alarms", "Couldn't fetch the alarm list", Status.Error):{}
+        (validSession())?notification("Alarms", "Couldn't fetch the alarm list", Status.Error):{}
     }
 }
 
@@ -248,7 +248,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     
     useAlarms.setState( { alarms: [...alarms, alarmWithID]}) 
   } catch (err:any){
-    console.error(err.data)
+    //console.error(err.data)
     notification("Edit Alarm", "Alarm edit save failed", Status.Error)
   }
 }

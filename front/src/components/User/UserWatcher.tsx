@@ -5,7 +5,7 @@ import { useServer, useLogIn, useDevices, useAlarms, useAudio, useTimeouts, exte
 import { Navigate, useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
 import { Alarm, Path } from '../../type'
-
+import { urlEnds } from '../../utils'
 var wsTimeout : NodeJS.Timeout | null | number
 
 const UserWatcher = () => {
@@ -75,11 +75,10 @@ const UserWatcher = () => {
     const stopParallel = async() => {
       if (runner){
         let afterChange = alarms.filter(alarm => alarm.id === runner.id)[0]
-        const path = (window.location.pathname).replaceAll('/','').trim()
         if(afterChange){
           if(afterChange.fingerprint !== fingerprint){
             //console.log("change detected ")
-            if(path.endsWith("play-alarm") ){
+            if(urlEnds(Path.PlayAlarm)){
               await  sleep(600)
               navigate(extend(Path.Alarms))
               if(plays){

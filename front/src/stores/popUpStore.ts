@@ -47,6 +47,8 @@ type Popup = {
     setShowDeviceMenu: (show: boolean) =>void,
     showToast: boolean,
     setShowToast: (to:boolean) => void
+    showColor: boolean,
+    setShowColor: (to:boolean) => void
     showTimepicker: boolean,
     setShowTimepicker: (to:boolean) => void
     isMobile: boolean
@@ -220,6 +222,14 @@ const usePopups = create<Popup>((set, get) => ({
             set(
                 {
                     showUserMenu: show
+                }
+            )
+        },
+        showColor: false,
+        setShowColor: (show) => {
+            set(
+                {
+                    showColor: show
                 }
             )
         },

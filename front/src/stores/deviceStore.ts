@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { DeviceType, SessionStatus}  from '../type'
 import axios from "axios"
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useAlarms, useLogIn } from "../stores"
+import { getCommunicationInfo, useAlarms, useLogIn, validSession } from "../stores"
 import {Device} from '../type'
 
 type UseDevices = {
@@ -183,7 +183,7 @@ const fetchDevices = async () => {
             }
         }
     }catch(err:any){
-        (useLogIn.getState().sessionValid === SessionStatus.Valid)?notification("Devices", "Couldn't fetch the device list", Status.Error):{}
+        (validSession())?notification("Devices", "Couldn't fetch the device list", Status.Error):{}
     }
 }
 

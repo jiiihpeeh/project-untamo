@@ -37,6 +37,7 @@ import { Container } from '@chakra-ui/react'
 import AlarmPop from './components/Alarms/AlarmPop'
 import AdminPop from './components/Admin/AdminPop'
 import Settings from './components/User/Settings'
+import Color from './components/User/Colors'
 import './App.css'
 
 function App() {
@@ -104,6 +105,7 @@ function App() {
 				<ServerLocation/>
 				<AlarmPop/>
 				<AdminPop/>
+				<Color/>
 			</Container>
 		<Settings/>
     </Container>

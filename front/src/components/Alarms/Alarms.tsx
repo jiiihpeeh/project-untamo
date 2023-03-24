@@ -2,7 +2,7 @@ import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Tex
 import React, { useState, useRef, useCallback, useEffect } from "react"
 import {  Container, Heading, Switch, Tooltip, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
-import { useLogIn, useDevices, useAlarms, usePopups } from "../../stores"
+import { useLogIn, useDevices, useAlarms, usePopups, useSettings } from "../../stores"
 import { WeekDay } from "../../type"
 import { DeleteIcon, EditIcon, CheckIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases, Device } from "../../type"
@@ -17,6 +17,7 @@ import { capitalize } from '../../utils'
 
 const Alarms = () => {
 	const containerRef =useRef<HTMLDivElement>(null)
+	const cardColors = useSettings((state)=> state.cardColors)
 	const [devices, viewableDevices] = useDevices(state => 
 		[ state.devices, state.viewableDevices ],  shallow)
 
@@ -80,17 +81,26 @@ const Alarms = () => {
                 case AlarmCases.Weekly:
                     return(
                         <Box>
-                        <Heading size='xs' textTransform='uppercase'>
+                        <Heading 
+							size='xs' 
+							textTransform='uppercase'
+						>
                             Weekdays
                         </Heading>
-                        <Text pt='2' fontSize='sm'>
+                        <Text 
+							pt='2' 
+							fontSize='sm'
+						>
                             {weekdayDisplay(weekdays, date)}
                         </Text>
                         </Box>)
                 case AlarmCases.Once:
                     return(
                         <Box>
-                        <Heading size='xs' textTransform='uppercase'>
+                        <Heading 
+							size='xs' 
+							textTransform='uppercase'
+						>
                             Date
                         </Heading>
                         <Text pt='2' fontSize='sm'>
@@ -115,7 +125,7 @@ const Alarms = () => {
 			return (
                     <Card
                         key={key}
-                        backgroundColor={(!active)?'gray.100':((key % 2 === 0)?'yellow.100':'cyan.100')}
+                        backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.uneven:cardColors.even)}
                         onMouseLeave={()=>{setShowButtons("")}}
                         onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
                         mb={"5px"}
@@ -124,21 +134,31 @@ const Alarms = () => {
                     >
                         
                         <CardBody>
-                            <Tooltip label={showTooltip}>                               
+                            <Tooltip 
+								label={showTooltip}
+							>                               
                                 <CardHeader >
                                     {`${capitalize(occurence)}: `} {<Text as="b">{label}</Text>}
                                 </CardHeader> 
                             </Tooltip>
-                            <HStack divider={<StackDivider />}>
+                            <HStack 
+								divider={<StackDivider />}
+							>
                             <Box>
                                 
-                                <Heading size='xl' textTransform='uppercase'>
+                                <Heading 
+									size='xl' 
+									textTransform='uppercase'
+								>
                                     {time}
                                 </Heading>
                                
                             </Box>
                             <Box>
-                                <Heading size='xs' textTransform='uppercase'>
+                                <Heading 
+									size='xs' 
+									textTransform='uppercase'
+								>
                                     Devices
                                 </Heading>
                                 <Text pt='2' fontSize='sm'>
@@ -148,10 +168,17 @@ const Alarms = () => {
                                 {occurenceInfo(occurence, weekdays, date)}
 
                             </HStack>
-                            <Collapse in={showButtons === id} animateOpacity>
+                            <Collapse 
+								in={showButtons === id} 
+								animateOpacity={true}  
+							>
                                 <Flex mt={"10px"}>
                                     <Box>
-                                        <Heading size='xs' textTransform='uppercase' mb="4px">
+                                        <Heading 
+											size='xs' 
+											textTransform='uppercase' 
+											mb="4px"
+										>
                                             Edit
                                         </Heading>
                                         <IconButton 
@@ -166,7 +193,11 @@ const Alarms = () => {
                                     <Spacer/>
                                     <Box>
 
-                                        <Heading size='xs' textTransform='uppercase' mb="4px">
+                                        <Heading 
+											size='xs' 
+											textTransform='uppercase' 
+											mb="4px"
+										>
                                             Active
                                         </Heading>
                                         <Switch 
@@ -179,7 +210,11 @@ const Alarms = () => {
                                     </Box>
                                     <Spacer />
                                     <Box >
-                                        <Heading size='xs' textTransform='uppercase' mb="4px">
+                                        <Heading 
+											size='xs' 
+											textTransform='uppercase' 
+											mb="4px"
+										>
                                             Delete
                                         </Heading>
                                         <IconButton 

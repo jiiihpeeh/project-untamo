@@ -1,7 +1,13 @@
+import { useState } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
-
+export type CardColors =  {
+    even: string,
+    uneven: string,
+    inactive: string
+}
+const defaultCard : CardColors = { inactive: "#ececec", even: '#c4ffff ', uneven:"#ffff9d" }
 type UseSettings =  {
     navBarTop: boolean,
     height: number,
@@ -9,6 +15,16 @@ type UseSettings =  {
     mt: number,
     setNavBarTop: (to: boolean) => void
     setHeight: (n:number) => void,
+    cardColors: CardColors,
+    setCardColors: (color : string, mode: string) => void,
+    setDefaultCardColors: () => void,
+}
+
+
+const setColors = (color: string, mode: string) =>{
+    let colors = useSettings.getState().cardColors
+    let newColors : CardColors = {...colors, [mode]: color }
+    useSettings.setState({cardColors: {...newColors}})
 }
 
 const useSettings = create<UseSettings>()(
@@ -27,28 +43,35 @@ const useSettings = create<UseSettings>()(
                 )
             },
             setNavBarTop: (to) =>{
-                set(
-                    {
-                        navBarTop: to
-                    }
-  
-                )
                 if(to){
                     set(
                         {
                             mt: get().height,
-                            mb: 0
+                            mb: 0,
+                            navBarTop: to
                         }
                     )
                 }else{
                     set(
                         {
                             mt: 0,
-                            mb: get().height                       
+                            mb: get().height,
+                            navBarTop: to
                         }
                     )
                 }
             },
+            cardColors: defaultCard,
+            setCardColors: (color, mode) => {
+                setColors(color, mode)
+            },
+            setDefaultCardColors: () => {
+                set(
+                    {
+                        cardColors: {...defaultCard},
+                    }
+                )
+            }
           }
       ),
       {
@@ -59,7 +82,8 @@ const useSettings = create<UseSettings>()(
                 navBarTop: state.navBarTop,
                 mt: state.mt,
                 mb: state.mb,
-                height: state.height
+                height: state.height,
+                cardColors: state.cardColors
               }
           ),
       }

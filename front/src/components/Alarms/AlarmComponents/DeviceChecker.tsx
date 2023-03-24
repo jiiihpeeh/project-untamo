@@ -1,5 +1,5 @@
-import { Center, Checkbox, HStack, Text, 
-    Table,Thead, Tbody,Tr,Th,Td,TableContainer } from "@chakra-ui/react" 
+import { Center, Checkbox, HStack, Text, Table,
+         Thead, Tbody,Tr,Th,Td,TableContainer } from "@chakra-ui/react" 
 import React from 'react'
 import { useDevices } from "../../../stores"
 import useAlarm from "./alarmStates"

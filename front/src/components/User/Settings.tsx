@@ -4,10 +4,13 @@ import {    Modal,ModalOverlay,ModalContent,ModalHeader,
             Button, Table,Thead, Tbody,Tr,Th,Td,TableContainer } from '@chakra-ui/react'
 import React from 'react'
 import { usePopups, useSettings } from '../../stores'
+import Color from './Colors'
 
 const Settings = () => {
 	const setShowSettings = usePopups((state)=> state.setShowSettings)
 	const showSettings = usePopups((state)=> state.showSettings)
+    const setShowColors = usePopups((state)=> state.setShowColor)
+
     const navBarTop = useSettings((state) => state.navBarTop)
     const setNavBarTop = useSettings((state) => state.setNavBarTop)
 
@@ -40,6 +43,7 @@ const Settings = () => {
                                     <Td>
                                         Toolbar Position
                                     </Td>
+
                                     <Td>
                                         <RadioGroup>
                                             <HStack>
@@ -59,8 +63,21 @@ const Settings = () => {
                                         </RadioGroup>
                                     </Td>
                                 </Tr>
+                                <Tr>
+                                    <Td>
+                                        Alarm Colors
+                                    </Td>
+                                    <Td>    
+                                    <Button
+                                        onClick={()=>setShowColors(true)}
+                                    >
+                                        Set Alarm Colors
+                                    </Button>
+                                    </Td>
+                                </Tr>
                             </Tbody>
                         </Table>
+    
                     </ModalBody>
                     <ModalFooter>
                     <Button 

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
-import { getCommunicationInfo, useLogIn } from '../stores'
+import { getCommunicationInfo, useLogIn, validSession } from '../stores'
 import { AdminAction, SessionStatus} from '../type'
 
 type Command = {
@@ -74,7 +74,7 @@ const logIn = async () => {
 
     }catch(err:any){
         //console.log(err)
-        (useLogIn.getState().sessionValid === SessionStatus.Valid )?notification("Admin", "Cannot get admin rights", Status.Error):{}
+        (validSession() )?notification("Admin", "Cannot get admin rights", Status.Error):{}
         return  {
                     adminToken: '',
                     time: -1

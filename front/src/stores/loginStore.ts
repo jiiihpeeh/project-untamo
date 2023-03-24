@@ -4,7 +4,7 @@ import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
 import { SessionStatus, FormData, UserInfo } from '../type'
-import { useServer, useDevices, useAdmin, useTimeouts, useFetchQR, useAlarms } from '../stores'
+import { useServer, useDevices, useAdmin, useTimeouts, useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "../audiostorage/audioDatabase"
  
 type UseLogIn = {
@@ -84,7 +84,7 @@ const refreshToken = async () =>{
         const randomTime = Math.ceil(Math.random()*7200000)
         setTimeout(refreshToken,2*24*60*60*1000 + randomTime)
     }catch(err){
-        (useLogIn.getState().sessionValid === SessionStatus.Valid)?notification("Session", "Failed to update token.", Status.Error):{}
+        (validSession())?notification("Session", "Failed to update token.", Status.Error):{}
     }
 }
 
