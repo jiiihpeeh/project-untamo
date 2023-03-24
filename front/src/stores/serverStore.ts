@@ -53,7 +53,9 @@ const useServer = create<UseServer>()(
           partialize: (state) => (
               { 
                 address: state.address,
-                wsAddress: state.wsAddress
+                wsAddress: state.wsAddress,
+                wsAction: state.wsAction,
+                wsRegister: state.wsRegister
               }
           ),
       }

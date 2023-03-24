@@ -101,8 +101,8 @@ const UserWatcher = () => {
         let msgData = JSON.parse(lastMessage.data)
         if(!msgData || !msgData.hasOwnProperty('url')){
           return
-        }
-      let urlSplit : Array<string> = msgData.path.split('/')
+      }
+      let urlSplit : Array<string> = msgData.url.split('/')
 
       if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
         let runner : Alarm | undefined
