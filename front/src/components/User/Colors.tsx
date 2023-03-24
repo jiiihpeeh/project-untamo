@@ -16,7 +16,6 @@ const Color = () => {
     const [mode, setMode] = useState("uneven")
 
     useEffect(()=>{
-        console.log(color)
         setCardColors(color, mode)
     },[color])
     useEffect(()=>{
@@ -41,11 +40,11 @@ const Color = () => {
                     <HexColorPicker color={color} onChange={setColor} />
                     <VStack>
                         <Button
-                            background={cardColors.uneven}
+                            background={cardColors.odd}
                             width={200}
-                            onClick={()=>setMode("uneven")}
+                            onClick={()=>setMode("odd")}
                         >
-                            Uneven
+                            Odd
                         </Button>
                         <Button
                             background={cardColors.even}

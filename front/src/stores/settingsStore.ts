@@ -4,10 +4,10 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 
 export type CardColors =  {
     even: string,
-    uneven: string,
+    odd: string,
     inactive: string
 }
-const defaultCard : CardColors = { inactive: "#ececec", even: '#c4ffff ', uneven:"#ffff9d" }
+const defaultCard : CardColors = { inactive: "#ececec", even: '#c4ffff ', odd:"#ffff9d" }
 type UseSettings =  {
     navBarTop: boolean,
     height: number,
