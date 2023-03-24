@@ -125,7 +125,7 @@ const Alarms = () => {
 			return (
                     <Card
                         key={key}
-                        backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.uneven:cardColors.even)}
+                        backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
                         onMouseLeave={()=>{setShowButtons("")}}
                         onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
                         mb={"5px"}

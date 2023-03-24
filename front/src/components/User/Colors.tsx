@@ -12,7 +12,7 @@ const Color = () => {
     const setCardColors = useSettings((state)=>state.setCardColors)
     const setDefaultCardColors = useSettings((state)=>state.setDefaultCardColors)
 
-    const [color, setColor] = useState(cardColors.uneven)
+    const [color, setColor] = useState(cardColors.odd)
     const [mode, setMode] = useState("uneven")
 
     useEffect(()=>{
