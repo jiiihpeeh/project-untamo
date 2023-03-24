@@ -12,16 +12,13 @@ const AlarmPop = () =>{
     const windowSize = usePopups((state)=> state.windowSize)
 	const navBarTop = useSettings((state)=> state.navBarTop)
 	const navHeight = useSettings((state)=> state.height)
-
     const userInfo = useLogIn((state)=> state.user)
     const plays = useAudio((state)=> state.plays)
     const stop = useAudio((state)=> state.stop)
-
     const [alarms, runAlarm, setToEdit, timeForNextLaunch,  resetSnooze ] = useAlarms(state => 
 		[ state.alarms, state.runAlarm, state.setToEdit, state.timeForNextLaunch, state.resetSnooze ],  shallow)
     const currentDevice = useDevices(state =>  state.currentDevice)
     const devices = useDevices(state =>  state.devices)
-
     const [ showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups((state)=> 
 		[ state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
     const [ noSnooze, setNoSnooze ] = useState(true)
@@ -35,7 +32,6 @@ const AlarmPop = () =>{
 		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
 			return (<Box> <Text alignContent={"center"}>No alarms for this device</Text> {addBtn} </Box>) 
 		}
-        
 		const units = timeToUnits(timeForNextLaunch)
 		if(units.days === 0){
 			if(units.hours === 0){
@@ -66,7 +62,6 @@ const AlarmPop = () =>{
                         </Button>}
                     </HStack>
                 </VStack>
-
         )
     }
     const turnOff = () => {

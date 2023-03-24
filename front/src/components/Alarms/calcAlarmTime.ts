@@ -238,7 +238,6 @@ export const timeToNextAlarm = (alarm: Alarm) => {
         }else {
             launchTime = timeToAlarm
         }
-        //console.log(launchTime)
         return launchTime
     } 
     return snoozer

@@ -20,16 +20,12 @@ const Alarms = () => {
 	const cardColors = useSettings((state)=> state.cardColors)
 	const [devices, viewableDevices] = useDevices(state => 
 		[ state.devices, state.viewableDevices ],  shallow)
-
 	const [alarms, setToDelete, setToEdit, toggleActivity ] = useAlarms(state => 
 		[ state.alarms, state.setToDelete, state.setToEdit,  state.toggleActivity ],  shallow)
-
 	const [ setShowEdit, setShowDelete ] = usePopups((state)=> 
 		[state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
-		
 	const [ showTooltip, setShowTooltip] = useState("")
 	const [ showButtons, setShowButtons] = useState("")
-
 
 	const renderCards = () => {
 		let viewableAlarmsSet = new Set<Alarm> ()		
@@ -42,8 +38,7 @@ const Alarms = () => {
                     timeStamp = timeForNextAlarm(secondFiltrate).getTime()
                 }catch(err){
                     timeStamp = null
-                }			
-                 
+                }			                 
 				if(timeStamp && secondFiltrate){
 					let alarmMapStamp = timeAlarmMap.get(timeStamp)
 					if(alarmMapStamp){
@@ -55,7 +50,6 @@ const Alarms = () => {
 			}
 		}
 		let viewableAlarms = [...viewableAlarmsSet]
-		
 		let timeMapArray = [...timeAlarmMap.keys()].sort(function(a, b){return a - b})
 		let sortedView : Array<Alarm> = []
 		for(const item of timeMapArray){
@@ -69,7 +63,6 @@ const Alarms = () => {
 				}
 			}
 		}
-
 
 		const timeTooltip = (id: string) =>{
 			const timeMs = timeToNextAlarm(alarms.filter( item =>  item.id === id  )[0])
@@ -111,10 +104,16 @@ const Alarms = () => {
                 case AlarmCases.Yearly:
                     return(
                         <Box>
-                        <Heading size='xs' textTransform='uppercase'>
+                        <Heading 
+							size='xs' 
+							textTransform='uppercase'
+						>
                             Date
                         </Heading>
-                        <Text pt='2' fontSize='sm'>
+                        <Text 
+							pt='2' 
+							fontSize='sm'
+						>
                             {`${date} ${weekdayDisplay(weekdays, date)}`}
                         </Text>
                     </Box>
@@ -131,8 +130,7 @@ const Alarms = () => {
                         mb={"5px"}
 						id={`alarmCardContainer-${key}`}
 						size={"sm"}
-                    >
-                        
+                    >                        
                         <CardBody>
                             <Tooltip 
 								label={showTooltip}
@@ -161,7 +159,10 @@ const Alarms = () => {
 								>
                                     Devices
                                 </Heading>
-                                <Text pt='2' fontSize='sm'>
+                                <Text 
+									pt='2' 
+									fontSize='sm'
+								>
                                     {mapDeviceIDsToNames(devices)}
                                 </Text>
                             </Box>
@@ -172,7 +173,9 @@ const Alarms = () => {
 								in={showButtons === id} 
 								animateOpacity={true}  
 							>
-                                <Flex mt={"10px"}>
+                                <Flex 
+									mt={"10px"}
+								>
                                     <Box>
                                         <Heading 
 											size='xs' 
@@ -192,7 +195,6 @@ const Alarms = () => {
                                     </Box>
                                     <Spacer/>
                                     <Box>
-
                                         <Heading 
 											size='xs' 
 											textTransform='uppercase' 
@@ -229,12 +231,10 @@ const Alarms = () => {
                                 </Flex>
                             </Collapse>
                         </CardBody>
-
                     </Card>
 		)})
-		
     }
-	
+
 	const mapDeviceIDsToNames = (deviceIDs : Array<string>) =>{
 		let filteredDevices = devices.filter(device => deviceIDs.includes(device.id))
 		let filteredDeviceNames: Array<string> = [] 
@@ -243,7 +243,6 @@ const Alarms = () => {
 		}
 		return filteredDeviceNames.join(", ")
 	}
-
 
 	const weekdayDisplay = (days: Array<WeekDay>, date:string) => {
 		let dayArr = dayContinuationDays(days)

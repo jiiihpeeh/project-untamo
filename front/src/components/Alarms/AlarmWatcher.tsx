@@ -18,11 +18,9 @@ const AlarmWatcher  = () => {
     const reloadAlarmList = useAlarms((state)=>state.reloadAlarmList) 
     const setReloadAlarmList = useAlarms((state)=>state.setReloadAlarmList) 
     const setTrack = useAudio((state)=> state.setTrack)
-
     const navigate = useNavigate()
 
     useEffect(() => {
-        
         const filterAlarms = () => {
             setTimeForNextLaunch(-1)
             if(runAlarm){
@@ -63,7 +61,6 @@ const AlarmWatcher  = () => {
                         //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
                         setTimeForNextLaunch(Math.ceil(timed/1000))
                         setTrack(alarms.filter(alarm => alarm.id === runThis)[0].tone)
-                        
                      }  
                 }
             }

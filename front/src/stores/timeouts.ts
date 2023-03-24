@@ -214,8 +214,8 @@ const locationChecker = () => {
         useTimeouts.getState().setShowLogIn(false)
     }else{
         useTimeouts.getState().setShowLogIn(true)
-    }
-    locationId = setTimeout(locationChecker,300) */
+    }*/
+    locationId = setTimeout(locationChecker,300) 
 }
 
 locationChecker()
