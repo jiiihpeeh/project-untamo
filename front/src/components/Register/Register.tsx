@@ -6,7 +6,8 @@ import { Input, InputGroup,Box,
          FormLabel, Text, Button } from '@chakra-ui/react'
 import { useServer, extend, usePopups } from '../../stores'
 import useRegister from './RegisterBackend'
-import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons';
+import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons'
+import { Path } from '../../type'
 import '../../App.css'
 
 enum Query{
@@ -42,8 +43,7 @@ const Register = () => {
     const isMobile = usePopups((state) => state.isMobile)
     const windowSize = usePopups((state)=>state.windowSize)
 
-    const wsServer = useServer((state) => state.wsAddress)
-    const wsURL = wsServer+'/register-check'
+    const wsURL = useServer((state) => state.wsRegister)
     const navigate = useNavigate()
 
     const { sendMessage, lastMessage } = useWebSocket(wsURL)
@@ -61,7 +61,7 @@ const Register = () => {
     useEffect(()=>{
         if(registered){
             clearForm()
-            navigate(extend("/login"))
+            navigate(extend(Path.LogIn))
         }
     },[registered])
 

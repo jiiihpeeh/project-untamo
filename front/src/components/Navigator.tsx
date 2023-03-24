@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import React, { useEffect } from "react"
 import { useDevices, useLogIn, useAdmin, extend } from "../stores"
-import { SessionStatus } from "../type"
+import { SessionStatus, Path } from "../type"
 
 const Navigator = () => {
     const currentDevice = useDevices((state)=> state.currentDevice)
@@ -14,17 +14,17 @@ const Navigator = () => {
         //console.log(sessionStatus, currentDevice,adminNavigate)        
 
 		if(sessionStatus !== SessionStatus.Valid){
-			navigate(extend('/login'))
+			navigate(extend(Path.LogIn))
 		}else if(sessionStatus === SessionStatus.Valid &&!currentDevice) {
-			navigate(extend('/welcome'))
+			navigate(extend(Path.Welcome))
 		}else if(sessionStatus === SessionStatus.Valid  && currentDevice){
-            navigate(extend('/alarms'))
+            navigate(extend(Path.Alarms))
         }
 
 	},[sessionStatus, currentDevice])
     useEffect(() =>{
         if(sessionStatus === SessionStatus.Valid && adminNavigate){
-            navigate(extend('/admin'))
+            navigate(extend(Path.Admin))
             useAdmin.setState({adminNavigate:false})
         }
     },[adminNavigate])

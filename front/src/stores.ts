@@ -8,7 +8,7 @@ import useTimeouts from './stores/timeouts'
 import usePopups from './stores/popUpStore'
 import useAudio from './stores/audioStore'
 import useSettings from './stores/settingsStore'
-
+import { Path } from './type'
 const getCommunicationInfo = () => {
     const server = useServer.getState().address
     const token = useLogIn.getState().token
@@ -18,7 +18,7 @@ const getCommunicationInfo = () => {
            }
 }
 
-const extend = (path: string) => {
+const extend = (path: Path) => {
     return useServer.getState().extend(path)
 }
 

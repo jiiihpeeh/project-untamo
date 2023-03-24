@@ -3,7 +3,7 @@ import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image, Icon, IconProps }
 import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useNavigate } from 'react-router-dom'
 import { useSettings, useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio } from '../stores'
-import { SessionStatus } from '../type'
+import { SessionStatus, Path } from '../type'
 import { timePadding } from './Alarms/AlarmComponents/stringifyDate-Time'
 import Countdown from "react-countdown"
 import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
@@ -59,7 +59,7 @@ const NavGrid = () => {
         seconds: number
     }
     const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds("admin"))?<Icon as={pointing} />:""}</Text>)
+        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds(Path.Admin))?<Icon as={pointing} />:""}</Text>)
     }
 
     useEffect(() => {
@@ -71,7 +71,7 @@ const NavGrid = () => {
             } else {
                 setValidItems(["register",'server', "about"])  
                 await sleep(15)
-                let isLogIn = urlEnds("login")
+                let isLogIn = urlEnds(Path.LogIn)
                 if(!isLogIn){
                     setValidItems(["login",'server', "about"])
                     setNavigationTriggered() 
@@ -93,8 +93,8 @@ const NavGrid = () => {
             setShowAdmin(false)
             await sleep(5)
             setNavigationTriggered()
-            if(urlEnds('/admin')){
-                navigate(extend('/alarms'))
+            if(urlEnds(Path.Admin)){
+                navigate(extend(Path.Alarms))
             }
         }
         try{
@@ -146,7 +146,7 @@ const NavGrid = () => {
                     <Spacer/>
                     <Link 
                         as={ReachLink} 
-                        to={extend(`/login`)} 
+                        to={extend(Path.LogIn)} 
                         id={`link-login`} 
                         onClick={()=> setValidItems([...validItems,'register'].filter(l => l !== 'login'))}
                     >
@@ -161,7 +161,7 @@ const NavGrid = () => {
                     <Spacer/>
                     <Link 
                         as={ReachLink} 
-                        to={extend(`/register`)} 
+                        to={extend(Path.Register)} 
                         id={`link-register`} 
                         onClick={()=> setValidItems([...validItems,'login'].filter(l => l !== 'register'))}
                     >
@@ -177,12 +177,12 @@ const NavGrid = () => {
                     <Link
                         key="alarms-link"
                         as={ReachLink} 
-                        to={(!urlEnds("play-alarm"))?extend(`/alarms`):extend(`/play-alarm`)} 
+                        to={(!urlEnds(Path.PlayAlarm))?extend(Path.Alarms):extend(Path.PlayAlarm)} 
                         id={`link-alarm`} 
-                        onClick={()=>(urlEnds("alarms") )?setShowAlarmPop(!showAlarmPop):{}}
+                        onClick={()=>(urlEnds(Path.Alarms) )?setShowAlarmPop(!showAlarmPop):{}}
                     >
                         <Text as="b">
-                            Alarms {(plays)?<Icon as={PlayIcon} />:""}{(urlEnds("alarms"))?<Icon as={pointing} />:""}
+                            Alarms {(plays)?<Icon as={PlayIcon} />:""}{(urlEnds(Path.Alarms))?<Icon as={pointing} />:""}
                         </Text>
                     </Link>
                 </>}
@@ -226,9 +226,9 @@ const NavGrid = () => {
                     <Link 
                         key="admin-link"
                         as={ReachLink} 
-                        to={extend(`/admin`)} 
+                        to={extend(Path.Admin)} 
                         id={`link-admin`} 
-                        onClick={()=>(urlEnds("admin") )?setShowAdminPop(!showAdminPop):{}}
+                        onClick={()=>(urlEnds(Path.Admin) )?setShowAdminPop(!showAdminPop):{}}
                     >
                         <Text as="b" color={"red"}>
                             Admin 

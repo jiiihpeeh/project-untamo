@@ -1,3 +1,4 @@
+import { Path } from './type'
 export function isEqual(obj1 :any, obj2 : any) {
     if(obj1 === null && obj2 === null){
         return true
@@ -21,7 +22,7 @@ export const capitalize = (s:string)=>{
     return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-export const urlEnds = (path: string) => {
+export const urlEnds = (path: Path) => {
     const urlParts = window.location.pathname.split("/").filter(u => u !== "")
     return urlParts[urlParts.length -1] === path
 }

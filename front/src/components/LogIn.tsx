@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
         Button, Box,Divider, Heading} from '@chakra-ui/react'
 import { useLogIn, extend,usePopups } from "../stores"
-import { SessionStatus } from "../type"
+import { SessionStatus, Path } from "../type"
 import QrScanner from 'qr-scanner'
 import '../App.css'
 
@@ -30,7 +30,7 @@ const LogIn = () => {
     
     const onSubmit =  () => {
         logIn(formData.email, formData.password)
-        navigate(extend('/welcome'))
+        navigate(extend(Path.Welcome))
     }
 
 
@@ -38,7 +38,7 @@ const LogIn = () => {
 
     useEffect(() =>{
         if(sessionStatus == SessionStatus.Valid){
-            navigate(extend('/alarms'))
+            navigate(extend(Path.Alarms))
         }
     },[sessionStatus, navigate])
 

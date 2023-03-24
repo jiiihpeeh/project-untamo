@@ -3,6 +3,7 @@ import { timeToNextAlarm } from "./calcAlarmTime"
 import { useNavigate } from "react-router-dom"
 import { useDevices, useTimeouts, useAlarms, useAudio, extend } from "../../stores"
 import { urlEnds } from "../../utils"
+import { Path } from "../../type"
 
 const AlarmWatcher  = () => {
     const setTimeoutId = useTimeouts((state)=> state.setId)
@@ -29,7 +30,7 @@ const AlarmWatcher  = () => {
                     setRunAlarm('')
                 }
             }
-            if(!runOtherSnooze && urlEnds('play-alarm') && runAlarm ) { 
+            if(!runOtherSnooze && urlEnds(Path.PlayAlarm) && runAlarm ) { 
                 let currentRunArr = alarms.filter(alarm => alarm.id === runAlarm.id)
                 if (currentRunArr.length === 1){
                     let timeNow = new Date().getTime()
@@ -56,7 +57,7 @@ const AlarmWatcher  = () => {
                     let timed = timeToNextAlarm(alarms.filter(alarm => alarm.id === runThis)[0])
                     if( runThis && (timed > 100)){
                         setRunAlarm(runThis)
-                        let timeOutID = setTimeout(() => { navigate(extend('/play-alarm/')) }, timed)
+                        let timeOutID = setTimeout(() => { navigate(extend(Path.PlayAlarm)) }, timed)
                         setTimeoutId(timeOutID)
                         //let alarmDate =   new Date(timed + Date.now())
                         //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)

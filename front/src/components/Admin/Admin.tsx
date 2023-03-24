@@ -5,7 +5,7 @@ import { Button, Table, Thead, Tbody, Tr,Th,Td, TableContainer,
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
 import { usePopups, useLogIn, useAdmin, extend } from "../../stores"
-import { AdminAction} from '../../type'
+import { AdminAction, Path } from '../../type'
 
 const Admin = () => {
     const navigate = useNavigate()
@@ -91,7 +91,7 @@ const Admin = () => {
 
     useEffect(() => {
         if(!sessionStatus || (adminTime < Date.now())){
-            navigate(extend('/alarms'))
+            navigate(extend(Path.Alarms))
         }
     },[adminTime, sessionStatus])
     useEffect(() => {

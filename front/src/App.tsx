@@ -16,7 +16,7 @@ import AppAlert from './components/AppAlert'
 import DeleteAlarm from './components/Alarms/DeleteAlarm'
 import EditAlarm from './components/Alarms/EditAlarm'
 import { useLogIn, usePopups } from './stores'
-import { SessionStatus } from './type'
+import { SessionStatus, Path } from './type'
 import Navigator from './components/Navigator'
 import DeviceDelete from './components/Device/DeviceDelete'
 import DeviceEdit from './components/Device/DeviceEdit'
@@ -73,16 +73,15 @@ function App() {
 				id="App-Container" 
 			>
 				<Routes>
-					<Route path ={extend("/alarms")} element={<Alarms/>}/>
-					<Route path={extend("/about")} element={<About/>}/>
-					<Route path={extend("/login")} element={<LogIn/>}/>
-					<Route path={extend("/register")} element={<Register/>}/>
-					<Route path={extend("/welcome")} element={<Welcome/>}/>
-					<Route path={extend("/play-alarm")} element={<PlayAlarm/>}/>
-					<Route path={extend("/clueless")} element={<Clueless/>}/>
-					<Route path={extend("/admin")} element={<Admin/>}/>
-					<Route path={extend("/")} element={<Navigate to={extend("/login")} /> } />
-					<Route path="*" element={<Navigate to={extend("/clueless")} /> } />
+					<Route path ={extend(Path.Alarms)} element={<Alarms/>}/>
+					<Route path={extend(Path.LogIn)} element={<LogIn/>}/>
+					<Route path={extend(Path.Register)} element={<Register/>}/>
+					<Route path={extend(Path.Welcome)} element={<Welcome/>}/>
+					<Route path={extend(Path.PlayAlarm)} element={<PlayAlarm/>}/>
+					<Route path={extend(Path.Clueless)} element={<Clueless/>}/>
+					<Route path={extend(Path.Admin)} element={<Admin/>}/>
+					<Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
+					<Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />
 				</Routes>
 				<GenerateQRPairingKey/>
 				<AlarmWatcher/>

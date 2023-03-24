@@ -4,7 +4,7 @@ import sleep  from '../sleep'
 import { useServer, useLogIn, useDevices, useAlarms, useAudio, useTimeouts, extend } from '../../stores'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
-import { Alarm } from '../../type'
+import { Alarm, Path } from '../../type'
 
 var wsTimeout : NodeJS.Timeout | null | number
 
@@ -17,9 +17,7 @@ const UserWatcher = () => {
   const fetchDevices = useDevices((state)=> state.fetchDevices)
   const token = useLogIn((state) => state.token)
 
-  const wsServer = useServer((state) => state.wsAddress)
-  const wsURL = wsServer +'/action'
-  const [ socketUrl ] = useState(wsURL)
+  const wsUrl = useServer((state) => state.wsAction)
   const didUnmount = useRef<HTMLButtonElement| boolean| null>(null)
   const userInfoFetch = useLogIn((state) => state.getUserInfo)
   const [ runner, setRunner ] = useState(runAlarm)
@@ -30,7 +28,7 @@ const UserWatcher = () => {
   const setReloadAlarmList = useAlarms((state)=>state.setReloadAlarmList) 
   const fingerprint = useLogIn((state)=>state.fingerprint)
   const navigate = useNavigate()
-  const { sendMessage, lastMessage } = useWebSocket(socketUrl, {
+  const { sendMessage, lastMessage } = useWebSocket(wsUrl, {
     onOpen: () => sendIdentity("reconnect"),
     shouldReconnect: (closeEvent) => {
       /*
@@ -44,7 +42,7 @@ const UserWatcher = () => {
     reconnectInterval: 500,
   })
 
- 
+
 
   const sendIdentity = async (mode:string) => {
     if(wsTimeout){
@@ -83,7 +81,7 @@ const UserWatcher = () => {
             //console.log("change detected ")
             if(path.endsWith("play-alarm") ){
               await  sleep(600)
-              navigate(extend("/alarms"))
+              navigate(extend(Path.Alarms))
               if(plays){
                 stop()
               }
@@ -104,7 +102,7 @@ const UserWatcher = () => {
         if(!msgData || !msgData.hasOwnProperty('url')){
           return
         }
-      let urlSplit : Array<string> = msgData.url.split('/')
+      let urlSplit : Array<string> = msgData.Path.split('/')
 
       if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
         let runner : Alarm | undefined

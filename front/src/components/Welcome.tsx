@@ -5,7 +5,7 @@ import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList,
 import { useLogIn, useDevices, extend } from "../stores"
 import usePopups from "../stores/popUpStore"
 import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
-import { SessionStatus } from "../type"
+import { SessionStatus, Path } from "../type"
 
 import DeviceIcons from "./Device/DeviceIcons"
 import { Device } from "../type"
@@ -99,7 +99,7 @@ const Welcome = () => {
     }
     useEffect(()=>{
         if(sessionStatus === SessionStatus.NotValid){
-            navigate(extend("/login"))
+            navigate(extend(Path.LogIn))
         }
     },[sessionStatus])
     

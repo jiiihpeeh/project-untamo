@@ -1,11 +1,13 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-
+import { Path } from '../type'
 type UseServer = {
     address : string,
     wsAddress: string,
+    wsAction: string,
+    wsRegister: string,
     extended: string,
-    extend: (part: string) => string,
+    extend: (part: Path) => string,
     setAddress : (input:string) => void
 }
 const metaAddress = document.head.querySelector("[property~=server][address]")?.attributes.getNamedItem("address")?.value
@@ -28,15 +30,20 @@ const useServer = create<UseServer>()(
           {
             address: baseAddress,
             wsAddress: websocketAddress(baseAddress),
+            wsAction: websocketAddress(baseAddress) + '/action',
+            wsRegister: websocketAddress(baseAddress) + '/register-check',
             setAddress: (s) => set(
                   { 
                     address: s,
-                    wsAddress: websocketAddress(s)
+                    wsAddress: websocketAddress(s),
+                    wsAction: websocketAddress(s) + '/action',
+                    wsRegister: websocketAddress(s) + '/register-check'
                   }
             ),
             extended: baseExtend,
-            extend: (part: string) => {
-              return `${get().extended}${part}`
+            extend: (part) => {
+              //console.log(`${get().extended}/${part}`)
+              return `${get().extended}/${part}`
             },
           }
       ),

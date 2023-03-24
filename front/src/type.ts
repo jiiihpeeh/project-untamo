@@ -1,3 +1,4 @@
+
 export enum WeekDay  {
     Monday="Monday",
     Tuesday="Tuesday",
@@ -6,6 +7,16 @@ export enum WeekDay  {
     Friday="Friday",
     Saturday="Saturday",
     Sunday="Sunday"
+}
+export enum Path  {
+    PlayAlarm="play-alarm",
+    Alarms = "alarms",
+    Welcome = "welcome",
+    LogIn = "login",
+    Register = "register",
+    Admin = "admin",
+    Clueless="clueless",
+    Base= ""
 }
 
 
