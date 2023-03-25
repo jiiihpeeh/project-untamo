@@ -14,6 +14,9 @@ const Settings = () => {
     const navBarTop = useSettings((state) => state.navBarTop)
     const setNavBarTop = useSettings((state) => state.setNavBarTop)
 
+    const clock24 = useSettings((state) => state.clock24)
+    const setTimeFormat = useSettings((state) => state.setTimeFormat)
+
 	return (
             <Modal 
                 isOpen={showSettings} 
@@ -73,6 +76,29 @@ const Settings = () => {
                                     >
                                         Set Alarm Colors
                                     </Button>
+                                    </Td>
+                                </Tr>
+                                <Tr>
+                                    <Td>
+                                        Time Format
+                                    </Td>
+                                    <Td>
+                                        <RadioGroup>
+                                            <HStack>
+                                                <Radio 
+                                                    isChecked={clock24} 
+                                                    onChange={()=>setTimeFormat(!clock24)}
+                                                >
+                                                    24 h
+                                                </Radio>
+                                                <Radio 
+                                                    isChecked={!clock24} 
+                                                    onChange={()=>setTimeFormat(!clock24)}
+                                                >
+                                                    12 h
+                                                </Radio>
+                                            </HStack>
+                                        </RadioGroup>
                                     </Td>
                                 </Tr>
                             </Tbody>

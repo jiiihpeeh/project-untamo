@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text, VStack } from '@chakra-ui/react'
 import React, { useState, useRef, useCallback, useEffect } from "react"
 import {  Container, Heading, Switch, Tooltip, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
@@ -8,16 +8,18 @@ import { DeleteIcon, EditIcon, CheckIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases, Device } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
-import { timePadding , stringToDate} from "./AlarmComponents/stringifyDate-Time"
+import { stringToDate} from "./AlarmComponents/stringifyDate-Time"
+import { timePadding, time24hToTime12h, capitalize } from '../../utils'
 import { shallow } from 'zustand/shallow'
 import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
-import { capitalize } from '../../utils'
+import id from 'date-fns/esm/locale/id/index.js'
 //import { useResizeDetector } from 'react-resize-detector'
 
 const Alarms = () => {
 	const containerRef =useRef<HTMLDivElement>(null)
 	const cardColors = useSettings((state)=> state.cardColors)
+	const clock24 = useSettings((state)=> state.clock24)
 	const [devices, viewableDevices] = useDevices(state => 
 		[ state.devices, state.viewableDevices ],  shallow)
 	const [alarms, setToDelete, setToEdit, toggleActivity ] = useAlarms(state => 
@@ -120,6 +122,14 @@ const Alarms = () => {
                     )
             }
         }
+		const getTime = (time: string)=>{
+			let string12 = ""
+			if(!clock24){
+				let fmt = time24hToTime12h(time)
+				return (<HStack><Text>{fmt.time}  <Text fontSize='sm'>{fmt['12h']}</Text></Text></HStack>)
+			}
+			return (<Text>{time}</Text>)
+		}
 		return sortedView.map(({ id, occurence, time, weekdays, date, label, devices, active },key) => {
 			return (
                     <Card
@@ -148,7 +158,7 @@ const Alarms = () => {
 									size='xl' 
 									textTransform='uppercase'
 								>
-                                    {time}
+                                    {getTime(time)}
                                 </Heading>
                                
                             </Box>

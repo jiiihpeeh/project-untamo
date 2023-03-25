@@ -40,7 +40,7 @@ const LogIn = () => {
         if(sessionStatus == SessionStatus.Valid){
             navigate(extend(Path.Alarms))
         }
-    },[sessionStatus, navigate])
+    },[sessionStatus ])
 
     useEffect(()=>{
         const isOK = () => {

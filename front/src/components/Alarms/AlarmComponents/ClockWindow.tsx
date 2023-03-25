@@ -1,23 +1,26 @@
      
 
 import {  Table, Tbody, Tr, Td, Modal,ModalOverlay, Heading,
-          ModalContent, ModalHeader, Center,
+          ModalContent, ModalHeader, Center, Box, 
           ModalFooter, ModalBody, HStack, VStack,
-          ModalCloseButton, Button, Box, IconButton } from '@chakra-ui/react'
+          ModalCloseButton, Button, IconButton } from '@chakra-ui/react'
 //import CircularSlider from '@fseehawer/react-circular-slider'
 import CircularSlider from "react-circular-slider-svg";
-import { timePadding } from './stringifyDate-Time'
+import { timePadding } from '../../../utils'
 import useAlarm from './alarmStates'
 import React, { useEffect, useState, useRef } from 'react'
 import { usePopups } from '../../../stores'
 import sleep from '../../sleep';
 import { ChevronDownIcon as Down,ChevronUpIcon as Up } from '@chakra-ui/icons'
+import { useSettings } from '../../../stores'
+import { h24ToH12 } from '../../../utils'
 
 function ClockWindow() {
     const time = useAlarm((state)=> state.time)
     const setTime = useAlarm((state)=> state.setTime)
     const showTimepicker = usePopups((state)=> state.showTimepicker)
     const setShowTimepicker = usePopups((state)=> state.setShowTimepicker)
+    const clock24 = useSettings((state)=> state.clock24)
     const [ parsedTime, setParsedTime ] = useState({hours: 0, minutes: 0})
 
     const acceptTime = () => {
@@ -93,7 +96,7 @@ function ClockWindow() {
                                         size={"2xl"}
                                         //style={hourStyle}
                                     >
-                                    {   timePadding(Math.floor(parsedTime.hours))}
+                                        {clock24?timePadding(Math.floor(parsedTime.hours)):timePadding(h24ToH12(Math.floor(parsedTime.hours)))}
                                     </Heading>
                                     <VStack ml={"2%"}>
                                     <IconButton 
@@ -102,7 +105,6 @@ function ClockWindow() {
                                         size={"sm"}
                                         rounded={"md"}
                                         onClick={()=>setParsedTime({...parsedTime, hours: (parsedTime.hours + 1 ) % 24 })}
-
                                     />
                                     <IconButton 
                                         icon={<Down/>}
@@ -152,8 +154,11 @@ function ClockWindow() {
                                     </VStack>
                                 </Center>  
                             </Td>
+                            {!clock24 && <Td>
+                                {(Math.floor(parsedTime.hours) > 12)?" PM":" AM"}
+                            </Td>}
                         </Tr>
-                    </Tbody>                    
+                    </Tbody>
                 </Table>
             </ModalBody>
             <ModalFooter>

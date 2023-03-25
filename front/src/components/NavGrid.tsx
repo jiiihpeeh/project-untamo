@@ -4,7 +4,7 @@ import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useNavigate } from 'react-router-dom'
 import { useSettings, useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio } from '../stores'
 import { SessionStatus, Path } from '../type'
-import { timePadding } from './Alarms/AlarmComponents/stringifyDate-Time'
+import { timePadding } from '../utils'
 import Countdown from "react-countdown"
 import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
 import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'

@@ -4,7 +4,7 @@ import {  Popover,  Button, Portal, PopoverContent, HStack,
 import { useNavigate } from 'react-router-dom'
 import { useAudio,  useDevices, useAlarms, usePopups, useLogIn, useSettings } from '../../stores'
 import { shallow } from 'zustand/shallow'
-import { timePadding } from './AlarmComponents/stringifyDate-Time'
+import { timePadding } from '../../utils'
 import { timeToUnits, timeForNextAlarm, timeToNextAlarm } from './calcAlarmTime'
 import React, { useState, useEffect } from 'react'
 
@@ -120,11 +120,15 @@ const AlarmPop = () =>{
                         Alarms for {userInfo.screenName} on {getCurrentDevice()}
                         </Center>
                     </PopoverHeader>
-                    {runAlarm && <PopoverBody  backgroundColor={"blue.300"}>
+                    {runAlarm && <PopoverBody 
+                                    backgroundColor={"blue.300"}
+                                 >
                         {timerInfo()}
                         {turnOff()}
                     </PopoverBody>}
-                    <PopoverFooter  backgroundColor={"gray.300"}>
+                    <PopoverFooter  
+                        backgroundColor={"gray.300"}
+                    >
                         {footerText()}
                     </PopoverFooter>
                     </PopoverContent>

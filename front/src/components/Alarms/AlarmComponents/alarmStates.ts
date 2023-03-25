@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { WeekDay, AlarmCases } from '../../../type'
-import { timePadding } from "./stringifyDate-Time"
+import { timePadding } from "../../../utils"
 import { numberToWeekDay } from '../calcAlarmTime'
 import { useDevices, useLogIn } from '../../../stores'
 import { stringifyDate, stringToDate } from './stringifyDate-Time'

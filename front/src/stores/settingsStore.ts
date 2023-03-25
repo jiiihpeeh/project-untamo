@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { useState } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
@@ -13,6 +14,8 @@ type UseSettings =  {
     height: number,
     mb: number,
     mt: number,
+    clock24: boolean,
+    setTimeFormat: (to: boolean) => void,
     setNavBarTop: (to: boolean) => void
     setHeight: (n:number) => void,
     cardColors: CardColors,
@@ -35,6 +38,14 @@ const useSettings = create<UseSettings>()(
             height: 56,
             mt: 56,
             mb:0,
+            clock24: true,
+            setTimeFormat: (to) =>{
+                set(
+                    {
+                        clock24: to
+                    }
+                )
+            },
             setHeight: (n:number) => {
                 set(
                     {
@@ -48,7 +59,7 @@ const useSettings = create<UseSettings>()(
                         {
                             mt: get().height,
                             mb: 0,
-                            navBarTop: to
+                            navBarTop: to,
                         }
                     )
                 }else{
@@ -83,7 +94,8 @@ const useSettings = create<UseSettings>()(
                 mt: state.mt,
                 mb: state.mb,
                 height: state.height,
-                cardColors: state.cardColors
+                cardColors: state.cardColors,
+                clock24: state.clock24
               }
           ),
       }

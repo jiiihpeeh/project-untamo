@@ -1,11 +1,17 @@
-import React, { useRef } from 'react'
-import { Input, FormLabel, Box,Center, Button } from "@chakra-ui/react"
+import React, { useRef, useEffect, useState } from 'react'
+import { Input, FormLabel, Box,Center, Button, Text } from "@chakra-ui/react"
 import useAlarm, { Direction } from "./alarmStates"
 import ClockWindow from './ClockWindow'
-import { usePopups } from '../../../stores'
+import { usePopups, useSettings } from '../../../stores'
+import { h24ToH12 } from '../../../utils'
+import { timePadding, time24hToTime12h } from '../../../utils'
 
 const TimeSelector = () => {
     const time = useAlarm((state)=> state.time)
+    const clock24 = useSettings((state)=> state.clock24)
+
+    const [ clockTime, setClockTime ] = useState(time)
+    const [ amPm, setAmPm ] = useState(" AM")
     const setTime = useAlarm((state)=> state.setTime)
     const changeTime = useAlarm((state)=> state.changeTime)
     const setShowTimepicker = usePopups((state)=> state.setShowTimepicker)
@@ -50,6 +56,15 @@ const TimeSelector = () => {
             changeTime(Direction.Increase, multiplier)
         }
     }
+    useEffect(()=>{
+        if(clock24){
+            setClockTime(time)
+        }else{
+            const time12 = time24hToTime12h(time)
+            setAmPm(time12['12h'])
+            setClockTime(time12.time)
+        }
+    },[time])
     return (
             <Box 
                 className='timepicker-ui' 
@@ -70,12 +85,15 @@ const TimeSelector = () => {
                         borderWidth="5px"
                         textShadow='1px 2px gray'
                         textAlign={"center"}
-                        value={time}
+                        value={clockTime}
                         ref={inputRef}
                         onWheel={e =>{ChangeTimeWheel(e.deltaY, e.pageX)}}
                         onClick={()=>setShowTimepicker(true)}
                         readOnly
                     />
+                    {!clock24 && <Text as ="b" m={"3px"} textShadow={'1px 1px gray'}>
+                        {amPm}
+                    </Text>}
                     <ClockWindow/>
                 </Center>
             </Box>

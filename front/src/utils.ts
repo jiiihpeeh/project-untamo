@@ -26,3 +26,25 @@ export const urlEnds = (path: Path) => {
     const urlParts = window.location.pathname.split("/").filter(u => u !== "")
     return urlParts[urlParts.length -1] === path
 }
+
+export const timePadding = (number:number, numbers = 2) => {
+    let numberStr = `${number}`
+    while(numberStr.length < numbers){
+        numberStr = `0${numberStr}`
+    }
+    return numberStr
+}
+
+export const h24ToH12 = (n:number) => {
+    const m = n % 12
+    return (m === 0)?12:m
+}
+
+export const time24hToTime12h = (time: string) => {
+    let timeSplit = time.split(':')
+    let hours = parseInt(timeSplit[0])
+    return { 
+                time: `${timePadding(h24ToH12(hours))}:${timeSplit[1]}`, 
+                '12h': (hours >11 && hours <= 23)?"PM":"AM" 
+           }
+}
