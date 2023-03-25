@@ -14,6 +14,7 @@ import { shallow } from 'zustand/shallow'
 import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
 import { useNavigate } from "react-router-dom"
+import sleep from '../sleep'
 
 const Alarms = () => {
     const containerRef =useRef<HTMLDivElement>(null)
@@ -26,9 +27,15 @@ const Alarms = () => {
           [ state.alarms, state.setToDelete, state.setToEdit,  state.toggleActivity ],  shallow)
     const [ setShowEdit, setShowDelete ] = usePopups((state)=> 
           [state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
-    const [ showTooltip, setShowTooltip] = useState("")
+    const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
 	const navigate = useNavigate()
+
+	const timeTooltip = async(id: string) =>{
+		const timeMs = timeToNextAlarm(alarms.filter( item =>  item.id === id  )[0])
+		const time = timeToUnits(Math.round(timeMs/1000))
+		setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)})`)
+	} 
 
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
@@ -67,11 +74,7 @@ const Alarms = () => {
             }
         }
 
-        const timeTooltip = (id: string) =>{
-            const timeMs = timeToNextAlarm(alarms.filter( item =>  item.id === id  )[0])
-            const time = timeToUnits(Math.round(timeMs/1000))
-            setShowTooltip(`${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)}`)
-        } 
+
         const occurenceInfo = (occurence: AlarmCases, weekdays: Array<WeekDay>, date: string)=> {
             switch(occurence){
                 case AlarmCases.Weekly:
@@ -152,20 +155,17 @@ const Alarms = () => {
                     <Card
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
-                        onMouseLeave={()=>{setShowButtons("")}}
+                        onMouseLeave={()=>{setShowButtons(" ")}}
                         onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
                         mb={"5px"}
                         id={`alarmCardContainer-${key}`}
                         size={"sm"}
                     >                        
-                        <CardBody>
-                            <Tooltip 
-                               label={showTooltip}
-                            >                               
-                                <CardHeader >
-                                    {`${capitalize(occurence)}: `} {<Text as="b">{label}</Text>}
-                                </CardHeader> 
-                            </Tooltip>
+                        <CardBody>           
+                            <CardHeader >
+                                {`${capitalize(occurence)}: `} {<Text as="b">{label}</Text>}
+                                {(showButtons === id)?showTiming:""} 
+                            </CardHeader> 
                             <HStack 
                                divider={<StackDivider />}
                             >
