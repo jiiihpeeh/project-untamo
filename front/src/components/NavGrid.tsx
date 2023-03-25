@@ -266,7 +266,7 @@ const NavGrid = () => {
                         id="avatar-button"
                         onClick={()=> setShowUserMenu(!showUserMenu)}
                         cursor="pointer"
-                        m={"1%"}
+                        m={"3%"}
                     />
                 </>}
             </Flex>
