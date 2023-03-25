@@ -29,29 +29,24 @@ const Alarms = () => {
           [state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
     const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
-	let   timeIntervalID = useRef<string | null>(null) 
-	const [ timeCalculator, setTimeCalculator ] = useState(0)
+	const   timeIntervalID = useRef<string | null>(null) 
+	const counterLauncher = useRef<boolean>(false) 
 	const navigate = useNavigate()
 
-	const timeTooltip = async() =>{
-        setTimeCalculator(timeCalculator + 1 )
-        if( timeCalculator === 0){
-			const updater = () => {
-				if(timeIntervalID.current){
-					const timeMs = timeToNextAlarm(alarms.filter( item =>  item.id === timeIntervalID.current  )[0])
-					const time = timeToUnits(Math.round(timeMs/1000))
-					setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
-				}
-				else if(showTiming.length >0){
-					setShowTiming("")
-				}
-			setTimeout(()=>updater(),200)	
+	const timeCounter = async() =>{
+		if(timeIntervalID.current){
+				const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current  )[0])
+				const time = timeToUnits(Math.round(timeMs/1000))
+				setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
 			}
-			updater()
-        }
+		setTimeout(()=>timeCounter(),330)	
 	}
-
-
+	useEffect(() => {
+		if(!counterLauncher.current){
+			timeCounter()
+			counterLauncher.current = true
+		}
+	},[])
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
         let timeAlarmMap = new Map <number, Set<string>>()
@@ -170,15 +165,18 @@ const Alarms = () => {
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
                         onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
-                        onMouseEnter={() => { setShowButtons(id); timeIntervalID.current = id; (!timeCalculator)?timeTooltip():{}}}
+                        onMouseEnter={() => { setShowButtons(id); timeIntervalID.current = id}}
                         mb={"5px"}
                         id={`alarmCardContainer-${key}`}
                         size={"sm"}
                     >                        
                         <CardBody>           
                             <CardHeader >
-                                {`${capitalize(occurence)}: `} {<Text as="b">{label}</Text>}
-                                {(showButtons === id)?showTiming:""} 
+								{(showButtons !== id)? 
+									<Text>{capitalize(occurence)}: <Text as="b">{label}</Text></Text>:
+                                <SlideFade in={showButtons === id} > 
+									{`${capitalize(occurence)}: `} <Text as="b">{label}</Text>  {showTiming}
+								</SlideFade>}
                             </CardHeader> 
                             <HStack 
                                divider={<StackDivider />}
