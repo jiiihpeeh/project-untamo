@@ -122,10 +122,9 @@ const NavGrid = () => {
             setAvatarSize("xs")
         }else if(navHeight < 51){
             setAvatarSize("sm")
-        // }else if(navHeight<68){
         }else if(navHeight<68){
             setAvatarSize("md")
-        }else if(navHeight<70){
+        }else {
             setAvatarSize("lg")
         }
     },

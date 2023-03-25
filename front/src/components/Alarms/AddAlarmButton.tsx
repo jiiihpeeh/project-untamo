@@ -12,6 +12,7 @@ function AddAlarmButton(props: Props) {
 	const windowSize = usePopups((state)=>state.windowSize)
 	const [ buttonPosition, setButtonPosition ] = useState<React.CSSProperties>({})
 	const navBarTop = useSettings((state)=> state.navBarTop)
+	const navHeight = useSettings((state)=> state.height)
 
 	const updatePosition = async() =>{
 		if(mounting.current){
@@ -19,7 +20,7 @@ function AddAlarmButton(props: Props) {
 			let add = (windowSize.width-rect.right < 65)?-21:0
 			setButtonPosition(
 								{
-									bottom: (navBarTop)?windowSize.height *0.05:Math.min(windowSize.height -65, windowSize.height *0.85),
+									bottom: (navBarTop)?windowSize.height *0.05:windowSize.height *0.05 +  navHeight,
 									left: rect.right + add,								
 									position: "fixed"
 								}
@@ -29,7 +30,7 @@ function AddAlarmButton(props: Props) {
 
 	useEffect(() => {
 		updatePosition()
-	},[alarms, windowSize, mounting, navBarTop ])
+	},[alarms, windowSize, mounting, navBarTop, navHeight ])
 
 
 	return (
