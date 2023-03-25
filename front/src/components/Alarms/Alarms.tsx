@@ -29,13 +29,28 @@ const Alarms = () => {
           [state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
     const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
+	let   timeIntervalID = useRef<string | null>(null) 
+	const [ timeCalculator, setTimeCalculator ] = useState(0)
 	const navigate = useNavigate()
 
-	const timeTooltip = async(id: string) =>{
-		const timeMs = timeToNextAlarm(alarms.filter( item =>  item.id === id  )[0])
-		const time = timeToUnits(Math.round(timeMs/1000))
-		setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)})`)
-	} 
+	const timeTooltip = async() =>{
+        setTimeCalculator(timeCalculator + 1 )
+        if( timeCalculator === 0){
+			const updater = () => {
+				if(timeIntervalID.current){
+					const timeMs = timeToNextAlarm(alarms.filter( item =>  item.id === timeIntervalID.current  )[0])
+					const time = timeToUnits(Math.round(timeMs/1000))
+					setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
+				}
+				else if(showTiming.length >0){
+					setShowTiming("")
+				}
+			setTimeout(()=>updater(),200)	
+			}
+			updater()
+        }
+	}
+
 
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
@@ -73,7 +88,6 @@ const Alarms = () => {
                 }
             }
         }
-
 
         const occurenceInfo = (occurence: AlarmCases, weekdays: Array<WeekDay>, date: string)=> {
             switch(occurence){
@@ -155,8 +169,8 @@ const Alarms = () => {
                     <Card
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
-                        onMouseLeave={()=>{setShowButtons(" ")}}
-                        onMouseEnter={() => { setShowButtons(id); timeTooltip(id)}}
+                        onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
+                        onMouseEnter={() => { setShowButtons(id); timeIntervalID.current = id; (!timeCalculator)?timeTooltip():{}}}
                         mb={"5px"}
                         id={`alarmCardContainer-${key}`}
                         size={"sm"}
