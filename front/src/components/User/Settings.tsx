@@ -4,7 +4,7 @@ import {    Modal,ModalOverlay,ModalContent,ModalHeader,
             Button, Table,Thead, Tbody,Tr,Th,Td,TableContainer } from '@chakra-ui/react'
 import React from 'react'
 import { usePopups, useSettings } from '../../stores'
-import Color from './Colors'
+import TimeFormat from './TimeFormat'
 
 const Settings = () => {
 	const setShowSettings = usePopups((state)=> state.setShowSettings)
@@ -13,9 +13,6 @@ const Settings = () => {
 
     const navBarTop = useSettings((state) => state.navBarTop)
     const setNavBarTop = useSettings((state) => state.setNavBarTop)
-
-    const clock24 = useSettings((state) => state.clock24)
-    const setTimeFormat = useSettings((state) => state.setTimeFormat)
 
 	return (
             <Modal 
@@ -83,22 +80,7 @@ const Settings = () => {
                                         Time Format
                                     </Td>
                                     <Td>
-                                        <RadioGroup>
-                                            <HStack>
-                                                <Radio 
-                                                    isChecked={clock24} 
-                                                    onChange={()=>setTimeFormat(!clock24)}
-                                                >
-                                                    24 h
-                                                </Radio>
-                                                <Radio 
-                                                    isChecked={!clock24} 
-                                                    onChange={()=>setTimeFormat(!clock24)}
-                                                >
-                                                    12 h
-                                                </Radio>
-                                            </HStack>
-                                        </RadioGroup>
+                                        <TimeFormat/>
                                     </Td>
                                 </Tr>
                             </Tbody>

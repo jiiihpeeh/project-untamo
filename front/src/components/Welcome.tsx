@@ -1,21 +1,17 @@
 import React, { useEffect} from "react"
 import { useNavigate } from "react-router-dom"
 import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList, Box, Divider,
-         Tooltip, MenuItem , Spacer, HStack, VStack, Radio, RadioGroup, Center } from '@chakra-ui/react'
+         Tooltip, MenuItem , Spacer, HStack, VStack, Center } from '@chakra-ui/react'
 import { useLogIn, useDevices, extend } from "../stores"
 import usePopups from "../stores/popUpStore"
 import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
 import { SessionStatus, Path } from "../type"
-
 import DeviceIcons from "./Device/DeviceIcons"
-import { Device } from "../type"
-import { useSettings } from '../stores'
+import TimeFormat from "./User/TimeFormat"
+
 
 const Welcome = () => {
     const userInfo = useLogIn((state)=> state.user)
-    const clock24 = useSettings((state)=>state.clock24)
-    const setClock24 = useSettings((state)=>state.setTimeFormat)
-
     const devices  = useDevices((state)=> state.devices)
     const setCurrentDevice  = useDevices((state)=> state.setCurrentDevice)
     const sessionStatus = useLogIn((state)=> state.sessionValid)
@@ -27,23 +23,11 @@ const Welcome = () => {
             <Center>
                 <Box m={"20px"}>
                     <Spacer/>
-                    <Text as="b">Time Format</Text>
+                    <Text as="b">
+                        Time Format
+                    </Text>
                     <VStack>
-                            <RadioGroup>
-                                <Radio
-                                    isChecked={clock24}
-                                    onChange={()=>setClock24(!clock24)}
-                                >
-                                    24 h
-                                </Radio>
-    {/*                             <Spacer/>
-    */}                            <Radio
-                                    isChecked={!clock24}
-                                    onChange={()=>setClock24(!clock24)}
-                                >
-                                    12 h
-                                </Radio>
-                            </RadioGroup>
+                        <TimeFormat/>
                     </VStack>
                 </Box>
             </Center>

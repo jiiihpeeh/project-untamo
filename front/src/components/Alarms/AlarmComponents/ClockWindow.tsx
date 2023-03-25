@@ -1,7 +1,7 @@
      
 
 import {  Table, Tbody, Tr, Td, Modal,ModalOverlay, Heading,
-          ModalContent, ModalHeader, Center, Box, 
+          ModalContent, ModalHeader, Center, Box, Text,
           ModalFooter, ModalBody, HStack, VStack,
           ModalCloseButton, Button, IconButton } from '@chakra-ui/react'
 //import CircularSlider from '@fseehawer/react-circular-slider'
@@ -152,11 +152,12 @@ function ClockWindow() {
                                         onClick={()=>setParsedTime({...parsedTime, minutes: (parsedTime.minutes === 0)?59:Math.max(0,parsedTime.minutes - 1)})}
                                     />
                                     </VStack>
+                                    {!clock24 && <Text as="b">
+                                        {(Math.floor(parsedTime.hours) >= 12)?"  PM":"  AM"}
+                                    </Text>}
                                 </Center>  
                             </Td>
-                            {!clock24 && <Td>
-                                {(Math.floor(parsedTime.hours) > 12)?" PM":" AM"}
-                            </Td>}
+
                         </Tr>
                     </Tbody>
                 </Table>
