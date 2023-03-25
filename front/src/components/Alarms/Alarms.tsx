@@ -2,8 +2,8 @@ import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Tex
 import React, { useState, useRef, useCallback, useEffect } from "react"
 import {  Container, Heading, Switch, Tooltip, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
-import { useLogIn, useDevices, useAlarms, usePopups, useSettings } from "../../stores"
-import { WeekDay } from "../../type"
+import { useLogIn, useDevices, useAlarms, usePopups, useSettings, extend } from "../../stores"
+import { Path, WeekDay } from "../../type"
 import { DeleteIcon, EditIcon, CheckIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases, Device } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
@@ -13,9 +13,11 @@ import { timePadding, time24hToTime12h, capitalize } from '../../utils'
 import { shallow } from 'zustand/shallow'
 import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
+import { useNavigate } from "react-router-dom"
 
 const Alarms = () => {
     const containerRef =useRef<HTMLDivElement>(null)
+	const currentDevice = useDevices((state) => state.currentDevice)
     const cardColors = useSettings((state)=> state.cardColors)
     const clock24 = useSettings((state)=> state.clock24)
     const [devices, viewableDevices] = useDevices(state => 
@@ -26,6 +28,7 @@ const Alarms = () => {
           [state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
     const [ showTooltip, setShowTooltip] = useState("")
     const [ showButtons, setShowButtons] = useState("")
+	const navigate = useNavigate()
 
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
@@ -282,7 +285,11 @@ const Alarms = () => {
         }
         return daysFormat
     }
-
+	useEffect(() => {
+		if(!currentDevice){
+			navigate(extend(Path.Welcome))
+		}
+	},[currentDevice])
     return (
             <>
                 <Container 

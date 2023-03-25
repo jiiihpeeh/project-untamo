@@ -1,7 +1,7 @@
-import React, { useEffect} from "react"
+import React, { useEffect, useRef} from "react"
 import { useNavigate } from "react-router-dom"
 import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList, Box, Divider,
-         Tooltip, MenuItem , Spacer, HStack, VStack, Center } from '@chakra-ui/react'
+         Tooltip, MenuItem , Spacer, HStack, VStack, Center, Heading } from '@chakra-ui/react'
 import { useLogIn, useDevices, extend } from "../stores"
 import usePopups from "../stores/popUpStore"
 import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
@@ -16,6 +16,7 @@ const Welcome = () => {
     const setCurrentDevice  = useDevices((state)=> state.setCurrentDevice)
     const sessionStatus = useLogIn((state)=> state.sessionValid)
     const setShowAddDevice = usePopups(state => state.setShowAddDevice)
+    const menuRef = useRef<HTMLButtonElement>(null)
     const  navigate = useNavigate()
 
     const TimeFormatSelect = () => {
@@ -41,15 +42,20 @@ const Welcome = () => {
                                                     onClick={() => setCurrentDevice(device.id)}   
                                                     key={`menu-device-${device.id}`}
                                                     closeOnSelect={true}
+                                                    alignContent={"center"}
                                                 >
-                                                    <Tooltip label={device.type}>   
-                                                        <HStack> 
-                                                            <Text>
-                                                                {device.deviceName}  
-                                                            </Text>
-                                                            <DeviceIcons device={device.type}/>
-                                                        </HStack>
-                                                    </Tooltip>   
+                                                    <HStack>
+                                                        <Spacer/>
+                                                        <Text
+                                                            alignContent={"right"}
+                                                            textAlign="center"
+                                                        >
+                                                            {device.deviceName}  
+                                                        </Text>
+                                                        <Spacer/>
+                                                        <DeviceIcons device={device.type}/>
+                                                        <Spacer/>
+                                                    </HStack>
                                                 </MenuItem>
                                             )
                                         }
@@ -67,6 +73,7 @@ const Welcome = () => {
                             onClick={() => setShowAddDevice(true)} 
                             id="add-device-button"
                             key="add-device-button"
+                            width={"50%"}
                         >
                             Add a device
                         </Button>
@@ -81,16 +88,18 @@ const Welcome = () => {
 
                     >
                         <GridItem>
-                            <Menu
-                                matchWidth={true}
-                            >
+                            <Menu>
                                 <MenuButton 
                                     as={Button} 
                                     rightIcon={<Down/>}
+                                    ref={menuRef}
+                                    width="50%"
                                 >
                                     Select a Device
                                 </MenuButton>
-                                <MenuList>
+                                <MenuList
+                                    width={(menuRef.current)?(menuRef.current.getBoundingClientRect().width):0}
+                                >
                                     {menuDevices()}
                                 </MenuList>
                             </Menu>
@@ -106,6 +115,7 @@ const Welcome = () => {
                                 onClick={() => setShowAddDevice(true)} 
                                 id="add-device-button"
                                 key="add-device-button"
+                                width={"50%"}
                             >
                                 Add a device
                             </Button>
@@ -122,7 +132,14 @@ const Welcome = () => {
     
     return(
         <>{(userInfo.screenName.length > 0)? 
-            <Text>Welcome, <Text as='b'>{userInfo.screenName}</Text>!</Text>: ''}
+            <Heading
+                textShadow={"xl"}
+                m="2%"
+            >
+                Welcome, <Text as='b'>
+                            {userInfo.screenName}
+                        </Text>!
+            </Heading>: ''}
             <Divider/>
             <Spacer/>
             <TimeFormatSelect/>

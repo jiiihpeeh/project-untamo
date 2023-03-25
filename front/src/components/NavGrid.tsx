@@ -2,7 +2,7 @@ import { Link as ReachLink } from 'react-router-dom'
 import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image, Icon, IconProps } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useNavigate } from 'react-router-dom'
-import { useSettings, useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio } from '../stores'
+import { useSettings, useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
 import { SessionStatus, Path } from '../type'
 import { timePadding } from '../utils'
 import Countdown from "react-countdown"
@@ -18,6 +18,7 @@ const NavGrid = () => {
     const adminTime = useAdmin((state) => state.time )
     const sessionStatus  = useLogIn((state) => state.sessionValid)
     const userInfo  = useLogIn((state) => state.user)
+    const currentDevice = useDevices((state) => state.currentDevice)
     const setShowAbout = usePopups((state)=> state.setShowAbout)
     const setShowServerEdit = usePopups((state)=> state.setShowServerEdit)
     const clearAdminTimeout = useTimeouts((state)=> state.clearAdminTimeout)
@@ -195,7 +196,7 @@ const NavGrid = () => {
                     <Link
                         key="alarms-link"
                         as={ReachLink} 
-                        to={(!urlEnds(Path.PlayAlarm))?extend(Path.Alarms):extend(Path.PlayAlarm)} 
+                        to={(!urlEnds(Path.PlayAlarm) && currentDevice )?extend(Path.Alarms):(!currentDevice)?extend(Path.Welcome):extend(Path.PlayAlarm)} 
                         id={`link-alarm`} 
                         onClick={()=>(urlEnds(Path.Alarms) )?setShowAlarmPop(!showAlarmPop):{}}
                     >
