@@ -13,8 +13,6 @@ import { timePadding, time24hToTime12h, capitalize } from '../../utils'
 import { shallow } from 'zustand/shallow'
 import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
-import id from 'date-fns/esm/locale/id/index.js'
-//import { useResizeDetector } from 'react-resize-detector'
 
 const Alarms = () => {
 	const containerRef =useRef<HTMLDivElement>(null)
@@ -103,6 +101,23 @@ const Alarms = () => {
                         </Text>
                     </Box>
                     )
+				case AlarmCases.Daily:
+					return(
+						<Box>
+							<Heading 
+								size='xs' 
+								textTransform='uppercase'
+							>
+								Weekdays
+							</Heading>
+							<Text 
+								pt='2' 
+								fontSize='sm'
+							>
+								{weekdayDisplay(Object.values(WeekDay).filter((item) => item), date)}
+							</Text>
+                        </Box>
+					)
                 case AlarmCases.Yearly:
                     return(
                         <Box>
@@ -153,14 +168,12 @@ const Alarms = () => {
 								divider={<StackDivider />}
 							>
                             <Box>
-                                
                                 <Heading 
 									size='xl' 
 									textTransform='uppercase'
 								>
                                     {getTime(time)}
                                 </Heading>
-                               
                             </Box>
                             <Box>
                                 <Heading 
