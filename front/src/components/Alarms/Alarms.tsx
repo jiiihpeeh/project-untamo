@@ -138,7 +138,6 @@ const Alarms = () => {
             }
         }
         const getTime = (time: string)=>{
-            let string12 = ""
             if(!clock24){
                 let fmt = time24hToTime12h(time)
                 return (<HStack><Text>{fmt.time}  <Text fontSize='sm'>{fmt['12h']}</Text></Text></HStack>)

@@ -42,6 +42,8 @@ const NavGrid = () => {
     const [ validItems, setValidItems ] = useState(["login", "register", "about"])
     const [ showAdmin, setShowAdmin ] = useState(false)
     const [ pointing, setPointing ] = useState<typeof Down>(Down)
+    const [ avatarSize, setAvatarSize ] = useState("md")
+
     
     const navigate  = useNavigate()
     useLayoutEffect(() => {
@@ -109,8 +111,24 @@ const NavGrid = () => {
         }
         let tID = setTimeout(adminTimeOut, adminTime - Date.now())
         setAdminTimeout(tID)
-    },[adminTime, navigate])
+    },[adminTime])
  
+    useEffect(() => {
+        setNavigationTriggered()
+        //"2xs" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "full"
+        if(navHeight<30){
+            setAvatarSize("2xs")
+        }if(navHeight < 35){
+            setAvatarSize("xs")
+        }else if(navHeight < 51){
+            setAvatarSize("sm")
+        }else if(navHeight<68){
+            setAvatarSize("md")
+        }else if(navHeight<70){
+            setAvatarSize("lg")
+        }
+    },
+    [navHeight])
     return (
             <Flex 
                 display="flex"
@@ -133,7 +151,7 @@ const NavGrid = () => {
                     <Image 
                         ml={"2px"}
                         src={logo}
-                        height={"50px"}
+                        height={navHeight*0.98}
                         className='LogoClock'
                         draggable="false"
                         pointerEvents={"none"}
@@ -241,15 +259,14 @@ const NavGrid = () => {
                 </>}
                 {validItems.includes('user') && <>
                     <Spacer/>
-                    <Box mr="4%">
-                        <Link
-                            as={Avatar} 
-                            name={userInfo.screenName} 
-                            size='sm'
-                            id="avatar-button"
-                            onClick={()=> setShowUserMenu(!showUserMenu)}
-                        />
-                    </Box>
+                    <Avatar
+                        name={userInfo.screenName} 
+                        size={avatarSize}
+                        id="avatar-button"
+                        onClick={()=> setShowUserMenu(!showUserMenu)}
+                        cursor="pointer"
+                        m={"1%"}
+                    />
                 </>}
             </Flex>
         )

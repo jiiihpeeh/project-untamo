@@ -1,3 +1,5 @@
+import { format } from 'date-fns'
+import { useState } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
@@ -19,6 +21,7 @@ type UseSettings =  {
     cardColors: CardColors,
     setCardColors: (color : string, mode: string) => void,
     setDefaultCardColors: () => void,
+    setPanelSize: (size: number) => void,
 }
 
 
@@ -27,6 +30,7 @@ const setColors = (color: string, mode: string) =>{
     let newColors : CardColors = {...colors, [mode]: color }
     useSettings.setState({cardColors: {...newColors}})
 }
+
 
 const useSettings = create<UseSettings>()(
     persist(
@@ -80,7 +84,16 @@ const useSettings = create<UseSettings>()(
                         cardColors: {...defaultCard},
                     }
                 )
-            }
+            },
+            setPanelSize: (size) => {
+                set(
+                    {
+                        height: size,
+                        mt: (get().mt >0)?size:0,
+                        mb: (get().mb >0)?size:0
+                    }
+                )
+            },
           }
       ),
       {
@@ -93,7 +106,7 @@ const useSettings = create<UseSettings>()(
                 mb: state.mb,
                 height: state.height,
                 cardColors: state.cardColors,
-                clock24: state.clock24
+                clock24: state.clock24,
               }
           ),
       }
