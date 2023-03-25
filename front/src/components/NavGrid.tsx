@@ -69,17 +69,14 @@ const NavGrid = () => {
             if(sessionStatus === SessionStatus.Valid){
                 setValidItems(["alarms", "devices", 'user'])
                 await sleep(5)
-                setNavigationTriggered()
             } else {
                 setValidItems(["register",'server', "about"])  
                 await sleep(15)
                 let isLogIn = urlEnds(Path.LogIn)
                 if(!isLogIn){
                     setValidItems(["login",'server', "about"])
-                    setNavigationTriggered() 
                 }else{
                     setValidItems(["register",'server', "about"])
-                    setNavigationTriggered()
                 }  
             }
         }
@@ -90,6 +87,9 @@ const NavGrid = () => {
         setNavigationTriggered()
         setPointing((navBarTop)?Down:Up)
     },[navBarTop])
+    useEffect(() => {
+        setNavigationTriggered()
+    },[showAdmin, validItems])
     useEffect(()=> {
         const adminTimeOut = async() =>{
             setShowAdmin(false)
@@ -122,6 +122,7 @@ const NavGrid = () => {
             setAvatarSize("xs")
         }else if(navHeight < 51){
             setAvatarSize("sm")
+        // }else if(navHeight<68){
         }else if(navHeight<68){
             setAvatarSize("md")
         }else if(navHeight<70){
