@@ -6,6 +6,7 @@ import Message from "./Message"
 import React from "react"
 import AlarmTone from "./AlarmTone"
 import AlarmActive from "./AlarmActive"
+import AlarmTask from "./AlarmTask";
 
 const AlarmYearly = () => {
     return(
@@ -16,6 +17,7 @@ const AlarmYearly = () => {
                     <DateSelector/>
                     <DeviceChecker/>
                     <AlarmActive/>
+                    <AlarmTask/>
                     <AlarmTone/>
                 </Stack>
             </Center>

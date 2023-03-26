@@ -224,7 +224,9 @@ const logIn = async(email: string, password: string) => {
             time: number,
             owner: boolean
         }
+        console.log(res)
         let resp : Resp = res.data
+        
         //await initAudioDB()
         let now = Date.now()
         useLogIn.setState(
@@ -254,6 +256,7 @@ const logIn = async(email: string, password: string) => {
         notification("Successfully logged in",3500, Status.Success)
         useMessage.setState({ message: "Successfully logged in"})
     }catch(err:any){
+        console.log(err)
         notification("Log In Failed", 4500,  Status.Error)
     }
 }

@@ -67,6 +67,7 @@ const AddAlarm = () => {
                     bg="blue600" 
                     h={65} 
                     w={65}
+                    mb={50}
                 >
                     {FabButtons()}
                 </Fab>

@@ -12,6 +12,7 @@ let Schema = mongoose.Schema({
     user:{type:String,index:true},
     modified:{type: Number, default: Date.now()},
     fingerprint:{type: String, default: ""}
+    closeTask:{type: Boolean, default: false}
 });
 
 Schema.virtual("id").get(function() {

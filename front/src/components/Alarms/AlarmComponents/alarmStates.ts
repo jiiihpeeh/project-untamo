@@ -4,6 +4,7 @@ import { timePadding } from "../../../utils"
 import { numberToWeekDay } from '../calcAlarmTime'
 import { useDevices, useLogIn } from '../../../stores'
 import { stringifyDate, stringToDate } from './stringifyDate-Time'
+import { Alarm } from '../../../type'
 
 export const enum Direction {
     Increase="inc",
@@ -94,20 +95,6 @@ const alarmTimeInit = () => {
 }
 
 
-type Alarm = {
-    occurence : AlarmCases,
-    label : string,
-    time : string,
-    date : string,
-    devices : Array<string>,
-    weekdays : Array<WeekDay>,
-    active : boolean,
-    snooze : Array<number>,
-    id : string,
-    tone: string,
-    fingerprint: string,
-    modified: number
-}
 
 type AlarmStates = {
     occurence : AlarmCases,
@@ -122,6 +109,8 @@ type AlarmStates = {
     setDate: (d:Date) => void,
     devices: Array<string>,
     setDevices: (deviceIDs:Array<string>) => void,
+    closeTask: boolean,
+    setCloseTask: (to:boolean) => void,
     toggleDevices: (deviceID:string) => void,
     weekdays: Array<WeekDay>,
     toggleWeekdays: (weekday: WeekDay) => void
@@ -191,6 +180,14 @@ const useAlarm = create<AlarmStates>((set, get) => (
                     devices: deviceIds
                 }
         ),
+        closeTask: false,
+        setCloseTask: (to:boolean) => {
+            set(
+                {
+                    closeTask: to
+                }
+            )
+        },
         toggleDevices: (id) => set(
             state => (
                 {
@@ -253,7 +250,8 @@ const useAlarm = create<AlarmStates>((set, get) => (
                             id : get().id,
                             tone: get().tone,
                             fingerprint: fingerprint(),
-                            modified: Date.now()
+                            modified: Date.now(),
+                            closeTask: get().closeTask,
                         }
         },
         alarmToEditDialog: ( alarm) => {
@@ -269,6 +267,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                     snoozed: alarm.snooze,
                     date: stringToDate(alarm.date),
                     tone: alarm.tone,
+                    closeTask: alarm.closeTask,
                 }
             )
             if(alarm.occurence === AlarmCases.Once){

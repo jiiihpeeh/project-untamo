@@ -25,7 +25,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.jpj.mobile"
+      "package": "com.jpj.mobile",
+      "permissions":["WAKE_LOCK"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

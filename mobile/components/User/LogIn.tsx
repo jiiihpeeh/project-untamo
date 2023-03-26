@@ -112,7 +112,7 @@ const LogIn = () => {
                             value={password}
                             onChangeText={text => setPassword(text)} 
                     />
-                    <Button onPress={()=>logIn(user,password)} 
+                    <Button onPress={()=>{console.log("pressed ", password, user);logIn(user,password)}} 
                             ml="xs"
                             mr="xs"
                             mt="xl"                            

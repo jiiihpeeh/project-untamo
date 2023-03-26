@@ -88,5 +88,6 @@ export type Alarm = {
     id: string,
     tone: string,
     fingerprint: string,
-    modified: number
+    modified: number,
+    closeTask:boolean
 }

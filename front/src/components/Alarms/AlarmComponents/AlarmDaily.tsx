@@ -5,6 +5,8 @@ import Message from "./Message"
 import React from "react"
 import AlarmTone from "./AlarmTone"
 import AlarmActive from "./AlarmActive"
+import AlarmTask from "./AlarmTask";
+
 const AlarmDaily = () => {
     return(
         <Center>
@@ -13,6 +15,7 @@ const AlarmDaily = () => {
                 <TimeSelector/>
                 <DeviceChecker/>
                 <AlarmActive/>
+                <AlarmTask/>
                 <AlarmTone/>
             </Stack>
         </Center>

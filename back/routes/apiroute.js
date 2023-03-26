@@ -53,7 +53,8 @@ router.post("/alarm/",function(req,res) {
 		active:req.body.active,
 		tone:req.body.tone,
 		fingerprint: req.body.fingerprint,
-		modified: req.body.modified
+		modified: req.body.modified,
+		closeTask: req.body.closeTask
 	})
 	console.log("ALARMID:"+alarm.id)
 	alarm.save(function(err) {
@@ -101,7 +102,8 @@ router.put("/alarm/:id",function(req,res) {
 		active:req.body.active,
 		tone:req.body.tone,
 		fingerprint: req.body.fingerprint,
-		modified: req.body.modified
+		modified: req.body.modified,
+		closeTask: req.body.closeTask
 	}
 	if(req.body.snooze && Array.isArray(req.body.snooze)) {
 		alarm.snooze = req.body.snooze

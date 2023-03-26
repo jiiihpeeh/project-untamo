@@ -6,18 +6,18 @@ import AddDevice from "./Devices/AddDevice"
 const Welcome = () => {
 
     return(
-        <>  
-        {/* <Div> */}
-                <DeviceSelector/>
-                <Text 
-                    textAlign='center' 
-                    m={10}
-                > 
-                    or 
-                </Text>
-                <AddDevice/>
-            {/* </Div> */}
-        </>
+        <Div
+            alignItems="center"
+        >
+            <DeviceSelector/>
+            <Text 
+                textAlign='center' 
+                m={10}
+            > 
+                or 
+            </Text>
+            <AddDevice/>
+        </Div> 
     )
 }
 

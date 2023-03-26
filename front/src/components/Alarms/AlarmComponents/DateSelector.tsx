@@ -27,5 +27,5 @@ const DateSelector = () => {
         </Flex>
         
     )
-};
+}
 export default DateSelector

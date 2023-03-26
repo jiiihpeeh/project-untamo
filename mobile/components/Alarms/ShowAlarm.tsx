@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import {setAlarm, cancelAlarm} from 'react-native-alarm-module';
 import {View, Button, ToastAndroid, AppRegistry} from 'react-native';
-
+import * as TaskManager from 'expo-task-manager';
 // You have to register the task you would like executed as a headless task
 AppRegistry.registerHeadlessTask('ShowToastTask', () => () => ToastAndroid.show('Alarm toast!', ToastAndroid.SHORT));
 
@@ -21,7 +21,7 @@ const ShowAlarm = (props: Props) => {
         timestamp: newDate.valueOf(), // required
         type: 'setAlarmClock', // optional
         allowedInForeground: true, // optional 
-        wakeup: true, // optional
+        wakeup: false, // optional
         extra: 'something extra', // optional
       });
   

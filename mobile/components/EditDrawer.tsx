@@ -25,7 +25,8 @@ const EditDrawer = () => {
             bg="teal" 
             h={40} 
             w={40} 
-            m={10} 
+            m={10}
+            mb={60}
             rounded="circle"
             onPress={() => {
                     if (drawerRef.current) {

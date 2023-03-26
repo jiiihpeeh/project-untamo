@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown } from 'react-native-magnus'
+import { Button, Icon, Div,Text, Input, Image, Modal, Dropdown, ThemeProvider } from 'react-native-magnus'
 import { ScrollView, TouchableHighlight, View, SafeAreaView, StatusBar } from 'react-native'
 import AlarmButton from "./AlarmButton"
 import { timeForNextAlarm } from "./calcAlarmTime"
@@ -86,67 +86,61 @@ const Alarms = () => {
 
     }
 
-    return(
-        <>  
-        <StatusBar 
-            barStyle="dark-content" 
-        />
-        <SafeAreaView 
-            style=  {
-                        { 
-                            flex: 1 
-                        }
-                    }
-        >
-        <Div 
-            row 
-            alignItems="center"
-        >
-                <Text 
-                    fontSize={"xl"} 
-                    color={viewAllDevices?"gray": "black"} 
-                    flex={1} 
-                    m={10} 
-                    textAlign="center"
-                    onPress={() => setViewAllDevices(false)}
-                >
-                      This device
-                </Text>
-                <Text 
-                    fontSize={"xl"} 
-                    color={viewAllDevices?"black": "gray"}
-                    flex={1} m={10} 
-                    textAlign="center"
-                    onPress={() => setViewAllDevices(true)}
-                >
-                      All devices
-                </Text>
-
-        </Div>
-        <ScrollView>
-            {renderAlarms()}
-            <Button
-                onPress={()=> setShowAlarm(true)}
+    return(    
+    <ThemeProvider > 
+    <StatusBar/>
+    <SafeAreaView>
+     
+        
+            <Div 
+                row 
+                alignItems="center"
             >
-                Show Alarm
-            </Button>
-        </ScrollView>
-        <Div 
-            alignItems="flex-end" 
-            row
-        >
-            <EditAlarm/>
-        </Div>
-        <AddAlarm/>
-       
-        <EditDrawer/>
-        {/* <Button onPress={() => setAlarmWindow(true)}> Alarm</Button> */}
-        {/* <PlayAlarm/> */}
-        {/* <ShowAlarm showAlarm={showAlarm} setShowAlarm={setShowAlarm}/> */}
-        <AlarmWatcher/>
-        </SafeAreaView>
+                    <Text 
+                        fontSize={"xl"} 
+                        color={viewAllDevices?"gray": "black"} 
+                        flex={1} 
+                        m={10} 
+                        textAlign="center"
+                        onPress={() => setViewAllDevices(false)}
+                    >
+                        This device
+                    </Text>
+                    <Text 
+                        fontSize={"xl"} 
+                        color={viewAllDevices?"black": "gray"}
+                        flex={1} m={10} 
+                        textAlign="center"
+                        onPress={() => setViewAllDevices(true)}
+                    >
+                        All devices
+                    </Text>
 
-        </>
+            </Div>
+            <ScrollView>
+                {renderAlarms()}
+                <Button
+                    onPress={()=> setShowAlarm(!showAlarm)}
+                >
+                    {`Show Alarm ${showAlarm}`}
+                </Button>
+            <Div 
+                alignItems="flex-end" 
+                row
+            >
+                <EditAlarm/>
+            </Div>
+
+            {/* <Button onPress={() => setAlarmWindow(true)}> Alarm</Button> */}
+            {/* <PlayAlarm/> */}
+            <ShowAlarm showAlarm={showAlarm} setShowAlarm={setShowAlarm}/>
+            <AlarmWatcher/>
+            <AddAlarm/>
+            <EditDrawer/> 
+            </ScrollView> 
+        </SafeAreaView>
+        <StatusBar/>
+      </ThemeProvider>
     )
 }
 
