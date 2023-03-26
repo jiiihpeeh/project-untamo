@@ -11,7 +11,7 @@ let Schema = mongoose.Schema({
     active:{type:Boolean,default:true},
     user:{type:String,index:true},
     modified:{type: Number, default: Date.now()},
-    fingerprint:{type: String, default: ""}
+    fingerprint:{type: String, default: ""},
     closeTask:{type: Boolean, default: false}
 });
 
