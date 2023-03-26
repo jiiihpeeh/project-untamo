@@ -1,4 +1,3 @@
-
 export enum WeekDay  {
     Monday="Monday",
     Tuesday="Tuesday",
@@ -8,6 +7,7 @@ export enum WeekDay  {
     Saturday="Saturday",
     Sunday="Sunday"
 }
+
 export enum Path  {
     PlayAlarm="play-alarm",
     Alarms = "alarms",
@@ -18,7 +18,6 @@ export enum Path  {
     Clueless="clueless",
     Base= ""
 }
-
 
 export enum SessionStatus {
     NotValid = "not-valid",
@@ -34,6 +33,7 @@ export enum DeviceType {
     Desktop = "Desktop",
     Other = "Other"
 }
+
 export type Device = {
     id: string,
     deviceName: string,
@@ -58,7 +58,6 @@ export enum AdminAction {
     Delete="delete"
 }
 
-
 export declare type UserInfo = {
     email: string,
     screenName: string,
@@ -67,7 +66,6 @@ export declare type UserInfo = {
     admin: boolean,
     owner: boolean
 }
-
 
 export enum AlarmCases {
     Once = "once",
@@ -90,4 +88,10 @@ export type Alarm = {
     fingerprint: string,
     modified: number,
     closeTask:boolean
+}
+
+export enum CloseTask {
+    Obey = "obey",
+    Ignore = "ignore",
+    Force = "force"
 }

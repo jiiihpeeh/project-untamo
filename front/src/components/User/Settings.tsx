@@ -7,6 +7,7 @@ import {    Modal,ModalOverlay,ModalContent,ModalHeader,
 import React from 'react'
 import { usePopups, useSettings } from '../../stores'
 import TimeFormat from './TimeFormat'
+import CloseTaskMenu from './CloseTaskMenu'
 
 const Settings = () => {
     const setShowSettings = usePopups((state)=> state.setShowSettings)
@@ -110,6 +111,14 @@ const Settings = () => {
                                     </Td>
                                     <Td>
                                         <TimeFormat/>
+                                    </Td>
+                                </Tr>
+                                <Tr>
+                                    <Td>
+                                        Close Task
+                                    </Td>
+                                    <Td>
+                                        <CloseTaskMenu/>
                                     </Td>
                                 </Tr>
                             </Tbody>

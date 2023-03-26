@@ -2,23 +2,32 @@ import { format } from 'date-fns'
 import { useState } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import { CloseTask } from '../type'
 
 export type CardColors =  {
     even: string,
     odd: string,
     inactive: string
 }
-const defaultCard : CardColors = { inactive: "#ececec", even: '#c4ffff ', odd:"#ffff9d" }
+
+const defaultCard : CardColors = { 
+                                    inactive: "#ececec", 
+                                    even: '#c4ffff ', 
+                                    odd:"#ffff9d" 
+                                 }
+
 type UseSettings =  {
     navBarTop: boolean,
     height: number,
     mb: number,
     mt: number,
     clock24: boolean,
-    setTime24Format: (to: boolean) => void,
-    setNavBarTop: (to: boolean) => void
-    setHeight: (n:number) => void,
+    closeTask: CloseTask,
     cardColors: CardColors,
+    setCloseTask: (task: CloseTask) => void,
+    setTime24Format: (to: boolean) => void,
+    setNavBarTop: (to: boolean) => void,
+    setHeight: (n:number) => void,
     setCardColors: (color : string, mode: string) => void,
     setDefaultCardColors: () => void,
     setPanelSize: (size: number) => void,
@@ -75,6 +84,14 @@ const useSettings = create<UseSettings>()(
                 }
             },
             cardColors: defaultCard,
+            closeTask: CloseTask.Obey,
+            setCloseTask:(task) => {
+                set(
+                    {
+                        closeTask: task
+                    }
+                )
+            },
             setCardColors: (color, mode) => {
                 setColors(color, mode)
             },
@@ -89,8 +106,8 @@ const useSettings = create<UseSettings>()(
                 set(
                     {
                         height: size,
-                        mt: (get().mt >0)?size:0,
-                        mb: (get().mb >0)?size:0
+                        mt: (get().mt > 0)?size:0,
+                        mb: (get().mb > 0)?size:0
                     }
                 )
             },
@@ -107,11 +124,11 @@ const useSettings = create<UseSettings>()(
                 height: state.height,
                 cardColors: state.cardColors,
                 clock24: state.clock24,
+                closeTask: state.closeTask,
               }
           ),
       }
     )
 )
-
 
 export default useSettings
