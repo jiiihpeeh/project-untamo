@@ -18,11 +18,11 @@ const AlarmPop = () =>{
     const plays = useAudio((state)=> state.plays)
     const stop = useAudio((state)=> state.stop)
     const [alarms, runAlarm, setToEdit, timeForNextLaunch,  resetSnooze ] = useAlarms(state => 
-		[ state.alarms, state.runAlarm, state.setToEdit, state.timeForNextLaunch, state.resetSnooze ],  shallow)
+        [ state.alarms, state.runAlarm, state.setToEdit, state.timeForNextLaunch, state.resetSnooze ],  shallow)
     const currentDevice = useDevices(state =>  state.currentDevice)
     const devices = useDevices(state =>  state.devices)
     const [ showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups((state)=> 
-		[ state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
+          [ state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
     const [ noSnooze, setNoSnooze ] = useState(true)
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
     const [ posStyle, setPosStyle ] = useState<React.CSSProperties>({})
@@ -31,19 +31,18 @@ const AlarmPop = () =>{
 
     const footerText = () => {
         let addBtn = (<Button onClick={()=>setShowAddAlarm(true)}  width="100%" >Add an Alarm</Button>)
-		if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
-			return (<Box> <Text alignContent={"center"}>No alarms for this device</Text> {addBtn} </Box>) 
-		}
-		const units = timeToUnits(timeForNextLaunch)
-		if(units.days === 0){
-			if(units.hours === 0){
-				return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.minutes)}:{timePadding(units.seconds)}</Text> {addBtn} </Box>)
-			} 
-			return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.hours)}:{timePadding(units.minutes)}  </Text>{addBtn}</Box>)
-		}
-		return (<Box> <Text alignContent={"center"}>Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} </Text> {addBtn} </Box>)
-	}
-
+        if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
+            return (<Box> <Text alignContent={"center"}>No alarms for this device</Text> {addBtn} </Box>) 
+        }
+        const units = timeToUnits(timeForNextLaunch)
+        if(units.days === 0){
+            if(units.hours === 0){
+               return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.minutes)}:{timePadding(units.seconds)}</Text> {addBtn} </Box>)
+            } 
+            return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.hours)}:{timePadding(units.minutes)}  </Text>{addBtn}</Box>)
+        }
+        return (<Box> <Text alignContent={"center"}>Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} </Text> {addBtn} </Box>)
+    }
 
     const timerInfo = () =>{
         let postFix = ""
@@ -142,7 +141,7 @@ const AlarmPop = () =>{
                     </PopoverFooter>
                     </PopoverContent>
                 </Portal>
-            </Popover>        
+            </Popover>
     )
 }
 
