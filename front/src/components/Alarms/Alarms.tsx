@@ -30,23 +30,23 @@ const Alarms = () => {
     const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
 	const   timeIntervalID = useRef<string | null>(null) 
-	const counterLauncher = useRef<boolean>(false) 
+	const counterLaunched = useRef<boolean>(false) 
 	const navigate = useNavigate()
 
 	const timeCounter = async() =>{
 		if(timeIntervalID.current){
-				const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current  )[0])
-				const time = timeToUnits(Math.round(timeMs/1000))
-				setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
-			}
-		setTimeout(()=>timeCounter(),330)	
+			const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current)[0])
+			const time = timeToUnits(Math.round(timeMs/1000))
+			setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
+			setTimeout(()=>timeCounter(),500)
+		}
 	}
 	useEffect(() => {
-		if(!counterLauncher.current){
+		if(!counterLaunched.current){
 			timeCounter()
-			counterLauncher.current = true
+			counterLaunched.current = true
 		}
-	},[])
+	},[showButtons])
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
         let timeAlarmMap = new Map <number, Set<string>>()
@@ -165,7 +165,7 @@ const Alarms = () => {
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
                         onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
-                        onMouseEnter={() => { setShowButtons(id); timeIntervalID.current = id}}
+                        onMouseEnter={() => { counterLaunched.current = false; setShowButtons(id); timeIntervalID.current = id}}
                         mb={"5px"}
                         id={`alarmCardContainer-${key}`}
                         size={"sm"}

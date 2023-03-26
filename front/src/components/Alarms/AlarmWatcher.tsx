@@ -25,7 +25,7 @@ const AlarmWatcher  = () => {
             setTimeForNextLaunch(-1)
             if(runAlarm){
                 if((runAlarm.active === false) || alarms.filter(a => a.id == runAlarm.id).length === 0 || (currentDevice && (!runAlarm.devices.includes(currentDevice)))){
-                    setRunAlarm('')
+                    setRunAlarm(undefined)
                 }
             }
             if(!runOtherSnooze && urlEnds(Path.PlayAlarm) && runAlarm ) { 
@@ -39,8 +39,7 @@ const AlarmWatcher  = () => {
                 }
             }
             if(alarms && currentDevice && alarms.length > 0){
-                let filteredAlarms = alarms.filter(alarm => alarm.devices.indexOf(currentDevice) !== -1 )
-                filteredAlarms = filteredAlarms.filter(alarm => alarm.active === true)
+                let filteredAlarms = useAlarms.getState().alarms.filter(alarm => alarm.devices.includes(currentDevice) && alarm.active)
                 let idTimeOutMap = new Map<number,string>()
                 for(const alarm of filteredAlarms){
                     let timed = timeToNextAlarm(alarm)

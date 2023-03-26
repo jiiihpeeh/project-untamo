@@ -4,7 +4,7 @@ import {  Popover,  Button, Portal, PopoverContent, HStack,
 import { useNavigate } from 'react-router-dom'
 import { useAudio,  useDevices, useAlarms, usePopups, useLogIn, useSettings } from '../../stores'
 import { shallow } from 'zustand/shallow'
-import { timePadding } from '../../utils'
+import { timePadding, time24hToTime12h } from '../../utils'
 import { timeToUnits, timeForNextAlarm, timeToNextAlarm } from './calcAlarmTime'
 import React, { useState, useEffect } from 'react'
 
@@ -12,6 +12,8 @@ const AlarmPop = () =>{
     const windowSize = usePopups((state)=> state.windowSize)
 	const navBarTop = useSettings((state)=> state.navBarTop)
 	const navHeight = useSettings((state)=> state.height)
+    const clock24 = useSettings((state)=> state.clock24)
+
     const userInfo = useLogIn((state)=> state.user)
     const plays = useAudio((state)=> state.plays)
     const stop = useAudio((state)=> state.stop)
@@ -44,10 +46,17 @@ const AlarmPop = () =>{
 
 
     const timerInfo = () =>{
+        let postFix = ""
+        let timeInfo = runAlarm?.time
+        if(!clock24 && timeInfo){
+            let convertedTime = time24hToTime12h(timeInfo)
+            timeInfo = convertedTime.time
+            postFix = convertedTime['12h']
+        }
         return (
                 <VStack>
                     <Text as="b">
-                        Coming Up: {(runAlarm)?`${runAlarm.time}`:""}
+                        Coming Up: {(runAlarm)?`${timeInfo}`:""} {postFix}
                     </Text>
                     <HStack>
                         {runAlarm && <Button 

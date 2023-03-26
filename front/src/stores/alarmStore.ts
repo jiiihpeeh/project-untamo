@@ -173,7 +173,7 @@ type UseAlarms =  {
   setToEdit: (id:string) => void,
   fetchAlarms: ()=> void,
   setRunOtherSnooze: (run:boolean)=> void,
-  setRunAlarm :  (ID : string) =>  void,
+  setRunAlarm :  (ID : string|undefined) =>  void,
   insertAlarm: (alarm: Alarm) => void,
   setAlarms: (alarms: Array<Alarm>) => void,
   editAlarm: (alarm: Alarm) => void,
@@ -330,7 +330,10 @@ const setAlarms = (alarms: Array<Alarm>) => {
   return [] as Array<Alarm>
 }
 
-const runAlarmSet = (id:string, alarms: Array<Alarm>) =>{
+const runAlarmSet = (id:string|undefined, alarms: Array<Alarm>) =>{
+  if(!id){
+    return undefined
+  }
   let f = alarms.filter(alarm => alarm.id === id)[0]
   if (f){
     return f
