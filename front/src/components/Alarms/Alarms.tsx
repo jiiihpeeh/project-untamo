@@ -25,8 +25,8 @@ const Alarms = () => {
           [ state.devices, state.viewableDevices ],  shallow)
     const [alarms, setToDelete, setToEdit, toggleActivity ] = useAlarms(state => 
           [ state.alarms, state.setToDelete, state.setToEdit,  state.toggleActivity ],  shallow)
-    const [ setShowEdit, setShowDelete ] = usePopups((state)=> 
-          [state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
+    const [ setShowEdit, setShowDelete, setShowAlarmPop, setShowAdminPop ] = usePopups((state)=> 
+          [state.setShowEditAlarm, state.setShowDeleteAlarm, state.setShowAlarmPop, state.setShowAdminPop], shallow)
     const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
     const   timeIntervalID = useRef<string | null>(null) 
@@ -165,7 +165,13 @@ const Alarms = () => {
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
                         onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
-                        onMouseEnter={() => { counterLaunched.current = false; setShowButtons(id); timeIntervalID.current = id}}
+                        onMouseEnter={() => { counterLaunched.current = false 
+                                              setShowButtons(id) 
+                                              timeIntervalID.current = id
+                                              setShowAlarmPop(false)
+                                              setShowAdminPop(false)
+                                            }
+                                        }
                         mb={"5px"}
                         id={`alarmCardContainer-${key}`}
                         size={"sm"}
