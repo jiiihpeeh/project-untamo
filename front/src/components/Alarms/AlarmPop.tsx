@@ -10,8 +10,8 @@ import React, { useState, useEffect } from 'react'
 
 const AlarmPop = () =>{
     const windowSize = usePopups((state)=> state.windowSize)
-	const navBarTop = useSettings((state)=> state.navBarTop)
-	const navHeight = useSettings((state)=> state.height)
+    const navBarTop = useSettings((state)=> state.navBarTop)
+    const navHeight = useSettings((state)=> state.height)
     const clock24 = useSettings((state)=> state.clock24)
 
     const userInfo = useLogIn((state)=> state.user)

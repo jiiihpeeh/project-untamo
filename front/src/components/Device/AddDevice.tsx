@@ -72,7 +72,6 @@ const AddDevice = () => {
               <ModalHeader>
                 Insert Device Name
               </ModalHeader>
-    
               <ModalBody>
                 <Stack>
                 <Input 

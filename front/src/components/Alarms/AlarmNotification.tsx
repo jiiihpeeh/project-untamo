@@ -11,9 +11,9 @@ const AlarmNotification = ()  => {
     const currentDevice = useDevices((state)=> state.currentDevice)
     const sessionStatus = useLogIn((state)=> state.sessionValid)
     const showToast = usePopups((state)=>state.showToast)
-	const toast = useToast()
+    const toast = useToast()
 
-	const  addToast = () => {
+    const  addToast = () => {
         if(toast &&!toast.isActive('alarm-notification') && alarm && currentDevice){
             let duration = timeToNextAlarm(alarm)
             let description = timeForNextAlarm(alarm)
@@ -35,9 +35,9 @@ const AlarmNotification = ()  => {
                     </Button>
                 </VisuallyHidden>)
     }
-	useEffect(() => {
-		const  updateToast = async() => {
-			if(alarm){
+    useEffect(() => {
+        const  updateToast = async() => {
+            if(alarm){
                 let duration = timeToNextAlarm(alarm)
                 let description = timeForNextAlarm(alarm)
                 toast.update('alarm-notification', 
@@ -49,9 +49,9 @@ const AlarmNotification = ()  => {
                                     status: 'info',
                                 }
                 )
-	  	    }
+              }
         }
-	  	updateToast()
+          updateToast()
     },[alarm, toast])
 
     useEffect(() => {
@@ -71,7 +71,7 @@ const AlarmNotification = ()  => {
         alarmSet()        
      }
 
-	},[runAlarm, alarms, currentDevice,showToast])
+    },[runAlarm, alarms, currentDevice,showToast])
     useEffect(() =>{
         const closeToast = () => {
            toast.close('alarm-notification')
@@ -81,9 +81,9 @@ const AlarmNotification = ()  => {
         }
     },[sessionStatus, alarm, toast, currentDevice, showToast])
 
-	return (<VisuallyHidden>
-		      {addToast()}
+    return (<VisuallyHidden>
+              {addToast()}
             </VisuallyHidden>
-	)
+    )
   }
   export default AlarmNotification

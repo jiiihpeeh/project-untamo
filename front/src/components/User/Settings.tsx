@@ -9,8 +9,8 @@ import { usePopups, useSettings } from '../../stores'
 import TimeFormat from './TimeFormat'
 
 const Settings = () => {
-	const setShowSettings = usePopups((state)=> state.setShowSettings)
-	const showSettings = usePopups((state)=> state.showSettings)
+    const setShowSettings = usePopups((state)=> state.setShowSettings)
+    const showSettings = usePopups((state)=> state.showSettings)
     const setShowColors = usePopups((state)=> state.setShowColor)
 
     const navBarTop = useSettings((state) => state.navBarTop)
@@ -18,7 +18,7 @@ const Settings = () => {
     const panelSize = useSettings((state) => state.height)
     const setPanelSize = useSettings((state) => state.setPanelSize)
 
-	return (
+    return (
             <Modal 
                 isOpen={showSettings} 
                 onClose={()=>setShowSettings(false)}

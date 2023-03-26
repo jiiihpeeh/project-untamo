@@ -69,7 +69,6 @@ const Color = () => {
                         >
                             Default
                         </Button>
-                        
                     </VStack>
                     </HStack>
                 </ModalBody>

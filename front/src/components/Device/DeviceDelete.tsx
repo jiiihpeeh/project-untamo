@@ -70,5 +70,5 @@ const DeviceDelete = () => {
         </AlertDialogOverlay>
       </AlertDialog>
     )
-  }
+}
 export default DeviceDelete  

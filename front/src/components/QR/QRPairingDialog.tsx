@@ -13,7 +13,6 @@ const QRPairingDialog = () => {
   const showQRDialog = usePopups((state)=> state.showQRDialog)
 
   return (
-      <>
       <Modal 
         closeOnOverlayClick={false} 
         isOpen={showQRDialog} 
@@ -41,7 +40,6 @@ const QRPairingDialog = () => {
           </ModalBody>
         </ModalContent>
       </Modal>
-      </>
   )
 }
 

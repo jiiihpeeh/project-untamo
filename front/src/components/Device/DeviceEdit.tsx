@@ -119,6 +119,6 @@ const DeviceEdit = () => {
                 </ModalContent>
               </Modal>
         )
-  }
+}
   
 export default DeviceEdit

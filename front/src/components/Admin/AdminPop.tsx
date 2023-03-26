@@ -6,8 +6,8 @@ import React, { useState, useEffect } from 'react'
 
 const AdminPop = () =>{
     const windowSize = usePopups((state)=> state.windowSize)
-	const navBarTop = useSettings((state)=> state.navBarTop)
-	const navHeight = useSettings((state)=> state.height)
+    const navBarTop = useSettings((state)=> state.navBarTop)
+    const navHeight = useSettings((state)=> state.height)
     const adminTime = useAdmin((state) => state.time )
     const setAdminTime = useAdmin((state) => state.setTime)
     const setAdminToken = useAdmin((state)=> state.setToken)

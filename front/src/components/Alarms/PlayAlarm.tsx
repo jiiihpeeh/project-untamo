@@ -154,4 +154,3 @@ const PlayAlarm = () =>{
      )
 }
 export default PlayAlarm
-

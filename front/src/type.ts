@@ -40,13 +40,13 @@ export type Device = {
     type: DeviceType
 }
 export interface FormData{
-	firstName: string,
-	lastName: string,
-	email: string,
-	screenName: string,
-	password: string,
-	change_password: string,
-	confirm_password: string
+    firstName: string,
+    lastName: string,
+    email: string,
+    screenName: string,
+    password: string,
+    change_password: string,
+    confirm_password: string
 }
 export enum OpenDeviceDialog{
     Menu = "menu",

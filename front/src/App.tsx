@@ -41,75 +41,75 @@ import Color from './components/User/Colors'
 import './App.css'
 
 function App() {
-	const checkSession = useLogIn((state) => state.validateSession)
-	const setMobile = usePopups((state) => state.setMobile)
-	const navHeight = useSettings((state)=> state.height)
-	const mb = useSettings((state)=> state.mb)
-	const mt = useSettings((state)=> state.mt)
+    const checkSession = useLogIn((state) => state.validateSession)
+    const setMobile = usePopups((state) => state.setMobile)
+    const navHeight = useSettings((state)=> state.height)
+    const mb = useSettings((state)=> state.mb)
+    const mt = useSettings((state)=> state.mt)
 
-	const check = useRef(false)
+    const check = useRef(false)
 
-	useEffect(() => {
-		const checker = async() =>{
-			if(!check.current){
-				await sleep(5)
-				check.current = true
-				checkSession()
-			}
-		}
-		checker()
-	},[])
-	useEffect(()=>{
-		setMobile(isMobile)
-	},[isMobile])
+    useEffect(() => {
+        const checker = async() =>{
+            if(!check.current){
+                await sleep(5)
+                check.current = true
+                checkSession()
+            }
+        }
+        checker()
+    },[])
+    useEffect(()=>{
+        setMobile(isMobile)
+    },[isMobile])
 
-	return (
-		<Container className="App">
-			{/* <AppAlert/> */}
-			<NavGrid/>
-			<Container 
-				as="main" 
-				mt={`${mt+2}px`} 
-				mb={`${mb+navHeight}px`} 
-				id="App-Container" 
-			>
-				<Routes>
-					<Route path ={extend(Path.Alarms)} element={<Alarms/>}/>
-					<Route path={extend(Path.LogIn)} element={<LogIn/>}/>
-					<Route path={extend(Path.Register)} element={<Register/>}/>
-					<Route path={extend(Path.Welcome)} element={<Welcome/>}/>
-					<Route path={extend(Path.PlayAlarm)} element={<PlayAlarm/>}/>
-					<Route path={extend(Path.Clueless)} element={<Clueless/>}/>
-					<Route path={extend(Path.Admin)} element={<Admin/>}/>
-					<Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
-					<Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />
-				</Routes>
-				<GenerateQRPairingKey/>
-				<AlarmWatcher/>
-				<UserWatcher/>
-				<DeleteAlarm/>
-				<EditAlarm/>
-				<DeviceDelete/>
-				<DeviceEdit/>
-				<AddDevice/>
-				<QRPairingDialog/>
-				<LogOut/>
-				<EditProfile/>
-				<AdminLogin/>
-				<UserMenu/>
-				<DeviceMenu/>
-				<AddAlarm/>
-				<Navigator/>
-				{/* <AlarmNotification/> */}
-				<About/>
-				<ServerLocation/>
-				<AlarmPop/>
-				<AdminPop/>
-				<Color/>
-			</Container>
-		<Settings/>
+    return (
+        <Container className="App">
+            {/* <AppAlert/> */}
+            <NavGrid/>
+            <Container 
+                as="main" 
+                mt={`${mt+2}px`} 
+                mb={`${mb+navHeight}px`} 
+                id="App-Container" 
+            >
+                <Routes>
+                    <Route path ={extend(Path.Alarms)} element={<Alarms/>}/>
+                    <Route path={extend(Path.LogIn)} element={<LogIn/>}/>
+                    <Route path={extend(Path.Register)} element={<Register/>}/>
+                    <Route path={extend(Path.Welcome)} element={<Welcome/>}/>
+                    <Route path={extend(Path.PlayAlarm)} element={<PlayAlarm/>}/>
+                    <Route path={extend(Path.Clueless)} element={<Clueless/>}/>
+                    <Route path={extend(Path.Admin)} element={<Admin/>}/>
+                    <Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
+                    <Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />
+                </Routes>
+                <GenerateQRPairingKey/>
+                <AlarmWatcher/>
+                <UserWatcher/>
+                <DeleteAlarm/>
+                <EditAlarm/>
+                <DeviceDelete/>
+                <DeviceEdit/>
+                <AddDevice/>
+                <QRPairingDialog/>
+                <LogOut/>
+                <EditProfile/>
+                <AdminLogin/>
+                <UserMenu/>
+                <DeviceMenu/>
+                <AddAlarm/>
+                <Navigator/>
+                {/* <AlarmNotification/> */}
+                <About/>
+                <ServerLocation/>
+                <AlarmPop/>
+                <AdminPop/>
+                <Color/>
+            </Container>
+        <Settings/>
     </Container>
-	)
+    )
 }
 
 export default App

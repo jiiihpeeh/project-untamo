@@ -80,5 +80,3 @@ const EditAlarm = () => {
 }
 
 export default EditAlarm
-
-    

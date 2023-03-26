@@ -66,23 +66,23 @@ const Admin = () => {
             return ([] as Array<JSX.Element>)
         }
         return usersData.map(({ active, admin, owner, email, userID },key) => {
-			return (
-					<Tr 
+            return (
+                    <Tr 
                         key={`user-${key}`}
                     >
-						<Td>
+                        <Td>
                             {userID}
                         </Td>
-						<Td>
+                        <Td>
                             {email}
                         </Td>
-						<Td>
+                        <Td>
                             {userActive(userID, active, owner, userInfo.email === email, key)}
                         </Td>
-						<Td>
+                        <Td>
                             {userAdmin(userID, admin, owner, userInfo.email === email, key)}
                         </Td>
-						<Td>
+                        <Td>
                             {userDelete(userID, owner, userInfo.email === email, key)}
                         </Td>
                     </Tr>

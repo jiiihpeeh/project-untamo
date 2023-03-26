@@ -10,18 +10,18 @@ const Navigator = () => {
 
     const  navigate = useNavigate()
 
-	useEffect(() =>{
+    useEffect(() =>{
         //console.log(sessionStatus, currentDevice,adminNavigate)        
 
-		if(sessionStatus !== SessionStatus.Valid){
-			navigate(extend(Path.LogIn))
-		}else if(sessionStatus === SessionStatus.Valid &&!currentDevice) {
-			navigate(extend(Path.Welcome))
-		}else if(sessionStatus === SessionStatus.Valid  && currentDevice){
+        if(sessionStatus !== SessionStatus.Valid){
+            navigate(extend(Path.LogIn))
+        }else if(sessionStatus === SessionStatus.Valid &&!currentDevice) {
+            navigate(extend(Path.Welcome))
+        }else if(sessionStatus === SessionStatus.Valid  && currentDevice){
             navigate(extend(Path.Alarms))
         }
 
-	},[sessionStatus, currentDevice])
+    },[sessionStatus, currentDevice])
     useEffect(() =>{
         if(sessionStatus === SessionStatus.Valid && adminNavigate){
             navigate(extend(Path.Admin))

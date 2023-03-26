@@ -89,8 +89,8 @@ const occurenceDateFormat = (cases:AlarmCases) =>{
 }
 
 const alarmTimeInit = () => {
-	let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
-	return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`;
+    let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+    return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`;
 }
 
 

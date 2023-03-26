@@ -18,7 +18,7 @@ import sleep from '../sleep'
 
 const Alarms = () => {
     const containerRef =useRef<HTMLDivElement>(null)
-	const currentDevice = useDevices((state) => state.currentDevice)
+    const currentDevice = useDevices((state) => state.currentDevice)
     const cardColors = useSettings((state)=> state.cardColors)
     const clock24 = useSettings((state)=> state.clock24)
     const [devices, viewableDevices] = useDevices(state => 
@@ -29,24 +29,24 @@ const Alarms = () => {
           [state.setShowEditAlarm, state.setShowDeleteAlarm], shallow)
     const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
-	const   timeIntervalID = useRef<string | null>(null) 
-	const counterLaunched = useRef<boolean>(false) 
-	const navigate = useNavigate()
+    const   timeIntervalID = useRef<string | null>(null) 
+    const counterLaunched = useRef<boolean>(false) 
+    const navigate = useNavigate()
 
-	const timeCounter = async() =>{
-		if(timeIntervalID.current){
-			const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current)[0])
-			const time = timeToUnits(Math.round(timeMs/1000))
-			setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
-			setTimeout(()=>timeCounter(),500)
-		}
-	}
-	useEffect(() => {
-		if(!counterLaunched.current){
-			timeCounter()
-			counterLaunched.current = true
-		}
-	},[showButtons])
+    const timeCounter = async() =>{
+        if(timeIntervalID.current){
+            const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current)[0])
+            const time = timeToUnits(Math.round(timeMs/1000))
+            setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
+            setTimeout(()=>timeCounter(),500)
+        }
+    }
+    useEffect(() => {
+        if(!counterLaunched.current){
+            timeCounter()
+            counterLaunched.current = true
+        }
+    },[showButtons])
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
         let timeAlarmMap = new Map <number, Set<string>>()
@@ -172,11 +172,11 @@ const Alarms = () => {
                     >                        
                         <CardBody>           
                             <CardHeader >
-								{(showButtons !== id)? 
-									<Text>{capitalize(occurence)}: <Text as="b">{label}</Text></Text>:
+                                {(showButtons !== id)? 
+                                    <Text>{capitalize(occurence)}: <Text as="b">{label}</Text></Text>:
                                 <SlideFade in={showButtons === id} > 
-									{`${capitalize(occurence)}: `} <Text as="b">{label}</Text>  {showTiming}
-								</SlideFade>}
+                                    {`${capitalize(occurence)}: `} <Text as="b">{label}</Text>  {showTiming}
+                                </SlideFade>}
                             </CardHeader> 
                             <HStack 
                                divider={<StackDivider />}
@@ -297,11 +297,11 @@ const Alarms = () => {
         }
         return daysFormat
     }
-	useEffect(() => {
-		if(!currentDevice){
-			navigate(extend(Path.Welcome))
-		}
-	},[currentDevice])
+    useEffect(() => {
+        if(!currentDevice){
+            navigate(extend(Path.Welcome))
+        }
+    },[currentDevice])
     return (
             <>
                 <Container 
