@@ -8,6 +8,7 @@ import useTimeouts from './stores/timeouts'
 import usePopups from './stores/popUpStore'
 import useAudio from './stores/audioStore'
 import useSettings from './stores/settingsStore'
+import useTask from './stores/taskStore'
 import { Path, SessionStatus } from './type'
 const getCommunicationInfo = () => {
     const server = useServer.getState().address
@@ -28,5 +29,5 @@ const fingerprint = () =>  useLogIn.getState().fingerprint
 export 
     { 
         useServer, useLogIn, useFetchQR, useAdmin, extend, fingerprint, getCommunicationInfo,
-        useDevices,useAlarms, useTimeouts, usePopups , useSettings, useAudio, validSession
+        useDevices,useAlarms, useTimeouts, usePopups , useSettings, useAudio, useTask, validSession
     }

@@ -251,7 +251,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                             tone: get().tone,
                             fingerprint: fingerprint(),
                             modified: Date.now(),
-                            closeTask: get().closeTask,
+                            closeTask: get().closeTask
                         }
         },
         alarmToEditDialog: ( alarm) => {

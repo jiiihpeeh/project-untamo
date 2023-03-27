@@ -50,7 +50,9 @@ type Popup = {
     showColor: boolean,
     setShowColor: (to:boolean) => void
     showTimepicker: boolean,
-    setShowTimepicker: (to:boolean) => void
+    setShowTimepicker: (to:boolean) => void,
+    showTask: boolean
+    setShowTask: (to:boolean) => void,
     isMobile: boolean
     setMobile: (to: boolean) => void
     windowSize: WindowSize,
@@ -118,6 +120,14 @@ const usePopups = create<Popup>((set, get) => ({
                         showAddAlarm: to
                     }
                 )
+        },
+        showTask: false,
+        setShowTask: (to) => {
+            set(
+                {
+                    showTask: to
+                }
+            )
         },
         showEditAlarm: false,
         setShowEditAlarm: (to) => {

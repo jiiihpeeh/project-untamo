@@ -1,4 +1,4 @@
-import { Center, Stack,Flex, Spacer } from "@chakra-ui/react"
+import { Center, Stack } from "@chakra-ui/react"
 import TimeSelector from "./TimeSelector"
 import DateSelector from "./DateSelector"
 import DeviceChecker from "./DeviceChecker"

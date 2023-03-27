@@ -38,6 +38,7 @@ import AlarmPop from './components/Alarms/AlarmPop'
 import AdminPop from './components/Admin/AdminPop'
 import Settings from './components/User/Settings'
 import Color from './components/User/Colors'
+import Task from './components/User/Task'
 import './App.css'
 
 function App() {
@@ -106,6 +107,7 @@ function App() {
                 <AlarmPop/>
                 <AdminPop/>
                 <Color/>
+                <Task/>
             </Container>
         <Settings/>
     </Container>

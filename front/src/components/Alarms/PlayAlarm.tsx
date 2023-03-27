@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
-import {  useAlarms, useTimeouts, useAudio, extend, usePopups } from '../../stores'
-import { Path } from '../../type'
+import {  useAlarms, useTimeouts, useAudio, extend, usePopups, useTask, useSettings } from '../../stores'
+import { CloseTask, Path } from '../../type'
+import Task from '../User/Task'
+import sleep from '../sleep'
+import { urlEnds } from '../../utils'
 import '../../App.css'
-
+import { LaunchMode } from '../../stores/taskStore'
 
 const PlayAlarm = () =>{
     const windowSize = usePopups((state)=>state.windowSize)
@@ -25,6 +28,14 @@ const PlayAlarm = () =>{
     const clearRunTimeout = useTimeouts((state)=>state.clearRunAlarmID)
     const snoozeIt = useTimeouts((state)=>state.snoozeIt)
     const setSnoozeIt = useTimeouts((state)=>state.setSnoozeIt)
+    const setSolved = useTask((state)=>state.setSolved)
+    const solved = useTask((state)=>state.solved)
+    const launchMode = useTask((state)=>state.launchMode)
+    const setLaunchMode = useTask((state)=>state.setLaunchMode)
+    const setShowTask = usePopups((state)=>state.setShowTask)
+    const showTask = usePopups((state)=>state.showTask)
+    
+    const closeTask = useSettings((state)=>state.closeTask)
 
     const [ pressTime, setPressTime ] = useState(0)
     
@@ -42,11 +53,26 @@ const PlayAlarm = () =>{
     }
     
     const turnOff = async () => {
-        console.log("turn OFF")
-        resetSnooze()
-        removeAlarmObject()
-        setTimeout(() => {navigate(extend(Path.Alarms));stopAudio()},100)   
+        if((closeTask === CloseTask.Obey && runAlarm && runAlarm.closeTask) || (closeTask === CloseTask.Force)){
+            setShowTask(true)
+        }else{
+            console.log("turn OFF")
+            resetSnooze()
+            removeAlarmObject()
+            setTimeout(() => {navigate(extend(Path.Alarms));stopAudio()},100)   
+        }
     }
+    useEffect(() => {
+        if(launchMode === LaunchMode.Snooze){
+            setLaunchMode(LaunchMode.None)
+            setSnoozeIt(true)
+        }else if(launchMode === LaunchMode.TurnOff){
+            setLaunchMode(LaunchMode.None)
+            resetSnooze()
+            removeAlarmObject()
+            setTimeout(() => {navigate(extend(Path.Alarms));stopAudio()},100)
+        }
+    },[launchMode])
 
     useEffect(() => {
         if(runOtherSnooze){
@@ -57,14 +83,21 @@ const PlayAlarm = () =>{
     }, [runOtherSnooze])
 
     useEffect(() => {
-        if(runAlarm){
-            setTrack(runAlarm.tone)
-            setLoop(true)
-            playAudio()
-            //setRunTimeout(setTimeout(snoozer, 5*60*1000))
-        }else{
-            clearRunTimeout()
+        async function playIt(){
+            setLaunchMode(LaunchMode.None)
+            if(runAlarm){
+                setTrack(runAlarm.tone)
+                setLoop(true)
+                while(!urlEnds(Path.PlayAlarm)){
+                    await sleep(10)
+                }
+                playAudio()
+                //setRunTimeout(setTimeout(snoozer, 5*60*1000))
+            }else{
+                clearRunTimeout()
+            }
         }
+        playIt()
     },[runAlarm])
 
     useEffect(()=>{

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Menu, MenuButton, MenuList, Button, MenuItem, 
-     Center, IconButton, Text, Icon, Tooltip, Table, Tr, Td, Tbody } from "@chakra-ui/react";
+import { Menu, MenuButton, MenuList, Button, MenuItem, Center,
+      IconButton, Text, Icon, Tooltip, Table, Tr, Td, Tbody } from "@chakra-ui/react";
 import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
 import useAlarm from './alarmStates'
 import { fetchAudioFiles } from '../../../audiostorage/audioDatabase'
@@ -115,7 +115,7 @@ const AlarmTone = () => {
             <IconButton 
                 size='xs' 
                 icon={<RepeatIcon/>} 
-                ml="5.5%" 
+                ml="4%" 
                 colorScheme='blue'
                 aria-label=''
                 onClick= {() => {fetchAudioFiles()}}
