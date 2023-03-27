@@ -5,8 +5,7 @@ import DeviceChecker from "./DeviceChecker"
 import Message from "./Message"
 import React from "react";
 import AlarmTone from "./AlarmTone"
-import AlarmActive from "./AlarmActive"
-import AlarmTask from "./AlarmTask";
+import AlarmToggles from "./AlarmToggles"
 
 const AlarmOnce = () => {
     return(
@@ -16,11 +15,7 @@ const AlarmOnce = () => {
                 <TimeSelector  />
                 <DateSelector/>
                 <DeviceChecker/>
-                <Flex>
-                    <Spacer/>
-                    <AlarmActive/>
-                    <AlarmTask/>
-                </Flex>
+                <AlarmToggles/>
                 <AlarmTone/>
             </Stack>
         </Center>
