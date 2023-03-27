@@ -1,11 +1,10 @@
-import { Center, Stack } from "@chakra-ui/react"
+import { Center, Stack, Spacer, Flex } from "@chakra-ui/react"
 import TimeSelector from "./TimeSelector"
 import DeviceChecker from "./DeviceChecker"
 import Message from "./Message"
 import React from "react"
 import AlarmTone from "./AlarmTone"
-import AlarmActive from "./AlarmActive"
-import AlarmTask from "./AlarmTask";
+import AlarmToggles from "./AlarmToggles"
 
 const AlarmDaily = () => {
     return(
@@ -14,8 +13,7 @@ const AlarmDaily = () => {
                 <Message/>
                 <TimeSelector/>
                 <DeviceChecker/>
-                <AlarmActive/>
-                <AlarmTask/>
+                <AlarmToggles/>
                 <AlarmTone/>
             </Stack>
         </Center>

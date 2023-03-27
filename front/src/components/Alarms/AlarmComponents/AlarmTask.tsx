@@ -13,6 +13,7 @@ const AlarmTask = () => {
                         m={"1%"}
                         isChecked={closeTask}
                         onChange={()=>setCloseTask(!closeTask)}
+                        size={"lg"}
                     />
                 </FormLabel>
             </Center>

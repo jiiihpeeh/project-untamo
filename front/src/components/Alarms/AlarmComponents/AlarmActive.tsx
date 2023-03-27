@@ -13,6 +13,7 @@ const AlarmActive = () => {
                         m={"1%"}
                         isChecked={active}
                         onChange={()=>setActive(!active)}
+                        size={"lg"}
                     />
                 </FormLabel>
             </Center>

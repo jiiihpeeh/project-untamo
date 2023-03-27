@@ -9,18 +9,19 @@ const SelectedWeekdays = () => {
 
     const WeekdayButton = (weekday: WeekDay, abbrev: string) => {
         return(
-            <Button m="3px" 
-                    borderColor={'black'} 
-                    bgColor={(weekdays.includes(weekday))?"green":"gray.500" }
-                    onClick={() => toggleWeekdays(weekday)}
-                    onTouchEnd={(e)=>console.log(e)} 
-                    borderRadius={'md'}
-                    borderWidth={'2px'}
-                    colorScheme="orange"
-                    w='38px' 
-                    h='38px'
-                    key={`${abbrev}-daySelectButtonKey`} 
-                    id={`${abbrev}-daySelectButton`} 
+            <Button 
+                m="3px" 
+                borderColor={'black'} 
+                bgColor={(weekdays.includes(weekday))?"green":"gray.500" }
+                onClick={() => toggleWeekdays(weekday)}
+                onTouchEnd={(e)=>console.log(e)} 
+                borderRadius={'md'}
+                borderWidth={'2px'}
+                colorScheme="orange"
+                w='40px' 
+                h='40px'
+                key={`${abbrev}-daySelectButtonKey`} 
+                id={`${abbrev}-daySelectButton`} 
             >
                 {abbrev} 
             </Button>

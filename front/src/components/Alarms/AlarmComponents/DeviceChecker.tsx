@@ -20,7 +20,8 @@ const DeviceChecker = () => {
                                     <HStack>
                                         <Checkbox 
                                             isChecked={selectedDevices.includes(device.id)} 
-                                            onChange={() => toggleDevices(device.id)} 
+                                            onChange={() => toggleDevices(device.id)}
+                                            size={"lg"}
                                         /> 
                                         <Text>
                                             {device.deviceName}
