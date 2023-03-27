@@ -72,6 +72,7 @@ const PlayAlarm = () =>{
             removeAlarmObject()
             setTimeout(() => {navigate(extend(Path.Alarms));stopAudio()},100)
         }
+        console.log(launchMode)
     },[launchMode])
 
     useEffect(() => {
@@ -88,11 +89,12 @@ const PlayAlarm = () =>{
             if(runAlarm){
                 setTrack(runAlarm.tone)
                 setLoop(true)
-                while(!urlEnds(Path.PlayAlarm)){
+                let step = 0
+                while(!urlEnds(Path.PlayAlarm) || step > 300){
                     await sleep(10)
+                    step++
                 }
                 playAudio()
-                //setRunTimeout(setTimeout(snoozer, 5*60*1000))
             }else{
                 clearRunTimeout()
             }
@@ -102,7 +104,6 @@ const PlayAlarm = () =>{
 
     useEffect(()=>{
         if(snoozeIt){
-            console.log("snoozed")
             snoozeAlarm()
             removeAlarmObject()
             setTimeout(() => {navigate(extend(Path.Alarms)); stopAudio()},100)
@@ -112,7 +113,6 @@ const PlayAlarm = () =>{
 
     const snoozePressFunction = (time: number) =>{
         if((pressTime > 0) && (time - pressTime > 200)){
-            console.log("Press trigger")
             setSnoozeIt(true)
             setPressTime(0)
         }

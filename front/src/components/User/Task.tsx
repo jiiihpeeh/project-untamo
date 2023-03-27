@@ -53,14 +53,14 @@ function Task() {
     const solved = useTask((state)=>state.solved)
     const [ pressTime, setPressTime ] = useState(0)
 
-    const [ calculationTask, setCalculationTask ] = useState<Calculation>(generateCalculation())
+    const [ calculationTask, setCalculationTask ] = useState<Calculation| null>(null)
     const [ isOK, setIsOK]  = useState<boolean>(false)
     const navigate = useNavigate()
 
     function checkInput(e: number){
-        if(!isNaN(e) && e ===calculationTask.result){
+        if(!isNaN(e) && calculationTask && e ===calculationTask.result){
                 setSolved(true)
-                setTimeout(()=>setShowTask(false),100)
+                setTimeout(()=>setShowTask(false),400)
                 setIsOK(true)
         }else{
             setIsOK(false)
@@ -72,7 +72,7 @@ function Task() {
         }
     },[showTask])
     useEffect(() => {
-        if( launchMode === LaunchMode.None){
+        if( launchMode === LaunchMode.None && calculationTask){
             if(solved && !showTask){
                 setLaunchMode(LaunchMode.TurnOff)
             }else if(!solved && !showTask){
@@ -85,7 +85,6 @@ function Task() {
     },[solved, showTask])
     const snoozePressFunction = (time: number) =>{
         if((pressTime > 0) && (time - pressTime > 200)){
-            console.log("Press trigger")
             setLaunchMode(LaunchMode.Snooze)
             setShowTask(false)
             setPressTime(0)
@@ -118,7 +117,7 @@ function Task() {
                     >
                     <Box>
                         <BlockMath>
-                            {calculationTask.task}
+                            {(calculationTask)?calculationTask.task:""}
                         </BlockMath>
                     </Box>
                     <Box>
