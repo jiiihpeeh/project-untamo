@@ -116,18 +116,18 @@ const Settings = () => {
                                 </Tr>
                                 <Tr>
                                     <Td>
-                                        Close Task
-                                    </Td>
-                                    <Td>
-                                        <CloseTaskMenu/>
-                                    </Td>
-                                </Tr>
-                                <Tr>
-                                    <Td>
                                         Snooze Press time (ms)
                                     </Td>
                                     <Td>
                                         <PressSnoozeSlider/>
+                                    </Td>
+                                </Tr>
+                                <Tr>
+                                    <Td>
+                                        Close Task
+                                    </Td>
+                                    <Td>
+                                        <CloseTaskMenu/>
                                     </Td>
                                 </Tr>
                             </Tbody>
