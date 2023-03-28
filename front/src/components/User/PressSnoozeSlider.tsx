@@ -17,21 +17,21 @@ function PressSnoozeSlider() {
       <Slider
         id='slider'
         defaultValue={snoozePress}
-        min={10}
-        max={600}
+        min={3}
+        max={800}
         colorScheme='teal'
         onChange={(v) => setSnoozePress(v)}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
       >
-        <SliderMark value={150} mt='1' ml='-2.5' fontSize='sm'>
-          150 
+        <SliderMark value={200} mt='1' ml='-2.5' fontSize='sm'>
+          200 
         </SliderMark>
-        <SliderMark value={300} mt='1' ml='-2.5' fontSize='sm'>
-          300
+        <SliderMark value={400} mt='1' ml='-2.5' fontSize='sm'>
+          400
         </SliderMark>
-        <SliderMark value={450} mt='1' ml='-2.5' fontSize='sm'>
-          450 
+        <SliderMark value={600} mt='1' ml='-2.5' fontSize='sm'>
+          600 
         </SliderMark>
         <SliderTrack>
           <SliderFilledTrack />

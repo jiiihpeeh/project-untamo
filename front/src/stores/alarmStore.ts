@@ -8,6 +8,7 @@ import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
 import alarmClockString from './logo.svg?raw'
 import { isEqual } from '../utils'
+import sleep from '../components/sleep'
 
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
@@ -387,6 +388,7 @@ const postOfflineAlarms = async() =>{
       notification("Edit Alarm", " Offline Alarm save failed ", Status.Error)
     }
   }
+  await sleep(200)
 }
 
 const runAlarmSet = (id:string|undefined, alarms: Array<Alarm>) =>{
