@@ -155,7 +155,15 @@ const Alarms = () => {
         const getTime = (time: string)=>{
             if(!clock24){
                 let fmt = time24hToTime12h(time)
-                return (<HStack><Text>{fmt.time}  <Text fontSize='sm'>{fmt['12h']}</Text></Text></HStack>)
+                return (<HStack>
+                            <Text>{fmt.time}  
+                                <Text 
+                                    fontSize='sm'
+                                >
+                                    {fmt['12h']}
+                                </Text>
+                            </Text>
+                        </HStack>)
             }
             return (<Text>{time}</Text>)
         }
@@ -187,10 +195,23 @@ const Alarms = () => {
                         <CardBody>           
                             <CardHeader >
                                 {(showButtons !== id)? 
-                                    <Text>{capitalize(occurence)}: <Text as="b">{label}</Text></Text>:
-                                <SlideFade in={showButtons === id} > 
-                                    {`${capitalize(occurence)}: `} <Text as="b">{label}</Text>  {showTiming}
-                                </SlideFade>}
+                                    <Text>{capitalize(occurence)}: 
+                                        <Text 
+                                            as="b"
+                                        >
+                                            {label}
+                                        </Text>
+                                    </Text>:
+                                        <SlideFade 
+                                            in={showButtons === id} 
+                                        > 
+                                            {`${capitalize(occurence)}: `} <Text 
+                                                                                as="b"
+                                                                            >
+                                                                                {label}
+                                                                            </Text>  
+                                            {showTiming}
+                                        </SlideFade>}
                             </CardHeader> 
                             <HStack 
                                divider={<StackDivider />}
@@ -241,7 +262,11 @@ const Alarms = () => {
                                             colorScheme='orange'
                                             aria-label=''
                                             key={`edit-${key}`}
-                                            onClick= {() => { setToEdit(id); setShowEdit(true)}}
+                                            onClick= {() => { 
+                                                                setToEdit(id)
+                                                                setShowEdit(true)
+                                                            }
+                                                    }
                                         />
                                     </Box>
                                     <Spacer/>
@@ -258,7 +283,11 @@ const Alarms = () => {
                                             key={`alarm-active-${key}`}
                                             isChecked={active}
                                             size='sm' 
-                                            onChange={() => {toggleActivity(id); setShowEdit(false)}}
+                                            onChange={() => {
+                                                                toggleActivity(id)
+                                                                setShowEdit(false)
+                                                            }
+                                                    }
                                         />					
                                     </Box>
                                     <Spacer />
@@ -275,7 +304,12 @@ const Alarms = () => {
                                             icon={<DeleteIcon/>} 
                                             colorScheme='red'
                                             aria-label=''
-                                            onClick= {() => { setShowEdit(false); setToDelete(id);  setShowDelete(true)}}
+                                            onClick= {() => { 
+                                                                setShowEdit(false)
+                                                                setToDelete(id)
+                                                                setShowDelete(true)
+                                                            }
+                                                        }
                                             key={`delete-${id}-${key}`}
                                         />
                                     </Box>
