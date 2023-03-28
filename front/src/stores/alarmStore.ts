@@ -346,7 +346,7 @@ const postOfflineEdit = async(alarm: Alarm) => {
     newAlarm.offline = false
     
     useAlarms.setState({ alarms: [...alarms.filter(oldAlarm => oldAlarm.id !== newAlarm.id), newAlarm] })
-    notification("Edit Alarm", "Alarm modified")
+    notification("Edit Alarm", "Offline edited Alarm updated online")
   } catch (err){
     notification(
                   "Edit Alarm",
