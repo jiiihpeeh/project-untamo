@@ -5,7 +5,7 @@ import {    Modal,ModalOverlay,ModalContent,ModalHeader,
             Slider,SliderTrack, SliderFilledTrack,
             SliderThumb} from '@chakra-ui/react'
 import React from 'react'
-import { usePopups, useSettings, useLogIn } from '../../stores'
+import { usePopups, useSettings  } from '../../stores'
 import TimeFormat from './TimeFormat'
 import CloseTaskMenu from './CloseTaskMenu'
 import PressSnoozeSlider from './PressSnoozeSlider'
@@ -19,7 +19,6 @@ const Settings = () => {
     const setNavBarTop = useSettings((state) => state.setNavBarTop)
     const panelSize = useSettings((state) => state.height)
     const setPanelSize = useSettings((state) => state.setPanelSize)
-    const logOut = useLogIn((state) => state.logOut)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
 
     return (
@@ -27,6 +26,7 @@ const Settings = () => {
                 isOpen={showSettings} 
                 onClose={()=>setShowSettings(false)}
                 isCentered
+                scrollBehavior='outside'
             >
                 <ModalOverlay />
                 <ModalContent>
@@ -35,7 +35,9 @@ const Settings = () => {
                     </ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Table>
+                        <Table
+                            size="md"
+                        >
                             <Thead>
                                 <Tr>
                                     <Th>

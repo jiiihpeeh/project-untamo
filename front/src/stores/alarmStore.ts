@@ -34,6 +34,7 @@ type AlarmSerialized = {
 
 interface AlarmSerializedEdit extends AlarmSerialized {
   id: string 
+  offline: boolean
 }
 const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>{
   
@@ -44,6 +45,7 @@ const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>
     delete newAlarm.__v
     newAlarm.weekdays = [...new Set(newAlarm.weekdays)]
     newAlarm.devices = [...new Set(newAlarm.devices)]
+    newAlarm.offline = false
     return newAlarm as Alarm
   })
 }
@@ -52,7 +54,7 @@ const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>
 const fetchAlarms = async () => {
     let fetchedAlarms : Array<Alarm> = []
     const {server, token} = getCommunicationInfo()
-
+    await postOfflineAlarms()
     try{
         let res = await axios.get(`${server}/api/alarms`,
                                                           {
@@ -119,7 +121,8 @@ const resetSnooze = async() => {
     //console.log(res.data)
   }catch(err:any){
       //console.log("Couldn't update alarm info ", err)
-      return
+      //return
+      alarm.offline = true
   }
   let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id)
   useAlarms.setState({alarms: [...filterAlarms,alarm]})
@@ -155,7 +158,8 @@ const snoozer = async () =>{
       //console.log(res.data)
   }catch(err:any){
       //console.log("Couldn't update alarm info ", err)
-      return
+      //return
+      alarm.offline = true
   }
   let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id)
   useAlarms.setState({alarms: [...filterAlarms, alarm]})
@@ -174,8 +178,6 @@ type UseAlarms =  {
   fetchAlarms: ()=> void,
   setRunOtherSnooze: (run:boolean)=> void,
   setRunAlarm :  (ID : string|undefined) =>  void,
-  insertAlarm: (alarm: Alarm) => void,
-  setAlarms: (alarms: Array<Alarm>) => void,
   editAlarm: (alarm: Alarm) => void,
   deleteAlarm: () => void,
   addNewAlarm: (alarm : Alarm) => void,
@@ -206,32 +208,32 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     notification("Add alarm", "No weekdays set", Status.Error)
     return 
   }
+  let newAlarm = {
+    active: alarm.active,
+    date: alarm.date,
+    devices: alarm.devices,
+    label: alarm.label,
+    occurence: alarm.occurence,
+    time: alarm.time,
+    weekdays: alarm.weekdays,
+    tone: alarm.tone,
+    fingerprint : fingerprint(),
+    modified : Date.now(),
+    closeTask: alarm.closeTask 
+  }
+  switch(alarm.occurence){
+    case AlarmCases.Weekly:
+      newAlarm.date = ''
+      break
+    case AlarmCases.Daily:
+      newAlarm.date = ''
+      newAlarm.weekdays = []
+      break
+    default:
+      newAlarm.weekdays = []
+      break
+  } 
   try {
-    let newAlarm = {
-      active: alarm.active,
-      date: alarm.date,
-      devices: alarm.devices,
-      label: alarm.label,
-      occurence: alarm.occurence,
-      time: alarm.time,
-      weekdays: alarm.weekdays,
-      tone: alarm.tone,
-      fingerprint : fingerprint(),
-      modified : Date.now(),
-      closeTask: alarm.closeTask 
-    }
-    switch(alarm.occurence){
-      case AlarmCases.Weekly:
-        newAlarm.date = ''
-        break
-      case AlarmCases.Daily:
-        newAlarm.date = ''
-        newAlarm.weekdays = []
-        break
-      default:
-        newAlarm.weekdays = []
-        break
-    } 
     const res = await axios.post(
                                 `${server}/api/alarm/`, 
                                     newAlarm, 
@@ -250,48 +252,50 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     useAlarms.setState( { alarms: [...alarms, alarmWithID]}) 
   } catch (err:any){
     //console.error(err.data)
-    notification("Edit Alarm", "Alarm edit save failed", Status.Error)
+    alarm.offline = true
+    alarm.id = [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36)+"OFFLINE"
+    useAlarms.setState( { alarms: [...alarms, alarm]}) 
+    notification("Edit Alarm", "Alarm edit save failed (offline mode)", Status.Error)
   }
 }
 
 const editAlarmFromDialog = async (alarm: Alarm) => {
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
+  let editDate = ""
 
+  try{
+    editDate= alarm.date
+  }catch(err){
+    editDate=stringifyDate(new Date())
+  }
+  let modAlarm = {
+    active: alarm.active,
+    date: editDate,
+    devices: alarm.devices,
+    label: alarm.label,
+    occurence: alarm.occurence,
+    time: alarm.time,
+    weekdays: alarm.weekdays,
+    id: alarm.id,
+    tone:alarm.tone,
+    fingerprint : fingerprint(),
+    modified : Date.now(),
+    closeTask: alarm.closeTask
+  }
+  switch(alarm.occurence){
+    case AlarmCases.Weekly:
+      modAlarm.date = ''
+      break
+    case AlarmCases.Daily:
+      modAlarm.date = ''
+      modAlarm.weekdays = []
+        break
+    default:
+      modAlarm.weekdays = []
+      break
+  } 
   try {
-    let editDate = ""
-
-    try{
-      editDate= alarm.date
-    }catch(err){
-      editDate=stringifyDate(new Date())
-    }
-    let modAlarm = {
-      active: alarm.active,
-      date: editDate,
-      devices: alarm.devices,
-      label: alarm.label,
-      occurence: alarm.occurence,
-      time: alarm.time,
-      weekdays: alarm.weekdays,
-      id: alarm.id,
-      tone:alarm.tone,
-      fingerprint : fingerprint(),
-      modified : Date.now(),
-      closeTask: alarm.closeTask
-    }
-    switch(alarm.occurence){
-      case AlarmCases.Weekly:
-        modAlarm.date = ''
-        break
-      case AlarmCases.Daily:
-        modAlarm.date = ''
-        modAlarm.weekdays = []
-         break
-      default:
-        modAlarm.weekdays = []
-        break
-    } 
     const res = await axios.put(
                                   `${server}/api/alarm/`+modAlarm.id, 
                                     modAlarm,  
@@ -307,29 +311,48 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
     useAlarms.setState({ alarms: [...oldAlarms, alarm] })
     notification("Edit Alarm", "Alarm modified")
   } catch (err){
-    console.error(err)
+    let oldAlarms = alarms.filter(alarm => alarm.id !== modAlarm.id)
+    alarm.offline=true
+    useAlarms.setState({ alarms: [...oldAlarms, alarm] })
     notification(
                   "Edit Alarm",
-                  "Alarm edit save failed",
+                  "Alarm edit save failed (offline mode)",
                   Status.Error
                 )
   }
 }
- 
-const insertAlarm = (alarm: Alarm, alarms: Array<Alarm>) => {
-  let check = alarms.filter(item => item.id == alarm.id)
-  if(check.length ==0){
-    return [...alarms, alarm]
-  }
-  return alarms
-}
 
-const setAlarms = (alarms: Array<Alarm>) => {
-  let check = [...new Set(alarms.map(item => item.id))]
-  if(check.length === alarms.length){
-    return alarms
+const postOfflineAlarms = async() =>{
+  const {server, token} = getCommunicationInfo()
+  const alarms = useAlarms.getState().alarms
+  let offlineAlarms = alarms.filter(alarm => alarm.id.endsWith("OFFLINE"))
+  for(const alarm of offlineAlarms){
+    let postAlarm : Partial<Alarm> = {...alarm}
+    delete postAlarm.id
+    if(!alarm){
+      return 
+    }
+    try {
+      const res = await axios.post(
+                                  `${server}/api/alarm/`, 
+                                      postAlarm, 
+                                      {
+                                        headers: 
+                                                {
+                                                  token: token
+                                                }
+                                      } 
+                                  )
+      let addedAlarm = res.data.alarm.id as string
+      let alarmWithID  = postAlarm as Alarm
+      alarmWithID.id = addedAlarm
+      notification("Alarm", "Offline Alarm inserted to an online database")
+      let filteredAlarms = alarms.filter(oldAlarm => oldAlarm.id!== alarm.id)
+      useAlarms.setState( { alarms: [...filteredAlarms, alarmWithID]}) 
+    } catch (err:any){
+      notification("Edit Alarm", " Offline Alarm save failed ", Status.Error)
+    }
   }
-  return [] as Array<Alarm>
 }
 
 const runAlarmSet = (id:string|undefined, alarms: Array<Alarm>) =>{
@@ -375,16 +398,13 @@ const deleteAlarm = async() =>{
 const activityChange = async (id: string) => {
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
-
-  try {
-      let alarmArr = alarms.filter(alarm => alarm.id === id)
-      if(alarmArr.length !== 1){
-        throw new Error('Alarm ids are problematic!')
-      }
-      let alarm = alarmArr[0]
-      alarm.active = !alarm.active
-      alarm.fingerprint = fingerprint()
-      alarm.modified = Date.now()
+  let alarmArr = alarms.filter(alarm => alarm.id === id)
+  let alarm = alarmArr[0]
+  alarm.active = !alarm.active
+  alarm.fingerprint = fingerprint()
+  alarm.modified = Date.now()
+  alarm.offline = false
+  try{
       const res = await axios.put(
                                     `${server}/api/alarm/`+alarm.id,alarm, 
                                         {
@@ -399,7 +419,10 @@ const activityChange = async (id: string) => {
       useAlarms.setState({ alarms: [...filteredAlarms, alarm] })
   } catch (err:any){
       console.error(err)
-      notification("Edit Alarm", "Alarm edit save failed", Status.Error)
+      alarm.offline = true
+      let filteredAlarms = alarms.filter(alarmItem => alarmItem.id !== alarm.id)
+      useAlarms.setState({ alarms: [...filteredAlarms, alarm] })
+      notification("Edit Alarm", "Alarm edit save failed (using offline)", Status.Error)
   }
 }
 const timeForNext = () => {
@@ -477,18 +500,6 @@ const useAlarms = create<UseAlarms>()(
             fetchAlarms: async() => {
               await fetchAlarms()
             },
-            insertAlarm: async (alarm) => set(
-              state =>(
-                  { 
-                    alarms: insertAlarm(alarm, state.alarms)
-                  }
-              )
-            ),
-            setAlarms: async (alarms) => set(
-              {
-                alarms: setAlarms(alarms),
-              }
-            ),
             editAlarm: async (alarm) => { 
                 await editAlarmFromDialog(alarm)
             },

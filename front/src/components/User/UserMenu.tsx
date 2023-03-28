@@ -25,7 +25,11 @@ const UserMenu = () => {
                 <ModalCloseButton/>
                 <ModalBody>
                     <Button 
-                        onClick={()=>{setShowEditProfile(true);setShowUserMenu(!showUserMenu)}}
+                        onClick={()=>{
+                                        setShowEditProfile(true)
+                                        setShowUserMenu(!showUserMenu)
+                                    }
+                                }
                         w={"100%"}
                         m={"2%"}
                     >	
@@ -36,7 +40,11 @@ const UserMenu = () => {
                     {userInfo.admin && <>
                         <Button 
                             mr={5} 
-                            onClick={()=>{setShowAdminLogIn(true); setShowUserMenu(!showUserMenu)}}
+                            onClick={()=>{
+                                            setShowAdminLogIn(true)
+                                            setShowUserMenu(!showUserMenu)
+                                          }
+                                    }
                             w={"100%"}
                             m={"2%"}
                             bg={"red"}
@@ -44,7 +52,11 @@ const UserMenu = () => {
                             Admin Log In
                         </Button></>}
                     <Button	
-                        onClick={()=>{setShowLogOut(true);setShowUserMenu(!showUserMenu)}} 
+                        onClick={()=>{
+                                        setShowLogOut(true)
+                                        setShowUserMenu(!showUserMenu)
+                                     }
+                                } 
                         id="logout-button" 
                         w={"100%"}
                         color="red"
@@ -55,7 +67,11 @@ const UserMenu = () => {
                         </Text>
                     </Button>
                     <Button 
-                        onClick={()=>{setShowAbout(true);setShowUserMenu(!showUserMenu)}}
+                        onClick={()=>{
+                                        setShowAbout(true)
+                                        setShowUserMenu(!showUserMenu)
+                                    }
+                                }
                         w={"100%"}
                         m={"2%"}
                     >

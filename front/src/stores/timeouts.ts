@@ -8,6 +8,7 @@ const compareTime = () =>{
     clearTimeout(timeOut)
     const currentTime = Date.now()    
     if(currentTime - systemTime > 6000){
+        useTimeouts.getState().clear()
         useAlarms.getState().setReloadAlarmList()
         useAlarms.setState({alarms: [...useAlarms.getState().alarms]})
         useDevices.getState().fetchDevices()

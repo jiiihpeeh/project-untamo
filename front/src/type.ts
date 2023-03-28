@@ -87,7 +87,8 @@ export type Alarm = {
     tone: string,
     fingerprint: string,
     modified: number,
-    closeTask:boolean
+    closeTask:boolean,
+    offline: boolean
 }
 
 export enum CloseTask {
