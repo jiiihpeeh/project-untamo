@@ -8,6 +8,7 @@ import React from 'react'
 import { usePopups, useSettings } from '../../stores'
 import TimeFormat from './TimeFormat'
 import CloseTaskMenu from './CloseTaskMenu'
+import PressSnoozeSlider from './PressSnoozeSlider'
 
 const Settings = () => {
     const setShowSettings = usePopups((state)=> state.setShowSettings)
@@ -119,6 +120,14 @@ const Settings = () => {
                                     </Td>
                                     <Td>
                                         <CloseTaskMenu/>
+                                    </Td>
+                                </Tr>
+                                <Tr>
+                                    <Td>
+                                        Snooze Press time (ms)
+                                    </Td>
+                                    <Td>
+                                        <PressSnoozeSlider/>
                                     </Td>
                                 </Tr>
                             </Tbody>

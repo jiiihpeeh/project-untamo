@@ -24,5 +24,4 @@ const  useTask = create<UseTask>((set) => ({
     )
   }
 }))
-console.log(useTask.getState().launchMode)
 export default useTask

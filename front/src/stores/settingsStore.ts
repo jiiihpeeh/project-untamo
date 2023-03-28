@@ -1,5 +1,3 @@
-import { format } from 'date-fns'
-import { useState } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { CloseTask } from '../type'
@@ -24,6 +22,7 @@ type UseSettings =  {
     clock24: boolean,
     closeTask: CloseTask,
     cardColors: CardColors,
+    snoozePress: number,
     setCloseTask: (task: CloseTask) => void,
     setTime24Format: (to: boolean) => void,
     setNavBarTop: (to: boolean) => void,
@@ -31,6 +30,7 @@ type UseSettings =  {
     setCardColors: (color : string, mode: string) => void,
     setDefaultCardColors: () => void,
     setPanelSize: (size: number) => void,
+    setSnoozePress: (n: number) => void,
 }
 
 
@@ -111,6 +111,14 @@ const useSettings = create<UseSettings>()(
                     }
                 )
             },
+            snoozePress: 200,
+            setSnoozePress: (n) => {
+                set(
+                    {
+                        snoozePress: n
+                    }
+                )
+            },
           }
       ),
       {
@@ -125,6 +133,7 @@ const useSettings = create<UseSettings>()(
                 cardColors: state.cardColors,
                 clock24: state.clock24,
                 closeTask: state.closeTask,
+                snoozePress: state.snoozePress,
               }
           ),
       }

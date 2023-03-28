@@ -6,15 +6,15 @@ import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 import { useNavigate } from 'react-router-dom'
 import { LaunchMode } from '../../stores/taskStore'
-
+import { useSettings } from '../../stores'
 enum Operator {
     Multiply="*",
     Sum ="+",
     Subtract='-'
 }
 interface Calculation{
-        task: string
-        result: number
+    task: string
+    result: number
 }
 function getInt(){
     return Math.floor(Math.random() * 20)
@@ -52,16 +52,16 @@ function Task() {
     const launchMode = useTask((state)=>state.launchMode)
     const solved = useTask((state)=>state.solved)
     const [ pressTime, setPressTime ] = useState(0)
-
+    const snoozePressTime = useSettings((state)=>state.snoozePress)
     const [ calculationTask, setCalculationTask ] = useState<Calculation| null>(null)
     const [ isOK, setIsOK]  = useState<boolean>(false)
     const navigate = useNavigate()
 
     function checkInput(e: number){
         if(!isNaN(e) && calculationTask && e ===calculationTask.result){
-                setSolved(true)
-                setTimeout(()=>setShowTask(false),400)
-                setIsOK(true)
+            setSolved(true)
+            setTimeout(()=>setShowTask(false),400)
+            setIsOK(true)
         }else{
             setIsOK(false)
         }
@@ -69,6 +69,8 @@ function Task() {
     useEffect(() => {
         if(showTask){
             setCalculationTask(generateCalculation())
+        }else{
+            setCalculationTask(null)
         }
     },[showTask])
     useEffect(() => {
@@ -84,7 +86,7 @@ function Task() {
 
     },[solved, showTask])
     const snoozePressFunction = (time: number) =>{
-        if((pressTime > 0) && (time - pressTime > 200)){
+        if((pressTime > 0) && (time - pressTime > snoozePressTime)){
             setLaunchMode(LaunchMode.Snooze)
             setShowTask(false)
             setPressTime(0)

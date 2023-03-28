@@ -34,7 +34,7 @@ const PlayAlarm = () =>{
     const setLaunchMode = useTask((state)=>state.setLaunchMode)
     const setShowTask = usePopups((state)=>state.setShowTask)
     const showTask = usePopups((state)=>state.showTask)
-    
+    const snoozePressTime = useSettings((state)=>state.snoozePress)
     const closeTask = useSettings((state)=>state.closeTask)
 
     const [ pressTime, setPressTime ] = useState(0)
@@ -112,7 +112,7 @@ const PlayAlarm = () =>{
     },[snoozeIt])
 
     const snoozePressFunction = (time: number) =>{
-        if((pressTime > 0) && (time - pressTime > 200)){
+        if((pressTime > 0) && (time - pressTime > snoozePressTime)){
             setSnoozeIt(true)
             setPressTime(0)
         }
