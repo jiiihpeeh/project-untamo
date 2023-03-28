@@ -39,6 +39,7 @@ import AdminPop from './components/Admin/AdminPop'
 import Settings from './components/User/Settings'
 import Color from './components/User/Colors'
 import Task from './components/User/Task'
+import ClearSettings from './components/User/ClearSettings'
 import './App.css'
 
 function App() {
@@ -110,6 +111,7 @@ function App() {
                 <Task/>
             </Container>
         <Settings/>
+        <ClearSettings/>
     </Container>
     )
 }

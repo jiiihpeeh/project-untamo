@@ -1,12 +1,12 @@
-import {  Button,  ModalContent, ModalOverlay,  Text,
-     VStack, Box, Modal, ModalBody, ModalFooter, ModalHeader, NumberInput, NumberInputField } from '@chakra-ui/react'
+import {  Button,  ModalContent, ModalOverlay,  Text,VStack, Box, Modal, 
+          ModalBody, ModalFooter, ModalHeader, NumberInput, NumberInputField } from '@chakra-ui/react'
 import {usePopups, useTask } from '../../stores'
 import React, { useState, useEffect } from 'react'
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
-import { useNavigate } from 'react-router-dom'
 import { LaunchMode } from '../../stores/taskStore'
 import { useSettings } from '../../stores'
+
 enum Operator {
     Multiply="*",
     Sum ="+",
@@ -55,7 +55,6 @@ function Task() {
     const snoozePressTime = useSettings((state)=>state.snoozePress)
     const [ calculationTask, setCalculationTask ] = useState<Calculation| null>(null)
     const [ isOK, setIsOK]  = useState<boolean>(false)
-    const navigate = useNavigate()
 
     function checkInput(e: number){
         if(!isNaN(e) && calculationTask && e ===calculationTask.result){

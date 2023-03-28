@@ -261,6 +261,7 @@ const logOutProcedure = async () => {
     useDevices.getState().clear()
     useAdmin.getState().clear()
     useTimeouts.getState().clear()
+    useAlarms.getState().clear()
     await deleteAudioDB()
 
     useLogIn.setState(
@@ -281,7 +282,7 @@ const logOutProcedure = async () => {
                             token: '',
                         }
                     )
-    localStorage.clear()
+    //localStorage.clear()
     sessionStorage.clear()
 }
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false}

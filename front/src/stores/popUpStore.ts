@@ -59,6 +59,8 @@ type Popup = {
     setWindowSize: (width: number, height: number, landscape: boolean) => void
     navigationTriggered: number,
     setNavigationTriggered: () => void,
+    showClearSettings: boolean,
+    setShowClearSettings: (to: boolean) => void,
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -292,6 +294,14 @@ const usePopups = create<Popup>((set, get) => ({
             set (
                 {
                     navigationTriggered: (get().navigationTriggered + 1 % 2)
+                }
+            )
+        },
+        showClearSettings: false,
+        setShowClearSettings: (to: boolean) => {
+            set(
+                {
+                    showClearSettings: to
                 }
             )
         }

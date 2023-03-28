@@ -5,7 +5,7 @@ import {    Modal,ModalOverlay,ModalContent,ModalHeader,
             Slider,SliderTrack, SliderFilledTrack,
             SliderThumb} from '@chakra-ui/react'
 import React from 'react'
-import { usePopups, useSettings } from '../../stores'
+import { usePopups, useSettings, useLogIn } from '../../stores'
 import TimeFormat from './TimeFormat'
 import CloseTaskMenu from './CloseTaskMenu'
 import PressSnoozeSlider from './PressSnoozeSlider'
@@ -19,6 +19,8 @@ const Settings = () => {
     const setNavBarTop = useSettings((state) => state.setNavBarTop)
     const panelSize = useSettings((state) => state.height)
     const setPanelSize = useSettings((state) => state.setPanelSize)
+    const logOut = useLogIn((state) => state.logOut)
+    const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
 
     return (
             <Modal 
@@ -116,7 +118,7 @@ const Settings = () => {
                                 </Tr>
                                 <Tr>
                                     <Td>
-                                        Snooze Press time (ms)
+                                        Press time for snooze (ms)
                                     </Td>
                                     <Td>
                                         <PressSnoozeSlider/>
@@ -128,6 +130,18 @@ const Settings = () => {
                                     </Td>
                                     <Td>
                                         <CloseTaskMenu/>
+                                    </Td>
+                                </Tr>
+                                <Tr>
+                                    <Td>
+                                        Clear Settings (Log Out)
+                                    </Td>
+                                    <Td>
+                                        <Button
+                                            onClick={()=> setShowClearSettings(true)}
+                                        >
+                                            Clear Settings
+                                        </Button>
                                     </Td>
                                 </Tr>
                             </Tbody>
