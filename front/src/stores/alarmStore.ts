@@ -78,8 +78,13 @@ const fetchAlarms = async () => {
           let preFetched = alarms.filter(alarm => alarm.id === item.id)[0]
     
           if(preFetched && !isEqual(preFetched, item)){
-            alarms = [ ...alarms.filter(alarm => alarm.id !== item.id), item]
-            change = true
+            if(preFetched.offline === true && preFetched.modified > item.modified){
+              await postOfflineEdit(preFetched)
+            }else{
+              alarms = [ ...alarms.filter(alarm => alarm.id !== item.id), item]
+              change = true
+            }
+
           }else if(!preFetched){
             alarms = [...alarms, item]
             change = true
@@ -322,6 +327,35 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
   }
 }
 
+const postOfflineEdit = async(alarm: Alarm) => {
+  const {server, token} = getCommunicationInfo()
+  const alarms = useAlarms.getState().alarms
+  try {
+    const res = await axios.put(
+                                  `${server}/api/alarm/`+alarm.id, 
+                                  alarm,  
+                                    {
+                                      headers: 
+                                                {
+                                                  token: token
+                                                }
+                                    }
+                                )
+
+    let newAlarm  = {...alarm}
+    newAlarm.offline = false
+    
+    useAlarms.setState({ alarms: [...alarms.filter(oldAlarm => oldAlarm.id !== newAlarm.id), newAlarm] })
+    notification("Edit Alarm", "Alarm modified")
+  } catch (err){
+    notification(
+                  "Edit Alarm",
+                  "Offline alarm edit save failed",
+                  Status.Error
+    )
+  }
+}
+
 const postOfflineAlarms = async() =>{
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
@@ -390,8 +424,8 @@ const deleteAlarm = async() =>{
     notification("Delete Alarm", "Alarm removed")
     useAlarms.setState({ alarms: filteredAlarms})
   }catch(err:any){
-          notification("Delete alarm", "Delete alarm failed", Status.Error)
-          //console.error(err)
+      notification("Delete alarm", "Delete alarm failed not supported offline", Status.Error)
+      //console.error(err)
   }
 }
 
