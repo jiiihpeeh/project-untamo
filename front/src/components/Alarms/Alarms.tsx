@@ -165,11 +165,19 @@ const Alarms = () => {
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
                         onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
-                        onMouseEnter={() => { counterLaunched.current = false 
+                        onMouseEnter={() => { 
+                                              counterLaunched.current = false 
                                               setShowButtons(id) 
                                               timeIntervalID.current = id
-                                              setShowAlarmPop(false)
-                                              setShowAdminPop(false)
+                                              setTimeout(()=>{
+                                                                if(timeIntervalID.current){
+                                                                    setShowAlarmPop(false)
+                                                                    setShowAdminPop(false)
+                                                                }
+                                                            },250
+                                                        )
+
+                                              
                                             }
                                         }
                         mb={"5px"}
