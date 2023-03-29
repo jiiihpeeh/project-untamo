@@ -34,13 +34,6 @@ type UseSettings =  {
 }
 
 
-const setColors = (color: string, mode: string) =>{
-    let colors = useSettings.getState().cardColors
-    let newColors : CardColors = {...colors, [mode]: color }
-    useSettings.setState({cardColors: {...newColors}})
-}
-
-
 const useSettings = create<UseSettings>()(
     persist(
       (set, get) => (
@@ -93,7 +86,12 @@ const useSettings = create<UseSettings>()(
                 )
             },
             setCardColors: (color, mode) => {
-                setColors(color, mode)
+                let colors = {...get().cardColors, [mode]: color }
+                set(
+                    {
+                        cardColors: colors
+                    }
+                )
             },
             setDefaultCardColors: () => {
                 set(
