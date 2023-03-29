@@ -103,7 +103,7 @@ router.put("/alarm/:id",function(req,res) {
 		tone:req.body.tone,
 		fingerprint: req.body.fingerprint,
 		modified: req.body.modified,
-		closeTask: req.body.closeTask
+		closeTask: req.body.closeTask,
 	}
 	if(req.body.snooze && Array.isArray(req.body.snooze)) {
 		alarm.snooze = req.body.snooze
