@@ -204,7 +204,7 @@ const locationChecker = () => {
         useTimeouts.getState().setSnoozeIt(false)
     }
     if(newLocation.replaceAll('/','').trim().endsWith('alarms')){
-            if( useAudio.getState().plays){
+            if( useAudio.getState().plays && useAudio.getState().loop){
                 useAudio.getState().stop()
             }
         }
