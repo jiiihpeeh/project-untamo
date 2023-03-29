@@ -2,7 +2,8 @@ import { Link as ReachLink } from 'react-router-dom'
 import { Text, Link, Spacer, HStack, Avatar, Flex, Image, Icon  } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useNavigate } from 'react-router-dom'
-import { useSettings, useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
+import { useSettings, useLogIn, useAdmin, useTimeouts,
+         usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
 import { SessionStatus, Path } from '../type'
 import { timePadding } from '../utils'
 import Countdown from "react-countdown"

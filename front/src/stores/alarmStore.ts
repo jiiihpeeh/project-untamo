@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { WeekDay, Alarm, AlarmCases, SessionStatus, CloseTask } from '../type'
+import { WeekDay, Alarm, AlarmCases } from '../type'
 import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useTimeouts, useLogIn, validSession } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'

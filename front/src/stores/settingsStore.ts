@@ -33,7 +33,6 @@ type UseSettings =  {
     setSnoozePress: (n: number) => void,
 }
 
-
 const useSettings = create<UseSettings>()(
     persist(
       (set, get) => (

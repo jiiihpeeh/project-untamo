@@ -1,4 +1,3 @@
-
 import { Menu, MenuButton, MenuItem, MenuList, Button } from '@chakra-ui/react'
 import React from 'react'
 import { useSettings } from '../../stores'
@@ -13,13 +12,13 @@ const CloseTaskMenu = () =>{
     const taskMenu = () => {
         return taskSubmission.map(item => {
                                             return (
-                                                    <MenuItem 
-                                                        key={item} 
-                                                        onClick={() => setCloseTask(item)}
-                                                    >
-                                                        {capitalize(item)}
-                                                    </MenuItem>
-                                                )
+                                                        <MenuItem 
+                                                            key={item} 
+                                                            onClick={() => setCloseTask(item)}
+                                                        >
+                                                            {capitalize(item)}
+                                                        </MenuItem>
+                                                   )
                                             }
                                     )
      }

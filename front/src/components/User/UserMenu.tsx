@@ -1,5 +1,6 @@
 import React from "react"
-import { Text, Modal, Button,ModalOverlay,ModalContent,ModalHeader,ModalBody,  ModalCloseButton } from '@chakra-ui/react'
+import { Text, Modal, Button,ModalOverlay, ModalContent,
+         ModalHeader,ModalBody,  ModalCloseButton } from '@chakra-ui/react'
 import { useLogIn, usePopups } from "../../stores"
 
 const UserMenu = () => {

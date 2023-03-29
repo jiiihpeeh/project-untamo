@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import { getAudio, hasOrFetchAudio, keysAudio } from '../audiostorage/audioDatabase' 
+import { getAudio, keysAudio } from '../audiostorage/audioDatabase' 
 import sleep from '../components/sleep'
+
 const audioELement = document.createElement('audio')
 audioELement.setAttribute("id","audioPlayer")
 
@@ -19,7 +20,6 @@ audioELement.addEventListener("ended", (event) => {
 audioELement.addEventListener("emptied", (event) => {
     useAudio.setState({ plays: false })
 })
-
 
 type UseAudio = {
     track: string,

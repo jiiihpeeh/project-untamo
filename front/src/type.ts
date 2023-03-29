@@ -39,6 +39,7 @@ export type Device = {
     deviceName: string,
     type: DeviceType
 }
+
 export interface FormData{
     firstName: string,
     lastName: string,
@@ -48,10 +49,12 @@ export interface FormData{
     change_password: string,
     confirm_password: string
 }
+
 export enum OpenDeviceDialog{
     Menu = "menu",
     Other = "other"
 }
+
 export enum AdminAction {
     Activity= 'activity',
     Admin= "admin",

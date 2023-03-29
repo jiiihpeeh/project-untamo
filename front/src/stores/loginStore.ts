@@ -4,7 +4,8 @@ import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
 import { SessionStatus, FormData, UserInfo } from '../type'
-import { useServer, useDevices, useAdmin, useTimeouts, useFetchQR, useAlarms , validSession } from '../stores'
+import { useServer, useDevices, useAdmin, useTimeouts,
+         useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "../audiostorage/audioDatabase"
  
 type UseLogIn = {
@@ -326,7 +327,6 @@ const useLogIn = create<UseLogIn>()(
             ),
             validateSession: async () =>{
                  await checkSession()
-
             },
             getUserInfo: async () => {
                 await userInfoFetch()
