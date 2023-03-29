@@ -1,8 +1,7 @@
-import {
-    AlertDialog, useDisclosure,
-    AlertDialogOverlay, AlertDialogContent, 
-    AlertDialogHeader, AlertDialogBody, 
-    AlertDialogFooter, Button } from '@chakra-ui/react'
+import { AlertDialog, useDisclosure,
+         AlertDialogOverlay, AlertDialogContent, 
+         AlertDialogHeader, AlertDialogBody, 
+         AlertDialogFooter, Button } from '@chakra-ui/react'
 import React, { useRef, useEffect, useState } from 'react'
 import { useAdmin, usePopups } from '../../stores'
 import { AdminAction } from '../../type'

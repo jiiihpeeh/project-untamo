@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text, Center } from '@chakra-ui/react'
 import React, { useState, useRef, useEffect } from "react"
 import {  Container, Heading, Switch, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
@@ -213,34 +213,40 @@ const Alarms = () => {
                                             {showTiming}
                                         </SlideFade>}
                             </CardHeader> 
-                            <HStack 
-                               divider={<StackDivider />}
-                            >
-                            <Box>
-                                <Heading 
-                                    size='xl' 
-                                    textTransform='uppercase'
+                            <Flex>
+                                <HStack 
+                                    //divider={<StackDivider />}
                                 >
-                                    {getTime(time)}
-                                </Heading>
-                            </Box>
-                            <Box>
-                                <Heading 
-                                    size='xs' 
-                                    textTransform='uppercase'
-                                >
-                                    Devices
-                                </Heading>
-                                <Text 
-                                    pt='2' 
-                                    fontSize='sm'
-                                >
-                                    {mapDeviceIDsToNames(devices)}
-                                </Text>
-                            </Box>
-                                {occurenceInfo(occurence, weekdays, date)}
-
-                            </HStack>
+                                    <Spacer/>   
+                                    <Box>
+                                        <Heading 
+                                            size='xl' 
+                                            textTransform='uppercase'
+                                            mb={"25%"}
+                                        >
+                                            {getTime(time)}
+                                        </Heading>
+                                    </Box>
+                                    <Spacer/>
+                                    <Box>
+                                        <Heading 
+                                            size='xs' 
+                                            textTransform='uppercase'
+                                        >
+                                            Devices
+                                        </Heading>
+                                        <Text 
+                                            pt='2' 
+                                            fontSize='sm'
+                                        >
+                                            {mapDeviceIDsToNames(devices)}
+                                        </Text>
+                                    </Box>
+                                    <Spacer/>
+                                    {occurenceInfo(occurence, weekdays, date)}
+                                    <Spacer/>
+                                </HStack>
+                            </Flex>
                             <Collapse 
                                 in={showButtons === id} 
                                 animateOpacity={true}  
