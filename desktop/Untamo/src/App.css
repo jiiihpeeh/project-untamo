@@ -1,0 +1,109 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+input[type="text"], textarea {
+  background-color : #d1d1d1; 
+}
+
+input.Register, textarea {
+  background-color : ghostwhite; 
+}
+
+
+.table-tiny th,
+.table-tiny td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.AlarmMessage{
+  animation: changetext 6s infinite linear
+  }
+
+  @keyframes changetext {
+    50% {
+      transform: scale(.92);
+    }
+}
+
+.AlarmClock {
+  animation: rotation 1s infinite linear
+  }
+
+  @keyframes rotation {
+
+    25% {
+      transform: rotate(-25deg);
+    }
+    50% {
+      transform: scale(.85);
+    }
+    75% {
+      transform: rotate(25deg);
+    }
+  }
+  .LogoClock {
+    animation: rotation 2s infinite linear
+    }
+  
+    @keyframes rotation {
+  
+      25% {
+        transform: rotate(-15deg);
+      }
+      50% {
+        transform: scale(.92);
+      }
+      75% {
+        transform: rotate(15deg);
+      }
+    }
+  
+  .UserForm {
+    background-color: lightgray;
+    width: 30em;
+    margin: 0 auto;
+    border-radius: 18px;
+    margin-top: 5%;
+  }
+
+  .FormLabel{
+    margin-top: 0.5%;
+    margin-bottom: 0.5%;
+  }
