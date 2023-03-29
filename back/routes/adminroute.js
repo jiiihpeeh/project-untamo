@@ -125,7 +125,7 @@ router.delete("/user/:id",asyncHandler(async(req,res) => {
 	try{
 		await sessionModel.deleteMany({userID: req.params.id});
 		await deviceModel.deleteMany({userID: req.params.id});
-		await alarmModel.deleteMany({userID: req.params.id});
+		await alarmModel.deleteMany({user: req.params.id});
 		await userModel.deleteOne({_id: req.params.id});
 	}catch(err){
 		return res.status(500).json({message:"Internal server error", error: err});
