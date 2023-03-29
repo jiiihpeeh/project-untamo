@@ -1,4 +1,4 @@
-import { Center, FormLabel , Flex, Switch} from "@chakra-ui/react"
+import { Center, FormLabel, Switch} from "@chakra-ui/react"
 import React from "react";
 import useAlarm from "./alarmStates"
 

@@ -1,8 +1,8 @@
      
 
 import {  Table, Tbody, Tr, Td, Modal,ModalOverlay, Heading,
-          ModalContent, ModalHeader, Center, Box, Text,
-          ModalFooter, ModalBody, HStack, VStack,
+          ModalContent, ModalHeader, Center, Text,
+          ModalFooter, ModalBody, VStack,
           ModalCloseButton, Button, IconButton } from '@chakra-ui/react'
 //import CircularSlider from '@fseehawer/react-circular-slider'
 import CircularSlider from "react-circular-slider-svg";

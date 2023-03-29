@@ -1,10 +1,5 @@
-import {
-    Slider,
-    SliderTrack,
-    SliderFilledTrack,
-    SliderThumb,
-    SliderMark, Tooltip
-  } from '@chakra-ui/react'
+import { Slider, SliderTrack, SliderFilledTrack,
+         SliderThumb, SliderMark, Tooltip  } from '@chakra-ui/react'
 import React from 'react'
 import { useSettings } from '../../stores'
 //https://chakra-ui.com/docs/components/slider/usage

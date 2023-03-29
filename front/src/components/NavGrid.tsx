@@ -1,5 +1,5 @@
 import { Link as ReachLink } from 'react-router-dom'
-import { Text, Link, Spacer, HStack, Avatar, Flex, Box, Image, Icon, IconProps } from '@chakra-ui/react'
+import { Text, Link, Spacer, HStack, Avatar, Flex, Image, Icon  } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useNavigate } from 'react-router-dom'
 import { useSettings, useLogIn, useAdmin, useTimeouts, usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
@@ -11,7 +11,6 @@ import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'
 import sleep from './sleep'
 import { urlEnds } from '../utils'
 import './../App.css'
-import { IconType } from 'react-icons'
 
 const NavGrid = () => {
     const logo = useAlarms((state)=>state.logo)

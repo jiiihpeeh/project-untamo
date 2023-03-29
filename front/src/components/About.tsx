@@ -3,8 +3,7 @@ import {
     ModalContent,ModalHeader,
     ModalFooter, ModalBody,
     ModalCloseButton, 
-    Text ,Button
-  } from '@chakra-ui/react'
+    Text ,Button } from '@chakra-ui/react'
 import React from 'react'
 import { usePopups } from '../stores'
 const About = () => {

@@ -282,6 +282,4 @@ const useAlarm = create<AlarmStates>((set, get) => (
     }
 ))
 
-
 export default useAlarm
-

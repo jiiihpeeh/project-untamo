@@ -1,11 +1,7 @@
-import { Button,Drawer,DrawerBody,
-         DrawerFooter,DrawerHeader,
-         DrawerOverlay,DrawerContent,
-         DrawerCloseButton,FormLabel,
-         FormControl, Input,Checkbox,
-         Accordion,AccordionItem,Box,
-         AccordionButton,AccordionPanel, Flex, Spacer,
-        } from '@chakra-ui/react'
+import { Button,Drawer,DrawerBody, DrawerHeader,Input,Checkbox,
+         DrawerOverlay,DrawerContent, Flex, Spacer,AccordionPanel,
+         DrawerCloseButton,FormLabel, FormControl, AccordionButton,
+         Accordion,AccordionItem,Box } from '@chakra-ui/react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useLogIn, usePopups } from '../../stores'
 import { FormData } from '../../type'

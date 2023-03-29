@@ -1,4 +1,4 @@
-import { Button, Text, Tooltip, Link, Box } from '@chakra-ui/react'
+import { Button, Text } from '@chakra-ui/react'
 import React, { useEffect,  useState } from 'react'
 import { useAlarms, usePopups, useSettings } from '../../stores'
 

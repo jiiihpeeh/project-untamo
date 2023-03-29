@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
-        Button, Box,Divider, Heading} from '@chakra-ui/react'
+        Button, Box,Divider } from '@chakra-ui/react'
 import { useLogIn, extend,usePopups } from "../stores"
 import { SessionStatus, Path } from "../type"
 import QrScanner from 'qr-scanner'

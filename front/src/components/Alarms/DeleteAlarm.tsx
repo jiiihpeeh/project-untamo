@@ -42,7 +42,11 @@ function DeleteAlarm() {
                         </Button>
                         <Button 
                             colorScheme='red' 
-                            onClick= {() => {deleteAlarm() ; setShowDelete(false)}} 
+                            onClick= {() => {
+                                                deleteAlarm()
+                                                setShowDelete(false)
+                                            }
+                                    } 
                             ml={3}
                         >
                            OK

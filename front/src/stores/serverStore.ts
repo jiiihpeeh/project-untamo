@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { Path } from '../type'
+
 type UseServer = {
     address : string,
     wsAddress: string,
@@ -10,12 +11,11 @@ type UseServer = {
     extend: (part: Path) => string,
     setAddress : (input:string) => void
 }
+
 const metaAddress = document.head.querySelector("[property~=server][address]")?.attributes.getNamedItem("address")?.value
 const baseAddress = (metaAddress)?metaAddress:"http://localhost:3001"
 const metaExtend = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
 const baseExtend = (metaExtend)?metaExtend:""
-
-
 
 const websocketAddress = (server: string) =>{
   let base = server.split("://")
@@ -24,6 +24,7 @@ const websocketAddress = (server: string) =>{
   }
   return  "ws://"+base[1]
 }
+
 const useServer = create<UseServer>()(
     persist(
       (set, get) => (
@@ -61,6 +62,5 @@ const useServer = create<UseServer>()(
       }
     )
 )
-
 
 export default useServer

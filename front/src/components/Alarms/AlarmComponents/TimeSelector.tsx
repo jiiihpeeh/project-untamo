@@ -3,8 +3,7 @@ import { Input, FormLabel, Box,Center, Button, Text } from "@chakra-ui/react"
 import useAlarm, { Direction } from "./alarmStates"
 import ClockWindow from './ClockWindow'
 import { usePopups, useSettings } from '../../../stores'
-import { h24ToH12 } from '../../../utils'
-import { timePadding, time24hToTime12h } from '../../../utils'
+import { time24hToTime12h } from '../../../utils'
 
 const TimeSelector = () => {
     const time = useAlarm((state)=> state.time)

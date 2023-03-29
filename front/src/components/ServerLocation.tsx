@@ -1,8 +1,6 @@
-import {  Modal, ModalContent,
-        ModalHeader, ModalFooter,
-        ModalBody, ModalCloseButton,
-        Button, ButtonGroup, 
-        FormLabel,Input} from '@chakra-ui/react'
+import { Modal, ModalContent,  ModalHeader, ModalFooter,
+         ModalBody, ModalCloseButton,  Button,
+         ButtonGroup,  FormLabel,Input} from '@chakra-ui/react'
 import { FocusLock } from '@chakra-ui/focus-lock'
 import React, { useState, useEffect }  from 'react'
 import { usePopups, useServer } from '../stores' 

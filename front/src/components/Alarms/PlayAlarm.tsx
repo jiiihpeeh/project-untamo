@@ -4,7 +4,6 @@ import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
 import {  useAlarms, useTimeouts, useAudio, extend, usePopups, useTask, useSettings } from '../../stores'
 import { CloseTask, Path } from '../../type'
-import Task from '../User/Task'
 import sleep from '../sleep'
 import { urlEnds } from '../../utils'
 import '../../App.css'
@@ -24,16 +23,12 @@ const PlayAlarm = () =>{
     const setTrack = useAudio((state)=>state.setTrack)
     const stopAudio = useAudio((state)=>state.stop)
     const setLoop = useAudio((state)=>state.setLoop)
-    const setRunTimeout = useTimeouts((state)=>state.setRunAlarmID)
     const clearRunTimeout = useTimeouts((state)=>state.clearRunAlarmID)
     const snoozeIt = useTimeouts((state)=>state.snoozeIt)
     const setSnoozeIt = useTimeouts((state)=>state.setSnoozeIt)
-    const setSolved = useTask((state)=>state.setSolved)
-    const solved = useTask((state)=>state.solved)
     const launchMode = useTask((state)=>state.launchMode)
     const setLaunchMode = useTask((state)=>state.setLaunchMode)
     const setShowTask = usePopups((state)=>state.setShowTask)
-    const showTask = usePopups((state)=>state.showTask)
     const snoozePressTime = useSettings((state)=>state.snoozePress)
     const closeTask = useSettings((state)=>state.closeTask)
 

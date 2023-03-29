@@ -16,7 +16,6 @@ const AlarmWatcher  = () => {
     const currentDevice  = useDevices((state)=> state.currentDevice)
     const setTimeForNextLaunch = useAlarms((state)=> state.setTimeForNextLaunch)
     const reloadAlarmList = useAlarms((state)=>state.reloadAlarmList) 
-    const setReloadAlarmList = useAlarms((state)=>state.setReloadAlarmList) 
     const setTrack = useAudio((state)=> state.setTrack)
     const navigate = useNavigate()
 

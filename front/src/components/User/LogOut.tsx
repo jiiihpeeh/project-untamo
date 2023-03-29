@@ -1,8 +1,6 @@
 import React, { useRef } from "react"
-import {
-    AlertDialog,AlertDialogBody,AlertDialogFooter,AlertDialogHeader,
-    AlertDialogContent,AlertDialogOverlay,Button
-  } from '@chakra-ui/react'
+import { AlertDialog,AlertDialogBody,AlertDialogFooter,AlertDialogHeader,
+         AlertDialogContent,AlertDialogOverlay,Button } from '@chakra-ui/react'
 import { useLogIn, usePopups } from "../../stores"
 
 const LogOut = () => {

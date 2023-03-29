@@ -1,11 +1,4 @@
-import {
-    Alert,
-    AlertIcon,
-    AlertTitle,
-    AlertDescription,
-    Link,
-    Text
-  } from '@chakra-ui/react'
+import { Alert, AlertIcon, Link, Text } from '@chakra-ui/react'
 import React from 'react'
   const AppAlert = ()  => {
     return (

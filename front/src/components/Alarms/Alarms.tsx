@@ -1,17 +1,17 @@
-import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text, VStack } from '@chakra-ui/react'
-import React, { useState, useRef, useCallback, useEffect } from "react"
-import {  Container, Heading, Switch, Tooltip, IconButton } from '@chakra-ui/react'
+import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text } from '@chakra-ui/react'
+import React, { useState, useRef, useEffect } from "react"
+import {  Container, Heading, Switch, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
-import { useLogIn, useDevices, useAlarms, usePopups, useSettings, extend } from "../../stores"
+import {  useDevices, useAlarms, usePopups, useSettings, extend } from "../../stores"
 import { Path, WeekDay } from "../../type"
-import { DeleteIcon, EditIcon, CheckIcon } from '@chakra-ui/icons'
-import { Alarm, AlarmCases, Device } from "../../type"
+import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
+import { Alarm, AlarmCases } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { stringToDate} from "./AlarmComponents/stringifyDate-Time"
 import { timePadding, time24hToTime12h, capitalize } from '../../utils'
 import { shallow } from 'zustand/shallow'
-import { Fade, ScaleFade, Slide, SlideFade, Collapse } from '@chakra-ui/react'
+import { SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
 import { useNavigate } from "react-router-dom"
 import sleep from '../sleep'

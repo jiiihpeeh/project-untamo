@@ -5,6 +5,7 @@ import { Spacer, HStack, Button, VStack, Modal,
          ModalOverlay, ModalContent, Divider,
          ModalHeader, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import { CardColors } from "../../stores/settingsStore"
+
 const Color = () => {
     const showColor = usePopups((state)=>state.showColor)
     const setShowColor = usePopups((state)=>state.setShowColor)
@@ -36,7 +37,10 @@ const Color = () => {
                   <ModalCloseButton />
                   <ModalBody>
                     <HStack>
-                    <HexColorPicker color={color} onChange={setColor} />
+                    <HexColorPicker 
+                        color={color} 
+                        onChange={setColor} 
+                    />
                     <VStack>
                         <Button
                             background={cardColors.odd}
@@ -49,7 +53,6 @@ const Color = () => {
                             background={cardColors.even}
                             width={200}
                             onClick={()=>setMode("even")}
-
                         >
                             Even
                         </Button>

@@ -2,12 +2,12 @@ import { create } from 'zustand'
 import useFetchQR from './QRStore'
 import useAlarm from '../components/Alarms/AlarmComponents/alarmStates'
 
-
 export type WindowSize = {
     width: number,
     height: number
     landscape:boolean
 }
+
 type Popup = {
     showEditDevice: boolean,
     setShowEditDevice: (to: boolean) => void,

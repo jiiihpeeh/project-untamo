@@ -1,6 +1,6 @@
 import {  Button,  ModalContent, ModalOverlay,  Text,VStack, Box, Modal, 
           ModalBody, ModalFooter, ModalHeader, NumberInput, NumberInputField } from '@chakra-ui/react'
-import {usePopups, useTask } from '../../stores'
+import { usePopups, useTask } from '../../stores'
 import React, { useState, useEffect } from 'react'
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';

@@ -1,8 +1,7 @@
-import { 
-        AlertDialog,AlertDialogOverlay,
-        AlertDialogContent,AlertDialogHeader,
-        AlertDialogBody,AlertDialogFooter,
-        Button,Text,useDisclosure } from "@chakra-ui/react" 
+import { AlertDialog,AlertDialogOverlay,
+         AlertDialogContent,AlertDialogHeader,
+         AlertDialogBody,AlertDialogFooter,
+         Button,Text,useDisclosure } from "@chakra-ui/react" 
 import React, { useRef, useEffect,useState } from "react"
 import { useDevices, usePopups } from "../../stores"
 
@@ -60,7 +59,11 @@ const DeviceDelete = () => {
               </Button>
               <Button 
                 colorScheme='red' 
-                onClick= {() => {deleteDevice(deleteID?deleteID:''); setShowDelete(false) }} 
+                onClick= {() => {
+                                  deleteDevice(deleteID?deleteID:'')
+                                  setShowDelete(false) 
+                                }
+                          } 
                 ml={3}
               >
                 Delete
