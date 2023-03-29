@@ -55,6 +55,9 @@ const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>
 const fetchAlarms = async () => {
     let fetchedAlarms : Array<Alarm> = []
     const {server, token} = getCommunicationInfo()
+    if(token.length < 3){
+      return
+    }
     await postOfflineAlarms()
     try{
         let res = await axios.get(`${server}/api/alarms`,

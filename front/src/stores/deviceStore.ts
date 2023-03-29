@@ -158,6 +158,9 @@ const addDevice = async (name: string, type: DeviceType)=> {
 
 const fetchDevices = async () => {
     const { server, token } = getCommunicationInfo()
+    if(token.length < 3){
+        return
+    }
     let fetchedDevices = [] as Array<Device>
     try{
         let res = await axios.get(`${server}/api/devices`,

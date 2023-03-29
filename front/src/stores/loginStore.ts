@@ -30,6 +30,9 @@ type UseLogIn = {
 
 const userInfoFetch = async () =>{
     const {server, token} = getCommunicationInfo()
+    if(token.length < 3){
+        return
+    }
     try {
         let res = await axios.get(`${server}/api/user`,  
                                     {

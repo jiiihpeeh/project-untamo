@@ -30,18 +30,52 @@ const AlarmPop = () =>{
     const navigate = useNavigate()
 
     const footerText = () => {
-        let addBtn = (<Button onClick={()=>setShowAddAlarm(true)}  width="100%" >Add an Alarm</Button>)
+        let addBtn = (
+                        <Button 
+                            onClick={()=>setShowAddAlarm(true)}  
+                            width="100%" 
+                        >
+                            Add an Alarm
+                        </Button>
+                     )
         if( !runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) ||  timeForNextLaunch < 0){
-            return (<Box> <Text alignContent={"center"}>No alarms for this device</Text> {addBtn} </Box>) 
+            return (<Box> 
+                        <Text 
+                            alignContent={"center"}
+                        >
+                            No alarms for this device
+                        </Text>
+                             {addBtn} 
+                    </Box>) 
         }
         const units = timeToUnits(timeForNextLaunch)
         if(units.days === 0){
             if(units.hours === 0){
-               return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.minutes)}:{timePadding(units.seconds)}</Text> {addBtn} </Box>)
+               return (<Box>
+                            <Text 
+                                alignContent={"center"}
+                            >
+                                Time left to next alarm: {timePadding(units.minutes)}:{timePadding(units.seconds)}
+                            </Text> 
+                                {addBtn} 
+                        </Box>)
             } 
-            return (<Box><Text alignContent={"center"}>Time left to next alarm: {timePadding(units.hours)}:{timePadding(units.minutes)}  </Text>{addBtn}</Box>)
+            return (<Box>
+                        <Text 
+                            alignContent={"center"}
+                        >
+                            Time left to next alarm: {timePadding(units.hours)}:{timePadding(units.minutes)}  
+                        </Text>{addBtn}
+                    </Box>)
         }
-        return (<Box> <Text alignContent={"center"}>Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} </Text> {addBtn} </Box>)
+        return (<Box>
+                    <Text 
+                        alignContent={"center"}
+                    >
+                        Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)} 
+                    </Text> 
+                        {addBtn} 
+                </Box>)
     }
 
     const timerInfo = () =>{
@@ -59,15 +93,20 @@ const AlarmPop = () =>{
                     </Text>
                     <HStack>
                         {runAlarm && <Button 
-                            onClick={()=> {(runAlarm)?setToEdit(runAlarm.id):{}; (runAlarm)?setShowEdit(true):{}}}
+                                        onClick={()=>  { if(runAlarm){
+                                                setToEdit(runAlarm.id)
+                                                setShowEdit(true)
+                                             }
+                                        }
+                                    }
                         >
-                            Edit the Alarm
+                            Edit the Alarms
                         </Button>}
                         {(!noSnooze) && <Button 
-                            onClick={resetSnooze}
-                        >
-                            Reset Snooze
-                        </Button>}
+                                            onClick={resetSnooze}
+                                        >
+                                            Reset Snooze
+                                        </Button>}
                     </HStack>
                 </VStack>
         )
@@ -125,12 +164,13 @@ const AlarmPop = () =>{
                     <PopoverArrow />
                     <PopoverHeader>
                         <Center>
-                        Alarms for {userInfo.screenName} on {getCurrentDevice()}
+                            Alarms for {userInfo.screenName} on {getCurrentDevice()}
                         </Center>
                     </PopoverHeader>
-                    {runAlarm && <PopoverBody 
-                                    backgroundColor={"blue.300"}
-                                 >
+                    {runAlarm && 
+                    <PopoverBody 
+                        backgroundColor={"blue.300"}
+                    >
                         {timerInfo()}
                         {turnOff()}
                     </PopoverBody>}

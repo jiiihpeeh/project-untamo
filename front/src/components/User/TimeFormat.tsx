@@ -5,20 +5,20 @@ import { useSettings } from '../../stores'
 
 const TimeFormat = () =>{
     const clock24 = useSettings((state) => state.clock24)
-    const setTime24Format = useSettings((state) => state.setTime24Format)
+    const setClock24 = useSettings((state) => state.setClock24)
 
     return (
             <RadioGroup>
                 <HStack>
                     <Radio 
                         isChecked={clock24} 
-                        onChange={()=>setTime24Format(!clock24)}
+                        onChange={()=>setClock24(!clock24)}
                     >
                         24 h
                     </Radio>
                     <Radio 
                         isChecked={!clock24} 
-                        onChange={()=>setTime24Format(!clock24)}
+                        onChange={()=>setClock24(!clock24)}
                     >
                         12 h
                     </Radio>
