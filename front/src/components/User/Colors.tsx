@@ -4,7 +4,7 @@ import { usePopups, useSettings } from "../../stores"
 import { Spacer, HStack, Button, VStack, Modal,
          ModalOverlay, ModalContent, Divider,
          ModalHeader, ModalBody, ModalCloseButton } from '@chakra-ui/react'
-
+import { CardColors } from "../../stores/settingsStore"
 const Color = () => {
     const showColor = usePopups((state)=>state.showColor)
     const setShowColor = usePopups((state)=>state.setShowColor)
@@ -13,13 +13,12 @@ const Color = () => {
     const setDefaultCardColors = useSettings((state)=>state.setDefaultCardColors)
 
     const [color, setColor] = useState(cardColors.odd)
-    const [mode, setMode] = useState("uneven")
+    const [mode, setMode] = useState<keyof CardColors>("odd")
 
     useEffect(()=>{
         setCardColors(color, mode)
     },[color])
     useEffect(()=>{
-        //@ts-ignore
         setColor(cardColors[mode])
     },[mode])
     

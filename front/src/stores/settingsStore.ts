@@ -27,7 +27,7 @@ type UseSettings =  {
     setClock24: (to: boolean) => void,
     setNavBarTop: (to: boolean) => void,
     setHeight: (n:number) => void,
-    setCardColors: (color : string, mode: string) => void,
+    setCardColors: (color : string, mode: keyof CardColors) => void,
     setDefaultCardColors: () => void,
     setPanelSize: (size: number) => void,
     setSnoozePress: (n: number) => void,
@@ -81,12 +81,12 @@ const useSettings = create<UseSettings>()(
             setCloseTask:(task) => {
                 set(
                     {
-                        closeTask: task
+                        closeTask: task,
                     }
                 )
             },
             setCardColors: (color, mode) => {
-                let colors = {...get().cardColors, [mode]: color }
+                let colors = {...get().cardColors, [mode]: color } as CardColors
                 set(
                     {
                         cardColors: colors
