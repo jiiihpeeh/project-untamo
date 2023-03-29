@@ -195,7 +195,7 @@ const Alarms = () => {
                         <CardBody>           
                             <CardHeader >
                                 {(showButtons !== id)? 
-                                    <Text>{capitalize(occurence)}: 
+                                    <Text>{`${capitalize(occurence)}: `}: 
                                         <Text 
                                             as="b"
                                         >
