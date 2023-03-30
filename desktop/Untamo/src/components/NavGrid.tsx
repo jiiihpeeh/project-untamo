@@ -1,6 +1,6 @@
 import { Link as ReachLink } from 'react-router-dom'
 import { Text, Link, Spacer, HStack, Avatar, Flex, Image, Icon  } from '@chakra-ui/react'
-import React, { useState, useEffect, useLayoutEffect } from "react"
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react"
 import { useNavigate } from 'react-router-dom'
 import { useSettings, useLogIn, useAdmin, useTimeouts,
          usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
@@ -12,6 +12,8 @@ import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'
 import sleep from './sleep'
 import { urlEnds } from '../utils'
 import './../App.css'
+
+
 
 const NavGrid = () => {
     const logo = useAlarms((state)=>state.logo)
@@ -44,6 +46,7 @@ const NavGrid = () => {
     const [ showAdmin, setShowAdmin ] = useState(false)
     const [ pointing, setPointing ] = useState<typeof Down>(Down)
     const [ avatarSize, setAvatarSize ] = useState("md")
+    const [ logoAnimate, setLogoAnimate ] = useState<string|undefined>(undefined)
 
     
     const navigate  = useNavigate()
@@ -146,14 +149,40 @@ const NavGrid = () => {
             >
                 <HStack
                     ml="1%"
-                    onClick={()=>setShowSettings(!showSettings)}
+                    onClick={()=>{
+                                    setShowSettings(!showSettings)
+                                    setLogoAnimate("LogoClock")
+                                    setTimeout(()=>{
+                                        setLogoAnimate(undefined)}, 2000 
+                                        
+                                    )
+                                }
+                            }
                     cursor={"pointer"}
-                >
+                    onMouseOver={()=>{
+                                        setLogoAnimate("LogoClock")
+                                    }
+                                }
+                    onMouseLeave={()=>{
+                                        setTimeout(()=>{
+                                            setLogoAnimate(undefined) }, 2000 
+                                           
+                                        )
+                                      }
+                                }
+                    onTouchStart={()=>{
+                                            setLogoAnimate("LogoClock")
+                                            setTimeout(()=>{
+                                                setLogoAnimate(undefined)}, 2000 
+                                            )
+                                        }
+                                    }
+                    >
                     <Image 
                         ml={"2px"}
                         src={logo}
                         height={navHeight*0.98}
-                        className='LogoClock'
+                        className={logoAnimate}
                         draggable="false"
                         pointerEvents={"none"}
                     />
