@@ -39,20 +39,8 @@ import Settings from './components/User/Settings'
 import Color from './components/User/Colors'
 import Task from './components/User/Task'
 import ClearSettings from './components/User/ClearSettings'
-import { appWindow } from '@tauri-apps/api/window'
 import CloseAction from './components/User/TauriWindow'
 import './App.css'
-
-
-
-const closeFunction = async() => {
-    const unlistenAsync = await appWindow.onCloseRequested(async (event) => {
-        event.preventDefault()
-        usePopups.getState().setShowCloseApp(true)
-    })
-    return unlistenAsync
-}
-closeFunction()
 
 function App() {
     const checkSession = useLogIn((state) => state.validateSession)
