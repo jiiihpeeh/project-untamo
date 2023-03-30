@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
-        Button, Box,Divider } from '@chakra-ui/react'
+        Button, Box,Divider, Spinner } from '@chakra-ui/react'
 import { useLogIn, extend,usePopups } from "../stores"
 import { SessionStatus, Path } from "../type"
 import QrScanner from 'qr-scanner'
@@ -53,63 +53,84 @@ const LogIn = () => {
         const emailPattern = new RegExp(".+@.+..+")
         isOK()
     },[formData])
-    return (
-        <form>
-            <Box 
-                className='UserForm'
-                width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
-            >
-                <FormControl 
-                    onSubmit={onSubmit} 
-                    width="95%" 
-                    margin="0 auto" 
-                    mt="5%"
-                >
-                    <FormLabel 
-                        htmlFor="email" 
-                        className="FormLabel"  
-                        mt="1%" 
-                        mb="1%" 
-                    >
-                        Email
-                    </FormLabel>
-                    <Input 
-                        type="email"
-                        name="email"
-                        id="email"
-                        onChange={(e) =>onChange(e)}
-                        value={formData.email}
-                        className="Register"
-                    />
-                    <FormLabel 
-                        htmlFor='password' 
-                        className="FormLabel"
-                    >
-                        Password
-                    </FormLabel>
-                    <Input 
-                        type="password"
-                        name="password"
-                        id="password"
-                        onChange= {(e) =>onChange(e)}
-                        value={formData.password}
-                        className="Register"
-                    />
-                    <Divider />
-                    <Button 
-                        type="submit" 
-                        id="submit" 
-                        onClick={() =>onSubmit()} 
-                        mt="1%" 
-                        mb="1%" 
-                        isDisabled={!canSubmit}
-                    >
-                        Log In 
-                    </Button>
-                </FormControl> 
-            </Box>
-        </form>
-    )
+
+    function showLogIn(){
+        switch(sessionStatus){
+            case SessionStatus.Validating:
+                let radius = Math.min(windowSize.width/2, windowSize.height/2)
+                return(<Spinner
+                            thickness='8px'
+                            speed='0.65s'
+                            emptyColor='gray.200'
+                            color='blue.500'
+                            size='xl'
+                            style={{width: radius, height: radius, left: windowSize.width/2-radius/2, top: windowSize.height/2-radius/2, position:"absolute" }}                        
+                        /> )
+            default:
+                return(
+                    <form>
+                        <Box 
+                            className='UserForm'
+                            width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
+                            mt="35%"
+                        >
+                            <FormControl 
+                                onSubmit={onSubmit} 
+                                width="95%" 
+                                margin="0 auto" 
+                                mt="15%"
+                            >
+                                <FormLabel 
+                                    htmlFor="email" 
+                                    className="FormLabel"  
+                                    mt="1%" 
+                                    mb="1%" 
+                                >
+                                    Email
+                                </FormLabel>
+                                <Input 
+                                    type="email"
+                                    name="email"
+                                    id="email"
+                                    onChange={(e) =>onChange(e)}
+                                    value={formData.email}
+                                    className="Register"
+                                />
+                                <FormLabel 
+                                    htmlFor='password' 
+                                    className="FormLabel"
+                                >
+                                    Password
+                                </FormLabel>
+                                <Input 
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    onChange= {(e) =>onChange(e)}
+                                    value={formData.password}
+                                    className="Register"
+                                />
+                                <Divider />
+                                <Button 
+                                    type="submit" 
+                                    id="submit" 
+                                    onClick={() =>onSubmit()} 
+                                    mt="1%" 
+                                    mb="1%" 
+                                    isDisabled={!canSubmit}
+                                >
+                                    Log In 
+                                </Button>
+                            </FormControl> 
+                        </Box>
+                    </form>
+                )
+            }
+    }
+    return (<>
+                {showLogIn()}
+            </>
+            )
 }
 
 export default LogIn

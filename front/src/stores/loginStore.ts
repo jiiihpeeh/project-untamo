@@ -191,6 +191,8 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
 } 
 
 const logIn = async(email: string, password: string) => {
+    useLogIn.setState({sessionValid: SessionStatus.Validating})
+
     try{
         const server = useServer.getState().address
         let res = await axios.post(`${server}/login`, 
