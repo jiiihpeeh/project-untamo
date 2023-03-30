@@ -3,7 +3,7 @@ import { AlertDialog,  Button , AlertDialogOverlay,
          AlertDialogContent, AlertDialogHeader, AlertDialogBody, 
          AlertDialogFooter} from '@chakra-ui/react'
 import {  usePopups } from '../../stores'
-import { appWindow } from "@tauri-apps/api/window"
+import { appWindow, PhysicalSize } from "@tauri-apps/api/window"
 import { invoke } from "@tauri-apps/api"
 import { urlEnds } from '../../utils'
 import { notification, Status } from '../notification'
@@ -18,6 +18,7 @@ const closeFunction = async() => {
             notification("Not so fast", "Alarm is On", Status.Info)
         }
     })
+    await appWindow.setMinSize(new PhysicalSize(410,600))
     return unlistenAsync
 }
 closeFunction()
