@@ -22,7 +22,8 @@ export enum Path  {
 export enum SessionStatus {
     NotValid = "not-valid",
     Valid = "valid",
-    Unknown = "unknown"
+    Unknown = "unknown",
+    Validating = "validating"
 }
 
 export enum DeviceType {

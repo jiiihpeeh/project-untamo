@@ -1,4 +1,4 @@
- import React, {  useEffect } from 'react'
+import React, {  useEffect } from 'react'
 import useWebSocket from 'react-use-websocket'
 import { useNavigate } from 'react-router-dom'
 import { Input, InputGroup,Box,
@@ -127,6 +127,7 @@ const Register = () => {
             bg='lightgray' 
             className='UserForm' 
             width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
+            mt={"30%"}
         >
             <FormControl 
                 width="95%" 
@@ -217,4 +218,4 @@ const Register = () => {
     )
 }
 
-export default Register;
+export default Register

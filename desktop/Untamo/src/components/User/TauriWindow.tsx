@@ -1,15 +1,13 @@
 import React, { useRef } from 'react'
 import { AlertDialog,  Button , AlertDialogOverlay,
          AlertDialogContent, AlertDialogHeader, AlertDialogBody, 
-        AlertDialogFooter} from '@chakra-ui/react'
+         AlertDialogFooter} from '@chakra-ui/react'
 import {  usePopups } from '../../stores'
 import { appWindow } from "@tauri-apps/api/window"
 import { invoke } from "@tauri-apps/api"
 import { urlEnds } from '../../utils'
 import { notification, Status } from '../notification'
 import { Path } from '../../type'
-
-
 
 const closeFunction = async() => {
     const unlistenAsync = await appWindow.onCloseRequested(async (event) => {

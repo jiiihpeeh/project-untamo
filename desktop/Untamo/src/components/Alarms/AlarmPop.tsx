@@ -100,7 +100,7 @@ const AlarmPop = () =>{
                                         }
                                     }
                         >
-                            Edit the Alarms
+                            Edit the Alarm
                         </Button>}
                         {(!noSnooze) && <Button 
                                             onClick={resetSnooze}
