@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useAlarms, useLogIn, useDevices } from '../stores'
 import useAudio from './audioStore'
+
 var systemTime = Date.now()
 var timeOut : NodeJS.Timeout
 
@@ -204,17 +205,12 @@ const locationChecker = () => {
         useTimeouts.getState().setSnoozeIt(false)
     }
     if(newLocation.replaceAll('/','').trim().endsWith('alarms')){
-            if( useAudio.getState().plays && useAudio.getState().loop){
-                useAudio.getState().stop()
-            }
+        if( useAudio.getState().plays && useAudio.getState().loop){
+            useAudio.getState().stop()
         }
+    }
     location = newLocation
-    
-/*     if(newLocation.replaceAll('/','').trim().endsWith('login')){
-        useTimeouts.getState().setShowLogIn(false)
-    }else{
-        useTimeouts.getState().setShowLogIn(true)
-    }*/
+
     locationId = setTimeout(locationChecker,300) 
 }
 

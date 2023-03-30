@@ -48,9 +48,8 @@ function App() {
     const navHeight = useSettings((state)=> state.height)
     const mb = useSettings((state)=> state.mb)
     const mt = useSettings((state)=> state.mt)
-
     const check = useRef(false)
-
+    
     useEffect(() => {
         const checker = async() =>{
             if(!check.current){

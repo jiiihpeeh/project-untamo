@@ -1,10 +1,10 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
 import { AlertDialog,  Button , AlertDialogOverlay,
          AlertDialogContent, AlertDialogHeader, AlertDialogBody, 
          AlertDialogFooter} from '@chakra-ui/react'
-import {  usePopups } from '../../stores'
+import {  usePopups, useAudio } from '../../stores'
 import { appWindow, PhysicalSize } from "@tauri-apps/api/window"
-import { invoke } from "@tauri-apps/api"
+import { app, invoke } from "@tauri-apps/api"
 import { urlEnds } from '../../utils'
 import { notification, Status } from '../notification'
 import { Path } from '../../type'
@@ -27,7 +27,26 @@ function CloseAction(){
   const showCloseApp = usePopups((state)=>state.showCloseApp)
   const setShowCloseApp = usePopups((state)=>state.setShowCloseApp)
   const cancelRef = useRef<HTMLButtonElement>(null)
+  const plays = useAudio(state=> state.plays)
+  const visibleBeforePlayState = useRef(true)
 
+  useEffect(()=>{
+    async function showIt(){
+        if(plays){
+            if(!await appWindow.isVisible()){
+                await appWindow.show()
+                visibleBeforePlayState.current = false
+            }else{
+                visibleBeforePlayState.current = true
+            }
+        }else{
+            if(!visibleBeforePlayState.current){
+                await appWindow.hide()
+            }
+        }
+    }
+    showIt()
+  },[plays])
   return (
           <AlertDialog
             isOpen={showCloseApp}
