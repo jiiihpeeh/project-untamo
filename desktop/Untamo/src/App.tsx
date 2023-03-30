@@ -44,12 +44,16 @@ import CloseAction from './components/User/TauriWindow'
 import './App.css'
 
 
-const unlisten = await appWindow.onCloseRequested(async (event) => {
-  event.preventDefault()
-  usePopups.getState().setShowCloseApp(true)
-})
 
-  
+const closeFunction = async() => {
+    const unlistenAsync = await appWindow.onCloseRequested(async (event) => {
+        event.preventDefault()
+        usePopups.getState().setShowCloseApp(true)
+    })
+    return unlistenAsync
+}
+closeFunction()
+
 function App() {
     const checkSession = useLogIn((state) => state.validateSession)
     const setMobile = usePopups((state) => state.setMobile)
