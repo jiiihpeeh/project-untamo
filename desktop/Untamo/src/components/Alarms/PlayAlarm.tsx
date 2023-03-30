@@ -14,8 +14,6 @@ const PlayAlarm = () =>{
     const [ clockSize, setClockSize ] = useState(Math.min(windowSize.width, windowSize.height) * 0.35)
     const runAlarm =  useAlarms((state)=> state.runAlarm)
     const alarmClock = useAlarms((state)=> state.logo)
-    const runOtherSnooze = useAlarms((state)=> state.runOtherSnooze)
-    const setRunOtherSnooze = useAlarms((state)=> state.setRunOtherSnooze)
     const resetSnooze = useAlarms((state)=> state.resetSnooze)
     const snoozeAlarm = useAlarms((state)=> state.snoozer)
     const clearTimeouts = useTimeouts((state)=>state.clearIdTimeout)
@@ -31,6 +29,8 @@ const PlayAlarm = () =>{
     const setShowTask = usePopups((state)=>state.setShowTask)
     const snoozePressTime = useSettings((state)=>state.snoozePress)
     const closeTask = useSettings((state)=>state.closeTask)
+    const turnOffValue = useAlarms((state)=>state.turnOff)
+    const setTurnOffValue = useAlarms((state)=>state.setTurnOff)
 
     const [ pressTime, setPressTime ] = useState(0)
     
@@ -47,7 +47,7 @@ const PlayAlarm = () =>{
         }catch(err){}
     }
     
-    const turnOff = async () => {
+    const turnOff = () => {
         if((closeTask === CloseTask.Obey && runAlarm && runAlarm.closeTask) || (closeTask === CloseTask.Force)){
             setShowTask(true)
         }else{
@@ -67,21 +67,14 @@ const PlayAlarm = () =>{
             removeAlarmObject()
             setTimeout(() => {navigate(extend(Path.Alarms));stopAudio()},100)
         }
-        console.log(launchMode)
+        //console.log(launchMode)
     },[launchMode])
-
-    useEffect(() => {
-        if(runOtherSnooze){
-            navigate(extend(Path.Alarms))
-            removeAlarmObject()
-            setRunOtherSnooze(false)
-        }
-    }, [runOtherSnooze])
 
     useEffect(() => {
         async function playIt(){
             setLaunchMode(LaunchMode.None)
             if(runAlarm){
+                //setSnoozeIt(false)
                 setTrack(runAlarm.tone)
                 setLoop(true)
                 let step = 0
@@ -120,6 +113,14 @@ const PlayAlarm = () =>{
         e.preventDefault()
         snoozePressFunction(Date.now())
     }
+    
+    useEffect(()=>{
+        if(turnOffValue){
+            turnOff()
+            setTurnOffValue(false)
+        }
+    },[turnOffValue])
+
     return(
          <Stack align='center'>
             <Heading 
@@ -128,6 +129,7 @@ const PlayAlarm = () =>{
                 color='tomato'  
                 textShadow='2px 4px #ff0000' 
                 className='AlarmMessage'
+                mt={"25%"}
             >
                 {runAlarm?runAlarm.label:''}    <Text 
                                                     fontSize='sm' 
@@ -175,8 +177,9 @@ const PlayAlarm = () =>{
                     </Text>
             </FormLabel>
             <Switch 
-                size='lg' 
-                onChange={(e)=>turnOff()}
+                size='lg'
+                isChecked={turnOffValue}
+                onChange={()=>setTurnOffValue(!turnOffValue)}
             />
         </Stack>
      )

@@ -11,8 +11,6 @@ const AlarmWatcher  = () => {
     const alarms = useAlarms((state)=> state.alarms)
     const runAlarm = useAlarms((state)=> state.runAlarm)
     const setRunAlarm = useAlarms((state)=> state.setRunAlarm)
-    const runOtherSnooze = useAlarms((state)=> state.runOtherSnooze)
-    const setRunOtherSnooze  = useAlarms((state)=> state.setRunOtherSnooze)
     const currentDevice  = useDevices((state)=> state.currentDevice)
     const setTimeForNextLaunch = useAlarms((state)=> state.setTimeForNextLaunch)
     const reloadAlarmList = useAlarms((state)=>state.reloadAlarmList) 
@@ -25,16 +23,6 @@ const AlarmWatcher  = () => {
             if(runAlarm){
                 if((runAlarm.active === false) || alarms.filter(a => a.id == runAlarm.id).length === 0 || (currentDevice && (!runAlarm.devices.includes(currentDevice)))){
                     setRunAlarm(undefined)
-                }
-            }
-            if(!runOtherSnooze && urlEnds(Path.PlayAlarm) && runAlarm ) { 
-                let currentRunArr = alarms.filter(alarm => alarm.id === runAlarm.id)
-                if (currentRunArr.length === 1){
-                    let timeNow = new Date().getTime()
-                    let diff = timeNow - Math.max(...currentRunArr[0].snooze) 
-                    if(diff < 60000 || currentRunArr[0].snooze[0] === 0){
-                        setRunOtherSnooze(true)
-                    }
                 }
             }
             if(alarms && currentDevice && alarms.length > 0){

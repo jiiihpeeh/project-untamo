@@ -178,14 +178,12 @@ const snoozer = async () =>{
 type UseAlarms =  {
   alarms: Array<Alarm>,
   runAlarm: Alarm| undefined,
-  runOtherSnooze: boolean,
   toDelete: string| undefined,  
   toEdit: string| undefined,
   toggleActivity: (id:string) => void,
   setToDelete: (id:string) => void,
   setToEdit: (id:string) => void,
   fetchAlarms: ()=> void,
-  setRunOtherSnooze: (run:boolean)=> void,
   setRunAlarm :  (ID : string|undefined) =>  void,
   editAlarm: (alarm: Alarm) => void,
   deleteAlarm: () => void,
@@ -491,7 +489,6 @@ const useAlarms = create<UseAlarms>()(
           {
             alarms: [],
             runAlarm: undefined,
-            runOtherSnooze: false,
             toDelete: undefined,
             tone: 'rooster',
             toggleActivity: async (id) => {
@@ -524,11 +521,6 @@ const useAlarms = create<UseAlarms>()(
                   }
               )
             },
-            setRunOtherSnooze: (run:boolean)=> set(
-              {
-                runOtherSnooze : run
-              }
-            ),
             setRunAlarm: (id) => set(
               state => (
                   {

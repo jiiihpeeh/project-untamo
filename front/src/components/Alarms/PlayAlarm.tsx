@@ -14,8 +14,6 @@ const PlayAlarm = () =>{
     const [ clockSize, setClockSize ] = useState(Math.min(windowSize.width, windowSize.height) * 0.35)
     const runAlarm =  useAlarms((state)=> state.runAlarm)
     const alarmClock = useAlarms((state)=> state.logo)
-    const runOtherSnooze = useAlarms((state)=> state.runOtherSnooze)
-    const setRunOtherSnooze = useAlarms((state)=> state.setRunOtherSnooze)
     const resetSnooze = useAlarms((state)=> state.resetSnooze)
     const snoozeAlarm = useAlarms((state)=> state.snoozer)
     const clearTimeouts = useTimeouts((state)=>state.clearIdTimeout)
@@ -47,7 +45,7 @@ const PlayAlarm = () =>{
         }catch(err){}
     }
     
-    const turnOff = async () => {
+    const turnOff = () => {
         if((closeTask === CloseTask.Obey && runAlarm && runAlarm.closeTask) || (closeTask === CloseTask.Force)){
             setShowTask(true)
         }else{
@@ -70,13 +68,6 @@ const PlayAlarm = () =>{
         console.log(launchMode)
     },[launchMode])
 
-    useEffect(() => {
-        if(runOtherSnooze){
-            navigate(extend(Path.Alarms))
-            removeAlarmObject()
-            setRunOtherSnooze(false)
-        }
-    }, [runOtherSnooze])
 
     useEffect(() => {
         async function playIt(){
@@ -128,6 +119,7 @@ const PlayAlarm = () =>{
                 color='tomato'  
                 textShadow='2px 4px #ff0000' 
                 className='AlarmMessage'
+                mt={"25%"}
             >
                 {runAlarm?runAlarm.label:''}    <Text 
                                                     fontSize='sm' 
@@ -175,8 +167,8 @@ const PlayAlarm = () =>{
                     </Text>
             </FormLabel>
             <Switch 
-                size='lg' 
-                onChange={(e)=>turnOff()}
+                size='lg'
+                onChange={(e)=> { e && turnOff()}}
             />
         </Stack>
      )
