@@ -12,7 +12,6 @@ import PlayAlarm from './components/Alarms/PlayAlarm'
 import AlarmWatcher from './components/Alarms/AlarmWatcher'
 import UserWatcher from './components/User/UserWatcher'
 import Admin from './components/Admin/Admin'
-import AppAlert from './components/AppAlert'
 import DeleteAlarm from './components/Alarms/DeleteAlarm'
 import EditAlarm from './components/Alarms/EditAlarm'
 import { useLogIn, usePopups } from './stores'
@@ -40,8 +39,17 @@ import Settings from './components/User/Settings'
 import Color from './components/User/Colors'
 import Task from './components/User/Task'
 import ClearSettings from './components/User/ClearSettings'
+import { appWindow } from '@tauri-apps/api/window'
+import CloseAction from './components/User/TauriWindow'
 import './App.css'
 
+
+const unlisten = await appWindow.onCloseRequested(async (event) => {
+  event.preventDefault()
+  usePopups.getState().setShowCloseApp(true)
+})
+
+  
 function App() {
     const checkSession = useLogIn((state) => state.validateSession)
     const setMobile = usePopups((state) => state.setMobile)
@@ -67,7 +75,7 @@ function App() {
 
     return (
         <Container className="App">
-            {/* <AppAlert/> */}
+            {/* <App/> */}
             <NavGrid/>
             <Container 
                 as="main" 
@@ -112,6 +120,7 @@ function App() {
             </Container>
         <Settings/>
         <ClearSettings/>
+        <CloseAction/>
     </Container>
     )
 }

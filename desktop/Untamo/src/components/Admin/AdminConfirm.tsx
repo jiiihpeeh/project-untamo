@@ -53,7 +53,6 @@ const AdminChangeActivity = () => {
 
 
     return (
-      <>
         <AlertDialog
           isOpen={showAdminConfirm}
           leastDestructiveRef={cancelRef}
@@ -88,7 +87,6 @@ const AdminChangeActivity = () => {
         </AlertDialogContent>
         </AlertDialogOverlay>
         </AlertDialog>
-      </>
     )
   }
 

@@ -1,0 +1,67 @@
+import React, { useRef } from 'react'
+import { AlertDialog,  Button , AlertDialogOverlay,
+         AlertDialogContent, AlertDialogHeader, AlertDialogBody, 
+        AlertDialogFooter} from '@chakra-ui/react'
+import {  usePopups } from '../../stores'
+import { appWindow } from "@tauri-apps/api/window"
+import { invoke } from "@tauri-apps/api"
+
+function CloseAction(){
+  const showCloseApp = usePopups((state)=>state.showCloseApp)
+  const setShowCloseApp = usePopups((state)=>state.setShowCloseApp)
+  const cancelRef = useRef<HTMLButtonElement>(null)
+
+    return (
+      <AlertDialog
+        isOpen={showCloseApp}
+        onClose={()=>setShowCloseApp(false)}
+        leastDestructiveRef={cancelRef}
+        isCentered={true}
+    >
+      <AlertDialogOverlay>
+        <AlertDialogContent>
+            <AlertDialogHeader 
+                fontSize='lg' 
+                fontWeight='bold'
+            >
+                Close App?
+            </AlertDialogHeader>
+            <AlertDialogBody>
+                What would you like to do?
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button 
+                  onClick={()=>setShowCloseApp(false)}
+              >
+                  Cancel
+              </Button>
+              <Button 
+                  colorScheme='blue' 
+                  onClick={()=> { 
+                                    setShowCloseApp(false)
+                                    appWindow.hide()
+                                }
+                          } 
+                  ml={3}
+              >
+                  Hide
+              </Button>
+              <Button 
+                  colorScheme='red' 
+                  onClick={()=> {
+                                    setShowCloseApp(false)
+                                    invoke("close_window")
+                                }
+                          } 
+                  ml={3}
+              >
+                  Close
+              </Button>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialogOverlay>
+    </AlertDialog>
+    )
+}
+
+export default CloseAction

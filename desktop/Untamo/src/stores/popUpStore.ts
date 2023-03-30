@@ -61,6 +61,8 @@ type Popup = {
     setNavigationTriggered: () => void,
     showClearSettings: boolean,
     setShowClearSettings: (to: boolean) => void,
+    showCloseApp: boolean,
+    setShowCloseApp: (to: boolean) => void
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -266,6 +268,14 @@ const usePopups = create<Popup>((set, get) => ({
             set(
                 {
                     showTimepicker : to
+                }
+            )
+        },
+        showCloseApp: false,
+        setShowCloseApp: (to:boolean) => {
+            set(
+                {
+                    showCloseApp: to
                 }
             )
         },

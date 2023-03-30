@@ -53,6 +53,11 @@
         "all": true, 
         "show": true,
         "hide": true
+      },
+      "dialog": {
+        "all": true, 
+        "open": true, 
+        "save": true 
       }
     },
     "bundle": {
@@ -83,7 +88,7 @@
         "resizable": true,
         "title": "Untamo",
         "width": 450,
-        "height": 720
+        "height": 790
       }
     ]
   }

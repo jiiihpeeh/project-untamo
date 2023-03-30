@@ -50,6 +50,12 @@ fn nim_caller(name: &str) -> String {
 fn void_func() {
 
 }
+#[tauri::command]
+fn close_window() {
+  println!("closing Application");
+  std::process::exit(0);
+}
+
 fn main() {
     let tray_menu = SystemTrayMenu::new()
     .add_item(CustomMenuItem::new("toggle".to_string(), "Show/Hide window"))
@@ -100,7 +106,7 @@ fn main() {
       }
       _ => {}
     })
-        .invoke_handler(tauri::generate_handler![nim_caller, void_func])
+        .invoke_handler(tauri::generate_handler![nim_caller, void_func, close_window])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|_app_handle, event| match event {

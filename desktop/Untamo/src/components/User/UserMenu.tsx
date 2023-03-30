@@ -79,7 +79,7 @@ const UserMenu = () => {
                             <Text as='b'>
                                 About Untamo
                             </Text>
-                    </Button> 
+                    </Button>
             </ModalBody>
             </ModalContent>
         </Modal>
