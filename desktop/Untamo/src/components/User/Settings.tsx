@@ -19,6 +19,8 @@ const Settings = () => {
     const setNavBarTop = useSettings((state) => state.setNavBarTop)
     const panelSize = useSettings((state) => state.height)
     const setPanelSize = useSettings((state) => state.setPanelSize)
+    const alarmOnTop = useSettings((state) => state.alarmOnTop)
+    const setAlarmOnTop = useSettings((state) => state.setAlarmOnTop)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
 
     return (
@@ -146,11 +148,32 @@ const Settings = () => {
                                         </Button>
                                     </Td>
                                 </Tr>
+                                <Tr>
+                                    <Td>Alarm on Top</Td>
+                                    <Td>
+                                    <RadioGroup>
+                                            <HStack>
+                                                <Radio 
+                                                    isChecked={alarmOnTop} 
+                                                    onChange={()=>setAlarmOnTop(!alarmOnTop)}
+                                                >
+                                                    Yes
+                                                </Radio>
+                                                <Radio 
+                                                    isChecked={!alarmOnTop} 
+                                                    onChange={()=>{setAlarmOnTop(!alarmOnTop)}}
+                                                >
+                                                    No
+                                                </Radio>
+                                            </HStack>
+                                        </RadioGroup>
+                                    </Td>
+                                </Tr>
                             </Tbody>
                         </Table>
     
                     </ModalBody>
-                    <ModalFooter>
+                    {/* <ModalFooter>
                     <Button 
                         colorScheme='blue' 
                         mr={3} 
@@ -158,7 +181,7 @@ const Settings = () => {
                     >
                         OK
                     </Button>
-                    </ModalFooter>
+                    </ModalFooter> */}
                 </ModalContent>
             </Modal>
     )

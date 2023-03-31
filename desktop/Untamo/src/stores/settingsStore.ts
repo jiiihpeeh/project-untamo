@@ -23,6 +23,8 @@ type UseSettings =  {
     closeTask: CloseTask,
     cardColors: CardColors,
     snoozePress: number,
+    alarmOnTop: boolean,
+    setAlarmOnTop: (value: boolean) => void
     setCloseTask: (task: CloseTask) => void,
     setClock24: (to: boolean) => void,
     setNavBarTop: (to: boolean) => void,
@@ -31,6 +33,7 @@ type UseSettings =  {
     setDefaultCardColors: () => void,
     setPanelSize: (size: number) => void,
     setSnoozePress: (n: number) => void,
+    
 }
 
 const useSettings = create<UseSettings>()(
@@ -77,6 +80,14 @@ const useSettings = create<UseSettings>()(
             },
             cardColors: defaultCard,
             closeTask: CloseTask.Obey,
+            alarmOnTop: true,
+            setAlarmOnTop: (value) => {
+                set(
+                    {
+                        alarmOnTop: value
+                    }
+                )
+            },
             setCloseTask:(task) => {
                 set(
                     {
@@ -131,6 +142,7 @@ const useSettings = create<UseSettings>()(
                 clock24: state.clock24,
                 closeTask: state.closeTask,
                 snoozePress: state.snoozePress,
+                alarmOnTop: state.alarmOnTop,
               }
           ),
       }

@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react'
 import { AlertDialog,  Button , AlertDialogOverlay,
          AlertDialogContent, AlertDialogHeader, AlertDialogBody, 
          AlertDialogFooter} from '@chakra-ui/react'
-import {  usePopups, useAudio } from '../../stores'
+import {  usePopups, useAudio, useSettings } from '../../stores'
 import { appWindow, PhysicalSize } from "@tauri-apps/api/window"
 import { app, invoke } from "@tauri-apps/api"
 import { urlEnds } from '../../utils'
@@ -29,6 +29,7 @@ function CloseAction(){
   const cancelRef = useRef<HTMLButtonElement>(null)
   const plays = useAudio(state=> state.plays)
   const visibleBeforePlayState = useRef(true)
+  const alarmOnTop = useSettings(state=>state.alarmOnTop)
 
   useEffect(()=>{
     async function showIt(){
@@ -36,16 +37,23 @@ function CloseAction(){
             if(!await appWindow.isVisible()){
                 await appWindow.show()
                 visibleBeforePlayState.current = false
+                
             }else{
                 visibleBeforePlayState.current = true
             }
+            if(alarmOnTop){    
+                await appWindow.setAlwaysOnTop(true)
+            }
         }else{
+            if(alarmOnTop){    
+                await appWindow.setAlwaysOnTop(false)
+            }
             if(!visibleBeforePlayState.current){
                 setTimeout(() => {appWindow.hide()},180)
             }
         }
     }
-    showIt()
+  showIt()
   },[plays])
   return (
           <AlertDialog
