@@ -41,7 +41,7 @@ function CloseAction(){
             }
         }else{
             if(!visibleBeforePlayState.current){
-                await appWindow.hide()
+                setTimeout(() => {appWindow.hide()},180)
             }
         }
     }
