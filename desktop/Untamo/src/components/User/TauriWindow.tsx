@@ -19,7 +19,16 @@ const closeFunction = async() => {
             notification("Not so fast", "Alarm is On", Status.Info)
         }
     })
-
+    const unlisten  = await appWindow.onFocusChanged(async (event) => {
+        let onTop = useSettings.getState().onTop
+        if(onTop === WindowTop.Always){
+            await appWindow.setAlwaysOnTop(true)
+        }else{
+            if(!useAudio.getState().plays){
+                await appWindow.setAlwaysOnTop(false)
+            }
+        }
+    })    
     await appWindow.setMinSize(new PhysicalSize(410,600))
     return unlistenAsync
 }
