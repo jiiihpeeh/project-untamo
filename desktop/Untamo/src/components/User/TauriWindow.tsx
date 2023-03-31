@@ -35,19 +35,12 @@ function CloseAction(){
   useEffect(()=>{
     async function topHandler(){
         if(onTop === WindowTop.Always){
-            appWindow.setAlwaysOnTop(true)
+            await appWindow.setAlwaysOnTop(true)
         }else{
             if(!plays){
-                appWindow.setAlwaysOnTop(false)
-            }
-        }
-        const unlisten = await appWindow.onFocusChanged(async (event) => {
-            if(onTop === WindowTop.Always){
-                await appWindow.setAlwaysOnTop(true)
-            }else if(!plays){
                 await appWindow.setAlwaysOnTop(false)
             }
-        })
+        }
     }
     topHandler()
   },[onTop])
