@@ -23,7 +23,9 @@ const Settings = () => {
     const panelSize = useSettings((state) => state.height)
     const setPanelSize = useSettings((state) => state.setPanelSize)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
+    const isMobile = usePopups((state) => state.isMobile)
     const [size, setSize] = useState(1)
+    const maxSize = isMobile? 1:2
 
     return (
             <Modal 
@@ -42,8 +44,8 @@ const Settings = () => {
                             ml="4%"
                             colorScheme='blue'
                             aria-label=''
-                            onClick= {() => {setSize(Math.min(2, size +1 % 3))}}
-                            isDisabled={size === 2}
+                            onClick= {() => {setSize(Math.min(maxSize, size +1 % 3))}}
+                            isDisabled={size === maxSize}
                         />
                         <IconButton
                             size='xs'
