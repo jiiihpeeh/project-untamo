@@ -3,13 +3,16 @@ import {    Modal,ModalOverlay,ModalContent,
             ModalCloseButton, RadioGroup, Radio,
             Button, Table,Thead, Tbody,Tr,Th,Td, Box,
             Slider,SliderTrack, SliderFilledTrack,
-            SliderThumb} from '@chakra-ui/react'
-import React from 'react'
+            SliderThumb, IconButton} from '@chakra-ui/react'
+import React, {useState} from 'react'
 import { usePopups, useSettings } from '../../stores'
 import TimeFormat from './TimeFormat'
 import CloseTaskMenu from './CloseTaskMenu'
 import PressSnoozeSlider from './PressSnoozeSlider'
 import {  WindowTop } from '../../stores/settingsStore'
+import { AddIcon as Add, MinusIcon as Minus } from  '@chakra-ui/icons';
+
+const sizes = new Map<number, string>( [[0, "sm"], [1, "md"], [2, "lg"]])
 
 const Settings = () => {
     const setShowSettings = usePopups((state)=> state.setShowSettings)
@@ -23,6 +26,7 @@ const Settings = () => {
     const onTop = useSettings((state) => state.onTop)
     const setOnTop = useSettings((state) => state.setOnTop)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
+    const [size, setSize] = useState(1)
 
     return (
             <Modal 
@@ -35,11 +39,29 @@ const Settings = () => {
                 <ModalContent>
                     <ModalHeader>
                         Settings
+                        <IconButton 
+                            size='xs' 
+                            icon={<Add/>} 
+                            ml="4%" 
+                            colorScheme='blue'
+                            aria-label=''
+                            onClick= {() => {setSize(Math.min(2, size +1 % 3))}}
+                            isDisabled={size === 2}
+                        />
+                        <IconButton 
+                            size='xs' 
+                            icon={<Minus/>} 
+                            ml="4%" 
+                            colorScheme='blue'
+                            aria-label=''
+                            onClick= {() => {setSize(Math.max(0, size - 1 % 3))}}
+                            isDisabled={size === 0}
+                        />
                     </ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <Table
-                            size="md"
+                            size={sizes.get(size)}
                         >
                             <Thead>
                                 <Tr>
