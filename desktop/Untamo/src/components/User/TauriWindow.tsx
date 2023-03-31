@@ -9,9 +9,6 @@ import { urlEnds } from '../../utils'
 import { notification, Status } from '../notification'
 import { Path } from '../../type'
 import {  WindowTop } from '../../stores/settingsStore'
-import { on } from 'events'
-
-
 
 const closeFunction = async() => {
     const unlistenAsync = await appWindow.onCloseRequested(async (event) => {
@@ -53,7 +50,7 @@ function CloseAction(){
             }else{
                 visibleBeforePlayState.current = true
             }
-            if(onTop === WindowTop.Alarm){    
+            if(onTop === WindowTop.Alarm || onTop === WindowTop.Always ){    
                 await appWindow.setAlwaysOnTop(true)
             }
         }else{
