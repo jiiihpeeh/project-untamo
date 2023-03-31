@@ -188,38 +188,30 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
     }
 ))
 
-let alarmToSnooze : NodeJS.Timeout
 let locationId : NodeJS.Timeout
-let location = window.location.pathname
-let newLocation = ""
-//useTimeouts.getState().setSnoozeIt(false)
+useTimeouts.getState().setSnoozeIt(false)
 const locationChecker = () => {
-    // clearTimeout(locationId)
-    // newLocation = window.location.pathname
+    let begins = useAudio.getState().loopPlayBegins
+    clearTimeout(locationId)
 
-    // if(urlEnds(Path.PlayAlarm)){
-    //     //console.log("location trigger play alarm")
-    //     if(!useTimeouts.getState().snoozeIt){
-    //         alarmToSnooze = setTimeout(() => { useTimeouts.getState().setSnoozeIt(true)
-    //         }, 5*60*1000)       
-    //     }
-
-    // }else if (!urlEnds(Path.PlayAlarm)){ 
-    //     //console.log("location trigger not play alarm")
-    //     clearTimeout(alarmToSnooze)
-    //     useTimeouts.getState().setSnoozeIt(false)
-    // }
-    // if(urlEnds(Path.Alarms)){
-    //     //console.log("location trigger  alarm")
-    //     if( useAudio.getState().plays && !useAlarms.getState().turnOff){
-    //         if(urlEnds(Path.Alarms)){
-    //             useAudio.getState().stop()
-    //         }
-    //     }
-    // }
-    location = newLocation
-
-    locationId = setTimeout(locationChecker,500) 
+    if(urlEnds(Path.PlayAlarm)){
+        //console.log("location trigger play alarm")
+        if(begins && (Date.now() - begins) > (5 * 60 * 1000)){
+            useTimeouts.getState().setSnoozeIt(true)
+        }
+    }else if (!urlEnds(Path.PlayAlarm)){ 
+        //console.log("location trigger not play alarm")
+        useTimeouts.getState().setSnoozeIt(false)
+    }
+    if(urlEnds(Path.Alarms)){
+        //console.log("location trigger  alarm")
+        if(begins && useAudio.getState().plays ){
+            if(urlEnds(Path.Alarms)){
+                useAudio.getState().stop()
+            }
+        }
+    }
+    locationId = setTimeout(locationChecker,300) 
 }
 
 locationChecker()

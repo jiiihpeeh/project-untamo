@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import { useAlarms, useLogIn, useDevices } from '../stores'
+import { urlEnds } from '../utils'
 import useAudio from './audioStore'
+import { Path } from '../type'
+
 var systemTime = Date.now()
 var timeOut : NodeJS.Timeout
 
@@ -185,39 +188,32 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
     }
 ))
 
-let alarmToSnooze : NodeJS.Timeout
+
 let locationId : NodeJS.Timeout
-let location = window.location.pathname
-let newLocation = ""
 useTimeouts.getState().setSnoozeIt(false)
 const locationChecker = () => {
+    let begins = useAudio.getState().loopPlayBegins
     clearTimeout(locationId)
-    newLocation = window.location.pathname
-    if(location !== newLocation && newLocation.replaceAll('/','').trim().endsWith('play-alarm')){
-        //console.log("location trigger")
-        if(!useTimeouts.getState().snoozeIt){
-            alarmToSnooze = setTimeout(() => { useTimeouts.getState().setSnoozeIt(true)
-            }, 5*60*1000);            
+
+    if(urlEnds(Path.PlayAlarm)){
+        //console.log("location trigger play alarm")
+        if(begins && (Date.now() - begins) > (5 * 60 * 1000)){
+            useTimeouts.getState().setSnoozeIt(true)
         }
-    }else if (!newLocation.replaceAll('/','').trim().endsWith('play-alarm')) {
-        clearTimeout(alarmToSnooze)
+    }else if (!urlEnds(Path.PlayAlarm)){ 
+        //console.log("location trigger not play alarm")
         useTimeouts.getState().setSnoozeIt(false)
     }
-    if(newLocation.replaceAll('/','').trim().endsWith('alarms')){
-            if( useAudio.getState().plays && useAudio.getState().loop){
+    if(urlEnds(Path.Alarms)){
+        //console.log("location trigger  alarm")
+        if(begins && useAudio.getState().plays ){
+            if(urlEnds(Path.Alarms)){
                 useAudio.getState().stop()
             }
         }
-    location = newLocation
-    
-/*     if(newLocation.replaceAll('/','').trim().endsWith('login')){
-        useTimeouts.getState().setShowLogIn(false)
-    }else{
-        useTimeouts.getState().setShowLogIn(true)
-    }*/
+    }
     locationId = setTimeout(locationChecker,300) 
 }
 
 locationChecker()
-
 export default useTimeouts

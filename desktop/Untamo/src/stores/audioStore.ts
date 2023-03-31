@@ -34,6 +34,8 @@ type UseAudio = {
     stop: ()=> void,
     loop: boolean,
     setLoop: (to:boolean)=>void,
+    loopPlayBegins: number| null,
+    setLoopPlayBegins: (playTime: number| null)=>void,
     audioElement: HTMLAudioElement
 }
 
@@ -45,6 +47,7 @@ const play = async (track: string, loop: boolean) => {
         audioELement.removeAttribute("loop")
     }else{
        audioELement.setAttribute("loop", `${loop}`) 
+       useAudio.getState().setLoopPlayBegins(Date.now())
     }
     //audioELement.load()
     await sleep(3)
@@ -62,6 +65,9 @@ const stop = () => {
         audioELement.load()
         URL.revokeObjectURL(audioELement.src) 
         audioELement.src=""
+        if(useAudio.getState().loop){
+            useAudio.getState().setLoopPlayBegins(null)
+        }
     }
 }
 
@@ -102,6 +108,14 @@ const useAudio = create<UseAudio>((set, get) => (
             )
         },
         audioElement: audioELement,
+        loopPlayBegins: null,
+        setLoopPlayBegins: (playTime)=> {
+            set(
+                {
+                    loopPlayBegins: playTime
+                }
+            )
+        }
     }
 ))
 // const requestAudioPermission = async () => {
