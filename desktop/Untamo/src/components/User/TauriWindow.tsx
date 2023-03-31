@@ -8,6 +8,10 @@ import { app, invoke } from "@tauri-apps/api"
 import { urlEnds } from '../../utils'
 import { notification, Status } from '../notification'
 import { Path } from '../../type'
+import {  WindowTop } from '../../stores/settingsStore'
+import { on } from 'events'
+
+
 
 const closeFunction = async() => {
     const unlistenAsync = await appWindow.onCloseRequested(async (event) => {
@@ -29,8 +33,16 @@ function CloseAction(){
   const cancelRef = useRef<HTMLButtonElement>(null)
   const plays = useAudio(state=> state.plays)
   const visibleBeforePlayState = useRef(true)
-  const alarmOnTop = useSettings(state=>state.alarmOnTop)
-
+  const onTop = useSettings(state=>state.onTop)
+  useEffect(()=>{
+    if(onTop === WindowTop.Always){
+        appWindow.setAlwaysOnTop(true)
+    }else{
+        if(!plays){
+            appWindow.setAlwaysOnTop(false)
+        }
+    }
+  },[onTop])
   useEffect(()=>{
     async function showIt(){
         if(plays){
@@ -41,11 +53,11 @@ function CloseAction(){
             }else{
                 visibleBeforePlayState.current = true
             }
-            if(alarmOnTop){    
+            if(onTop === WindowTop.Alarm){    
                 await appWindow.setAlwaysOnTop(true)
             }
         }else{
-            if(alarmOnTop){    
+            if(onTop === WindowTop.Alarm || onTop === WindowTop.Never){    
                 await appWindow.setAlwaysOnTop(false)
             }
             if(!visibleBeforePlayState.current){

@@ -5,10 +5,12 @@ import {    Modal,ModalOverlay,ModalContent,ModalHeader,
             Slider,SliderTrack, SliderFilledTrack,
             SliderThumb} from '@chakra-ui/react'
 import React from 'react'
-import { usePopups, useSettings  } from '../../stores'
+import { usePopups, useSettings } from '../../stores'
 import TimeFormat from './TimeFormat'
 import CloseTaskMenu from './CloseTaskMenu'
 import PressSnoozeSlider from './PressSnoozeSlider'
+import {  WindowTop } from '../../stores/settingsStore'
+import { W } from '@tauri-apps/api/event-2a9960e7'
 
 const Settings = () => {
     const setShowSettings = usePopups((state)=> state.setShowSettings)
@@ -19,8 +21,8 @@ const Settings = () => {
     const setNavBarTop = useSettings((state) => state.setNavBarTop)
     const panelSize = useSettings((state) => state.height)
     const setPanelSize = useSettings((state) => state.setPanelSize)
-    const alarmOnTop = useSettings((state) => state.alarmOnTop)
-    const setAlarmOnTop = useSettings((state) => state.setAlarmOnTop)
+    const onTop = useSettings((state) => state.onTop)
+    const setOnTop = useSettings((state) => state.setOnTop)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
 
     return (
@@ -149,21 +151,27 @@ const Settings = () => {
                                     </Td>
                                 </Tr>
                                 <Tr>
-                                    <Td>Alarm on Top</Td>
+                                    <Td>On Top</Td>
                                     <Td>
                                     <RadioGroup>
                                             <HStack>
                                                 <Radio 
-                                                    isChecked={alarmOnTop} 
-                                                    onChange={()=>setAlarmOnTop(!alarmOnTop)}
+                                                    isChecked={onTop === WindowTop.Always} 
+                                                    onChange={()=>setOnTop(WindowTop.Always)}
                                                 >
-                                                    Yes
+                                                    Always
                                                 </Radio>
                                                 <Radio 
-                                                    isChecked={!alarmOnTop} 
-                                                    onChange={()=>{setAlarmOnTop(!alarmOnTop)}}
+                                                    isChecked={onTop === WindowTop.Alarm} 
+                                                    onChange={()=>{setOnTop(WindowTop.Alarm)}}
                                                 >
-                                                    No
+                                                    Alarm
+                                                </Radio>
+                                                <Radio 
+                                                    isChecked={onTop === WindowTop.Never} 
+                                                    onChange={()=>{setOnTop(WindowTop.Never)}}
+                                                >
+                                                    Never
                                                 </Radio>
                                             </HStack>
                                         </RadioGroup>

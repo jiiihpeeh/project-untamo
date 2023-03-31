@@ -8,6 +8,11 @@ export type CardColors =  {
     inactive: string
 }
 
+export enum WindowTop{
+    Always="always",
+    Alarm="alarm",
+    Never="never"
+}
 const defaultCard : CardColors = { 
                                     inactive: "#ececec", 
                                     even: '#c4ffff ', 
@@ -23,8 +28,8 @@ type UseSettings =  {
     closeTask: CloseTask,
     cardColors: CardColors,
     snoozePress: number,
-    alarmOnTop: boolean,
-    setAlarmOnTop: (value: boolean) => void
+    onTop: WindowTop,
+    setOnTop: (value: WindowTop) => void
     setCloseTask: (task: CloseTask) => void,
     setClock24: (to: boolean) => void,
     setNavBarTop: (to: boolean) => void,
@@ -80,11 +85,11 @@ const useSettings = create<UseSettings>()(
             },
             cardColors: defaultCard,
             closeTask: CloseTask.Obey,
-            alarmOnTop: true,
-            setAlarmOnTop: (value) => {
+            onTop: WindowTop.Alarm,
+            setOnTop: (value) => {
                 set(
                     {
-                        alarmOnTop: value
+                        onTop: value
                     }
                 )
             },
@@ -142,7 +147,7 @@ const useSettings = create<UseSettings>()(
                 clock24: state.clock24,
                 closeTask: state.closeTask,
                 snoozePress: state.snoozePress,
-                alarmOnTop: state.alarmOnTop,
+                onTop: state.onTop,
               }
           ),
       }
