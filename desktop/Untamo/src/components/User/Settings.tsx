@@ -4,7 +4,7 @@ import {    Modal,ModalOverlay,ModalContent,
             Button, Table,Thead, Tbody,Tr,Th,Td, Box,
             Slider,SliderTrack, SliderFilledTrack,
             SliderThumb, IconButton} from '@chakra-ui/react'
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import { usePopups, useSettings } from '../../stores'
 import TimeFormat from './TimeFormat'
 import CloseTaskMenu from './CloseTaskMenu'
@@ -26,8 +26,10 @@ const Settings = () => {
     const onTop = useSettings((state) => state.onTop)
     const setOnTop = useSettings((state) => state.setOnTop)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
-    const [size, setSize] = useState(1)
-
+    const isMobile = usePopups((state) => state.isMobile)
+    const [ size, setSize ] = useState(1)
+    const maxSize = isMobile? 1:2
+   
     return (
             <Modal 
                 isOpen={showSettings} 
@@ -45,8 +47,8 @@ const Settings = () => {
                             ml="4%" 
                             colorScheme='blue'
                             aria-label=''
-                            onClick= {() => {setSize(Math.min(2, size +1 % 3))}}
-                            isDisabled={size === 2}
+                            onClick= {() => {setSize(Math.min(maxSize, size +1 % 3))}}
+                            isDisabled={size === maxSize}
                         />
                         <IconButton 
                             size='xs' 
