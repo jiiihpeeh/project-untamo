@@ -58,7 +58,7 @@ const Settings = () => {
                     <ModalCloseButton />
                     <ModalBody>
                         <Table
-                            size="md"
+                            size={sizes.get(size)}
                         >
                             <Thead>
                                 <Tr>
