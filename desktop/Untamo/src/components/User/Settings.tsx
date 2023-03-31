@@ -1,5 +1,5 @@
-import {    Modal,ModalOverlay,ModalContent,ModalHeader,
-            ModalFooter, ModalBody, HStack,
+import {    Modal,ModalOverlay,ModalContent,
+            ModalHeader, ModalBody, HStack,
             ModalCloseButton, RadioGroup, Radio,
             Button, Table,Thead, Tbody,Tr,Th,Td, Box,
             Slider,SliderTrack, SliderFilledTrack,
@@ -10,7 +10,6 @@ import TimeFormat from './TimeFormat'
 import CloseTaskMenu from './CloseTaskMenu'
 import PressSnoozeSlider from './PressSnoozeSlider'
 import {  WindowTop } from '../../stores/settingsStore'
-import { W } from '@tauri-apps/api/event-2a9960e7'
 
 const Settings = () => {
     const setShowSettings = usePopups((state)=> state.setShowSettings)

@@ -19,6 +19,11 @@ const closeFunction = async() => {
             notification("Not so fast", "Alarm is On", Status.Info)
         }
     })
+    const unlisten = await appWindow.onFocusChanged(async (event) => {
+        if(useSettings.getState().onTop === WindowTop.Always){
+            await appWindow.setAlwaysOnTop(true)
+        }
+    })
     await appWindow.setMinSize(new PhysicalSize(410,600))
     return unlistenAsync
 }
@@ -56,6 +61,8 @@ function CloseAction(){
         }else{
             if(onTop === WindowTop.Alarm || onTop === WindowTop.Never){    
                 await appWindow.setAlwaysOnTop(false)
+            }else{
+                await appWindow.setAlwaysOnTop(true)
             }
             if(!visibleBeforePlayState.current){
                 setTimeout(() => {appWindow.hide()},180)
