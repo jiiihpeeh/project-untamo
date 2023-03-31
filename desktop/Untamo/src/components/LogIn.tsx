@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
         Button, Box,Divider, Spinner } from '@chakra-ui/react'
-import { useLogIn, extend,usePopups } from "../stores"
+import { useLogIn, extend,usePopups, useSettings } from "../stores"
 import { SessionStatus, Path } from "../type"
 import QrScanner from 'qr-scanner'
 import '../App.css'
@@ -12,6 +12,8 @@ const LogIn = () => {
     const logIn = useLogIn((state) => state.logIn)
     const isMobile = usePopups((state) => state.isMobile)
     const windowSize = usePopups((state)=>state.windowSize)
+    const navBarTop = useSettings((state) => state.navBarTop)
+    const navBarHeight = useSettings((state) => state.height)
 
     const [formData, setFormData] = useState({
         email: "",
@@ -57,14 +59,15 @@ const LogIn = () => {
     function showLogIn(){
         switch(sessionStatus){
             case SessionStatus.Validating:
-                let radius = Math.min(windowSize.width/2, windowSize.height/2)
+                const radius = Math.min(windowSize.width/2, windowSize.height/2)
+                const top =  navBarTop?windowSize.height/2 - radius +navBarHeight:windowSize.height/2 - radius -navBarHeight
                 return(<Spinner
                             thickness='8px'
                             speed='0.65s'
                             emptyColor='gray.200'
                             color='blue.500'
                             size='xl'
-                            style={{width: radius, height: radius, left: windowSize.width/2-radius/2, top: windowSize.height/2-radius/2, position:"absolute" }}                        
+                            style={{width: radius, height: radius, left: windowSize.width/2-radius/2, top: top, position:"absolute" }}                        
                         /> )
             default:
                 return(

@@ -70,6 +70,7 @@ const NavGrid = () => {
 
     useEffect(() => {
         const constructGrid = async() => {
+            await sleep(5)
             if(sessionStatus === SessionStatus.Valid){
                 setValidItems(["alarms", "devices", 'user'])
                 await sleep(5)

@@ -7,7 +7,8 @@ import { SessionStatus, FormData, UserInfo } from '../type'
 import { useServer, useDevices, useAdmin, useTimeouts,
          useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "../audiostorage/audioDatabase"
- 
+import sleep from '../components/sleep'
+
 type UseLogIn = {
     token : string,
     signedIn: number,
@@ -94,7 +95,7 @@ const refreshToken = async () =>{
 
 const checkSession = async () => {
     const { server, token } = getCommunicationInfo()
-
+    let status : SessionStatus 
     if (token.length > 3){
         try {
             let res = await axios.get(`${server}/api/is-session-valid`,  {
@@ -109,48 +110,25 @@ const checkSession = async () => {
                 useDevices.getState().fetchDevices()
                 notification("Session", "Continuing session.", Status.Info)
                 setTimeout(refreshToken,30000)
-                useLogIn.setState
-                                ( 
-                                    { 
-                                        sessionValid: SessionStatus.Valid  
-                                    }
-                                )
+                status = SessionStatus.Valid
             } else {
-                useLogIn.setState
-                                ( 
-                                    { 
-                                        sessionValid: SessionStatus.NotValid  
-                                    }
-                                )
+                status = SessionStatus.NotValid
             }
         } catch(err: any){
             if(err.response.status === 403){
                 notification("Session", "Session invalid.", Status.Error)
-                useLogIn.setState
-                                ( 
-                                    { 
-                                        sessionValid: SessionStatus.NotValid  
-                                    }
-                                )
+                status = SessionStatus.NotValid
             }else{
                 notification("Session", "Can not contact server.", Status.Warning)
-                useLogIn.setState
-                                ( 
-                                    { 
-                                        sessionValid: SessionStatus.Unknown  
-                                    }
-                                )
+                status = SessionStatus.NotValid
             }
         }
     } else {
-        useLogIn.setState( 
-                            { 
-                                sessionValid: SessionStatus.NotValid  
-                            }
-                        )
+        status = SessionStatus.NotValid
     }
+    await sleep(1)
+    return status
 } 
-
 const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
     const user = useLogIn.getState().user
     const { server, token } = getCommunicationInfo()
@@ -328,7 +306,17 @@ const useLogIn = create<UseLogIn>()(
                 }
             ),
             validateSession: async () =>{
-                 await checkSession()
+                set(
+                    {
+                        sessionValid: SessionStatus.Validating,
+                    }
+                )
+                let status = await checkSession()
+                set (
+                        {
+                            sessionValid: status,
+                        }
+                )
             },
             getUserInfo: async () => {
                 await userInfoFetch()
