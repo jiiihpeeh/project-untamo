@@ -19,11 +19,7 @@ const closeFunction = async() => {
             notification("Not so fast", "Alarm is On", Status.Info)
         }
     })
-    const unlisten = await appWindow.onFocusChanged(async (event) => {
-        if(useSettings.getState().onTop === WindowTop.Always){
-            await appWindow.setAlwaysOnTop(true)
-        }
-    })
+
     await appWindow.setMinSize(new PhysicalSize(410,600))
     return unlistenAsync
 }
@@ -37,13 +33,23 @@ function CloseAction(){
   const visibleBeforePlayState = useRef(true)
   const onTop = useSettings(state=>state.onTop)
   useEffect(()=>{
-    if(onTop === WindowTop.Always){
-        appWindow.setAlwaysOnTop(true)
-    }else{
-        if(!plays){
-            appWindow.setAlwaysOnTop(false)
+    async function topHandler(){
+        if(onTop === WindowTop.Always){
+            appWindow.setAlwaysOnTop(true)
+        }else{
+            if(!plays){
+                appWindow.setAlwaysOnTop(false)
+            }
         }
+        const unlisten = await appWindow.onFocusChanged(async (event) => {
+            if(onTop === WindowTop.Always){
+                await appWindow.setAlwaysOnTop(true)
+            }else if(!plays){
+                await appWindow.setAlwaysOnTop(false)
+            }
+        })
     }
+    topHandler()
   },[onTop])
   useEffect(()=>{
     async function showIt(){
