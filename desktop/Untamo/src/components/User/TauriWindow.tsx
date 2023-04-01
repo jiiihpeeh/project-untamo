@@ -56,6 +56,7 @@ function CloseAction(){
   useEffect(()=>{
     async function showIt(){
         if(plays){
+            await appWindow.unminimize()
             if(!await appWindow.isVisible()){
                 await appWindow.show()
                 visibleBeforePlayState.current = false
@@ -107,7 +108,7 @@ function CloseAction(){
                       colorScheme='blue' 
                       onClick={()=> { 
                                         setShowCloseApp(false)
-                                        appWindow.hide()
+                                        setTimeout(()=> appWindow.hide(), 120)
                                     }
                               } 
                       ml={3}

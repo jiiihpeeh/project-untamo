@@ -27,8 +27,9 @@ const Settings = () => {
     const setOnTop = useSettings((state) => state.setOnTop)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
     const isMobile = usePopups((state) => state.isMobile)
+    const windowSize = usePopups((state) => state.windowSize)
     const [ size, setSize ] = useState(1)
-    const maxSize = isMobile? 1:2
+    const maxSize = isMobile? 1:(windowSize.height < 915)?1:2
    
     return (
             <Modal 
