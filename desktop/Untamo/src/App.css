@@ -1,5 +1,4 @@
 body {  min-width:410px; min-height: 600px; }
-
 .App {
   text-align: center;
 }
@@ -103,6 +102,14 @@ input.Register, textarea {
     margin: 0 auto;
     border-radius: 18px;
     margin-top: 5%;
+  }
+  .UserFormDark {
+    background-color: rgba(119, 133, 214, 0.664);
+    width: 30em;
+    margin: 0 auto;
+    border-radius: 18px;
+    margin-top: 5%;
+    color: rgb(63, 60, 60);
   }
 
   .FormLabel{

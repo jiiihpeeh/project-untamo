@@ -98,10 +98,14 @@ const Settings = () => {
                                     </Td>
                                     <Td>
                                         <Center>
-                                            <Switch
+                                        <Switch
                                                 ml="10%"
                                                 isChecked={colorMode === 'dark'}
-                                                onChange={()=>{toggleColorMode()}}
+                                                onChange={()=>{
+                                                                toggleColorMode()
+                                                                setShowChangeColors(true)
+                                                            }
+                                                        }
                                                 size={sizes.get(size)}
                                             >
                                             </Switch>
@@ -248,15 +252,7 @@ const Settings = () => {
                         </Table>
     
                     </ModalBody>
-                    {/* <ModalFooter>
-                    <Button 
-                        colorScheme='blue' 
-                        mr={3} 
-                        onClick={()=>setShowSettings(false)}
-                    >
-                        OK
-                    </Button>
-                    </ModalFooter> */}
+ 
                 </ModalContent>
             </Modal>
     )
