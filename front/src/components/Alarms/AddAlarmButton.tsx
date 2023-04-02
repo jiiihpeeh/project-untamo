@@ -1,6 +1,7 @@
 import { Button, Text } from '@chakra-ui/react'
 import React, { useEffect,  useState } from 'react'
 import { useAlarms, usePopups, useSettings } from '../../stores'
+import { ColorMode } from '../../type'
 
 interface Props{
     mounting: React.RefObject<HTMLDivElement>
@@ -13,6 +14,7 @@ function AddAlarmButton(props: Props) {
     const [ buttonPosition, setButtonPosition ] = useState<React.CSSProperties>({})
     const navBarTop = useSettings((state)=> state.navBarTop)
     const navHeight = useSettings((state)=> state.height)
+    const colorMode = useSettings((state)=> state.colorMode)
 
     const updatePosition = async() =>{
         if(mounting.current){
@@ -39,7 +41,7 @@ function AddAlarmButton(props: Props) {
                 size='xl' 
                 //ml="5.5%" 
                 borderRadius={"50%"} 
-                colorScheme="green"
+                colorScheme={(colorMode ===  ColorMode.Light)?"green":"blue"}
                 width={"50px"} 
                 height={"50px"}
                 onClick={()=>setShowAddAlarm(true)}

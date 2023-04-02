@@ -7,13 +7,14 @@ import { shallow } from 'zustand/shallow'
 import { timePadding, time24hToTime12h } from '../../utils'
 import { timeToUnits, timeForNextAlarm, timeToNextAlarm } from './calcAlarmTime'
 import React, { useState, useEffect } from 'react'
+import { ColorMode } from '../../type'
 
 const AlarmPop = () =>{
     const windowSize = usePopups((state)=> state.windowSize)
     const navBarTop = useSettings((state)=> state.navBarTop)
     const navHeight = useSettings((state)=> state.height)
     const clock24 = useSettings((state)=> state.clock24)
-
+    const colorMode = useSettings((state)=> state.colorMode)
     const userInfo = useLogIn((state)=> state.user)
     const plays = useAudio((state)=> state.plays)
     const stop = useAudio((state)=> state.stop)
@@ -33,7 +34,9 @@ const AlarmPop = () =>{
         let addBtn = (
                         <Button 
                             onClick={()=>setShowAddAlarm(true)}  
-                            width="100%" 
+                            width="100%"
+                            backgroundColor={(colorMode === ColorMode.Light)?"#69f0aea7":"#303f9f"}
+
                         >
                             Add an Alarm
                         </Button>
@@ -42,6 +45,7 @@ const AlarmPop = () =>{
             return (<Box> 
                         <Text 
                             alignContent={"center"}
+                            backgroundColor="black"
                         >
                             No alarms for this device
                         </Text>
@@ -88,11 +92,12 @@ const AlarmPop = () =>{
         }
         return (
                 <VStack>
-                    <Text as="b">
+                    <Text as="b" >
                         Coming Up: {(runAlarm)?`${timeInfo}`:""} {postFix}
                     </Text>
                     <HStack>
-                        {runAlarm && <Button 
+                        {runAlarm && <Button
+                                        backgroundColor={(colorMode === ColorMode.Light)?"gray.300":"#1565c0"}
                                         onClick={()=>  { if(runAlarm){
                                                 setToEdit(runAlarm.id)
                                                 setShowEdit(true)
@@ -100,7 +105,7 @@ const AlarmPop = () =>{
                                         }
                                     }
                         >
-                            Edit the Alarms
+                            Edit the Alarm
                         </Button>}
                         {(!noSnooze) && <Button 
                                             onClick={resetSnooze}
@@ -169,13 +174,13 @@ const AlarmPop = () =>{
                     </PopoverHeader>
                     {runAlarm && 
                     <PopoverBody 
-                        backgroundColor={"blue.300"}
+                        backgroundColor={(colorMode === ColorMode.Light)?"blue.300":"blackAlpha.500"}
                     >
                         {timerInfo()}
                         {turnOff()}
                     </PopoverBody>}
                     <PopoverFooter  
-                        backgroundColor={"gray.300"}
+                        backgroundColor={(colorMode === ColorMode.Light)?"gray.300":"black.100"}
                     >
                         {footerText()}
                     </PopoverFooter>

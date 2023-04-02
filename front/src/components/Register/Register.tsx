@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import { Input, InputGroup,Box,
          InputRightAddon, FormControl,
          FormLabel, Text, Button } from '@chakra-ui/react'
-import { useServer, extend, usePopups } from '../../stores'
+import { useServer, extend, usePopups, useSettings } from '../../stores'
 import useRegister from './RegisterBackend'
 import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons'
-import { Path } from '../../type'
+import { Path, ColorMode } from '../../type'
 import '../../App.css'
 
 enum Query{
@@ -42,7 +42,7 @@ const Register = () => {
     const setFormCheck = useRegister((state)=>state.setFormCheck)
     const isMobile = usePopups((state) => state.isMobile)
     const windowSize = usePopups((state)=>state.windowSize)
-
+    const colorMode = useSettings((state) => state.colorMode)
     const wsURL = useServer((state) => state.wsRegister)
     const navigate = useNavigate()
 
@@ -124,14 +124,15 @@ const Register = () => {
     // },[passwordCheck, formCheck])
     return (
         <Box 
-            bg='lightgray' 
-            className='UserForm' 
+            //bg='lightgray' 
             width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
             mt={"30%"}
+            className={(colorMode === ColorMode.Light)?'UserForm':"UserFormDark"}
         >
             <FormControl 
                 width="95%" 
-                margin="0 auto" 
+                margin="0 auto"
+                //className={(colorMode === ColorMode.Light)?'UserForm':"UserFormDark"}
             >
                 <FormLabel 
                     htmlFor="firstName"
@@ -143,7 +144,7 @@ const Register = () => {
                     id="firstName"
                     onChange={(e)=>setFirstName(e.target.value)}
                     value={firstName}
-                    className='Register'
+                    //className='Register'
                 />
                 <FormLabel 
                     htmlFor="lastName"
@@ -156,7 +157,7 @@ const Register = () => {
                     id="lastName"
                     onChange={(e)=>setLastName(e.target.value)}
                     value={lastName}
-                    className='Register'
+                    //className='Register'
                 />
                 <FormLabel 
                     htmlFor="email"
@@ -168,7 +169,7 @@ const Register = () => {
                     id="email"
                     onChange={(e)=>setEmail(e.target.value)}
                     value={email}
-                    className='Register'
+                    bgColor="GhostWhite"
                 />
                 <FormLabel 
                     htmlFor='password'
@@ -181,7 +182,7 @@ const Register = () => {
                         id="password"
                         onChange= {(e) => setPassword(e.target.value)}
                         value={password}
-                        className='Register'
+                        bgColor="GhostWhite"
                     />
                     <InputRightAddon 
                         children={<PasswordCheck/>}
@@ -200,7 +201,7 @@ const Register = () => {
                         id="confirmPassword"
                         onChange= {(e)=> setConfirmPassword(e.target.value)}
                         value={confirmPassword}
-                        className='Register'
+                        bgColor="GhostWhite"
                     />
                     <InputRightAddon 
                         children={<PasswordMatch/>}
@@ -209,6 +210,7 @@ const Register = () => {
                 <Button
                     m="5px"
                     onClick={()=>register()}
+                    colorScheme={(colorMode === ColorMode.Dark)?"blue":"gray.500"}
                     isDisabled={!(passwordCheck && formCheck && password === confirmPassword && password.length > 5)}
                 >
                     Register

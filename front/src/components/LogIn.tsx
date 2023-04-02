@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel,
         Button, Box,Divider, Spinner } from '@chakra-ui/react'
 import { useLogIn, extend,usePopups, useSettings } from "../stores"
-import { SessionStatus, Path } from "../type"
+import { SessionStatus, Path, ColorMode } from "../type"
+
 import QrScanner from 'qr-scanner'
 import '../App.css'
 
@@ -14,6 +15,7 @@ const LogIn = () => {
     const windowSize = usePopups((state)=>state.windowSize)
     const navBarTop = useSettings((state) => state.navBarTop)
     const navBarHeight = useSettings((state) => state.height)
+    const colorMode = useSettings((state) => state.colorMode)
 
     const [formData, setFormData] = useState({
         email: "",
@@ -73,7 +75,7 @@ const LogIn = () => {
                 return(
                     <form>
                         <Box 
-                            className='UserForm'
+                            className={(colorMode === ColorMode.Light)?'UserForm':"UserFormDark"}
                             width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
                             mt="35%"
                         >
@@ -120,6 +122,7 @@ const LogIn = () => {
                                     onClick={() =>onSubmit()} 
                                     mt="1%" 
                                     mb="1%" 
+                                    colorScheme={(colorMode === ColorMode.Dark)?"blue":"gray.500"}
                                     isDisabled={!canSubmit}
                                 >
                                     Log In 
