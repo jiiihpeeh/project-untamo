@@ -1,6 +1,8 @@
+import console from 'console'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { CloseTask } from '../type'
+import { ColorMode } from '../type'
 
 export type CardColors =  {
     even: string,
@@ -8,13 +10,21 @@ export type CardColors =  {
     inactive: string
 }
 
-const defaultCard : CardColors = { 
+
+const defaultCardLight : CardColors = { 
                                     inactive: "#ececec", 
                                     even: '#c4ffff ', 
                                     odd:"#ffff9d" 
                                  }
+const defaultCardDark : CardColors = {
+                                    inactive:"#717171",
+                                    even:"#00e7e7",
+                                    odd:"#ea9200"
+                                }
+export const dialogSizes = new Map<number, string>( [[0, "sm"], [1, "md"], [2, "lg"]])
 
 type UseSettings =  {
+    dialogSize: number
     navBarTop: boolean,
     height: number,
     mb: number,
@@ -23,6 +33,9 @@ type UseSettings =  {
     closeTask: CloseTask,
     cardColors: CardColors,
     snoozePress: number,
+    colorMode: ColorMode,
+    setDialogSize: (size: number) => void,
+    setColorMode: (mode: ColorMode) => void,
     setCloseTask: (task: CloseTask) => void,
     setClock24: (to: boolean) => void,
     setNavBarTop: (to: boolean) => void,
@@ -42,6 +55,16 @@ const useSettings = create<UseSettings>()(
             mt: 56,
             mb:0,
             clock24: true,
+            colorMode: ColorMode.Light,
+            dialogSize: 0,
+            setDialogSize: (size: number) => set({ dialogSize: size }),
+            setColorMode: (mode: ColorMode) => {
+                set(
+                    { 
+                        colorMode: mode 
+                    }
+                )
+            },
             setClock24: (to) =>{
                 set(
                     {
@@ -75,7 +98,7 @@ const useSettings = create<UseSettings>()(
                     )
                 }
             },
-            cardColors: defaultCard,
+            cardColors: defaultCardLight,
             closeTask: CloseTask.Obey,
             setCloseTask:(task) => {
                 set(
@@ -93,9 +116,10 @@ const useSettings = create<UseSettings>()(
                 )
             },
             setDefaultCardColors: () => {
+                let colorsDefault = (get().colorMode === ColorMode.Light)? defaultCardLight : defaultCardDark
                 set(
                     {
-                        cardColors: {...defaultCard},
+                        cardColors: colorsDefault,
                     }
                 )
             },

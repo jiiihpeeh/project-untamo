@@ -63,6 +63,8 @@ type Popup = {
     setShowClearSettings: (to: boolean) => void,
     showCloseApp: boolean,
     setShowCloseApp: (to: boolean) => void
+    showChangeColors: boolean,
+    setShowChangeColors: (to: boolean) => void,
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -212,6 +214,14 @@ const usePopups = create<Popup>((set, get) => ({
             set( 
                 {
                     showAbout: to
+                }
+            )
+        },
+        showChangeColors: false,
+        setShowChangeColors: (to) => {
+            set( 
+                {
+                    showChangeColors: to
                 }
             )
         },

@@ -4,6 +4,7 @@ import useAlarm, { Direction } from "./alarmStates"
 import ClockWindow from './ClockWindow'
 import { usePopups, useSettings } from '../../../stores'
 import { time24hToTime12h } from '../../../utils'
+import { th } from 'date-fns/locale'
 
 const TimeSelector = () => {
     const time = useAlarm((state)=> state.time)

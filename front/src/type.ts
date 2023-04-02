@@ -18,7 +18,10 @@ export enum Path  {
     Clueless="clueless",
     Base= ""
 }
-
+export enum ColorMode{
+    Light="light",
+    Dark="dark"
+}
 export enum SessionStatus {
     NotValid = "not-valid",
     Valid = "valid",

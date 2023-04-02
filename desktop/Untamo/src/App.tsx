@@ -40,6 +40,7 @@ import Color from './components/User/Colors'
 import Task from './components/User/Task'
 import ClearSettings from './components/User/ClearSettings'
 import CloseAction from './components/User/TauriWindow'
+import ChangeAlarmColors from './components/User/ChangeColors'
 import './App.css'
 
 function App() {
@@ -49,7 +50,9 @@ function App() {
     const mb = useSettings((state)=> state.mb)
     const mt = useSettings((state)=> state.mt)
     const check = useRef(false)
-    
+    document.onmousemove = function(evt){
+        evt.preventDefault();
+    }
     useEffect(() => {
         const checker = async() =>{
             if(!check.current){
@@ -65,7 +68,10 @@ function App() {
     },[isMobile])
 
     return (
-        <Container className="App">
+        <Container 
+            className="App"
+            onContextMenu={(e)=>{e.preventDefault()}}
+        >
             {/* <App/> */}
             <NavGrid/>
             <Container 
@@ -73,6 +79,7 @@ function App() {
                 mt={`${mt+2}px`} 
                 mb={`${mb+navHeight}px`} 
                 id="App-Container" 
+                //onContextMenu={(e)=>{e.preventDefault()}}
             >
                 <Routes>
                     <Route path ={extend(Path.Alarms)} element={<Alarms/>}/>
@@ -108,10 +115,12 @@ function App() {
                 <AdminPop/>
                 <Color/>
                 <Task/>
+                
             </Container>
         <Settings/>
         <ClearSettings/>
         <CloseAction/>
+        <ChangeAlarmColors/>
     </Container>
     )
 }

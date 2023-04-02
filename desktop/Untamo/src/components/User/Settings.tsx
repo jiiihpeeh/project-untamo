@@ -1,9 +1,9 @@
-import {    Modal,ModalOverlay,ModalContent,
-            ModalHeader, ModalBody, HStack,
+import {    Modal,ModalOverlay,ModalContent,Center,
+            ModalHeader, ModalBody, HStack, 
             ModalCloseButton, RadioGroup, Radio,
             Button, Table,Thead, Tbody,Tr,Th,Td, Box,
             Slider,SliderTrack, SliderFilledTrack,
-            SliderThumb, IconButton} from '@chakra-ui/react'
+            SliderThumb, IconButton, Switch, useColorMode } from '@chakra-ui/react'
 import React, { useEffect, useState, useRef } from 'react'
 import { usePopups, useSettings } from '../../stores'
 import TimeFormat from './TimeFormat'
@@ -11,8 +11,9 @@ import CloseTaskMenu from './CloseTaskMenu'
 import PressSnoozeSlider from './PressSnoozeSlider'
 import {  WindowTop } from '../../stores/settingsStore'
 import { AddIcon as Add, MinusIcon as Minus } from  '@chakra-ui/icons';
+import { ColorMode } from '../../type'
+import { dialogSizes as sizes } from '../../stores/settingsStore'
 
-const sizes = new Map<number, string>( [[0, "sm"], [1, "md"], [2, "lg"]])
 
 const Settings = () => {
     const setShowSettings = usePopups((state)=> state.setShowSettings)
@@ -27,8 +28,13 @@ const Settings = () => {
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
     const isMobile = usePopups((state) => state.isMobile)
     const windowSize = usePopups((state) => state.windowSize)
-    const [ size, setSize ] = useState(1)
+    const size = useSettings((state) => state.dialogSize)
+    const setSize = useSettings((state) => state.setDialogSize)
     const maxSize = useRef(1)
+    const { colorMode, toggleColorMode } = useColorMode()
+    const setColorSetting = useSettings((state) => state.setColorMode)
+    const setShowChangeColors = usePopups((state)=> state.setShowChangeColors)
+
    
     useEffect(()=>{
         if(windowSize.height < 740){
@@ -43,6 +49,13 @@ const Settings = () => {
             maxSize.current = isMobile?1:2
         }
     },[windowSize])
+    useEffect(()=>{
+        if(colorMode  === 'light'){
+            setColorSetting(ColorMode.Light)
+        }else{
+            setColorSetting(ColorMode.Dark)
+        }
+    },[colorMode])
     return (
             <Modal 
                 isOpen={showSettings} 
@@ -78,39 +91,48 @@ const Settings = () => {
                         <Table
                             size={sizes.get(size)}
                         >
-                            <Thead>
-                                <Tr>
-                                    <Th>
-                                        Setting
-                                    </Th>
-                                    <Th>
-                                        Value
-                                    </Th>
-                                </Tr>
-                            </Thead>
                             <Tbody>
+                                <Tr>
+                                    <Td>
+                                        Dark Mode
+                                    </Td>
+                                    <Td>
+                                        <Center>
+                                            <Switch
+                                                ml="10%"
+                                                isChecked={colorMode === 'dark'}
+                                                onChange={()=>{toggleColorMode()}}
+                                                size={sizes.get(size)}
+                                            >
+                                            </Switch>
+                                        </Center>
+                                    </Td>
+                                </Tr>
                                 <Tr>
                                     <Td>
                                         Toolbar Position
                                     </Td>
-
                                     <Td>
-                                        <RadioGroup>
-                                            <HStack>
-                                                <Radio 
-                                                    isChecked={navBarTop} 
-                                                    onChange={()=>setNavBarTop(!navBarTop)}
-                                                >
-                                                    Top
-                                                </Radio>
-                                                <Radio 
-                                                    isChecked={!navBarTop} 
-                                                    onChange={()=>setNavBarTop(!navBarTop)}
-                                                >
-                                                    Bottom
-                                                </Radio>
-                                            </HStack>
-                                        </RadioGroup>
+                                        <Center>
+                                            <RadioGroup
+                                                size={sizes.get(size)}
+                                            >
+                                                <HStack>
+                                                    <Radio 
+                                                        isChecked={navBarTop} 
+                                                        onChange={()=>setNavBarTop(!navBarTop)}
+                                                    >
+                                                        Top
+                                                    </Radio>
+                                                    <Radio 
+                                                        isChecked={!navBarTop} 
+                                                        onChange={()=>setNavBarTop(!navBarTop)}
+                                                    >
+                                                        Bottom
+                                                    </Radio>
+                                                </HStack>
+                                            </RadioGroup>
+                                        </Center>
                                     </Td>
                                 </Tr>
                                 <Tr>
@@ -121,7 +143,8 @@ const Settings = () => {
                                         <Slider 
                                             defaultValue={panelSize} 
                                             min={25} 
-                                            max={80} step={1}
+                                            max={80} 
+                                            step={1}
                                             onChange={(e)=>setPanelSize(e)}    
                                         >
                                             <SliderTrack >
@@ -145,6 +168,8 @@ const Settings = () => {
                                     <Td>    
                                     <Button
                                         onClick={()=>setShowColors(true)}
+                                        size={sizes.get(size)}
+                                        width="100%"
                                     >
                                         Set Alarm Colors
                                     </Button>
@@ -181,6 +206,8 @@ const Settings = () => {
                                     <Td>
                                         <Button
                                             onClick={()=> setShowClearSettings(true)}
+                                            size={sizes.get(size)}
+                                            width="100%"
                                         >
                                             Clear Settings
                                         </Button>
@@ -189,28 +216,32 @@ const Settings = () => {
                                 <Tr>
                                     <Td>On Top</Td>
                                     <Td>
-                                    <RadioGroup>
-                                            <HStack>
-                                                <Radio 
-                                                    isChecked={onTop === WindowTop.Always} 
-                                                    onChange={()=>setOnTop(WindowTop.Always)}
-                                                >
-                                                    Always
-                                                </Radio>
-                                                <Radio 
-                                                    isChecked={onTop === WindowTop.Alarm} 
-                                                    onChange={()=>{setOnTop(WindowTop.Alarm)}}
-                                                >
-                                                    Alarm
-                                                </Radio>
-                                                <Radio 
-                                                    isChecked={onTop === WindowTop.Never} 
-                                                    onChange={()=>{setOnTop(WindowTop.Never)}}
-                                                >
-                                                    Never
-                                                </Radio>
-                                            </HStack>
-                                        </RadioGroup>
+                                        <Center>
+                                            <RadioGroup
+                                                size={sizes.get(size)}
+                                            >
+                                                <HStack>
+                                                    <Radio 
+                                                        isChecked={onTop === WindowTop.Always} 
+                                                        onChange={()=>setOnTop(WindowTop.Always)}
+                                                    >
+                                                        Always
+                                                    </Radio>
+                                                    <Radio 
+                                                        isChecked={onTop === WindowTop.Alarm} 
+                                                        onChange={()=>{setOnTop(WindowTop.Alarm)}}
+                                                    >
+                                                        Alarm
+                                                    </Radio>
+                                                    <Radio 
+                                                        isChecked={onTop === WindowTop.Never} 
+                                                        onChange={()=>{setOnTop(WindowTop.Never)}}
+                                                    >
+                                                        Never
+                                                    </Radio>
+                                                </HStack>
+                                            </RadioGroup>
+                                        </Center>
                                     </Td>
                                 </Tr>
                             </Tbody>

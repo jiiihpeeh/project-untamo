@@ -1,14 +1,19 @@
 
-import { HStack, RadioGroup, Radio } from '@chakra-ui/react'
+import { HStack, RadioGroup, Radio, Center } from '@chakra-ui/react'
 import React from 'react'
 import { useSettings } from '../../stores'
+import { dialogSizes as sizes } from '../../stores/settingsStore'
 
 const TimeFormat = () =>{
     const clock24 = useSettings((state) => state.clock24)
     const setClock24 = useSettings((state) => state.setClock24)
+    const size = useSettings((state) => state.dialogSize)
 
     return (
-            <RadioGroup>
+        <Center>
+            <RadioGroup
+                size={sizes.get(size)}
+            >
                 <HStack>
                     <Radio 
                         isChecked={clock24} 
@@ -24,6 +29,7 @@ const TimeFormat = () =>{
                     </Radio>
                 </HStack>
             </RadioGroup>
+        </Center>
     )
 }
 

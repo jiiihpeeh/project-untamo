@@ -40,7 +40,10 @@ export type Device = {
     deviceName: string,
     type: DeviceType
 }
-
+export enum ColorMode{
+    Light="light",
+    Dark="dark"
+}
 export interface FormData{
     firstName: string,
     lastName: string,

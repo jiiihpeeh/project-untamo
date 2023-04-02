@@ -61,6 +61,8 @@ type Popup = {
     setNavigationTriggered: () => void,
     showClearSettings: boolean,
     setShowClearSettings: (to: boolean) => void,
+    showChangeColors: boolean,
+    setShowChangeColors: (to: boolean) => void,
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -304,7 +306,15 @@ const usePopups = create<Popup>((set, get) => ({
                     showClearSettings: to
                 }
             )
-        }
+        },
+        showChangeColors:false,
+        setShowChangeColors: (to: boolean) => {
+            set(
+                {
+                    showChangeColors: to
+                }
+            )
+        },
     }
 ))
 

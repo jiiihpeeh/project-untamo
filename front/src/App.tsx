@@ -40,6 +40,7 @@ import Settings from './components/User/Settings'
 import Color from './components/User/Colors'
 import Task from './components/User/Task'
 import ClearSettings from './components/User/ClearSettings'
+import ChangeAlarmColors from './components/User/ChangeColors'
 import './App.css'
 
 function App() {
@@ -112,6 +113,7 @@ function App() {
             </Container>
         <Settings/>
         <ClearSettings/>
+        <ChangeAlarmColors/>
     </Container>
     )
 }
