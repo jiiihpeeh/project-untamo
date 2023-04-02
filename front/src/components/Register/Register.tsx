@@ -210,7 +210,8 @@ const Register = () => {
                 <Button
                     m="5px"
                     onClick={()=>register()}
-                    colorScheme={(colorMode === ColorMode.Dark)?"blue":"gray.500"}
+                    //colorScheme={(colorMode === ColorMode.Dark)?"blue":"blueGray"}
+                    color={(colorMode === ColorMode.Dark)?"blue":"gray"}
                     isDisabled={!(passwordCheck && formCheck && password === confirmPassword && password.length > 5)}
                 >
                     Register

@@ -122,7 +122,7 @@ const LogIn = () => {
                                     onClick={() =>onSubmit()} 
                                     mt="1%" 
                                     mb="1%" 
-                                    colorScheme={(colorMode === ColorMode.Dark)?"blue":"gray.500"}
+                                    colorScheme={(colorMode === ColorMode.Dark)?"blue":"gray"}
                                     isDisabled={!canSubmit}
                                 >
                                     Log In 
