@@ -55,7 +55,9 @@ function ClockWindow() {
                 Set Time
             </ModalHeader>
             <ModalCloseButton />
-            <ModalBody>
+            <ModalBody
+                onMouseDown={e=>e.preventDefault()}
+            >
                 <Table size="sm">
                     <Tbody>
                        <Tr>

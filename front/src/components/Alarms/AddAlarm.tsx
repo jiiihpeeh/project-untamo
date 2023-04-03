@@ -51,7 +51,9 @@ function AddAlarm() {
         <DrawerOverlay />
         <DrawerContent>
             <DrawerCloseButton />
-            <DrawerHeader>
+            <DrawerHeader
+                onMouseDown={e=>e.preventDefault()}
+            >
                 Add an alarm
             </DrawerHeader>	
             <DrawerBody>

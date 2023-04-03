@@ -1,5 +1,5 @@
 import {    Modal,ModalOverlay,ModalContent,Center,
-            ModalHeader, ModalBody, HStack, 
+            ModalHeader, ModalBody, HStack, Spacer,
             ModalCloseButton, RadioGroup, Radio,
             Button, Table,Thead, Tbody,Tr,Th,Td, Box,
             Slider,SliderTrack, SliderFilledTrack,
@@ -64,7 +64,9 @@ const Settings = () => {
                 scrollBehavior='outside'
             >
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent
+                    onMouseDown={e=>e.preventDefault()}
+                >
                     <ModalHeader>
                         Settings
                         <IconButton 
@@ -94,21 +96,37 @@ const Settings = () => {
                             <Tbody>
                                 <Tr>
                                     <Td>
-                                        Dark Mode
+                                        Color Mode
                                     </Td>
                                     <Td>
                                         <Center>
-                                        <Switch
-                                                ml="10%"
-                                                isChecked={colorMode === 'dark'}
-                                                onChange={()=>{
-                                                                toggleColorMode()
-                                                                setShowChangeColors(true)
-                                                            }
-                                                        }
+                                            <RadioGroup
                                                 size={sizes.get(size)}
                                             >
-                                            </Switch>
+                                                <HStack>
+                                                    <Radio 
+                                                        isChecked={colorMode === ColorMode.Light } 
+                                                        onChange={()=>{
+                                                                        setShowChangeColors(true) 
+                                                                        toggleColorMode()
+                                                                    }
+                                                                }
+                                                    >
+                                                        Light
+                                                    </Radio>
+                                                    <Spacer/>
+                                                    <Radio 
+                                                        isChecked={colorMode === ColorMode.Dark } 
+                                                        onChange={()=>{
+                                                                            setShowChangeColors(true) 
+                                                                            toggleColorMode()
+                                                                        }
+                                                                }                                                    
+                                                    >
+                                                        Dark
+                                                    </Radio>
+                                                </HStack>
+                                            </RadioGroup>
                                         </Center>
                                     </Td>
                                 </Tr>
@@ -128,6 +146,7 @@ const Settings = () => {
                                                     >
                                                         Top
                                                     </Radio>
+                                                    <Spacer/>
                                                     <Radio 
                                                         isChecked={!navBarTop} 
                                                         onChange={()=>setNavBarTop(!navBarTop)}
@@ -218,7 +237,9 @@ const Settings = () => {
                                     </Td>
                                 </Tr>
                                 <Tr>
-                                    <Td>On Top</Td>
+                                    <Td>
+                                        On Top
+                                    </Td>
                                     <Td>
                                         <Center>
                                             <RadioGroup

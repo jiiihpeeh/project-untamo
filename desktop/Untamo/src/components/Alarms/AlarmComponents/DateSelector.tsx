@@ -8,7 +8,9 @@ const DateSelector = () => {
     const dateFormat = useAlarm((state)=>state.dateFormat);
     const setDate = useAlarm((state)=>state.setDate)
     return(
-        <Flex>
+        <Flex
+            onMouseDown={e=>e.preventDefault()}
+        >
             <Center>
                 <FormLabel>
                     Date

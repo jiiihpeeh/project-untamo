@@ -107,7 +107,9 @@ const DeviceMenu = () => {
                 isCentered
             >
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent
+                    onMouseDown={e=>e.preventDefault()}
+                >
                     <ModalHeader>
                         Device Options
                     </ModalHeader>

@@ -69,7 +69,9 @@ const AddDevice = () => {
             <ModalOverlay />
             <ModalContent>
               <ModalCloseButton />
-              <ModalHeader>
+              <ModalHeader
+                onMouseDown={e=>e.preventDefault()}
+              >
                 Insert Device Name
               </ModalHeader>
               <ModalBody>

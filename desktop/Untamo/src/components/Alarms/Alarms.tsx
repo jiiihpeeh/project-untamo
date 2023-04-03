@@ -172,6 +172,7 @@ const Alarms = () => {
                     <Card
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
+                        onMouseDownCapture={e=>e.preventDefault()}
                         onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
                         onMouseEnter={() => { 
                                               counterLaunched.current = false 

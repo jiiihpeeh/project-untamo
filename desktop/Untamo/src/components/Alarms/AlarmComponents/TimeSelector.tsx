@@ -70,6 +70,7 @@ const TimeSelector = () => {
                 className='timepicker-ui' 
                 ref={tmRef}
                 alignContent="center"
+                onMouseDown={e=>e.preventDefault()}
             >
                 <Center>
                     <FormLabel>

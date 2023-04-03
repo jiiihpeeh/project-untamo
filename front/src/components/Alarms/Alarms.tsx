@@ -172,10 +172,12 @@ const Alarms = () => {
                     <Card
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
-                        onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
-                        onMouseEnter={() => { 
+                        onMouseLeave={(e)=>{setShowButtons(""); timeIntervalID.current = null; e.preventDefault() } }
+                        onMouseDown={e=>e.preventDefault()}
+                        onMouseEnter={(e) => { 
                                               counterLaunched.current = false 
-                                              setShowButtons(id) 
+                                              setShowButtons(id)
+                                              e.preventDefault()
                                               timeIntervalID.current = id
                                               setTimeout(()=>{
                                                                 if(timeIntervalID.current){

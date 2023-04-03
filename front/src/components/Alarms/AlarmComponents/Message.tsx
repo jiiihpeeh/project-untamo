@@ -9,7 +9,9 @@ const Message = () => {
             <Flex 
                 m={"1%"}
             >
-                <FormLabel>
+                <FormLabel
+                    onMouseDown={e=>e.preventDefault()}
+                >
                     Message
                 </FormLabel>
                 <Input 

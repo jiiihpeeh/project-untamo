@@ -5,7 +5,9 @@ import AlarmTask from "./AlarmTask"
 
 const AlarmToggles = () => {
     return(
-            <Flex>
+            <Flex
+                onMouseDown={e=>e.preventDefault()}
+            >
                 <Spacer/>
                 <AlarmActive/>
                 <AlarmTask/>

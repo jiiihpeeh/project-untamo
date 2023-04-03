@@ -40,7 +40,9 @@ const DeviceChecker = () => {
     }
 
     return(
-        <Center>
+        <Center
+            onMouseDown={e=>e.preventDefault()}
+        >
             <TableContainer>
             <Table>
                 <Thead>

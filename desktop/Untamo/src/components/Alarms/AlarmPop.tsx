@@ -35,7 +35,7 @@ const AlarmPop = () =>{
                     <Button 
                         onClick={()=>setShowAddAlarm(true)}  
                         width="100%"
-                        backgroundColor={(colorMode === ColorMode.Light)?"#69f0aea7":"#303f9f"}
+                        backgroundColor={(colorMode === ColorMode.Light)?"gray.400":"#303f9f"}
 
                     >
                         Add an Alarm
@@ -156,7 +156,7 @@ const AlarmPop = () =>{
         }
         return ""
     }
-    
+
     return(
         <Popover
             isOpen={showAlarmPop}
@@ -166,7 +166,9 @@ const AlarmPop = () =>{
             <Box style={posStyle} />
         </PopoverAnchor>
             <Portal>
-                <PopoverContent>
+                <PopoverContent
+                    onMouseDown={e=>e.preventDefault()}
+                >
                 <PopoverArrow />
                 <PopoverHeader>
                     <Center>

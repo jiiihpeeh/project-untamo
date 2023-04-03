@@ -138,6 +138,7 @@ const NavGrid = () => {
             <Flex 
                 display="flex"
                 id="NavBar"
+                onMouseDown={e=>e.preventDefault()}
                 alignItems="center"
                 position="fixed"
                 justifyContent="space-between"

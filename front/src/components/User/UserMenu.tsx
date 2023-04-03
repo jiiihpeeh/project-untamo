@@ -18,69 +18,69 @@ const UserMenu = () => {
             onClose={() => setShowUserMenu(!showUserMenu)}
             isCentered
         >
-        <ModalOverlay />
-        <ModalContent>
-                <ModalHeader>
-                    User Actions
-                </ModalHeader>
-                <ModalCloseButton/>
-                <ModalBody>
-                    <Button 
-                        onClick={()=>{
-                                        setShowEditProfile(true)
-                                        setShowUserMenu(!showUserMenu)
-                                    }
-                                }
-                        w={"100%"}
-                        m={"2%"}
-                    >	
-                        <Text as='b'>
-                            Edit Profile
-                        </Text>
-                    </Button>
-                    {userInfo.admin && <>
+            <ModalOverlay />
+            <ModalContent>
+                    <ModalHeader>
+                        User Actions
+                    </ModalHeader>
+                    <ModalCloseButton/>
+                    <ModalBody>
                         <Button 
-                            mr={5} 
                             onClick={()=>{
-                                            setShowAdminLogIn(true)
+                                            setShowEditProfile(true)
                                             setShowUserMenu(!showUserMenu)
-                                          }
+                                        }
                                     }
                             w={"100%"}
                             m={"2%"}
-                            bg={"red"}
-                        >
-                            Admin Log In
-                        </Button></>}
-                    <Button	
-                        onClick={()=>{
-                                        setShowLogOut(true)
-                                        setShowUserMenu(!showUserMenu)
-                                     }
-                                } 
-                        id="logout-button" 
-                        w={"100%"}
-                        color="red"
-                        m={"2%"}
-                    >
-                        <Text as='b'>
-                            Log Out
-                        </Text>
-                    </Button>
-                    <Button 
-                        onClick={()=>{
-                                        setShowAbout(true)
-                                        setShowUserMenu(!showUserMenu)
-                                    }
-                                }
-                        w={"100%"}
-                        m={"2%"}
-                    >
+                        >	
                             <Text as='b'>
-                                About Untamo
+                                Edit Profile
                             </Text>
-                    </Button> 
-            </ModalBody>
+                        </Button>
+                        {userInfo.admin && <>
+                            <Button 
+                                mr={5} 
+                                onClick={()=>{
+                                                setShowAdminLogIn(true)
+                                                setShowUserMenu(!showUserMenu)
+                                            }
+                                        }
+                                w={"100%"}
+                                m={"2%"}
+                                bg={"red"}
+                            >
+                                Admin Log In
+                            </Button></>}
+                        <Button	
+                            onClick={()=>{
+                                            setShowLogOut(true)
+                                            setShowUserMenu(!showUserMenu)
+                                        }
+                                    } 
+                            id="logout-button" 
+                            w={"100%"}
+                            color="red"
+                            m={"2%"}
+                        >
+                            <Text as='b'>
+                                Log Out
+                            </Text>
+                        </Button>
+                        <Button 
+                            onClick={()=>{
+                                            setShowAbout(true)
+                                            setShowUserMenu(!showUserMenu)
+                                        }
+                                    }
+                            w={"100%"}
+                            m={"2%"}
+                        >
+                                <Text as='b'>
+                                    About Untamo
+                                </Text>
+                        </Button> 
+                </ModalBody>
             </ModalContent>
         </Modal>
     )

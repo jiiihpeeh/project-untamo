@@ -1,6 +1,6 @@
 import {    Modal,ModalOverlay,ModalContent,ModalHeader,
             ModalFooter, ModalBody, HStack, Center, Switch,
-            ModalCloseButton, RadioGroup, Radio,
+            ModalCloseButton, RadioGroup, Radio, Spacer,
             Button, Table,Thead, Tbody,Tr,Th,Td, Box,
             Slider,SliderTrack, SliderFilledTrack,
             SliderThumb, IconButton, useColorMode} from '@chakra-ui/react'
@@ -59,7 +59,9 @@ const Settings = () => {
                 scrollBehavior='outside'
             >
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent
+                    onMouseDown={e=>e.preventDefault()}
+                >
                     <ModalHeader>
                         Settings
                         <IconButton
@@ -89,21 +91,37 @@ const Settings = () => {
                             <Tbody>
                             <Tr>
                                     <Td>
-                                        Dark Mode
+                                        Color Mode
                                     </Td>
                                     <Td>
                                         <Center>
-                                            <Switch
-                                                ml="10%"
-                                                isChecked={colorMode === 'dark'}
-                                                onChange={()=>{
-                                                                toggleColorMode()
-                                                                setShowChangeColors(true)
-                                                            }
-                                                        }
+                                            <RadioGroup
                                                 size={sizes.get(size)}
                                             >
-                                            </Switch>
+                                                <HStack>
+                                                    <Radio 
+                                                        isChecked={colorMode === ColorMode.Light } 
+                                                        onChange={()=>{
+                                                                        setShowChangeColors(true) 
+                                                                        toggleColorMode()
+                                                                    }
+                                                                }
+                                                    >
+                                                        Light
+                                                    </Radio>
+                                                    <Spacer/>
+                                                    <Radio 
+                                                        isChecked={colorMode === ColorMode.Dark } 
+                                                        onChange={()=>{
+                                                                            setShowChangeColors(true) 
+                                                                            toggleColorMode()
+                                                                        }
+                                                                    }                                                    
+                                                    >
+                                                        Dark
+                                                    </Radio>
+                                                </HStack>
+                                            </RadioGroup>
                                         </Center>
                                     </Td>
                                 </Tr>
@@ -123,6 +141,7 @@ const Settings = () => {
                                                     >
                                                         Top
                                                     </Radio>
+                                                    <Spacer/>
                                                     <Radio 
                                                         isChecked={!navBarTop} 
                                                         onChange={()=>setNavBarTop(!navBarTop)}
