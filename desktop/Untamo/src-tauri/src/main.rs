@@ -1,10 +1,11 @@
 use libc::c_char;
 use std::ffi::CStr;
 use std::str;
-use std::env; 
+use std::env;
+use std::time::Duration; 
 use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayEvent};
 use tauri::Manager;
-
+use async_std::task;
 
 fn rstr_to_cchar (s:&str) ->   *const c_char {
     let cchar: *const c_char = s.as_ptr() as *const c_char;
@@ -52,9 +53,15 @@ fn void_func() {
 }
 #[tauri::command]
 fn close_window() {
-  println!("closing Application");
+  println!("Closing Application");
   std::process::exit(0);
 }
+#[tauri::command]
+async fn interval_check(t : u64 ) -> bool{
+  task::sleep(Duration::from_secs(t)).await;
+  return true;
+}
+
 
 fn main() {
     let tray_menu = SystemTrayMenu::new()
@@ -106,7 +113,7 @@ fn main() {
       }
       _ => {}
     })
-        .invoke_handler(tauri::generate_handler![nim_caller, void_func, close_window])
+        .invoke_handler(tauri::generate_handler![nim_caller, void_func, close_window, interval_check])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|_app_handle, event| match event {
