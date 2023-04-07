@@ -12,7 +12,7 @@ import  usePopups  from "../../../stores/popUpStore"
 import  useAlarms  from "../../../stores/alarmStore"
 
 const AlarmSelector = () => {
-    const alarmCase = useAlarm((state)=> state.occurence)
+    const alarmCase = useAlarm((state)=> state.occurrence)
     const alarmId = useAlarm((state)=> state.id)
     const showAlarmSelector = usePopups((state)=>state.showAlarmSelector)
     const setShowAlarmSelector = usePopups((state)=>state.setShowAlarmSelector)

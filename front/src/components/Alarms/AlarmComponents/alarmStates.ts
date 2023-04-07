@@ -78,7 +78,7 @@ const changeTime = (oldTime: string, direction: Direction, multiplier: number) =
 }
 
 
-const occurenceDateFormat = (cases:AlarmCases) =>{
+const occurrenceDateFormat = (cases:AlarmCases) =>{
     switch(cases){
         case AlarmCases.Once:
             return 'dd.MM.yyy'
@@ -97,9 +97,9 @@ const alarmTimeInit = () => {
 
 
 type AlarmStates = {
-    occurence : AlarmCases,
+    occurrence : AlarmCases,
     dateFormat: string,
-    setOccurence: (occurence : AlarmCases) => void,
+    setOccurrence: (occurrence : AlarmCases) => void,
     label: string,
     setLabel: (label: string) => void,
     time: string,
@@ -136,14 +136,14 @@ const initialDevice = () => {
 
 const useAlarm = create<AlarmStates>((set, get) => (
     {
-        occurence: AlarmCases.Once,
+        occurrence: AlarmCases.Once,
         dateFormat: '',
         modified: 0,
         fingerprint: fingerprint(),
-        setOccurence: (occurence) => set( 
+        setOccurrence: (occurrence) => set( 
             {
-                occurence: occurence,
-                dateFormat: occurenceDateFormat(occurence),
+                occurrence: occurrence,
+                dateFormat: occurrenceDateFormat(occurrence),
             }
         ),
         label: "New Alarm",
@@ -225,7 +225,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
         //tones: [],
         onAddOpen: () => set (
             {
-                occurence: AlarmCases.Weekly,
+                occurrence: AlarmCases.Weekly,
                 weekdays: [ numberToWeekDay(new Date().getDay()) ],
                 label: "Alarm",
                 time: alarmTimeInit(),
@@ -239,7 +239,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
         ),
         alarmFromDialog:()=>{
                 return {
-                            occurence : get().occurence,
+                            occurrence : get().occurrence,
                             label : get().label,
                             time : get().time,
                             date : stringifyDate(get().date),
@@ -256,7 +256,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                         }
         },
         alarmToEditDialog: ( alarm) => {
-            get().setOccurence(alarm.occurence)
+            get().setOccurrence(alarm.occurrence)
             set( 
                 {
                     time: alarm.time,
@@ -271,7 +271,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                     closeTask: alarm.closeTask,
                 }
             )
-            if(alarm.occurence === AlarmCases.Once){
+            if(alarm.occurrence === AlarmCases.Once){
                 set (
                     {
                         weekdays: [ numberToWeekDay(get().date.getDay()) ]

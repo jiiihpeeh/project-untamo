@@ -84,8 +84,8 @@ const Alarms = () => {
             }
         }
 
-        const occurenceInfo = (occurence: AlarmCases, weekdays: Array<WeekDay>, date: string)=> {
-            switch(occurence){
+        const occurrenceInfo = (occurrence: AlarmCases, weekdays: Array<WeekDay>, date: string)=> {
+            switch(occurrence){
                 case AlarmCases.Weekly:
                     return(
                         <Box>
@@ -167,7 +167,7 @@ const Alarms = () => {
             }
             return (<Text>{time}</Text>)
         }
-        return sortedView.map(({ id, occurence, time, weekdays, date, label, devices, active },key) => {
+        return sortedView.map(({ id, occurrence, time, weekdays, date, label, devices, active },key) => {
             return (
                     <Card
                         key={key}
@@ -196,7 +196,7 @@ const Alarms = () => {
                         <CardBody>           
                             <CardHeader >
                                 {(showButtons !== id)? 
-                                    <Text>{`${capitalize(occurence)}: `}
+                                    <Text>{`${capitalize(occurrence)}: `}
                                         <Text 
                                             as="b"
                                         >
@@ -206,7 +206,7 @@ const Alarms = () => {
                                         <SlideFade 
                                             in={showButtons === id} 
                                         > 
-                                            {`${capitalize(occurence)}: `} <Text 
+                                            {`${capitalize(occurrence)}: `} <Text 
                                                                                 as="b"
                                                                             >
                                                                                 {label}
@@ -244,7 +244,7 @@ const Alarms = () => {
                                         </Text>
                                     </Box>
                                     <Spacer/>
-                                    {occurenceInfo(occurence, weekdays, date)}
+                                    {occurrenceInfo(occurrence, weekdays, date)}
                                     <Spacer/>
                                 </HStack>
                             </Flex>

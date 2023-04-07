@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 let Schema = mongoose.Schema({
-    occurence:String,
+    occurrence:String,
     time:String,
     weekdays:Array,
     date:String,

@@ -18,7 +18,7 @@ const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
 type AlarmSerialized = {
-    occurence : AlarmCases,
+    occurrence : AlarmCases,
     time: string,
     date: string,
     devices: Array<string>,
@@ -213,7 +213,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     notification("Add alarm", "No devices set", Status.Error)
     return			
   }
-  if(( alarm.occurence === AlarmCases.Weekly) && (alarm.weekdays.length === 0) ){
+  if(( alarm.occurrence === AlarmCases.Weekly) && (alarm.weekdays.length === 0) ){
     notification("Add alarm", "No weekdays set", Status.Error)
     return 
   }
@@ -222,7 +222,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     date: alarm.date,
     devices: alarm.devices,
     label: alarm.label,
-    occurence: alarm.occurence,
+    occurrence: alarm.occurrence,
     time: alarm.time,
     weekdays: alarm.weekdays,
     tone: alarm.tone,
@@ -230,7 +230,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     modified : Date.now(),
     closeTask: alarm.closeTask 
   }
-  switch(alarm.occurence){
+  switch(alarm.occurrence){
     case AlarmCases.Weekly:
       newAlarm.date = ''
       break
@@ -283,7 +283,7 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
     date: editDate,
     devices: alarm.devices,
     label: alarm.label,
-    occurence: alarm.occurence,
+    occurrence: alarm.occurrence,
     time: alarm.time,
     weekdays: alarm.weekdays,
     id: alarm.id,
@@ -292,7 +292,7 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
     modified : Date.now(),
     closeTask: alarm.closeTask
   }
-  switch(alarm.occurence){
+  switch(alarm.occurrence){
     case AlarmCases.Weekly:
       modAlarm.date = ''
       break

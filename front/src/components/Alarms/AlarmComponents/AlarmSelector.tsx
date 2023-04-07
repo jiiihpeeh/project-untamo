@@ -9,7 +9,7 @@ import useAlarm from "./alarmStates"
 import { AlarmCases }  from "../../../type"
 
 const AlarmSelector = () => {
-    const alarmCase = useAlarm((state)=> state.occurence)
+    const alarmCase = useAlarm((state)=> state.occurrence)
     const renderCase = () => {
         switch(alarmCase){
             case AlarmCases.Once:

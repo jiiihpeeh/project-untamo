@@ -50,7 +50,7 @@ const Settings = () => {
         }
     },[windowSize])
     useEffect(()=>{
-        if(colorMode  === 'light'){
+        if(colorMode  === ColorMode.Light){
             setColorSetting(ColorMode.Light)
         }else{
             setColorSetting(ColorMode.Dark)

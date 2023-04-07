@@ -203,7 +203,7 @@ export const nextAlarmWeekly = (timeString: string, weekdays: Array<WeekDay>) =>
 
 export const timeForNextAlarm = (alarm: Alarm) => {
 
-    switch(alarm.occurence){
+    switch(alarm.occurrence){
         case AlarmCases.Once:
             return nextAlarmOnce(alarm.time, alarm.date) 
         case AlarmCases.Daily:

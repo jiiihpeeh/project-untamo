@@ -5,8 +5,8 @@ import { AlarmCases } from "../../../type"
 
 const AlarmCase = () => {
     const dropdownRef : any = createRef()
-    const alarmCase = useAlarm((state)=>state.occurence)
-    const setAlarmCase = useAlarm((state)=>state.setOccurence)
+    const alarmCase = useAlarm((state)=>state.occurrence)
+    const setAlarmCase = useAlarm((state)=>state.setOccurrence)
 
     const alarmCases = () => {
       const cases = Object.values(AlarmCases).filter((item) => item)

@@ -18,7 +18,7 @@ const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
 type AlarmSerialized = {
-    occurence : AlarmCases,
+    occurrence : AlarmCases,
     time: string,
     date: string,
     devices: Array<string>,
@@ -137,6 +137,13 @@ const resetSnooze = async() => {
   useAlarms.setState({alarms: [...filterAlarms,alarm]})
 }
 
+// This code is used to update an alarm in the backend database.
+// The code is used to update the snooze array of an alarm when the user snoozes an alarm. 
+// The alarm object is a parameter of the function. The alarm object is the alarm that is snoozed.
+// The alarm object is updated by adding the current time to the snooze array.
+// The alarm object is then sent to the backend to update the database.
+// The alarm object is then added to the alarms array in the useAlarms state.
+
 const snoozer = async () =>{
   const {server, token} = getCommunicationInfo()
   const runAlarm = useAlarms.getState().runAlarm
@@ -211,7 +218,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     notification("Add alarm", "No devices set", Status.Error)
     return			
   }
-  if(( alarm.occurence === AlarmCases.Weekly) && (alarm.weekdays.length === 0) ){
+  if(( alarm.occurrence === AlarmCases.Weekly) && (alarm.weekdays.length === 0) ){
     notification("Add alarm", "No weekdays set", Status.Error)
     return 
   }
@@ -220,7 +227,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     date: alarm.date,
     devices: alarm.devices,
     label: alarm.label,
-    occurence: alarm.occurence,
+    occurrence: alarm.occurrence,
     time: alarm.time,
     weekdays: alarm.weekdays,
     tone: alarm.tone,
@@ -228,7 +235,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     modified : Date.now(),
     closeTask: alarm.closeTask 
   }
-  switch(alarm.occurence){
+  switch(alarm.occurrence){
     case AlarmCases.Weekly:
       newAlarm.date = ''
       break
@@ -281,7 +288,7 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
     date: editDate,
     devices: alarm.devices,
     label: alarm.label,
-    occurence: alarm.occurence,
+    occurrence: alarm.occurrence,
     time: alarm.time,
     weekdays: alarm.weekdays,
     id: alarm.id,
@@ -290,7 +297,7 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
     modified : Date.now(),
     closeTask: alarm.closeTask
   }
-  switch(alarm.occurence){
+  switch(alarm.occurrence){
     case AlarmCases.Weekly:
       modAlarm.date = ''
       break

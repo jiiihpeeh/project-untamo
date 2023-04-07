@@ -6,8 +6,8 @@ import { AlarmCases }  from "../../../type"
 import { capitalize } from "../../../utils";
 
 const AlarmCase = () => {
-    const alarmCase = useAlarm((state)=> state.occurence);
-    const setAlarmCase = useAlarm((state)=> state.setOccurence)
+    const alarmCase = useAlarm((state)=> state.occurrence);
+    const setAlarmCase = useAlarm((state)=> state.setOccurrence)
     const cases = Object.values(AlarmCases).filter((item) => item)
     const inputTime = useRef<number>(Date.now())
 

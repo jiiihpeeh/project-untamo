@@ -9,14 +9,14 @@ import usePopups  from "../../stores/popUpStore"
 
 const AddAlarm = () => {	
     const onAddOpen = useAlarm((state)=> state.onAddOpen)
-    const setOccurence = useAlarm((state)=> state.setOccurence)
+    const setOccurrence = useAlarm((state)=> state.setOccurrence)
     const setDialogMode = useAlarm((state)=> state.setDialogMode)
     const setShowAlarmSelector = usePopups((state)=>state.setShowAlarmSelector)
     const setShowDeleteAlarm = usePopups((state)=>state.setShowDeleteAlarm)
 
-    const launchDialog = (occurence:AlarmCases) => {
+    const launchDialog = (occurrence:AlarmCases) => {
         onAddOpen()
-        setOccurence(occurence)
+        setOccurrence(occurrence)
         setShowAlarmSelector(true)
         setShowDeleteAlarm(false)
         setDialogMode(DialogMode.Add)

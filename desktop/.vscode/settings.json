@@ -2,5 +2,6 @@
     "cSpell.words": [
         "unlisten",
         "unminimize"
-    ]
+    ],
+    "python.analysis.typeCheckingMode": "basic"
 }

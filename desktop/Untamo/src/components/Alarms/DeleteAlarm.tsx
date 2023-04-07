@@ -28,7 +28,7 @@ function DeleteAlarm() {
                         fontSize='lg' 
                         fontWeight='bold'
                     >
-                        Delete alarm ({alarm.occurence}, {alarm.time} for {alarm.devices.length} devices)?
+                        Delete alarm ({alarm.occurrence}, {alarm.time} for {alarm.devices.length} devices)?
                     </AlertDialogHeader>
                     <AlertDialogBody>
                        Are you sure?

@@ -1,11 +1,8 @@
 import React, { useState, useRef } from "react"
 import { Menu, MenuItem,  MenuList, MenuButton,
-  Button, Divider,
-  Input, Stack, Modal,
-   ModalOverlay, ModalContent,
-   ModalHeader,  ModalFooter,
-   ModalBody, ModalCloseButton
- } from '@chakra-ui/react'  
+         Button, Divider, Input, Stack, Modal,
+         ModalOverlay, ModalContent, ModalHeader,
+         ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'  
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useDevices, usePopups } from "../../stores"
 import { DeviceType } from "../../type"

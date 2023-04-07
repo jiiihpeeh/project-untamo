@@ -39,12 +39,12 @@ router.post("/alarm/",function(req,res) {
 	if(!req.body) {
 		return res.status(400).json({message:"Bad request"});
 	}
-	if(!req.body.occurence) {
+	if(!req.body.occurrence) {
 		return res.status(400).json({message:"Bad request"});
 	}
 	let alarm = new alarmModel({
 		user:req.session.userID,
-		occurence:req.body.occurence,
+		occurrence:req.body.occurrence,
 		time:req.body.time,
 		weekdays:[...new Set(req.body.weekdays)],
         date:req.body.date,
@@ -95,7 +95,7 @@ router.put("/alarm/:id",function(req,res) {
 		date:req.body.date,
 		devices:[...new Set(req.body.devices)],
 		label:req.body.label,
-		occurence:req.body.occurence,
+		occurrence:req.body.occurrence,
 		time:req.body.time,
 		weekdays:[...new Set(req.body.weekdays)],
         user:req.session.userID,

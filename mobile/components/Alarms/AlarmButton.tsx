@@ -176,7 +176,7 @@ const AlarmButton = (props: Props) => {
         )
     }
     const RenderedButton = () => {
-        switch(alarm.occurence){
+        switch(alarm.occurrence){
             case AlarmCases.Weekly:
                 return (<Weekly/>)
             case AlarmCases.Once:
