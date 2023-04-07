@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
-import sleep  from '../sleep'
 import { useServer, useLogIn, useDevices, useAlarms, useAudio, useTimeouts, extend } from '../../stores'
 import { useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
 import { Alarm, Path } from '../../type'
-import { urlEnds } from '../../utils'
+import { urlEnds, sleep } from '../../utils'
 var wsTimeout : NodeJS.Timeout | null | number
 
 const UserWatcher = () => {

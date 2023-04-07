@@ -14,7 +14,6 @@ import { shallow } from 'zustand/shallow'
 import { SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
 import { useNavigate } from "react-router-dom"
-import sleep from '../sleep'
 
 const Alarms = () => {
     const containerRef =useRef<HTMLDivElement>(null)

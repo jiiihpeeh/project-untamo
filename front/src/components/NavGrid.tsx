@@ -9,8 +9,7 @@ import { timePadding } from '../utils'
 import Countdown from "react-countdown"
 import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
 import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'
-import sleep from './sleep'
-import { urlEnds } from '../utils'
+import { urlEnds, sleep } from '../utils'
 import './../App.css'
 
 

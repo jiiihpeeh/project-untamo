@@ -1,4 +1,10 @@
 import { Path } from './type'
+import { invoke } from '@tauri-apps/api';
+
+export async function sleep(ms: number) {
+    return await  invoke("sleep", {t: ms}) as boolean;
+}
+
 export function isEqual(obj1 :any, obj2 : any) {
     if(obj1 === null && obj2 === null){
         return true

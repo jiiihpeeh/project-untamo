@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { getAudio, hasOrFetchAudio, keysAudio } from '../audiostorage/audioDatabase' 
 import { invoke } from '@tauri-apps/api/tauri';
-import sleep from '../components/sleep'
+import { sleep } from '../utils'
+
 const audioELement = document.createElement('audio')
 audioELement.setAttribute("id","audioPlayer")
 audioELement.setAttribute("autoplay","true")

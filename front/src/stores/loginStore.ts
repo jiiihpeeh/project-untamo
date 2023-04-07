@@ -7,7 +7,7 @@ import { SessionStatus, FormData, UserInfo } from '../type'
 import { useServer, useDevices, useAdmin, useTimeouts,
          useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "../audiostorage/audioDatabase"
-import sleep from '../components/sleep'
+import { sleep } from '../utils'
 
 type UseLogIn = {
     token : string,

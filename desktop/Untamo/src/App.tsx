@@ -31,7 +31,7 @@ import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
 import { extend, useSettings } from './stores'
 import { isMobile } from 'react-device-detect';
-import sleep from './components/sleep'
+import { sleep } from './utils'
 import { Container } from '@chakra-ui/react'
 import AlarmPop from './components/Alarms/AlarmPop'
 import AdminPop from './components/Admin/AdminPop'

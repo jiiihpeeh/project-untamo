@@ -62,6 +62,11 @@ async fn interval_check(t : u64 ) -> bool{
   return true;
 }
 
+#[tauri::command]
+async fn sleep(t : u64 ) -> bool{
+  task::sleep(Duration::from_millis(t)).await;
+  return true;
+}
 
 fn main() {
     let tray_menu = SystemTrayMenu::new()
@@ -113,7 +118,7 @@ fn main() {
       }
       _ => {}
     })
-        .invoke_handler(tauri::generate_handler![nim_caller, void_func, close_window, interval_check])
+        .invoke_handler(tauri::generate_handler![nim_caller, void_func, close_window, interval_check, sleep])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|_app_handle, event| match event {

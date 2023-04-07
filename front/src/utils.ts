@@ -1,4 +1,7 @@
 import { Path } from './type'
+export async function sleep (ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
 export function isEqual(obj1 :any, obj2 : any) {
     if(obj1 === null && obj2 === null){
         return true

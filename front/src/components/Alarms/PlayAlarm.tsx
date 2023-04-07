@@ -4,8 +4,7 @@ import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
 import {  useAlarms, useTimeouts, useAudio, extend, usePopups, useTask, useSettings } from '../../stores'
 import { CloseTask, Path } from '../../type'
-import sleep from '../sleep'
-import { urlEnds } from '../../utils'
+import { urlEnds, sleep } from '../../utils'
 import '../../App.css'
 import { LaunchMode } from '../../stores/taskStore'
 

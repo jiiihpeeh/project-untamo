@@ -7,8 +7,7 @@ import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDat
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
 import alarmClockString from './logo.svg?raw'
-import { isEqual } from '../utils'
-import sleep from '../components/sleep'
+import { isEqual, sleep } from '../utils'
 
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 

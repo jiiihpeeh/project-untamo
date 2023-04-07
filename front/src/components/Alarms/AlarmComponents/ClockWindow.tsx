@@ -10,10 +10,9 @@ import { timePadding } from '../../../utils'
 import useAlarm from './alarmStates'
 import React, { useEffect, useState, useRef } from 'react'
 import { usePopups } from '../../../stores'
-import sleep from '../../sleep';
 import { ChevronDownIcon as Down,ChevronUpIcon as Up } from '@chakra-ui/icons'
 import { useSettings } from '../../../stores'
-import { h24ToH12 } from '../../../utils'
+import { h24ToH12, sleep } from '../../../utils'
 
 function ClockWindow() {
     const time = useAlarm((state)=> state.time)
