@@ -12,7 +12,7 @@ interface Props{
 }
 
 const DeviceIcons = (props: Props) => {
-  const iconized = (device: DeviceType) =>{
+  const iconic = (device: DeviceType) =>{
       switch (device){
       case DeviceType.Browser:
         return Browser 
@@ -28,7 +28,7 @@ const DeviceIcons = (props: Props) => {
         return Other
     }
   } 
-  return(<Icon as={iconized(props.device)} />)
+  return(<Icon as={iconic(props.device)} />)
 }
 
 export default DeviceIcons

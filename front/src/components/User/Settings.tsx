@@ -30,6 +30,8 @@ const Settings = () => {
     const { colorMode, toggleColorMode } = useColorMode()
     const setColorSetting = useSettings((state) => state.setColorMode)
     const setShowChangeColors = usePopups((state)=> state.setShowChangeColors)
+    const volume = useSettings((state) => state.volume)
+    const setVolume = useSettings((state) => state.setVolume)
 
     useEffect(()=>{
         if(windowSize.height < 740){
@@ -229,6 +231,32 @@ const Settings = () => {
                                         >
                                             Clear Settings
                                         </Button>
+                                    </Td>
+                                </Tr>
+                                <Tr>
+                                    <Td>
+                                        Alarm volume
+                                    </Td>
+                                    <Td>
+                                        <Slider 
+                                            defaultValue={volume} 
+                                            min={0} 
+                                            max={1} 
+                                            step={0.01}
+                                            onChange={(e)=>setVolume(e)}    
+                                        >
+                                            <SliderTrack >
+                                                <Box 
+                                                    position='relative' 
+                                                    right={10} 
+                                                />
+                                                    <SliderFilledTrack/>
+                                            </SliderTrack>
+                                            <SliderThumb 
+                                                boxSize={5}
+                                                backgroundColor={"blue.700"}
+                                            />
+                                        </Slider>
                                     </Td>
                                 </Tr>
                             </Tbody>
