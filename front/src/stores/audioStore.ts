@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { getAudio, hasOrFetchAudio, keysAudio } from '../audiostorage/audioDatabase' 
 import { sleep } from '../utils'
+import useSettings from './settingsStore'
 const audioELement = document.createElement('audio')
 audioELement.setAttribute("id","audioPlayer")
 audioELement.setAttribute("autoplay","true")
@@ -39,7 +40,10 @@ type UseAudio = {
 }
 
 const play = async (track: string, loop: boolean) => {
-    console.log(track, loop)
+    //console.log(track, loop)
+    if(loop){
+        audioELement.volume = 0.0
+    }
     let audioData =  await getAudio(track)
     audioELement.src = URL.createObjectURL(audioData)
     if(!loop){
@@ -52,6 +56,15 @@ const play = async (track: string, loop: boolean) => {
     await sleep(3)
     try{
         await audioELement.play()
+        if(loop){
+            let cap = Math.floor(useSettings.getState().volume *100)
+            for(let i = 0; i < cap; i++){
+                await sleep(100)
+                audioELement.volume = i/100
+            }
+            
+        }
+        audioELement.volume = useSettings.getState().volume
     }catch(err:any){
         console.log(err)
     }

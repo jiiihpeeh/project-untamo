@@ -28,10 +28,11 @@ const Alarms = () => {
           [state.setShowEditAlarm, state.setShowDeleteAlarm, state.setShowAlarmPop, state.setShowAdminPop], shallow)
     const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
+    const isLight= useSettings((state)=> state.isLight)
     const   timeIntervalID = useRef<string | null>(null) 
-    const counterLaunched = useRef<boolean>(false) 
+    const counterLaunched = useRef<boolean>(false)
     const navigate = useNavigate()
-
+    
     const timeCounter = async() =>{
         if(timeIntervalID.current){
             const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current)[0])
@@ -46,6 +47,7 @@ const Alarms = () => {
             counterLaunched.current = true
         }
     },[showButtons])
+
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
         let timeAlarmMap = new Map <number, Set<string>>()
@@ -171,12 +173,11 @@ const Alarms = () => {
                     <Card
                         key={key}
                         backgroundColor={(!active)?cardColors.inactive:((key % 2 === 0)?cardColors.odd:cardColors.even)}
-                        onMouseLeave={(e)=>{setShowButtons(""); timeIntervalID.current = null; e.preventDefault() } }
-                        onMouseDown={e=>e.preventDefault()}
-                        onMouseEnter={(e) => { 
+                        onMouseDownCapture={e=>e.preventDefault()}
+                        onMouseLeave={()=>{setShowButtons(""); timeIntervalID.current = null } }
+                        onMouseEnter={() => { 
                                               counterLaunched.current = false 
-                                              setShowButtons(id)
-                                              e.preventDefault()
+                                              setShowButtons(id) 
                                               timeIntervalID.current = id
                                               setTimeout(()=>{
                                                                 if(timeIntervalID.current){
@@ -266,7 +267,7 @@ const Alarms = () => {
                                         <IconButton 
                                             size='xs' 
                                             icon={<EditIcon/>}
-                                            colorScheme='orange'
+                                            colorScheme={(isLight?'orange':'green')}
                                             aria-label=''
                                             key={`edit-${key}`}
                                             onClick= {() => { 
@@ -309,7 +310,7 @@ const Alarms = () => {
                                         <IconButton 
                                             size='xs' 
                                             icon={<DeleteIcon/>} 
-                                            colorScheme='red'
+                                            colorScheme={(isLight?'red':'purple')}
                                             aria-label=''
                                             onClick= {() => { 
                                                                 setShowEdit(false)
