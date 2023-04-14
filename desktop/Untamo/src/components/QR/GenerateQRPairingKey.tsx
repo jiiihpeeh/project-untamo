@@ -1,6 +1,6 @@
 import React,{  useEffect } from 'react'
 import { useServer, useFetchQR, useTimeouts } from '../../stores'
-import { getQr } from '../../stores/invokers'
+import { invoke } from '@tauri-apps/api/tauri'
 
 const GenerateQRPairingKey = () => {
   const fetchQR = useFetchQR((state) => state.fetchQR)
@@ -35,9 +35,8 @@ const GenerateQRPairingKey = () => {
                                           server: server, 
                                         }
                                       )
-
-        let svgUrl = URL.createObjectURL(new Blob([await getQr(qrObject)], {type: 'image/svg+xml'}))
-        setQrUrl(svgUrl)
+        let qrString = await (invoke('get_qr_svg', { qrString: qrObject}) as Promise<string>)
+        setQrUrl(qrString)
       }
     }
     renderQrKey()

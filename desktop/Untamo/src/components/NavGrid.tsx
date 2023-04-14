@@ -5,11 +5,10 @@ import { useNavigate } from 'react-router-dom'
 import { useSettings, useLogIn, useAdmin, useTimeouts,
          usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
 import { SessionStatus, Path } from '../type'
-import { timePadding } from '../utils'
 import Countdown from "react-countdown"
 import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
 import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'
-import { urlEnds,  sleep } from '../utils'
+import { urlEnds,  sleep, timePadding } from '../utils'
 import './../App.css'
 
 

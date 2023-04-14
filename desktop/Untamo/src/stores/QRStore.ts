@@ -8,7 +8,7 @@ type UseFetchQR = {
     setFetchQR: (b: boolean) => void,
     getQrKey: () => void,
     qrUrl: string,
-    setQrUrl: (url: string) => void 
+    setQrUrl: (svg: string) => void 
 }
 
 const fetchQRKey = async() =>{
@@ -46,13 +46,15 @@ const useFetchQR = create<UseFetchQR>((set,get) => (
             await fetchQRKey()
         },
         qrUrl: "",
-        setQrUrl: (url: string) => {
+        setQrUrl: (svg: string) => {
+            let svgUrl = URL.createObjectURL(new Blob([svg], {type: 'image/svg+xml'}))
             try{
                 URL.revokeObjectURL(get().qrUrl)
+                
             }catch(e:any){}
             set(
                 {
-                    qrUrl: url
+                    qrUrl: svgUrl
                 }
             )
         }

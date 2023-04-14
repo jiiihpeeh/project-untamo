@@ -119,6 +119,7 @@ function CloseAction(){
                       colorScheme='red' 
                       onClick={()=> {
                                         setShowCloseApp(false)
+                                        useAudio.getState().stop()
                                         invoke("close_window")
                                     }
                               } 

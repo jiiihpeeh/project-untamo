@@ -1,4 +1,3 @@
-import console from 'console'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { CloseTask, ColorMode} from '../type'
@@ -38,6 +37,8 @@ type UseSettings =  {
     snoozePress: number,
     onTop: WindowTop,
     colorMode: ColorMode,
+    isLight: boolean,
+    volume: number,
     setDialogSize: (size: number) => void,
     setColorMode: (mode: ColorMode) => void,
     setOnTop: (value: WindowTop) => void,
@@ -49,6 +50,7 @@ type UseSettings =  {
     setDefaultCardColors: () => void,
     setPanelSize: (size: number) => void,
     setSnoozePress: (n: number) => void,
+    setVolume: (n: number) => void,
 }
 
 const useSettings = create<UseSettings>()(
@@ -62,11 +64,17 @@ const useSettings = create<UseSettings>()(
             clock24: true,
             colorMode: ColorMode.Light,
             dialogSize: 0,
+            isLight: true,
+            cardColors: defaultCardLight,
+            closeTask: CloseTask.Obey,
+            onTop: WindowTop.Alarm,
+            snoozePress: 200,
             setDialogSize: (size: number) => set({ dialogSize: size }),
             setColorMode: (mode: ColorMode) => {
                 set(
                     { 
-                        colorMode: mode 
+                        colorMode: mode,
+                        isLight: mode === ColorMode.Light,
                     }
                 )
             },
@@ -103,9 +111,6 @@ const useSettings = create<UseSettings>()(
                     )
                 }
             },
-            cardColors: defaultCardLight,
-            closeTask: CloseTask.Obey,
-            onTop: WindowTop.Alarm,
             setOnTop: (value) => {
                 set(
                     {
@@ -145,11 +150,18 @@ const useSettings = create<UseSettings>()(
                     }
                 )
             },
-            snoozePress: 200,
             setSnoozePress: (n) => {
                 set(
                     {
                         snoozePress: n
+                    }
+                )
+            },
+            volume: 0.9,
+            setVolume: (volume)=> {
+                set(
+                    {
+                        volume: volume
                     }
                 )
             },
@@ -169,6 +181,8 @@ const useSettings = create<UseSettings>()(
                 closeTask: state.closeTask,
                 snoozePress: state.snoozePress,
                 onTop: state.onTop,
+                isLight: state.isLight,
+                volume: state.volume,
               }
           ),
       }

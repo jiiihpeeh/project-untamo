@@ -2,7 +2,7 @@ import { Path } from './type'
 import { invoke } from '@tauri-apps/api';
 
 export async function sleep(ms: number) {
-    return await  invoke("sleep", {t: ms}) as boolean;
+    return await  invoke("sleep", {millis: ms}) as boolean;
 }
 
 export function isEqual(obj1 :any, obj2 : any) {

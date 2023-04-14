@@ -1,12 +1,11 @@
 import { AlertDialog,AlertDialogOverlay,
          AlertDialogContent,AlertDialogHeader,
          AlertDialogBody,AlertDialogFooter,
-         Button,Text,useDisclosure } from "@chakra-ui/react" 
+         Button,Text } from "@chakra-ui/react" 
 import React, { useRef, useEffect,useState } from "react"
 import { useDevices, usePopups } from "../../stores"
 
 const DeviceDelete = () => {
-    const { onClose } = useDisclosure()
     const cancelRef = useRef<HTMLButtonElement>(null)
     const deleteDevice = useDevices((state) => state.deleteDevice)
     const showDelete = usePopups((state)=> state.showDeleteDevice)
@@ -18,7 +17,6 @@ const DeviceDelete = () => {
     const cancel = () => {
       setShowDelete(false) 
       setToDelete(null) 
-      onClose()
     }
     useEffect(()=>{
       if(toDelete){
@@ -29,7 +27,7 @@ const DeviceDelete = () => {
         <AlertDialog
               isOpen={showDelete}
               leastDestructiveRef={cancelRef}
-              onClose={onClose}
+              onClose={()=>setShowDelete(false) }
               id="DeviceDeletePopUp"
               isCentered
         >

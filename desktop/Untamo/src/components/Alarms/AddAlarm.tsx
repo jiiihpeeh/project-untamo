@@ -32,16 +32,9 @@ function AddAlarm() {
         setShowToast(true)
         setShowAddAlarm(false)
     }
-    const onDrawerOpen = () => {
-        setShowToast(false)
-
-        onAddOpen()
-        setShowAddAlarm(true)
-    }
-
 
     return (
-         <Drawer
+        <Drawer
             isOpen={showAddAlarm}
             placement='left'
             onClose={onDrawerClose}
@@ -49,33 +42,33 @@ function AddAlarm() {
             size={(isMobile)?'full':'md'}
         >
         <DrawerOverlay />
-        <DrawerContent>
-            <DrawerCloseButton />
-            <DrawerHeader>
-                Add an alarm
-            </DrawerHeader>	
-            <DrawerBody>
-                <AlarmSelector/>
-                <Flex m={"15%"}>
-                    <Button 
-                        variant='outline' 
-                        mr={3} 
-                        onClick={onDrawerClose} 
-                        colorScheme="red"
-                    >
-                        Cancel
-                    </Button>
-                    <Spacer/>
-                    <Button 
-                        colorScheme='green' 
-                        onClick={onAdd}
-                    >
-                            Save
-                    </Button>
-                </Flex>
-            </DrawerBody>
-        </DrawerContent>
-    </Drawer>	
+            <DrawerContent>
+                <DrawerCloseButton />
+                <DrawerHeader>
+                    Add an alarm
+                </DrawerHeader>	
+                <DrawerBody>
+                    <AlarmSelector/>
+                    <Flex m={"15%"}>
+                        <Button 
+                            variant='outline' 
+                            mr={3} 
+                            onClick={onDrawerClose} 
+                            colorScheme="red"
+                        >
+                            Cancel
+                        </Button>
+                        <Spacer/>
+                        <Button 
+                            colorScheme='green' 
+                            onClick={onAdd}
+                        >
+                                Save
+                        </Button>
+                    </Flex>
+                </DrawerBody>
+            </DrawerContent>
+        </Drawer>	
      )
 }
 

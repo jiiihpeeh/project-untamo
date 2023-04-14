@@ -9,11 +9,24 @@ import { Alarm, AlarmCases } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { stringToDate} from "./AlarmComponents/stringifyDate-Time"
-import { timePadding, time24hToTime12h, capitalize } from '../../utils'
+import { timePadding, time24hToTime12h, capitalize, sleep } from '../../utils'
 import { shallow } from 'zustand/shallow'
 import { SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
 import { useNavigate } from "react-router-dom"
+import { invoke } from '@tauri-apps/api/tauri'
+import { appWindow } from '@tauri-apps/api/window'
+import { Button } from '@chakra-ui/react'
+import { listen } from '@tauri-apps/api/event';
+
+async function listenIt() {
+    const unlisten = await listen<string>('event_name', (event) => {
+        console.log(`Got an event in window`);
+        console.log(event);
+    });
+}
+listenIt()
+
 
 const Alarms = () => {
     const containerRef =useRef<HTMLDivElement>(null)
@@ -28,10 +41,11 @@ const Alarms = () => {
           [state.setShowEditAlarm, state.setShowDeleteAlarm, state.setShowAlarmPop, state.setShowAdminPop], shallow)
     const [ showTiming, setShowTiming] = useState("")
     const [ showButtons, setShowButtons] = useState("")
+    const isLight= useSettings((state)=> state.isLight)
     const   timeIntervalID = useRef<string | null>(null) 
-    const counterLaunched = useRef<boolean>(false) 
+    const counterLaunched = useRef<boolean>(false)
     const navigate = useNavigate()
-
+    
     const timeCounter = async() =>{
         if(timeIntervalID.current){
             const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current)[0])
@@ -46,6 +60,7 @@ const Alarms = () => {
             counterLaunched.current = true
         }
     },[showButtons])
+
     const renderCards = () => {
         let viewableAlarmsSet = new Set<Alarm> ()		
         let timeAlarmMap = new Map <number, Set<string>>()
@@ -166,6 +181,7 @@ const Alarms = () => {
             }
             return (<Text>{time}</Text>)
         }
+
         return sortedView.map(({ id, occurrence, time, weekdays, date, label, devices, active },key) => {
             return (
                     <Card
@@ -265,7 +281,7 @@ const Alarms = () => {
                                         <IconButton 
                                             size='xs' 
                                             icon={<EditIcon/>}
-                                            colorScheme='orange'
+                                            colorScheme={(isLight?'orange':'green')}
                                             aria-label=''
                                             key={`edit-${key}`}
                                             onClick= {() => { 
@@ -308,7 +324,7 @@ const Alarms = () => {
                                         <IconButton 
                                             size='xs' 
                                             icon={<DeleteIcon/>} 
-                                            colorScheme='red'
+                                            colorScheme={(isLight?'red':'purple')}
                                             aria-label=''
                                             onClick= {() => { 
                                                                 setShowEdit(false)
@@ -356,6 +372,7 @@ const Alarms = () => {
             navigate(extend(Path.Welcome))
         }
     },[currentDevice])
+
     return (
             <>
                 <Container 

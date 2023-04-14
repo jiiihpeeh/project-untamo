@@ -1,29 +1,7 @@
 import { create } from 'zustand'
-import { getAudio, hasOrFetchAudio, keysAudio } from '../audiostorage/audioDatabase' 
-import { invoke } from '@tauri-apps/api/tauri';
-import { sleep } from '../utils'
-
-const audioELement = document.createElement('audio')
-audioELement.setAttribute("id","audioPlayer")
-audioELement.setAttribute("autoplay","true")
-audioELement.setAttribute("playsinline","true")
-
-
-audioELement.addEventListener("playing", (event) => {
-    useAudio.setState({ plays: true })
-})
-
-audioELement.addEventListener("pause", (event) => {
-    useAudio.setState({ plays: false })
-})
-
-audioELement.addEventListener("ended", (event) => {
-    useAudio.setState({ plays: false })
-})
-
-audioELement.addEventListener("emptied", (event) => {
-    useAudio.setState({ plays: false })
-})
+import { keysAudio, getAudioPath } from './audioDatabase' 
+import { Child, Command } from '@tauri-apps/api/shell'
+import  useSettings  from './settingsStore'
 
 
 type UseAudio = {
@@ -37,39 +15,45 @@ type UseAudio = {
     setLoop: (to:boolean)=>void,
     loopPlayBegins: number| null,
     setLoopPlayBegins: (playTime: number| null)=>void,
-    audioElement: HTMLAudioElement
+    audioProcess: Array<Child> | null
 }
 
 const play = async (track: string, loop: boolean) => {
-    console.log(track, loop)
-    let audioData =  await getAudio(track)
-    audioELement.src = URL.createObjectURL(audioData)
-    if(!loop){
-        audioELement.removeAttribute("loop")
-    }else{
-       audioELement.setAttribute("loop", `${loop}`) 
-       useAudio.getState().setLoopPlayBegins(Date.now())
-    }
-    //audioELement.load()
-    await sleep(3)
-    try{
-        await invoke('void_func')
-        await audioELement.play()
-    }catch(err:any){
-        console.log(err)
-    }
-    
+    let track_path = await (getAudioPath(track) as Promise<string>)
+
+    const command = Command.sidecar('bins/untamo_audio_play', 
+                [
+                    track_path, 
+                    `${loop}`,
+                    `${useSettings.getState().volume}`
+                ]
+    )
+    command.on('close', data => {
+                                    console.log(`command finished with code ${data.code} and signal ${data.signal}`)
+                                    useAudio.setState({plays: false })
+                                    stop()
+                                }
+            )
+    command.on('error', error => {
+                                    console.error(`command error: "${error}"`)
+                                    useAudio.setState({plays: false })
+                                    stop()
+                                }
+            )
+    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+    command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
+    //useAudio.setState({plays: true})
+    let out = await command.spawn()
+    //useAudio.setState({audioProcess: out})
+    return out
 }
 
 const stop = () => {
+    let children : Array<Child>= []
     if(useAudio.getState().plays){
-        audioELement.load()
-        URL.revokeObjectURL(audioELement.src) 
-        audioELement.src=""
-        if(useAudio.getState().loop){
-            useAudio.getState().setLoopPlayBegins(null)
-        }
+        useAudio.getState().audioProcess?.map(c => {c.kill(); children.push(c) })
     }
+    return children
 }
 
 const reloadTracks = async(track: string) => {
@@ -95,10 +79,31 @@ const useAudio = create<UseAudio>((set, get) => (
         },
         plays: false,
         play: async() =>{
-            play(get().track, get().loop)
+            let plays = get().plays
+            let audioProcess = get().audioProcess
+            let killed : Array<Child> = []
+            if(plays || audioProcess !== null){
+                get().audioProcess?.map(c => {c.kill(); killed.push(c)})
+            }
+            let process = await play(get().track, get().loop)
+            let remaining = audioProcess?.filter(c => !killed.includes(c))
+            set(
+                {
+                    audioProcess: [...(remaining)?remaining:[],process],
+                    plays: true
+                }
+            )
         },
         stop: () => {
-            stop()
+            let children = stop()
+            let audioProcess = get().audioProcess
+            let avail = audioProcess?.filter(c => !children.includes(c))
+            set(
+                {
+                    audioProcess: avail?avail:null,
+                    plays: false
+                }
+            )
         },
         loop: false,
         setLoop: (to)=> {
@@ -108,7 +113,6 @@ const useAudio = create<UseAudio>((set, get) => (
                 }
             )
         },
-        audioElement: audioELement,
         loopPlayBegins: null,
         setLoopPlayBegins: (playTime)=> {
             set(
@@ -116,7 +120,8 @@ const useAudio = create<UseAudio>((set, get) => (
                     loopPlayBegins: playTime
                 }
             )
-        }
+        },
+        audioProcess: null,
     }
 ))
 // const requestAudioPermission = async () => {

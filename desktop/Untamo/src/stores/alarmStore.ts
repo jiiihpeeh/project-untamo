@@ -12,7 +12,6 @@ import { isEqual, sleep } from '../utils'
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
 
-//import { isEqual } from 'lodash'
 const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
@@ -30,6 +29,7 @@ type AlarmSerialized = {
     _id: string,
     __v: number
 }
+
 
 
 interface AlarmSerializedEdit extends AlarmSerialized {
