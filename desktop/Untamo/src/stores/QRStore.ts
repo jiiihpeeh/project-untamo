@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import axios from 'axios'
 import { getCommunicationInfo } from '../stores'
-
+import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
+import { isSuccess } from '../utils'
 type UseFetchQR = {
     fetchQR: boolean,
     qrKey: string,
@@ -14,20 +14,28 @@ type UseFetchQR = {
 const fetchQRKey = async() =>{
     const {server, token} = getCommunicationInfo()
     try{
-        let res = await axios.post(`${server}/api/qrToken`, 
-                                    {
-                                      msg: "Generate a qr token for me, please... No hurry."
-                                    }, 
-                                    {
-                                      headers: 
-                                                {
-                                                    token: token
-                                                }
-                                    }
-                                )
-        let key =  res.data.key as string 
-        //console.log(key)                      
-        useFetchQR.setState({qrKey: key})
+        const client = await getClient();
+        let res = await client.request(
+            {
+                url: `${server}/api/qrToken`,
+                method: "POST",
+                body: Body.json({msg: "Generate a qr token for me, please... No hurry."}),
+                responseType: ResponseType.JSON,
+                headers: {
+                    token: token
+                }
+            }
+        )
+        isSuccess(res)
+        interface Resp{
+                        key: string
+                     }
+        if(res && res.data){
+            let data = res.data as Resp
+            let key =  data.key
+            useFetchQR.setState({qrKey: key})
+        }
+
     }catch(err:any){
         //console.log(err)
     }

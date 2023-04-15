@@ -41,7 +41,6 @@ const play = async (track: string, loop: boolean) => {
                                 }
             )
     command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-    command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
     //useAudio.setState({plays: true})
     let out = await command.spawn()
     //useAudio.setState({audioProcess: out})

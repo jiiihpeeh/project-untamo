@@ -69,6 +69,7 @@ const useSettings = create<UseSettings>()(
             closeTask: CloseTask.Obey,
             onTop: WindowTop.Alarm,
             snoozePress: 200,
+            volume: 0.9,
             setDialogSize: (size: number) => set({ dialogSize: size }),
             setColorMode: (mode: ColorMode) => {
                 set(
@@ -157,7 +158,6 @@ const useSettings = create<UseSettings>()(
                     }
                 )
             },
-            volume: 0.9,
             setVolume: (volume)=> {
                 set(
                     {

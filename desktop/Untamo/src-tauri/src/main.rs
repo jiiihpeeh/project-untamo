@@ -279,9 +279,7 @@ fn main() {
         Ok(())
       })
       .manage(AudioResourceState(Mutex::new(AudioResources::new())))  
-      // .manage(AsyncProcInputTx {
-      //   inner: AsyncMutex::new(async_proc_input_tx),
-    //})
+      .plugin(tauri_plugin_websocket::init())
       .invoke_handler(tauri::generate_handler![
                                                   close_window, 
                                                   interval_check, 

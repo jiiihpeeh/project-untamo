@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import axios from 'axios'
+import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { useServer } from '../../stores'
 import { notification, Status } from '../notification'
 
@@ -162,8 +162,15 @@ const onRegister = async () => {
     const server = useServer.getState().address
     const formData = useRegister.getState().formData()
     try {
-        const res = await axios.post(`${server}/register`,formData )
-        //console.log(res.data)
+        const client = await getClient()
+        const res = await client.request(
+                                            {  
+                                                url: `${server}/register`, 
+                                                method: "POST", 
+                                                body: Body.json(formData) 
+                                            }
+                                        )
+
         notification("Registration", "User was registered")
         useRegister.setState({registered: true})
     } catch (err){

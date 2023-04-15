@@ -4,6 +4,7 @@ import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { writeBinaryFile,  removeFile } from '@tauri-apps/api/fs'
 import { join } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/tauri'
+import { isSuccess } from '../utils'
 
 const getLocals = () => {
     const token = useLogIn.getState().token
@@ -66,6 +67,7 @@ export async function fetchAudio(audio: string) {
                     headers: { 'token': token }
                 }
             )
+            isSuccess(response)
             await storeAudio(audio, response.data as Uint8Array)
             return true
         } catch (err) {
@@ -101,6 +103,7 @@ export async function fetchAudioFiles() {
                                                         headers: { 'token': token }
                                                     }
                                                 )
+            isSuccess(response)
             const data = response.data as Array<string>
             let audioTracks: Array<string> = []
             if (data.length > 0) {

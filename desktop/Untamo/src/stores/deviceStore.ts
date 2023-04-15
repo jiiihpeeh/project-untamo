@@ -2,10 +2,11 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { DeviceType }  from '../type'
-import axios from "axios"
 import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useAlarms, useLogIn, validSession } from "../stores"
 import {Device} from '../type'
+import { isSuccess } from '../utils'
+import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 
 type UseDevices = {
     devices: Array<Device>,
@@ -26,7 +27,7 @@ type UseDevices = {
 }
 const useDevices = create<UseDevices>()(
     persist(
-      (set, get) => (
+      (set) => (
             {
                 devices: [],
                 viewableDevices: [],
@@ -113,26 +114,29 @@ const addDevice = async (name: string, type: DeviceType)=> {
     }
     
     try{
-        let res = await axios.post(`${server}/api/device`, 
-                                                            {
-                                                                deviceName: name, 
-                                                                type: type
-                                                            }, 
-                                                            {
-                                                            headers: 
-                                                                {
-                                                                    token: token
-                                                                }
-                                                            }
-                                )
-    
+        const client = await getClient()
+        const response = await client.request(
+                                                {
+                                                    url: `${server}/api/device`,
+                                                    method: "POST",
+                                                    body: Body.json({
+                                                        deviceName: name, 
+                                                        type: type
+                                                    }),
+                                                    headers: {
+                                                        token: token
+                                                    },
+                                                    responseType: ResponseType.JSON
+
+                                                }
+                                            )                                                        
         interface Resp{
             id: string,
             type: DeviceType,
             device: string
         }
-
-        let deviceData: Resp = res.data
+        isSuccess(response)
+        let deviceData = response.data as Resp 
         let newDevice : Device= {
                                     id:deviceData.id, 
                                     type: deviceData.type, 
@@ -163,16 +167,20 @@ const fetchDevices = async () => {
     }
     let fetchedDevices = [] as Array<Device>
     try{
-        let res = await axios.get(`${server}/api/devices`,
-                                                            {
-                                                                headers: 
-                                                                    {
-                                                                        token: token
-                                                                    }
-                                                            }
-        )
-        let devices = res.data as Array<Device>
-        //console.log(devices)
+        const client = await getClient()
+        const response = await client.request(
+                                                {
+                                                    url: `${server}/api/devices`,
+                                                    method: "GET",
+                                                    headers: {
+                                                        token: token
+                                                    },
+                                                    responseType: ResponseType.JSON
+                                                }
+                                            )
+        console.log(response)
+        isSuccess(response)
+        let devices = response.data as Array<Device>
         useDevices.setState(
             {
                 devices: devices
@@ -219,19 +227,23 @@ const deviceEdit = async (id: string , name: string, type: DeviceType) => {
       }
 
       try{
-        let res = await axios.put(`${server}/api/device/`+ editDevice.id,
-                                                                        {
-                                                                            deviceName: editDevice.deviceName, 
-                                                                            type: editDevice.type, 
-                                                                            id: editDevice.id 
-                                                                        }, 
-                                                                        {
-                                                                            headers: 
-                                                                                        {
-                                                                                            token: token
-                                                                                        }
-                                                                        }
-                                    )
+        const client = await getClient()
+        const response = await client.request(
+                                                {
+                                                    url: `${server}/api/device/`+ editDevice.id,
+                                                    method: "PUT",
+                                                    body: Body.json({
+                                                        deviceName: editDevice.deviceName, 
+                                                        type: editDevice.type, 
+                                                        id: editDevice.id 
+                                                    }),
+                                                    headers: {
+                                                        token: token
+                                                    },
+                                                    responseType: ResponseType.JSON
+                                                }
+                                            )
+        isSuccess(response)
         let devicesFiltered = devices.filter(device => device.id !== editDevice.id)            
         notification("Device", "A device was updated")
 
@@ -259,15 +271,18 @@ const deleteDevice = async (id: string ) => {
     }
     const deleteDevice = deleteDevices[0]
     try {
-        let res = await axios.delete( `${server}/api/device/` + deleteDevice.id, 
-                                                                                {
-                                                                                    headers: 
-                                                                                                {
-                                                                                                    token: token
-                                                                                                }
-                                                                                } 
-                                    )
-        //console.log(res.data)
+        const client = await getClient()
+        const response = await client.request(
+                                                {
+                                                    url: `${server}/api/device/` + deleteDevice.id,
+                                                    method: "DELETE",
+                                                    headers: {
+                                                        token: token
+                                                    },
+                                                    responseType: ResponseType.JSON
+                                                }
+                                            )
+        isSuccess(response)
         const currentDevice = useDevices.getState().currentDevice
         if(currentDevice === deleteDevice.id){
             useDevices.setState(

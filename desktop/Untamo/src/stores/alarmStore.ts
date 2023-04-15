@@ -5,9 +5,10 @@ import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useTimeouts, useLogIn, validSession } from '../stores'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
-import axios from 'axios'
 import alarmClockString from './logo.svg?raw'
 import { isEqual, sleep } from '../utils'
+import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
+import { isSuccess } from '../utils'
 
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
@@ -59,14 +60,17 @@ const fetchAlarms = async () => {
     }
     await postOfflineAlarms()
     try{
-        let res = await axios.get(`${server}/api/alarms`,
-                                                          {
-                                                              headers: 
-                                                                        {
-                                                                          token: token
-                                                                        }
-                                                          }
-                                  )
+        const client = await getClient()
+        const res = await client.request(
+                                          {
+                                            method: "GET",
+                                            url: `${server}/api/alarms`,
+                                            headers: {
+                                              token: token
+                                            }
+                                          }
+                                        ) 
+        isSuccess(res)
         fetchedAlarms = alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
         let alarms = useAlarms.getState().alarms
         const newIds = fetchedAlarms.map(alarm => alarm.id)
@@ -117,16 +121,20 @@ const resetSnooze = async() => {
   alarm.fingerprint = fingerprint()
   alarm.modified = Date.now()
   try {
-    let res = await axios.put(`${server}/api/alarm/`+runAlarm.id, 
-                                alarm,  
-                                {
-                                    headers:
-                                            {
-                                                token:token
-                                            }
-                                }
-                            )
+    const client = await getClient()
+    const res = await client.request(
+                                      {
+                                        url: `${server}/api/alarm/`+runAlarm.id,
+                                        method: "PUT",
+                                        headers: { 
+                                          token: token
+                                        },
+                                        body: Body.json(alarm)
+                                      }
+                                    )  
+
     //console.log(res.data)
+    isSuccess(res)
   }catch(err:any){
       //console.log("Couldn't update alarm info ", err)
       //return
@@ -154,16 +162,19 @@ const snoozer = async () =>{
   alarm.fingerprint = fingerprint()
   alarm.modified = Date.now()
   try {
-      let res = await axios.put(`${server}/api/alarm/`+runAlarm.id, 
-                                                                  alarm, 
-                                                                  {
-                                                                    headers:
-                                                                            {
-                                                                              token:token
-                                                                            }
-                                                                  }
-                                )
+    const client = await getClient()
+    const res = await client.request(
+                                      {
+                                        url: `${server}/api/alarm/`+runAlarm.id,
+                                        method: "PUT",
+                                        headers: {  
+                                          token: token
+                                        },
+                                        body: Body.json(alarm)
+                                      }
+                                    )
       //console.log(res.data)
+      isSuccess(res)
   }catch(err:any){
       //console.log("Couldn't update alarm info ", err)
       //return
@@ -242,23 +253,32 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
       break
   } 
   try {
-    const res = await axios.post(
-                                `${server}/api/alarm/`, 
-                                    newAlarm, 
-                                    {
-                                      headers: 
-                                              {
-                                                token: token
-                                              }
-                                    } 
-                                )
-    let addedAlarm = res.data.alarm.id as string
-    let alarmWithID = alarm
-    alarmWithID.id = addedAlarm 
-    notification("Alarm", "Alarm inserted")
-    
-    useAlarms.setState( { alarms: [...alarms, alarmWithID]}) 
-  } catch (err:any){
+    const client = await getClient()
+    const res = await client.request(
+                                      {
+                                        url: `${server}/api/alarm/`,
+                                        method: "POST",
+                                        headers: {
+                                          token: token  
+                                        },
+                                        body: Body.json(newAlarm),
+                                        responseType: ResponseType.JSON
+                                      }
+                                    )
+                       
+      interface Data {
+        alarm: Alarm
+      }
+      let data = res.data as Data
+      let dataAlarm = data.alarm  
+      let addedAlarm = dataAlarm.id as string
+      let alarmWithID = alarm
+      alarmWithID.id = addedAlarm 
+      notification("Alarm", "Alarm inserted")
+      
+      useAlarms.setState( { alarms: [...alarms, alarmWithID]}) 
+
+  }catch (err:any){
     //console.error(err.data)
     alarm.offline = true
     alarm.id = [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36)+"OFFLINE"
@@ -304,17 +324,19 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
       break
   } 
   try {
-    const res = await axios.put(
-                                  `${server}/api/alarm/`+modAlarm.id, 
-                                    modAlarm,  
-                                    {
-                                      headers: 
-                                                {
-                                                  token: token
-                                                }
-                                    }
-                                )
-
+    const client = await getClient()
+    const res = await client.request(
+                                      {
+                                        url: `${server}/api/alarm/`+modAlarm.id,
+                                        method: "PUT",
+                                        headers: {
+                                          token: token
+                                        },
+                                        body: Body.json(modAlarm),
+                                        responseType: ResponseType.JSON
+                                      }
+                                    )
+    isSuccess(res)
     let oldAlarms = alarms.filter(alarm => alarm.id !== modAlarm.id)
     useAlarms.setState({ alarms: [...oldAlarms, alarm] })
     notification("Edit Alarm", "Alarm modified")
@@ -334,17 +356,20 @@ const postOfflineEdit = async(alarm: Alarm) => {
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
   try {
-    const res = await axios.put(
-                                  `${server}/api/alarm/`+alarm.id, 
-                                  alarm,  
-                                    {
-                                      headers: 
-                                                {
-                                                  token: token
-                                                }
-                                    }
-                                )
+    const client = await getClient()
+    const res   = await client.request(
+                                        {
+                                          url: `${server}/api/alarm/`+alarm.id,
+                                          method: "PUT",
+                                          headers: {
+                                            token: token
+                                          },
+                                          body: Body.json(alarm),
+                                          responseType: ResponseType.JSON 
+                                        }
+                                      )
 
+    isSuccess(res)
     let newAlarm  = {...alarm}
     newAlarm.offline = false
     
@@ -370,17 +395,24 @@ const postOfflineAlarms = async() =>{
       return 
     }
     try {
-      const res = await axios.post(
-                                  `${server}/api/alarm/`, 
-                                      postAlarm, 
-                                      {
-                                        headers: 
-                                                {
-                                                  token: token
-                                                }
-                                      } 
-                                  )
-      let addedAlarm = res.data.alarm.id as string
+      const client = await getClient()
+      const res = await client.request(
+                                        {
+                                          url: `${server}/api/alarm/`,
+                                          method: "POST",
+                                          headers: {
+                                            token: token
+                                          },
+                                          body: Body.json(postAlarm),
+                                          responseType: ResponseType.JSON 
+                                        }
+                                      )
+      interface Data {
+        alarm: Alarm  
+      }
+      isSuccess(res)
+      let data = res.data as Data
+      let addedAlarm = data.alarm.id 
       let alarmWithID  = postAlarm as Alarm
       alarmWithID.id = addedAlarm
       notification("Alarm", "Offline Alarm inserted to an online database")
@@ -413,16 +445,21 @@ const deleteAlarm = async() =>{
     return
   }
   try {
-    //Delete selected alarm id from mongodb
-    const res = await axios.delete(
-                                  `${server}/api/alarm/`+id,
-                                   {
-                                    headers:{
-                                              token:token
-                                            }
-                                    }
-                                  )
+    const client = await getClient()
+    const res = await client.request(
+                                      {
+                                        url: `${server}/api/alarm/`+id,
+                                        method: "DELETE",
+                                        headers: {
+                                          token: token  
+                                        },
+                                        responseType: ResponseType.JSON
+                                      }
+                                    )
+
+
     //console.log(res)
+    isSuccess(res)
     let filteredAlarms = alarms.filter(alarmItem => alarmItem.id !== id)
     
     notification("Delete Alarm", "Alarm removed")
@@ -443,15 +480,19 @@ const activityChange = async (id: string) => {
   alarm.modified = Date.now()
   alarm.offline = false
   try{
-      const res = await axios.put(
-                                    `${server}/api/alarm/`+alarm.id,alarm, 
-                                        {
-                                          headers: 
-                                                  {
-                                                    token: token
-                                                  }
-                                        } 
-                                  )
+    const client = await getClient()
+    const res = await client.request(
+                                      {
+                                        url: `${server}/api/alarm/`+alarm.id,
+                                        method: "PUT",
+                                        headers: {
+                                          token: token
+                                        },
+                                        body: Body.json(alarm),
+                                        responseType: ResponseType.JSON
+                                      }
+                                    )
+      isSuccess(res)
       notification("Edit Alarm", "Alarm modified")
       let filteredAlarms = alarms.filter(alarmItem => alarmItem.id !== alarm.id)
       useAlarms.setState({ alarms: [...filteredAlarms, alarm] })

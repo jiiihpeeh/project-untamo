@@ -2,12 +2,12 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
-import axios from 'axios'
 import { SessionStatus, FormData, UserInfo } from '../type'
 import { useServer, useDevices, useAdmin, useTimeouts,
          useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
-import { sleep } from '../utils'
+import { sleep, isSuccess } from '../utils'
+import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 
 type UseLogIn = {
     token : string,
@@ -36,14 +36,18 @@ const userInfoFetch = async () =>{
         return
     }
     try {
-        let res = await axios.get(`${server}/api/user`,  
-                                    {
-                                        headers: 
-                                                {
+        const client = await getClient()
+        const res = await client.request(
+                                            {
+                                                url: `${server}/api/user`,
+                                                method: 'GET',
+                                                headers: {
                                                     token: token
-                                                }
-                                    }
-                                )
+                                                },
+                                                responseType: ResponseType.JSON
+                                            }
+                                        )  
+        isSuccess(res)
         let userData = res.data as UserInfo
         useLogIn.setState({ user: userData})
     }catch(err){
@@ -63,22 +67,27 @@ const refreshToken = async () =>{
         return
     }
     try {
-        let res = await axios.post(`${server}/api/refreshToken`,  
-                                    {
-                                        token: token
-                                    },
-                                    {
-                                        headers: 
-                                                {
+        const client = await getClient()
+        const res = await client.request(
+                                            {
+                                                url: `${server}/api/refreshToken`,
+                                                method: 'POST', 
+                                                headers: {
                                                     token: token
-                                                }
-                                    }
-                                )
+                                                },
+                                                responseType: ResponseType.JSON,
+                                                body: Body.json({
+                                                    token: token
+                                                })
+                                            }   
+                                        )
+        
         interface Resp{
             token: string,
             time: number
         }
-        let resp: Resp = res.data 
+        isSuccess(res)
+        let resp: Resp = res.data as Resp
         useLogIn.setState  (
                                 { 
                                     token: resp.token, 
@@ -98,13 +107,19 @@ const checkSession = async () => {
     let status : SessionStatus 
     if (token.length > 3){
         try {
-            let res = await axios.get(`${server}/api/is-session-valid`,  {
-                headers: 
-                    {
-                        token: token
-                    }
-            })
-            if(res.data.status){
+            const client = await getClient()
+            const res = await client.request(
+                                                {
+                                                    url: `${server}/api/is-session-valid`,
+                                                    method: 'GET',
+                                                    headers: {
+                                                        token: token
+                                                    },
+                                                    responseType: ResponseType.JSON
+                                                }
+                                            )
+            isSuccess(res)
+            if(res && res.status === 200){
                 useAlarms.getState().fetchAlarms()
                 useLogIn.getState().getUserInfo()
                 useDevices.getState().fetchDevices()
@@ -138,16 +153,19 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
         delete reqFormData.change_password
     }
     try {
-        const res = await axios.put(
-                                    `${server}/api/editUser/`+formData.email,
-                                        reqFormData ,
+        const client = await getClient()
+        const res = await client.request(
                                             {
-                                                headers:
-                                                            { 
-                                                                token: token 
-                                                            }
+                                                url: `${server}/api/editUser/`+formData.email,
+                                                method: 'PUT',
+                                                headers: {
+                                                    token: token
+                                                },
+                                                responseType: ResponseType.JSON,
+                                                body: Body.json(reqFormData)
                                             }
-                                )
+                                        )
+        isSuccess(res)
         //console.log(res.data)
         notification("Edit Profile", "User information modified")
         useLogIn.setState(
@@ -168,74 +186,86 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
     }
 } 
 
-const logIn = async(email: string, password: string) => {
-    useLogIn.setState({sessionValid: SessionStatus.Validating})
+async function logIn(email: string, password: string) {
+    console.log("Logging in ", email, password)
+    useLogIn.setState({ sessionValid: SessionStatus.Validating })
 
-    try{
+    try {
         const server = useServer.getState().address
-        let res = await axios.post(`${server}/login`, 
-                                        {
-                                            email:email, 
-                                            password:password
-                                        }
-                                    )
-        interface Resp{
-            token: string,
-            screenName: string,
-            firstName: string,
-            lastName: string,
-            admin: boolean,
-            email: string,
-            time: number,
+        const client = await getClient()
+        const res = await client.request(
+                                            {
+                                                url: `${server}/login`,
+                                                method: 'POST',
+                                                responseType: ResponseType.JSON,
+                                                body: Body.json({
+                                                    email: email,
+                                                    password: password
+                                                }),
+                                            }
+                                        )
+
+        interface Resp {
+            token: string
+            screenName: string
+            firstName: string
+            lastName: string
+            admin: boolean
+            email: string
+            time: number
             owner: boolean
         }
-        let resp : Resp = res.data
+        isSuccess(res)
+        let resp: Resp = res.data as Resp
         await initAudioDB()
         let now = Date.now()
         useLogIn.setState(
-                            {
-                                user: 
-                                        {
-                                            firstName: resp.firstName,
-                                            lastName: resp.lastName,
-                                            email: resp.email,
-                                            screenName: resp.screenName,
-                                            admin: resp.admin,
-                                            owner: resp.owner
-                                        },
-                                sessionValid: SessionStatus.Valid,
-                                token: resp.token,
-                                expire: resp.time,
-                                signedIn: now,
-                                tokenTime:now
-                            }
-                        )
+            {
+                user: {
+                    firstName: resp.firstName,
+                    lastName: resp.lastName,
+                    email: resp.email,
+                    screenName: resp.screenName,
+                    admin: resp.admin,
+                    owner: resp.owner
+                },
+                sessionValid: SessionStatus.Valid,
+                token: resp.token,
+                expire: resp.time,
+                signedIn: now,
+                tokenTime: now
+            }
+        )
         fetchAudioFiles()
         useDevices.getState().fetchDevices()
         useAlarms.getState().fetchAlarms()
-        const randomTime = Math.ceil(Math.random()*7200000)
-        setTimeout(refreshToken,2*24*60*60*1000+randomTime)
+        const randomTime = Math.ceil(Math.random() * 7200000)
+        setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
         notification("Logged In", "Successfully logged in")
-    }catch(err:any){
+    } catch (err: any) {
         notification("Log In", "Log In Failed", Status.Error)
-        useLogIn.setState({sessionValid: SessionStatus.NotValid})
+        useLogIn.setState({ sessionValid: SessionStatus.NotValid })
         //console.error(err)
     }
 }
 const logOutProcedure = async () => {
     const { server, token } = getCommunicationInfo()
     try {
-        let res = await axios.post(`${server}/logout`, 
-                                        {
-                                            msg: "smell you later"
-                                        }, 
-                                        {
-                                            headers: 
-                                                    {
-                                                        token: token
-                                                    }
-                                        }
-                                    )
+        const client = await getClient()
+        let res = await client.request(
+                                            {
+                                                url: `${server}/logout`,
+                                                method: 'POST',
+                                                responseType: ResponseType.JSON,
+                                                headers: {
+                                                    token: token
+                                                },
+                                                body: Body.json({
+                                                    msg: "smell you later"
+                                                })
+                                            }
+                                        )
+        isSuccess(res)
     }catch(err:any){
         notification("Logged out", "Failed to clear user info", Status.Error)
         console.error("Clearing userinfo failed")

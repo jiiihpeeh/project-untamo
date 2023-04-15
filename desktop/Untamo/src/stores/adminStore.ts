@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { notification, Status } from '../components/notification'
-import axios from 'axios'
 import { getCommunicationInfo, useLogIn, validSession } from '../stores'
 import { AdminAction } from '../type'
-
+import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
+import { isSuccess } from '../utils'
 type Command = {
     action: AdminAction|null,
     id: string|null,
@@ -52,23 +52,24 @@ const logIn = async () => {
         } as ResponseData
     }
     try{
-        let res = await axios.post(
-                `${server}/api/admin`,
-                    {
-                        password: password
-                    },
-                    {
-                        headers:
-                        {
-                            token:token
-                        }
-                    }
-        )
-
+        const client = await getClient();
+        let res = await client.request(
+                                        {
+                                            url: `${server}/api/admin`,
+                                            method: "POST",
+                                            body: Body.json({password: password}),
+                                            responseType: ResponseType.JSON,
+                                            headers: {
+                                                token: token
+                                            }
+                                        }
+                                    )       
+        isSuccess(res)
         notification("Admin", "Admin rights granted")
+        const data = res.data as ResponseData
         return  {
-                    adminToken: res.data.adminToken,
-                    time: res.data.time,
+                    adminToken: data.adminToken,
+                    time: data.time,
                     adminNavigate: true
                 } as ResponseData
 
@@ -86,12 +87,19 @@ const getUsersData = async() =>{
     const { server, token } = getCommunicationInfo()
     const adminToken = useAdmin.getState().token 
     try{
-        let res = await axios.get(`${server}/admin/users`, {
-            headers:{
-                token: token, 
-                adminToken: adminToken
-            }
-        })
+        const client = await getClient();
+        let res = await client.request(
+                                        {
+                                            url: `${server}/admin/users`,
+                                            method: "GET",
+                                            responseType: ResponseType.JSON,
+                                            headers: {
+                                                token: token,
+                                                adminToken: adminToken
+                                            }
+                                        }
+                                    )
+        isSuccess(res)
         let usersData = res.data as Array<UsersData>
         useAdmin.setState({usersData: usersData})
     }catch(err){
@@ -111,17 +119,25 @@ const runAdminAction = async () => {
             try{
                 user.active = !user.active
                 let body = {active: user.active, admin: user.admin}
-                let res = await axios.put(`${server}/admin/user/${command.id}`,
-                                             body, 
-                                             {
-                                                headers: 
-                                                        {
-                                                            token: token, 
-                                                            adminToken: adminToken
-                                                        }
-                                             }
-                )
-                useAdmin.setState({ usersData: res.data})
+                const client = await getClient();
+                let res = await client.request(
+                                                {
+                                                    url: `${server}/admin/user/${command.id}`,
+                                                    method: "PUT",
+                                                    body: Body.json(body),
+                                                    responseType: ResponseType.JSON,
+                                                    headers: {
+                                                        token: token,
+                                                        adminToken: adminToken
+                                                    }
+                                                }
+                                            )
+                isSuccess(res)
+                useAdmin.setState(
+                                    { 
+                                        usersData: res.data as Array<UsersData>
+                                    }
+                                )
                 notification("Change", `Changed user: ${command.id}`)
             }catch(err:any){
                 notification("Change", `Change failed ${err.data}`, Status.Error)
@@ -136,19 +152,23 @@ const runAdminAction = async () => {
                                 active: user.active, 
                                 admin: user.admin
                             }
-                let res = await axios.put(`${server}/admin/user/${command.id}`,
-                                                body, 
+                const client = await getClient();
+                let res = await client.request(
                                                 {
-                                                    headers: 
-                                                            {
-                                                                token: token, 
-                                                                adminToken: adminToken
-                                                            }
+                                                    url: `${server}/admin/user/${command.id}`,
+                                                    method: "PUT",
+                                                    body: Body.json(body),
+                                                    responseType: ResponseType.JSON,
+                                                    headers: {
+                                                        token: token, 
+                                                        adminToken: adminToken
+                                                    }
                                                 }
-                )
+                                            )
+                isSuccess(res)
                 useAdmin.setState(
                                     { 
-                                        usersData: res.data
+                                        usersData: res.data as Array<UsersData>
                                     }
                                 )
                 notification("Change", `Changed user: ${command.id}`)
@@ -161,18 +181,22 @@ const runAdminAction = async () => {
             break
         case AdminAction.Delete:
             try{
-                let res = await axios.delete(`${server}/admin/user/${command.id}`, 
-                                                    {
-                                                        headers: 
-                                                                {
-                                                                    token: token, 
-                                                                    adminToken: adminToken
-                                                                }
+                const client = await getClient();
+                let res = await client.request(
+                                                {
+                                                    url: `${server}/admin/user/${command.id}`,
+                                                    method: "DELETE",
+                                                    responseType: ResponseType.JSON,
+                                                    headers: {
+                                                        token: token, 
+                                                        adminToken: adminToken
                                                     }
-                )
+                                                }
+                                            )
+                isSuccess(res)
                 useAdmin.setState(
                                     { 
-                                        usersData: res.data
+                                        usersData: res.data as Array<UsersData>
                                     }
                                 )
                 notification("Deleted", `Changed user: ${command.id}`)

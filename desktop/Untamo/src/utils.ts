@@ -1,5 +1,6 @@
 import { Path } from './type'
 import { invoke } from '@tauri-apps/api';
+import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 
 export async function sleep(ms: number) {
     return await  invoke("sleep", {millis: ms}) as boolean;
@@ -53,4 +54,12 @@ export const time24hToTime12h = (time: string) => {
                 time: `${timePadding(h24ToH12(hours))}:${timeSplit[1]}`, 
                 '12h': (hours >11 && hours <= 23)?"PM":"AM" 
            }
+}
+interface HttpResponse {
+    status: number
+}
+export function isSuccess(response: HttpResponse) {
+    if(!response || response.status < 200 || response.status > 299){
+        throw new Error(`Request failed with status code ${response.status}`)
+    }
 }
