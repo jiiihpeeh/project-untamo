@@ -41,6 +41,8 @@ type UseTimeout = {
     clearAlarmCounter: () => void,
     snoozeIt: boolean,
     setSnoozeIt: (status:boolean) => void,
+    wsID: NodeJS.Timeout|undefined,
+    setWsID: (to: NodeJS.Timeout) => void,
     clear: () => void
 }
 
@@ -97,7 +99,16 @@ const clearAlarmCounter = () => {
         }
     }
 } 
-
+const  clearWsId = () => {
+    let delTimeOut = useTimeouts.getState().wsID
+    if(delTimeOut){
+            try {   
+                clearTimeout(delTimeOut)
+            }catch(err){
+                //console.log(err)
+        }
+    }
+}
 const useTimeouts = create<UseTimeout>((set,get) => ({
         id: undefined,
         setId: (to) => {
@@ -177,12 +188,21 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
                 }
             )
         },
+        wsID: undefined,
+        setWsID: (to: NodeJS.Timeout) => {
+            set(
+                {
+                    wsID: to
+                }
+            )
+        },
         clear:() =>{
             clearAlarmTimeout()
             clearAdminTimeout()
             clearQrTimeout()
             clearRunAlarmID()
             clearAlarmCounter()
+            clearWsId()
         },
 
     }

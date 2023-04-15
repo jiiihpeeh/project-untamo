@@ -5,10 +5,12 @@ import { useNavigate } from 'react-router-dom'
 import { notification } from '../notification'
 import { Alarm, Path } from '../../type'
 import { urlEnds, sleep } from '../../utils'
-var wsTimeout : NodeJS.Timeout | null | number
 
 const UserWatcher = () => {
   //Public API that will echo messages sent to it back to the client
+  const wsTimeout = useTimeouts((state)=> state.wsID)
+  const setWsTimeout = useTimeouts((state)=> state.setWsID)
+
   const fetchAlarms = useAlarms((state)=> state.fetchAlarms)
   const runAlarm = useAlarms((state)=> state.runAlarm)
   const alarms = useAlarms((state)=> state.alarms)
@@ -67,7 +69,8 @@ const UserWatcher = () => {
       }
 
     }else{
-      wsTimeout = setTimeout(()=>sendIdentity(mode), 5000)
+      let wsId = setTimeout(()=>sendIdentity(mode), 5000)
+      setWsTimeout(wsId)
     }
   } 
   useEffect(()=>{
