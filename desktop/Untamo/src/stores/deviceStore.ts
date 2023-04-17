@@ -180,7 +180,6 @@ const fetchDevices = async () => {
                                                     responseType: ResponseType.JSON
                                                 }
                                             )
-        console.log(response)
         isSuccess(response)
         let devices = response.data as Array<Device>
         useDevices.setState(

@@ -6,23 +6,23 @@ import useAudio from './audioStore'
 import useServer from './serverStore'
 import { invoke } from '@tauri-apps/api';
 
-export const intervalCheck = async()  => {
-    const currentTime = Date.now() 
-    //console.log(currentTime)
-    let rsp = await invoke("interval_check",{t: 5}) as boolean;
-    //console.log(Date.now() - currentTime)
-    if(Date.now() - currentTime  > 5100){
-        console.log("timeout")
-        useTimeouts.getState().clear()
-        useAlarms.getState().setReloadAlarmList()
-        useAlarms.setState({alarms: [...useAlarms.getState().alarms]})
-        useDevices.getState().fetchDevices()
-        useLogIn.getState().getUserInfo()
-        useAlarms.getState().fetchAlarms()
-    }
-    intervalCheck()
-}
-intervalCheck()
+// export const intervalCheck = async()  => {
+//     const currentTime = Date.now() 
+//     //console.log(currentTime)
+//     let rsp = await invoke("interval_check",{t: 5}) as boolean;
+//     //console.log(Date.now() - currentTime)
+//     if(Date.now() - currentTime  > 5100){
+//         console.log("timeout")
+//         useTimeouts.getState().clear()
+//         useAlarms.getState().setReloadAlarmList()
+//         useAlarms.setState({alarms: [...useAlarms.getState().alarms]})
+//         useDevices.getState().fetchDevices()
+//         useLogIn.getState().getUserInfo()
+//         useAlarms.getState().fetchAlarms()
+//     }
+//     intervalCheck()
+// }
+// intervalCheck()
 // var systemTime = Date.now()
 // var timeOut : NodeJS.Timeout
 

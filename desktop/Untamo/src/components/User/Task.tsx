@@ -54,12 +54,14 @@ function Task() {
     const [ pressTime, setPressTime ] = useState(0)
     const snoozePressTime = useSettings((state)=>state.snoozePress)
     const [ calculationTask, setCalculationTask ] = useState<Calculation| null>(null)
+    const [ timeOut, setTimeOut ] = useState<NodeJS.Timeout | null>(null)
     const [ isOK, setIsOK]  = useState<boolean>(false)
 
     function checkInput(e: number){
         if(!isNaN(e) && calculationTask && e ===calculationTask.result){
             setSolved(true)
-            setTimeout(()=>setShowTask(false),400)
+            let timeout = setTimeout(()=>{setShowTask(false);(timeOut)?clearTimeout(timeOut):{}},400)
+            setTimeOut(timeout)
             setIsOK(true)
         }else{
             setIsOK(false)

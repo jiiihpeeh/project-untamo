@@ -26,6 +26,8 @@ const UserWatcher = () => {
   const wsConnect = useServer((state)=>state.wsActionConnect)
   const wsDisconnect = useServer((state)=>state.wsActionDisconnect)
   const wsConnection = useServer((state)=>state.wsActionConnection)
+  const lastPing = useServer((state)=>state.lastPing)
+  const pingChecked = useRef(false)
   const navigate = useNavigate()
 
   useEffect(()=>{
@@ -57,6 +59,10 @@ const UserWatcher = () => {
       if(!wsMessage){
           return
       }
+      if(!wsMessage.url){
+        return
+      }
+
       let urlSplit : Array<string> = wsMessage.url.split('/')
 
       if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
@@ -97,8 +103,22 @@ const UserWatcher = () => {
   },[wsConnection])
 
 
-  return (<></>)
+  useEffect(() => {
+    async  function pinger(){
+      if(lastPing && !pingChecked.current){
+        pingChecked.current = true
+        while(true){
+          if(Date.now() - useServer.getState().lastPing > 10200){
+            wsDisconnect()
+          }
+          await sleep(10000)
+        }
+      }
+    }
+  pinger()
+  },[lastPing])
 
+  return (<></>)
 }
 
 export default UserWatcher

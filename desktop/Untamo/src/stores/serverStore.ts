@@ -8,7 +8,8 @@ import useAlarms from './alarmStore'
 import useDevices from './deviceStore'
 
 type wsActionMsg = {
-  url: string,
+  url?: string,
+  mode?: string,
 }
 export interface Content{
   guesses: number,
@@ -34,6 +35,8 @@ type UseServer = {
     wsActionMessage: wsActionMsg|null,
     wsRegisterConnection: WebSocket|null,
     wsRegisterMessage: wsRegisterMsg|null,
+    lastPing : number,
+    setLastPing: (time: number) => void,
     wsActionDisconnect: () => void,
     setWsActionConnection: (ws: WebSocket|null) => void,
     setWSActionMessage: (message: wsActionMsg|null) => void,
@@ -51,7 +54,6 @@ const metaAddress = document.head.querySelector("[property~=server][address]")?.
 const baseAddress = (metaAddress)?metaAddress:"http://localhost:3001"
 const metaExtend = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
 const baseExtend = (metaExtend)?metaExtend:""
-
 const websocketAddress = (server: string) =>{
   let base = server.split("://")
   if(base[0] ==="https"){
@@ -61,6 +63,7 @@ const websocketAddress = (server: string) =>{
 }
 
 function wsActionListener(data:any){
+  //console.log(data)
   if(typeof data === 'object'){
     if(data.hasOwnProperty('data') &&  data.hasOwnProperty('type') && data.type === 'Text'){
       try{
@@ -68,6 +71,9 @@ function wsActionListener(data:any){
         if(msg.hasOwnProperty('url') && typeof msg.url === 'string' && msg.url !== ''){
           useServer.getState().setWSActionMessage(msg)
         }
+        if( msg.hasOwnProperty("mode") && msg.mode === 'pong'){
+          useServer.getState().setLastPing(Date.now())
+         }
       }catch(e){
         useServer.getState().wsActionConnection?.disconnect()
         useServer.getState().setWsActionConnection(null)
@@ -153,15 +159,18 @@ async function registerConnecting() {
   return useServer.getState().wsRegisterConnection
 }
 async function actionConnecting(){
+  console.log("websocket connecting")
   await sleep(100)
   let ws  = await WebSocket.connect(useServer.getState().wsAction)
   ws.addListener(wsActionListener)
   ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
+  ws.send(JSON.stringify({mode: 'ping'}))
   useAlarms.getState().fetchAlarms()
   useLogIn.getState().getUserInfo()
   useDevices.getState().fetchDevices()
   return ws
 }
+
 
 const useServer = create<UseServer>()(
     persist(
@@ -175,6 +184,8 @@ const useServer = create<UseServer>()(
             wsActionMessage: null,
             wsRegisterConnection: null,
             wsRegisterMessage: null,
+            lastPing: 0,
+            setLastPing: (time) => set({lastPing: time}),
             wsRegisterConnect: async () => {
               let ws = await registerConnecting()
               set(
