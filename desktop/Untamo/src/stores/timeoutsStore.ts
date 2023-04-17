@@ -3,6 +3,7 @@ import { useAlarms, useLogIn, useDevices } from '../stores'
 import { Path } from '../type'
 import { urlEnds } from '../utils'
 import useAudio from './audioStore'
+import useServer from './serverStore'
 import { invoke } from '@tauri-apps/api';
 
 export const intervalCheck = async()  => {
@@ -61,6 +62,7 @@ type UseTimeout = {
     setSnoozeIt: (status:boolean) => void,
     wsID: NodeJS.Timeout|undefined,
     setWsID: (to: NodeJS.Timeout) => void,
+    clearWsID: () => void,
     clear: () => void
 
 }
@@ -216,6 +218,14 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
                 }
             )
         },
+        clearWsID: () => {
+            clearWsId()
+            set(
+                {
+                    wsID: undefined
+                }
+            )
+        },
         clear:() =>{
             clearAlarmTimeout()
             clearAdminTimeout()
@@ -250,6 +260,12 @@ const locationChecker = () => {
                 useAudio.getState().stop()
             }
         }
+    }
+    if(urlEnds(Path.Register)){
+        useServer.getState().wsRegisterConnect()
+    }
+    if(urlEnds(Path.LogIn)){
+        useServer.getState().wsRegisterDisconnect()
     }
     locationId = setTimeout(locationChecker,300) 
 }

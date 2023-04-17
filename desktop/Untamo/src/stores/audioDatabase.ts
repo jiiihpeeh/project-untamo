@@ -1,7 +1,7 @@
 import { notification, Status } from '../components/notification';
 import { useLogIn, useServer, useAudio } from '../stores'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
-import { writeBinaryFile,  removeFile } from '@tauri-apps/api/fs'
+import { writeBinaryFile } from '@tauri-apps/api/fs'
 import { join } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/tauri'
 import { isSuccess } from '../utils'
@@ -18,10 +18,7 @@ export async function getAudioPath(key: string){
 
 async function getAudioDir(){
     let audio_path = await (invoke("get_audio_app_path") as Promise<string>)
-    if(audio_path.length > 0){
-        return audio_path
-    }
-    return ""
+    return audio_path
 }
 
 export async function storeAudio(key: string, val:Uint8Array){
@@ -35,8 +32,14 @@ export async function storeAudio(key: string, val:Uint8Array){
 }
 
 export async function delAudio(key: string) {
-    await removeFile(await join(await getAudioDir(), `${key}.flac`))
-    await keysAudio()
+    interface ResponseData {
+        deleted: boolean,
+        tracks: Array<string>
+    }
+    let resp = await ( invoke("del_track", {track: key}) as Promise<ResponseData>)
+    useAudio.setState({ tracks: resp.tracks })
+
+    return resp.deleted
 }
 
 export async function keysAudio(){
@@ -125,7 +128,11 @@ export async function deleteAudioDB() {
         return
     }
     for(const key of keys){
-        key?await delAudio(key):{}
+        try{
+            key?await delAudio(key):{}
+        }catch(err){
+            console.log(err)
+        }
     }
 }
 

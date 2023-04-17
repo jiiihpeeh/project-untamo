@@ -1,5 +1,6 @@
 use std::{str,env};
 use std::time::Duration; 
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 use tauri::{CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayEvent, State, Manager, Window, command };
 use qrcode_generator::QrCodeEcc;
 use async_std::task::{sleep as async_sleep};
@@ -15,9 +16,14 @@ use std::path::{PathBuf, Path};
 // use tracing_subscriber;
 //use tokio::sync::Mutex as AsyncMutex;
 use itertools::Itertools;
-static APPDIR : Mutex<Option<PathBuf>> = Mutex::new(None);
-static RESOURCEDIR : Mutex<Option<PathBuf>> = Mutex::new(None);
-static DIRSSET : Mutex<bool> = Mutex::new(false);
+struct SetDirs {
+  app_dir: Option<PathBuf>,
+  resource_dir: Option<PathBuf>,
+  is_set: bool,
+}
+static SETDIRS : Mutex<SetDirs> = Mutex::new(SetDirs{app_dir: None, resource_dir: None, is_set: false});
+
+
 
 struct AudioResources {
   tracks: Vec<String>,
@@ -34,17 +40,17 @@ impl AudioResources {
   }
   fn set_resource_path(&mut self) {
     //check if RESOURCEDIR is set
-    if RESOURCEDIR.lock().unwrap().is_none(){
+    if  ! SETDIRS.lock().unwrap().is_set {
       return ;
     }
-    self.resource_audio_path = Some(RESOURCEDIR.lock().unwrap().clone().unwrap().join("audio"));
+    self.resource_audio_path = Some(SETDIRS.lock().unwrap().resource_dir.clone().unwrap().join("audio")) ;
   }
   fn set_audio_app_path(&mut self) {
     //check if APPDIR is set
-    if APPDIR.lock().unwrap().is_none(){
+    if  ! SETDIRS.lock().unwrap().is_set {
       return ;
     }
-    self.audio_app_path = Some(APPDIR.lock().unwrap().clone().unwrap().join("audio"));
+    self.audio_app_path = Some(SETDIRS.lock().unwrap().app_dir.clone().unwrap().join("audio"));
 
     //check if Some
     if self.audio_app_path.is_some(){
@@ -116,6 +122,23 @@ impl AudioResources {
     self.tracks = tracks.into_iter().unique().collect();
 
   }
+  fn delete_track(&mut self, track: &str)-> bool  {
+    self.set_tracks();
+    let track_file_name = format!("{}.flac", track);
+    let app_track_path = self.audio_app_path.clone().unwrap().join(track_file_name.clone());
+    if app_track_path.exists(){
+      println!("Deleting track from app directory");
+      match std::fs::remove_file(app_track_path){
+        Ok(_) => return true,
+        Err(e) => {
+          println!("Failed to delete track: {}", e);
+          return false;
+        }
+      }
+    }else{
+      return false;
+    }
+  }
 }
 struct AudioResourceState(Mutex<AudioResources>);
 
@@ -165,7 +188,7 @@ fn get_qr_svg(qr_string: String) -> String {
 }
 async fn wait_paths() {
   let mut count = 0;
-  while APPDIR.lock().unwrap().is_none() || RESOURCEDIR.lock().unwrap().is_none(){    
+  while ! SETDIRS.lock().unwrap().is_set{    
       async_sleep(Duration::from_micros(30)).await;
       count += 1;
       if count > 100000 {
@@ -175,11 +198,11 @@ async fn wait_paths() {
 }
 
 async fn configured() -> bool {
-  if DIRSSET.lock().unwrap().clone() == true {
+  if SETDIRS.lock().unwrap().is_set {
     return true;
   }
   wait_paths().await;
-  if APPDIR.lock().unwrap().is_none() || RESOURCEDIR.lock().unwrap().is_none(){
+  if ! SETDIRS.lock().unwrap().is_set{
     return false;
   }
   return true;
@@ -187,7 +210,7 @@ async fn configured() -> bool {
 
 #[command]
 async fn get_tracks(state: State<'_,AudioResourceState>) -> Result<Vec<String>, Vec<String>>{
-  //check if APPDIR is set and sleep for 100 usecond if not
+  //check if SETDIRS is set and sleep for 100 usecond if not
   if ! configured().await{
     return Err(vec!["".to_string()]);
   }
@@ -216,6 +239,34 @@ async fn get_track_path(track: &str, state: State<'_,AudioResourceState>) ->  Re
   }
 }
 
+struct DeleteResult {
+  deleted: bool,
+  tracks: Vec<String>,
+}
+
+// This is what #[derive(Serialize)] would generate.
+impl Serialize for DeleteResult {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+      S: Serializer,
+  {
+      let mut s = serializer.serialize_struct("DeleteResult", 2)?;
+      s.serialize_field("tracks", &self.tracks)?;
+      s.serialize_field("deleted", &self.deleted)?;
+      s.end()
+  }
+}
+
+#[command]
+fn delete_track(track: &str, state: State<'_,AudioResourceState>) ->  DeleteResult{
+  let result = state.0.lock().unwrap().delete_track(track);
+  let tracks = state.0.lock().unwrap().get_tracks();
+
+  DeleteResult{
+    tracks: tracks,
+    deleted: result,
+  }
+}
 fn main() {
 
   let tray_menu = SystemTrayMenu::new()
@@ -268,14 +319,9 @@ fn main() {
         _ => {}
       })
       .setup(|app| {
-        let mut app_dir = APPDIR.lock().unwrap();
-        *app_dir = app.path_resolver().app_local_data_dir();
-        println!("App dir: {:?}", app_dir);
-        let mut resource_path = RESOURCEDIR.lock().unwrap();
-        *resource_path = app.path_resolver().resource_dir();
-        println!("Resource dir: {:?}", resource_path);
-        let mut dirs_set = DIRSSET.lock().unwrap();
-        *dirs_set = true;
+        let mut set_dirs = SETDIRS.lock().unwrap();
+        *set_dirs = SetDirs{app_dir: app.path_resolver().app_local_data_dir(), resource_dir: app.path_resolver().resource_dir(), is_set: true};
+
         Ok(())
       })
       .manage(AudioResourceState(Mutex::new(AudioResources::new())))  
@@ -288,7 +334,8 @@ fn main() {
                                                   get_qr_svg,
                                                   get_tracks,
                                                   get_audio_app_path,
-                                                  get_track_path
+                                                  get_track_path,
+                                                  delete_track
                                               ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

@@ -1,5 +1,4 @@
 import React, {  useEffect } from 'react'
-import useWebSocket from 'react-use-websocket'
 import { useNavigate } from 'react-router-dom'
 import { Input, InputGroup,Box,
          InputRightAddon, FormControl,
@@ -9,11 +8,7 @@ import useRegister from './RegisterBackend'
 import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons'
 import { Path, ColorMode } from '../../type'
 import '../../App.css'
-
-enum Query{
-    ZXCVBN = "zxcvbn",
-    Form = "form" 
-}
+import { Content, Query } from '../../stores/serverStore'
 
 const Register = () => {
     const registered = useRegister((state)=>state.registered)
@@ -43,10 +38,10 @@ const Register = () => {
     const isMobile = usePopups((state) => state.isMobile)
     const windowSize = usePopups((state)=>state.windowSize)
     const colorMode = useSettings((state) => state.colorMode)
-    const wsURL = useServer((state) => state.wsRegister)
+    const wsRegisterMessage = useServer((state)=>state.wsRegisterMessage)
+    const sendMessage = useServer((state)=>state.wsRegisterSendMessage)
     const navigate = useNavigate()
 
-    const { sendMessage, lastMessage } = useWebSocket(wsURL)
     
     
     const PasswordMatch = () => {
@@ -87,41 +82,25 @@ const Register = () => {
     },[password])
 
     useEffect(()=>{
-        if(lastMessage){
-            let msg = JSON.parse(lastMessage.data)
-            if(!msg){
-                return
-            }
-            //console.log(msg)
-            switch(msg.type){
-                case Query.ZXCVBN:
-                    if(msg.content){
-                        interface Content{
-                            guesses: number,
-                            score: number,
-                            server_minimum: number
-                        }
-                        let content : Content = msg.content
-                        let passwordCheck = content.guesses > content.server_minimum
-                        setPasswordCheck(passwordCheck)
-                        setScore(content.score)
-                        setServerMinimum(content.server_minimum)
-                    }
-                    break
-                case Query.Form:
-                    if(msg.content){
-                        let content = msg.content as boolean
-                        setFormCheck(content)
-                    }
-                    break
-                default:
-                    break
-            }
+        if(!wsRegisterMessage){
+            return
         }
-    },[lastMessage])
-    // useEffect(()=>{
-    //     console.log(passwordCheck, formCheck)
-    // },[passwordCheck, formCheck])
+        switch(wsRegisterMessage.type){
+            case Query.ZXCVBN:
+                let content = wsRegisterMessage.content as Content
+                let passwordCheck = content.guesses > content.server_minimum
+                setPasswordCheck(passwordCheck)
+                setScore(content.score)
+                setServerMinimum(content.server_minimum)    
+                break
+            case Query.Form:
+                setFormCheck(wsRegisterMessage.content as boolean)
+                break
+            default:
+                break
+        }
+    },[wsRegisterMessage])
+ 
     return (
         <Box 
             //bg='lightgray' 
@@ -139,32 +118,34 @@ const Register = () => {
                 >
                     First name (Optional)
                 </FormLabel>
-                <Input type="text"
+                <Input 
+                    type="text"
                     name="firstName"
                     id="firstName"
                     onChange={(e)=>setFirstName(e.target.value)}
                     value={firstName}
-                    //className='Register'
+                    bgColor="GhostWhite"
                 />
                 <FormLabel 
                     htmlFor="lastName"
                 >
                     Last name (Optional)
                 </FormLabel>
-                <Input type="text"
-                    bgColor="GhostWhite"
+                <Input 
+                    type="text"
                     name="lastName"
                     id="lastName"
                     onChange={(e)=>setLastName(e.target.value)}
                     value={lastName}
-                    //className='Register'
+                    bgColor="GhostWhite"
                 />
                 <FormLabel 
                     htmlFor="email"
                 >
                     Email (Required)
                 </FormLabel>
-                <Input type="email"
+                <Input 
+                    type="email"
                     name="email"
                     id="email"
                     onChange={(e)=>setEmail(e.target.value)}
@@ -177,7 +158,8 @@ const Register = () => {
                     Password
                 </FormLabel>
                 <InputGroup>
-                    <Input type="password"
+                    <Input 
+                        type="password"
                         name="password"
                         id="password"
                         onChange= {(e) => setPassword(e.target.value)}

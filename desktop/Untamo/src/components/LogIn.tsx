@@ -99,6 +99,7 @@ const LogIn = () => {
                                     id="email"
                                     onChange={(e) =>onChange(e)}
                                     value={formData.email}
+                                    bgColor="GhostWhite"
                                     className="Register"
                                 />
                                 <FormLabel 
@@ -113,6 +114,7 @@ const LogIn = () => {
                                     id="password"
                                     onChange= {(e) =>onChange(e)}
                                     value={formData.password}
+                                    bgColor="GhostWhite"
                                     className="Register"
                                 />
                                 <Divider />
