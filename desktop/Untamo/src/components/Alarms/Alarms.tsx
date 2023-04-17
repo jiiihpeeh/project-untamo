@@ -44,14 +44,17 @@ const Alarms = () => {
     const isLight= useSettings((state)=> state.isLight)
     const   timeIntervalID = useRef<string | null>(null) 
     const counterLaunched = useRef<boolean>(false)
+    const [showTimeout, setShowTimeout] = useState<NodeJS.Timeout | null>(null)
     const navigate = useNavigate()
     
     const timeCounter = async() =>{
+        (showTimeout)?clearTimeout(showTimeout):{}
         if(timeIntervalID.current){
             const timeMs = timeToNextAlarm(useAlarms.getState().alarms.filter( item =>  item.id === timeIntervalID.current)[0])
             const time = timeToUnits(Math.round(timeMs/1000))
             setShowTiming(` (${time.days} days ${timePadding(time.hours)}:${timePadding(time.minutes)}:${timePadding(time.seconds)})`)
-            setTimeout(()=>timeCounter(),500)
+            let timeOut =setTimeout(()=>timeCounter(),500)
+            setShowTimeout(timeOut)
         }
     }
     useEffect(() => {

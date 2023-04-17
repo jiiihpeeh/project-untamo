@@ -320,7 +320,11 @@ fn main() {
       })
       .setup(|app| {
         let mut set_dirs = SETDIRS.lock().unwrap();
-        *set_dirs = SetDirs{app_dir: app.path_resolver().app_local_data_dir(), resource_dir: app.path_resolver().resource_dir(), is_set: true};
+        *set_dirs = SetDirs{
+                              app_dir: app.path_resolver().app_local_data_dir(), 
+                              resource_dir: app.path_resolver().resource_dir(), 
+                              is_set: true
+                            };
 
         Ok(())
       })

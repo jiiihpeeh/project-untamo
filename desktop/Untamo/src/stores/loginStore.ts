@@ -65,7 +65,7 @@ const refreshToken = async () =>{
     const tokenTime = useLogIn.getState().tokenTime
     if((Date.now() - tokenTime) < 7200000){
         const randomTime = Math.ceil(Math.random()*10000000)
-        setTimeout(refreshToken,tokenTime + randomTime)
+        //setTimeout(refreshToken,tokenTime + randomTime)
         return
     }
     if( sessionStatus !== SessionStatus.Valid){
@@ -101,7 +101,7 @@ const refreshToken = async () =>{
                                 }
                             )
         const randomTime = Math.ceil(Math.random()*7200000)
-        setTimeout(refreshToken,2*24*60*60*1000 + randomTime)
+        //setTimeout(refreshToken,2*24*60*60*1000 + randomTime)
     }catch(err){
         (validSession())?notification("Session", "Failed to update token.", Status.Error):{}
     }
@@ -130,7 +130,7 @@ async function checkSession() {
                 useLogIn.getState().getUserInfo()
                 useDevices.getState().fetchDevices()
                 notification("Session", "Continuing session.", Status.Info)
-                setTimeout(refreshToken, 30000)
+                //setTimeout(refreshToken, 30000)
                 status = SessionStatus.Valid
             } else {
                 status = SessionStatus.NotValid
@@ -250,7 +250,7 @@ async function logIn(email: string, password: string) {
         useDevices.getState().fetchDevices()
         useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random() * 7200000)
-        setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
+        //setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
         notification("Logged In", "Successfully logged in")
     } catch (err: any) {
         notification("Log In", "Log In Failed", Status.Error)

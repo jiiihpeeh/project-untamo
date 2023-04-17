@@ -9,6 +9,7 @@ import { urlEnds } from '../../utils'
 import { notification, Status } from '../notification'
 import { Path } from '../../type'
 import {  WindowTop } from '../../stores/settingsStore'
+import useTimeouts from '../../stores/timeoutsStore'
 
 const closeFunction = async() => {
     const unlistenAsync = await appWindow.onCloseRequested(async (event) => {
@@ -41,6 +42,9 @@ function CloseAction(){
   const plays = useAudio(state=> state.plays)
   const visibleBeforePlayState = useRef(true)
   const onTop = useSettings(state=>state.onTop)
+  const setWindowTimeout = useTimeouts(state=>state.setWindowTimeout)
+  const clearWindowTimeout = useTimeouts(state=>state.clearWindowTimeout)
+
   useEffect(()=>{
     async function topHandler(){
         if(onTop === WindowTop.Always){
@@ -74,7 +78,8 @@ function CloseAction(){
                 await appWindow.setAlwaysOnTop(true)
             }
             if(!visibleBeforePlayState.current){
-                setTimeout(() => {appWindow.hide()},180)
+                let timeOut = setTimeout(() => {appWindow.hide();clearWindowTimeout()},180)
+                setWindowTimeout(timeOut)
             }
         }
     }
@@ -108,7 +113,8 @@ function CloseAction(){
                       colorScheme='blue' 
                       onClick={()=> { 
                                         setShowCloseApp(false)
-                                        setTimeout(()=> appWindow.hide(), 120)
+                                        let timeOut = setTimeout(()=> {appWindow.hide();clearWindowTimeout() }, 120)
+                                        setWindowTimeout(timeOut)
                                     }
                               } 
                       ml={3}

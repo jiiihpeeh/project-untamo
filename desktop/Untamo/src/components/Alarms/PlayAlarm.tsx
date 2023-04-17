@@ -30,7 +30,8 @@ const PlayAlarm = () =>{
     const closeTask = useSettings((state)=>state.closeTask)
     const turnOffValue = useAlarms((state)=>state.turnOff)
     const setTurnOffValue = useAlarms((state)=>state.setTurnOff)
-
+    const clearAlarmOutId = useTimeouts((state)=>state.clearAlarmOutId)
+    const setAlarmOut = useTimeouts((state)=>state.setAlarmOut)
     const [ pressTime, setPressTime ] = useState(0)
     
     useEffect(() => {
@@ -53,7 +54,8 @@ const PlayAlarm = () =>{
             console.log("turn OFF")
             resetSnooze()
             removeAlarmObject()
-            setTimeout(() => {navigate(extend(Path.Alarms));stopAudio()},100)   
+            let timeOut = setTimeout(() => {navigate(extend(Path.Alarms));stopAudio();clearAlarmOutId()},100)
+            setAlarmOut(timeOut) 
         }
     }
     useEffect(() => {
@@ -64,7 +66,8 @@ const PlayAlarm = () =>{
             setLaunchMode(LaunchMode.None)
             resetSnooze()
             removeAlarmObject()
-            setTimeout(() => {navigate(extend(Path.Alarms));stopAudio()},100)
+            let timeOut = setTimeout(() => {navigate(extend(Path.Alarms));stopAudio();clearAlarmOutId()},100)
+            setAlarmOut(timeOut) 
         }
         //console.log(launchMode)
     },[launchMode])
@@ -93,7 +96,8 @@ const PlayAlarm = () =>{
         if(snoozeIt){
             snoozeAlarm()
             removeAlarmObject()
-            setTimeout(() => {navigate(extend(Path.Alarms)); stopAudio()},100)
+            let timeout = setTimeout(() => {navigate(extend(Path.Alarms)); stopAudio(); clearAlarmOutId()},100)
+            setAlarmOut(timeout)
             setSnoozeIt(false)
         }
     },[snoozeIt])

@@ -62,6 +62,12 @@ type UseTimeout = {
     setSnoozeIt: (status:boolean) => void,
     wsID: NodeJS.Timeout|undefined,
     setWsID: (to: NodeJS.Timeout) => void,
+    alarmOut : NodeJS.Timeout|null,
+    setAlarmOut: (to: NodeJS.Timeout) => void,
+    clearAlarmOutId: () => void,
+    windowTimeout: NodeJS.Timeout|null,
+    setWindowTimeout: (to: NodeJS.Timeout) => void,
+    clearWindowTimeout: () => void,
     clearWsID: () => void,
     clear: () => void
 
@@ -131,6 +137,27 @@ const  clearWsId = () => {
     }
 }
 
+const clearAlarmOutId = () => {
+    let delTimeOut = useTimeouts.getState().alarmOut
+    if(delTimeOut){
+            try {
+                clearTimeout(delTimeOut)
+            }catch(err){
+                //console.log(err)
+        }
+    }
+}
+
+const clearWindowTimeout = () => {
+    let delTimeOut = useTimeouts.getState().windowTimeout
+    if(delTimeOut){
+            try {
+                clearTimeout(delTimeOut)
+            }catch(err){
+                //console.log(err)
+        }
+    }
+}
 const useTimeouts = create<UseTimeout>((set,get) => ({
         id: undefined,
         setId: (to) => {
@@ -212,6 +239,7 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
         },
         wsID: undefined,
         setWsID: (to: NodeJS.Timeout) => {
+            clearWsId()
             set(
                 {
                     wsID: to
@@ -226,6 +254,33 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
                 }
             )
         },
+        alarmOut : null,
+        setAlarmOut: (to: NodeJS.Timeout) => {
+            clearAlarmOutId()
+            set(
+                    {
+                        alarmOut: to
+                    }
+                )
+        },
+        clearAlarmOutId: () => () =>{
+            clearAlarmOutId()
+            set({alarmOut: null})
+
+        },
+        windowTimeout: null,
+        setWindowTimeout: (to: NodeJS.Timeout) => {
+            clearWindowTimeout()
+            set(
+                    {
+                        windowTimeout: to
+                    }
+                )
+        },
+        clearWindowTimeout: () => () =>{
+            clearWindowTimeout()
+            set({windowTimeout: null})
+        },
         clear:() =>{
             clearAlarmTimeout()
             clearAdminTimeout()
@@ -233,6 +288,7 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
             clearRunAlarmID()
             clearAlarmCounter()
             clearWsId()
+            clearAlarmOutId()
         },
 
     }
