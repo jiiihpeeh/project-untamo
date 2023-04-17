@@ -108,9 +108,11 @@ const UserWatcher = () => {
       if(lastPing && !pingChecked.current){
         pingChecked.current = true
         while(true){
-          if(Date.now() - useServer.getState().lastPing > 10200){
+          if(Date.now() - useServer.getState().lastPing > 11200){
             wsDisconnect()
           }
+          await sleep(1000)
+          useServer.getState().wsActionConnection?.send(JSON.stringify({type: "ping"}))
           await sleep(10000)
         }
       }
