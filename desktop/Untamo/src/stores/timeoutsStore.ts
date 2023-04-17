@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { useAlarms, useLogIn, useDevices } from '../stores'
-import { Path } from '../type'
+import { Path, SessionStatus } from '../type'
 import { urlEnds } from '../utils'
 import useAudio from './audioStore'
 import useServer from './serverStore'
@@ -266,6 +266,7 @@ const locationChecker = () => {
     }
     if(urlEnds(Path.LogIn)){
         useServer.getState().wsRegisterDisconnect()
+        //useLogIn.getState().setSessionValid(SessionStatus.NotValid)
     }
     locationId = setTimeout(locationChecker,300) 
 }

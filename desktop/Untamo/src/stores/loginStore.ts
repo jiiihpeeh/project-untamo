@@ -102,38 +102,39 @@ const refreshToken = async () =>{
     }
 }
 
-const checkSession = async () => {
+async function checkSession() {
+    await sleep(10)
     const { server, token } = getCommunicationInfo()
-    let status : SessionStatus 
-    if (token.length > 3){
+    let status: SessionStatus
+    if (token.length > 3) {
         try {
             const client = await getClient()
             const res = await client.request(
-                                                {
-                                                    url: `${server}/api/is-session-valid`,
-                                                    method: 'GET',
-                                                    headers: {
-                                                        token: token
-                                                    },
-                                                    responseType: ResponseType.JSON
-                                                }
-                                            )
+                {
+                    url: `${server}/api/is-session-valid`,
+                    method: 'GET',
+                    headers: {
+                        token: token
+                    },
+                    responseType: ResponseType.JSON
+                }
+            )
             isSuccess(res)
-            if(res && res.status === 200){
+            if (res && res.status === 200) {
                 useAlarms.getState().fetchAlarms()
                 useLogIn.getState().getUserInfo()
                 useDevices.getState().fetchDevices()
                 notification("Session", "Continuing session.", Status.Info)
-                setTimeout(refreshToken,30000)
+                setTimeout(refreshToken, 30000)
                 status = SessionStatus.Valid
             } else {
                 status = SessionStatus.NotValid
             }
-        } catch(err: any){
-            if(err.response.status === 403){
+        } catch (err: any) {
+            if (err.response.status === 403) {
                 notification("Session", "Session invalid.", Status.Error)
                 status = SessionStatus.NotValid
-            }else{
+            } else {
                 notification("Session", "Can not contact server.", Status.Warning)
                 status = SessionStatus.NotValid
             }
@@ -188,7 +189,11 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
 
 async function logIn(email: string, password: string) {
     console.log("Logging in ", email, password)
-    useLogIn.setState({ sessionValid: SessionStatus.Validating })
+    useLogIn.setState(
+                        { 
+                            sessionValid: SessionStatus.Validating 
+                        }
+                    )
 
     try {
         const server = useServer.getState().address
