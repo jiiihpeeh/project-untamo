@@ -71,7 +71,7 @@ function App() {
     return (
         <Container 
             className="App"
-            onContextMenu={(e)=>{e.preventDefault()}}
+            //onContextMenu={(e)=>{e.preventDefault()}}
         >
             {/* <App/> */}
             <NavGrid/>

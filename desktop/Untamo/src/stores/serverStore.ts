@@ -131,7 +131,7 @@ function wsRegisterListener(data:any){
                         type: Query.Form,
                         content: content
                     } 
-                    console.log(parsed_msg)
+                    //console.log(parsed_msg)
                     useServer.getState().setWSRegisterMessage(parsed_msg)
                 } 
               

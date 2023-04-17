@@ -62,7 +62,13 @@ const NavGrid = () => {
         seconds: number
     }
     const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return (<Text color={"red"} as ="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds(Path.Admin))?<Icon as={pointing} />:""}</Text>)
+        return (<Text 
+                    color={"red"} 
+                    as ="b"
+                > 
+                    ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds(Path.Admin))?<Icon as={pointing} />:""}
+                </Text>
+            )
     }
 
     useEffect(() => {
@@ -144,7 +150,16 @@ const NavGrid = () => {
                 zIndex={500}
                 alignContent={"left"}
                 background="radial-gradient(circle, rgba(52,124,228,0.57044825) 50%, rgba(157,182,225,0) 100%)"
-                style={{width:windowSize.width, left:0,right:windowSize.width, bottom: 0, top: (navBarTop)?0:windowSize.height- navHeight, height:navHeight }}
+                style={
+                    {
+                        width:windowSize.width, 
+                        left:0,
+                        right:windowSize.width, 
+                        bottom: 0, 
+                        top: (navBarTop)?0:windowSize.height- navHeight, 
+                        height:navHeight 
+                    }
+                }
             >
                 <HStack
                     ml="1%"
