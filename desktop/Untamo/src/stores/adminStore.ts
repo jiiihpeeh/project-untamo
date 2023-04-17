@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useLogIn, validSession } from '../stores'
+import { getCommunicationInfo, validSession } from '../stores'
 import { AdminAction } from '../type'
+import useLogIn from './loginStore'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { isSuccess } from '../utils'
 type Command = {

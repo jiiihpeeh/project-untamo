@@ -3,8 +3,13 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import { SessionStatus, FormData, UserInfo } from '../type'
-import { useServer, useDevices, useAdmin, useTimeouts,
-         useFetchQR, useAlarms , validSession } from '../stores'
+import {  validSession } from '../stores'
+import useServer from './serverStore'
+import useDevices from './deviceStore'
+import useAdmin from './adminStore'
+import useTimeouts from './timeoutsStore'
+import useFetchQR from './QRStore'
+import useAlarms from './alarmStore'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, isSuccess } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
@@ -103,7 +108,7 @@ const refreshToken = async () =>{
 }
 
 async function checkSession() {
-    await sleep(10)
+    await sleep(30)
     const { server, token } = getCommunicationInfo()
     let status: SessionStatus
     if (token.length > 3) {

@@ -1,5 +1,7 @@
 import { notification, Status } from '../components/notification';
-import { useLogIn, useServer, useAudio } from '../stores'
+import useLogIn from './loginStore'
+import useServer from './serverStore'
+import useAudio from './audioStore'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { writeBinaryFile } from '@tauri-apps/api/fs'
 import { join } from '@tauri-apps/api/path';

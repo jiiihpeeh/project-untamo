@@ -3,7 +3,9 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { DeviceType }  from '../type'
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useAlarms, useLogIn, validSession } from "../stores"
+import { getCommunicationInfo, validSession } from "../stores"
+import useAlarms from './alarmStore'
+import useLogIn from './loginStore'
 import {Device} from '../type'
 import { isSuccess } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"

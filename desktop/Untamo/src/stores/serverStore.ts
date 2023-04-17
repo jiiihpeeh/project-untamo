@@ -4,6 +4,8 @@ import { Path } from '../type'
 import WebSocket from 'tauri-plugin-websocket-api'
 import {sleep} from '../utils'
 import useLogIn from './loginStore'
+import useAlarms from './alarmStore'
+import useDevices from './deviceStore'
 
 type wsActionMsg = {
   url: string,
@@ -30,12 +32,12 @@ type UseServer = {
     extended: string,
     wsActionConnection: WebSocket|null,
     wsActionMessage: wsActionMsg|null,
+    wsRegisterConnection: WebSocket|null,
+    wsRegisterMessage: wsRegisterMsg|null,
     wsActionDisconnect: () => void,
     setWsActionConnection: (ws: WebSocket|null) => void,
     setWSActionMessage: (message: wsActionMsg|null) => void,
     wsActionConnect: () => void,
-    wsRegisterConnection: WebSocket|null,
-    wsRegisterMessage: wsRegisterMsg|null,
     setWsRegisterConnection: (ws: WebSocket|null) => void,
     setWSRegisterMessage: (message: wsRegisterMsg|null) => void,
     wsRegisterConnect: () => void,
@@ -155,6 +157,9 @@ async function actionConnecting(){
   let ws  = await WebSocket.connect(useServer.getState().wsAction)
   ws.addListener(wsActionListener)
   ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
+  useAlarms.getState().fetchAlarms()
+  useLogIn.getState().getUserInfo()
+  useDevices.getState().fetchDevices()
   return ws
 }
 
