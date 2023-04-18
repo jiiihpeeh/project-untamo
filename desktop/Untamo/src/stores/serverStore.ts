@@ -153,7 +153,15 @@ async function actionConnecting(){
       console.log(e)  
     } 
   }
-
+  ws.onerror = (event : Event) => {
+    try{
+      useServer.getState().wsActionConnection?.close()
+      useServer.getState().setWsActionConnection(null)
+    }catch(e){
+      console.log(e)
+    }
+    
+  }
   ws.onclose = (event : CloseEvent) => {
     ws.removeEventListener("message", wsActionListener)
     useServer.getState().setWsActionConnection(null)

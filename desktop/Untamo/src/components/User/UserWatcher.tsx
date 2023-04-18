@@ -93,9 +93,15 @@ const UserWatcher = () => {
   useEffect(() => {
     async function connector (){
       if(!wsConnection){
-        await sleep(300)
-        if (!useServer.getState().wsActionConnection){
-          wsConnect()
+        while(true){
+          await sleep(300)
+          if (!useServer.getState().wsActionConnection){
+            wsConnect()
+          }
+          await sleep(200)
+          if (useServer.getState().wsActionConnection){
+            break
+          } 
         }
       }
     }
