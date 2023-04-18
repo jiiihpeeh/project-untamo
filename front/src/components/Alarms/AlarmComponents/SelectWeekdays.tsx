@@ -14,7 +14,7 @@ const SelectedWeekdays = () => {
                 borderColor={'black'} 
                 bgColor={(weekdays.includes(weekday))?"green":"gray.500" }
                 onClick={() => toggleWeekdays(weekday)}
-                onTouchEnd={(e)=>console.log(e)} 
+                //onTouchEnd={(e)=>console.log(e)} 
                 borderRadius={'md'}
                 borderWidth={'2px'}
                 colorScheme="orange"

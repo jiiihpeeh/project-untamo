@@ -61,7 +61,7 @@ const websocketAddress = (server: string) =>{
   return  "ws://"+base[1]
 }
 function wsActionListener(data:any){
-  console.log(data)
+  //console.log(data)
   if(typeof data === 'object'){
       try{
         if(data.hasOwnProperty('url') && typeof data.url === 'string' && data.url !== ''){
@@ -120,7 +120,7 @@ async function registerConnecting() {
       try{
         wsRegisterListener(JSON.parse(event.data))
       }catch(e){
-        console.log(e)
+        //console.log(e)
       }    
     }
     ws.onclose = (event : CloseEvent) => {
@@ -137,7 +137,7 @@ async function actionConnecting(){
     await sleep(200)
     return null
   }
-  console.log("websocket connecting")
+  //console.log("websocket connecting")
   let ws = new WebSocket(useServer.getState().wsAction)
   ws.onopen = (event : Event) => {
     ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
@@ -149,7 +149,7 @@ async function actionConnecting(){
     try{
       wsActionListener(JSON.parse(event.data))
     }catch(e){
-      console.log(e)  
+      //console.log(e)  
     } 
   }
   ws.onerror = (event : Event) => {
@@ -157,7 +157,7 @@ async function actionConnecting(){
       useServer.getState().wsActionConnection?.close()
       useServer.getState().setWsActionConnection(null)
     }catch(e){
-      console.log(e)
+      //console.log(e)
     }
   }
   ws.onclose = (event : CloseEvent) => {

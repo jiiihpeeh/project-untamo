@@ -31,7 +31,7 @@ const AlarmWatcher  = () => {
                 let idTimeOutMap = new Map<number,string>()
                 for(const alarm of filteredAlarms){
                     let timed = timeToNextAlarm(alarm)
-                    console.log(alarm.time, timed)
+                    //console.log(alarm.time, timed)
                     if(timed && (!isNaN(timed)) && (Math.abs(timed) !== Infinity) ){
                         idTimeOutMap.set(timed, alarm.id)
                     }
