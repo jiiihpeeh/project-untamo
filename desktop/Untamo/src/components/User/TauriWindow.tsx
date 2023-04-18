@@ -5,7 +5,7 @@ import { AlertDialog,  Button , AlertDialogOverlay,
 import {  usePopups, useAudio, useSettings } from '../../stores'
 import { appWindow, PhysicalSize } from "@tauri-apps/api/window"
 import { app, invoke } from "@tauri-apps/api"
-import { urlEnds } from '../../utils'
+import { sleep, urlEnds } from '../../utils'
 import { notification, Status } from '../notification'
 import { Path } from '../../type'
 import {  WindowTop } from '../../stores/settingsStore'
@@ -42,8 +42,12 @@ function CloseAction(){
   const plays = useAudio(state=> state.plays)
   const visibleBeforePlayState = useRef(true)
   const onTop = useSettings(state=>state.onTop)
-  const setWindowTimeout = useTimeouts(state=>state.setWindowTimeout)
-  const clearWindowTimeout = useTimeouts(state=>state.clearWindowTimeout)
+
+  async function hideSequence(ms:number){
+    setShowCloseApp(false)
+    await sleep(ms)
+    appWindow.hide()
+  }
 
   useEffect(()=>{
     async function topHandler(){
@@ -78,13 +82,13 @@ function CloseAction(){
                 await appWindow.setAlwaysOnTop(true)
             }
             if(!visibleBeforePlayState.current){
-                let timeOut = setTimeout(() => {appWindow.hide();clearWindowTimeout()},180)
-                setWindowTimeout(timeOut)
+                hideSequence(180)
             }
         }
     }
   showIt()
   },[plays])
+
   return (
           <AlertDialog
             isOpen={showCloseApp}
@@ -111,12 +115,7 @@ function CloseAction(){
                   </Button>
                   <Button 
                       colorScheme='blue' 
-                      onClick={()=> { 
-                                        setShowCloseApp(false)
-                                        let timeOut = setTimeout(()=> {appWindow.hide();clearWindowTimeout() }, 120)
-                                        setWindowTimeout(timeOut)
-                                    }
-                              } 
+                      onClick={()=> hideSequence(120)} 
                       ml={3}
                   >
                       Hide

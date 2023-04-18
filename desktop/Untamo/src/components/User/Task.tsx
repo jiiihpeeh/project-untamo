@@ -6,6 +6,7 @@ import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 import { LaunchMode } from '../../stores/taskStore'
 import { useSettings } from '../../stores'
+import { sleep } from '../../utils';
 
 enum Operator {
     Multiply="*",
@@ -54,18 +55,20 @@ function Task() {
     const [ pressTime, setPressTime ] = useState(0)
     const snoozePressTime = useSettings((state)=>state.snoozePress)
     const [ calculationTask, setCalculationTask ] = useState<Calculation| null>(null)
-    const [ timeOut, setTimeOut ] = useState<NodeJS.Timeout | null>(null)
     const [ isOK, setIsOK]  = useState<boolean>(false)
 
     function checkInput(e: number){
         if(!isNaN(e) && calculationTask && e ===calculationTask.result){
             setSolved(true)
-            let timeout = setTimeout(()=>{setShowTask(false);(timeOut)?clearTimeout(timeOut):{}},400)
-            setTimeOut(timeout)
+            closeSequence(400)
             setIsOK(true)
         }else{
             setIsOK(false)
         }
+    }
+    async function closeSequence(ms:number){
+        await sleep(ms)
+        setShowTask(false)
     }
     useEffect(() => {
         if(showTask){

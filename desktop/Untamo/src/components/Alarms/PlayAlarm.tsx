@@ -46,7 +46,14 @@ const PlayAlarm = () =>{
             clearTimeouts()
         }catch(err){}
     }
-    
+    async function closeSequence(ms:number, clear: boolean = false) {
+        await sleep(ms)
+        navigate(extend(Path.Alarms))
+        stopAudio()
+        if(clear){
+            clearAlarmOutId()
+        }
+    }
     const turnOff = () => {
         if((closeTask === CloseTask.Obey && runAlarm && runAlarm.closeTask) || (closeTask === CloseTask.Force)){
             setShowTask(true)
@@ -54,8 +61,7 @@ const PlayAlarm = () =>{
             console.log("turn OFF")
             resetSnooze()
             removeAlarmObject()
-            let timeOut = setTimeout(() => {navigate(extend(Path.Alarms));stopAudio();clearAlarmOutId()},100)
-            setAlarmOut(timeOut) 
+            closeSequence(100)
         }
     }
     useEffect(() => {
@@ -66,8 +72,7 @@ const PlayAlarm = () =>{
             setLaunchMode(LaunchMode.None)
             resetSnooze()
             removeAlarmObject()
-            let timeOut = setTimeout(() => {navigate(extend(Path.Alarms));stopAudio();clearAlarmOutId()},100)
-            setAlarmOut(timeOut) 
+            closeSequence(100,true) 
         }
         //console.log(launchMode)
     },[launchMode])
@@ -96,8 +101,7 @@ const PlayAlarm = () =>{
         if(snoozeIt){
             snoozeAlarm()
             removeAlarmObject()
-            let timeout = setTimeout(() => {navigate(extend(Path.Alarms)); stopAudio(); clearAlarmOutId()},100)
-            setAlarmOut(timeout)
+            closeSequence(100,true)
             setSnoozeIt(false)
         }
     },[snoozeIt])

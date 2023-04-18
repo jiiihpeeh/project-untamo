@@ -160,7 +160,6 @@ async function actionConnecting(){
     }catch(e){
       console.log(e)
     }
-    
   }
   ws.onclose = (event : CloseEvent) => {
     ws.removeEventListener("message", wsActionListener)
