@@ -23,24 +23,21 @@ import { invoke } from '@tauri-apps/api';
 //     intervalCheck()
 // }
 // intervalCheck()
-// var systemTime = Date.now()
-// var timeOut : NodeJS.Timeout
+var systemTime = Date.now()
+var timeOut : NodeJS.Timeout
 
-// const compareTime = () =>{
-//     clearTimeout(timeOut)
-//     const currentTime = Date.now()    
-//     if(currentTime - systemTime > 6000){
-//         useTimeouts.getState().clear()
-//         useAlarms.getState().setReloadAlarmList()
-//         useAlarms.setState({alarms: [...useAlarms.getState().alarms]})
-//         useDevices.getState().fetchDevices()
-//         useLogIn.getState().getUserInfo()
-//         useAlarms.getState().fetchAlarms()
-//     }
-//     systemTime = currentTime
-//     timeOut = setInterval(compareTime, 5000)
-// }
-// compareTime()
+const compareTime = () =>{
+    clearTimeout(timeOut)
+    const currentTime = Date.now()    
+    if(currentTime - systemTime > 6000){
+        useTimeouts.getState().clear()
+        useAlarms.getState().setReloadAlarmList()
+        useServer.getState().wsActionReconnect()
+    }
+    systemTime = currentTime
+    timeOut = setInterval(compareTime, 5000)
+}
+compareTime()
 
 type UseTimeout = {
     id: NodeJS.Timeout|undefined,

@@ -38,7 +38,7 @@ export async function delAudio(key: string) {
         deleted: boolean,
         tracks: Array<string>
     }
-    let resp = await ( invoke("del_track", {track: key}) as Promise<ResponseData>)
+    let resp = await ( invoke("delete_track", {track: key}) as Promise<ResponseData>)
     useAudio.setState({ tracks: resp.tracks })
 
     return resp.deleted

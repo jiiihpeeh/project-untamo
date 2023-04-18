@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { Path } from '../type'
-import WebSocket from 'tauri-plugin-websocket-api'
-import {sleep} from '../utils'
+//import WebSocket from 'tauri-plugin-websocket-api'
+import { sleep, urlEnds } from '../utils'
 import useLogIn from './loginStore'
 import useAlarms from './alarmStore'
 import useDevices from './deviceStore'
@@ -35,11 +35,10 @@ type UseServer = {
     wsActionMessage: wsActionMsg|null,
     wsRegisterConnection: WebSocket|null,
     wsRegisterMessage: wsRegisterMsg|null,
-    lastPing : number,
-    setLastPing: (time: number) => void,
     wsActionDisconnect: () => void,
     setWsActionConnection: (ws: WebSocket|null) => void,
     setWSActionMessage: (message: wsActionMsg|null) => void,
+    wsActionReconnect: () => void,  
     wsActionConnect: () => void,
     setWsRegisterConnection: (ws: WebSocket|null) => void,
     setWSRegisterMessage: (message: wsRegisterMsg|null) => void,
@@ -63,59 +62,23 @@ const websocketAddress = (server: string) =>{
 }
 
 function wsActionListener(data:any){
-  //console.log(data)
+  console.log(data)
   if(typeof data === 'object'){
-    if(data.hasOwnProperty('data') &&  data.hasOwnProperty('type') && data.type === 'Text'){
       try{
-        let msg = JSON.parse(data.data) as wsActionMsg
-        if(msg.hasOwnProperty('url') && typeof msg.url === 'string' && msg.url !== ''){
-          useServer.getState().setWSActionMessage(msg)
+        if(data.hasOwnProperty('url') && typeof data.url === 'string' && data.url !== ''){
+          useServer.getState().setWSActionMessage(data)
         }
-        if( msg.hasOwnProperty("mode") && msg.mode === 'pong'){
-          useServer.getState().setLastPing(Date.now())
-         }
+
       }catch(e){
-        useServer.getState().wsActionConnection?.disconnect()
+        useServer.getState().wsActionConnection?.close()
         useServer.getState().setWsActionConnection(null)
       }
-    }else if ( data.hasOwnProperty('type') && data.type === 'Close'){
-      try{
-        useServer.getState().wsActionConnection?.disconnect()
-        useServer.getState().setWsActionConnection(null)
-      }catch(e){
-        useServer.getState().setWsActionConnection(null)
-      }   
     }
-      
-  }else {
-    try{
-      useServer.getState().wsActionConnection?.disconnect()
-      useServer.getState().setWsActionConnection(null)
-    }catch(e){
-      useServer.getState().setWsActionConnection(null)
-    }
-  }
 }
 
 
 
-function wsRegisterListener(data:any){
-  if(typeof data !== 'object' || (data &&  data.hasOwnProperty('type') && data.type !== 'Text')){
-    useServer.getState().wsRegisterDisconnect()
-    useServer.getState().wsRegisterConnect()
-    return
-  }
-  let msg : any = null
-  try{
-    msg = JSON.parse(data.data)
-    if(!msg.hasOwnProperty('type') || !msg.hasOwnProperty('content')){
-      return
-    }
-  }catch(e){
-    return
-  }
-  //console.log(msg)
-
+function wsRegisterListener(msg:any){
   switch(msg.type){
     case Query.ZXCVBN:
       if(msg.content){
@@ -137,7 +100,6 @@ function wsRegisterListener(data:any){
                         type: Query.Form,
                         content: content
                     } 
-                    //console.log(parsed_msg)
                     useServer.getState().setWSRegisterMessage(parsed_msg)
                 } 
               
@@ -146,28 +108,56 @@ function wsRegisterListener(data:any){
     default:
       break
     }
-
 }
 async function registerConnecting() {
+  if(!urlEnds(Path.Register)){
+    useServer.getState().wsActionConnection?.close()
+    return null
+  }
   await sleep(200)
   if(!useServer.getState().wsRegisterConnection){
-    let ws  = await WebSocket.connect(useServer.getState().wsRegister)
-    ws.addListener(wsRegisterListener)
-    console.log("register ", ws)
+    let ws  = new WebSocket(useServer.getState().wsRegister)
+    ws.onmessage = (event : MessageEvent) => {
+      try{
+        wsRegisterListener(JSON.parse(event.data))
+      }catch(e){
+        console.log(e)
+      }    
+    }
+    ws.onclose = (event : CloseEvent) => {
+      useServer.getState().setWsRegisterConnection(null)
+    }
     return ws
   }
   return useServer.getState().wsRegisterConnection
 }
+
 async function actionConnecting(){
+  await sleep(20)
+  if(useLogIn.getState().token.length < 3){
+    await sleep(200)
+    return null
+  }
   console.log("websocket connecting")
-  await sleep(100)
-  let ws  = await WebSocket.connect(useServer.getState().wsAction)
-  ws.addListener(wsActionListener)
-  ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
-  ws.send(JSON.stringify({mode: 'ping'}))
-  useAlarms.getState().fetchAlarms()
-  useLogIn.getState().getUserInfo()
-  useDevices.getState().fetchDevices()
+  let ws = new WebSocket(useServer.getState().wsAction)
+  ws.onopen = (event : Event) => {
+    ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
+    useAlarms.getState().fetchAlarms()
+    useLogIn.getState().getUserInfo()
+    useDevices.getState().fetchDevices()
+  }
+  ws.onmessage = (event : MessageEvent) => {
+    try{
+      wsActionListener(JSON.parse(event.data))
+    }catch(e){
+      console.log(e)  
+    } 
+  }
+
+  ws.onclose = (event : CloseEvent) => {
+    ws.removeEventListener("message", wsActionListener)
+    useServer.getState().setWsActionConnection(null)
+  }
   return ws
 }
 
@@ -184,8 +174,6 @@ const useServer = create<UseServer>()(
             wsActionMessage: null,
             wsRegisterConnection: null,
             wsRegisterMessage: null,
-            lastPing: 0,
-            setLastPing: (time) => set({lastPing: time}),
             wsRegisterConnect: async () => {
               let ws = await registerConnecting()
               set(
@@ -195,7 +183,7 @@ const useServer = create<UseServer>()(
                 )
             },
             wsRegisterDisconnect: () => {
-              get().wsRegisterConnection?.disconnect()
+              get().wsRegisterConnection?.close()
               set(
                   {
                     wsRegisterConnection: null,
@@ -210,6 +198,7 @@ const useServer = create<UseServer>()(
             setWsActionConnection: (ws) => set({wsActionConnection: ws}),
             setWSActionMessage: (message) => set({wsActionMessage: message}),
             wsActionConnect: async () => {
+              get().wsActionConnection?.close()
               let ws = await actionConnecting()
               set(
                   {
@@ -218,8 +207,17 @@ const useServer = create<UseServer>()(
                 )
             },
             wsActionDisconnect: () => {
-              get().wsActionConnection?.disconnect()
+              get().wsActionConnection?.close()
               set({wsActionConnection: null})
+            },
+            wsActionReconnect: async () => {
+              get().wsActionConnection?.close()
+              let ws = await actionConnecting()
+              set(
+                  {
+                    wsActionConnection: ws
+                  }
+                )
             },
             setAddress: (s) => set(
                   { 

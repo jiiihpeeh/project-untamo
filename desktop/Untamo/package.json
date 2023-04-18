@@ -34,6 +34,7 @@
     "react-icons": "^4.7.1",
     "react-icons-kit": "^2.0.0",
     "react-router-dom": "^6.8.1",
+    "tauri": "^0.14.1",
     "tauri-plugin-websocket-api": "github:tauri-apps/tauri-plugin-websocket",
     "zustand": "^4.3.3"
   },

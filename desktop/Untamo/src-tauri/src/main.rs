@@ -329,7 +329,7 @@ fn main() {
         Ok(())
       })
       .manage(AudioResourceState(Mutex::new(AudioResources::new())))  
-      .plugin(tauri_plugin_websocket::init())
+      //.plugin(tauri_plugin_websocket::init())
       .invoke_handler(tauri::generate_handler![
                                                   close_window, 
                                                   interval_check, 

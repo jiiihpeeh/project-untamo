@@ -26,8 +26,7 @@ const UserWatcher = () => {
   const wsConnect = useServer((state)=>state.wsActionConnect)
   const wsDisconnect = useServer((state)=>state.wsActionDisconnect)
   const wsConnection = useServer((state)=>state.wsActionConnection)
-  const lastPing = useServer((state)=>state.lastPing)
-  const pingChecked = useRef(false)
+  const wsReconnect = useServer((state)=>state.wsActionReconnect)
   const navigate = useNavigate()
 
   useEffect(()=>{
@@ -84,52 +83,24 @@ const UserWatcher = () => {
         userInfoFetch()
       }
     }
-  watcher()
+    watcher()
   }, [wsMessage ])
 
   useEffect(() => {
-    async function wsConnection(){
-      wsDisconnect()
-      wsConnect()
-    }
-    wsConnection()
+      wsReconnect()
   },[token])
 
   useEffect(() => {
-    //console.log(wsConnection)
-    if(!wsConnection){
-      wsConnect()
-    }
-  },[wsConnection])
-
-
-  useEffect(() => {
-    async  function pinger(){
-      if(lastPing && !pingChecked.current){
-        pingChecked.current = true
-        while(true){
-          if(Date.now() - useServer.getState().lastPing > 11200){
-            try{
-              wsDisconnect()
-            }catch(e){}
-          }
-          await sleep(100)
-          if(!useServer.getState().wsActionConnection){
-            try{
-              wsConnect()
-            }catch(e){}
-          }
-          await sleep(100)
-          try{
-            useServer.getState().wsActionConnection?.send(JSON.stringify({type: "ping"}))
-          }catch(e){} 
-          
-          await sleep(10000)
+    async function connector (){
+      if(!wsConnection){
+        await sleep(300)
+        if (!useServer.getState().wsActionConnection){
+          wsConnect()
         }
       }
     }
-  pinger()
-  },[lastPing])
+    connector()
+  },[wsConnection])
 
   return (<></>)
 }

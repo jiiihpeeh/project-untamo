@@ -39,6 +39,7 @@ const Register = () => {
     const windowSize = usePopups((state)=>state.windowSize)
     const colorMode = useSettings((state) => state.colorMode)
     const wsRegisterMessage = useServer((state)=>state.wsRegisterMessage)
+    const wsDisconnect = useServer((state)=>state.wsRegisterDisconnect)
     const sendMessage = useServer((state)=>state.wsRegisterSendMessage)
     const navigate = useNavigate()
 
@@ -46,17 +47,26 @@ const Register = () => {
     
     const PasswordMatch = () => {
         let checkmark = (password.length >5 && password === confirmPassword) ? <CheckCircleIcon/>: <NotAllowedIcon/>;
-        return (<Text>{checkmark}</Text>)
+        return (
+                <Text>
+                    {checkmark}
+                </Text>
+            )
     }
     const PasswordCheck = () => {
         let checkmark = (password.length >5 && passwordCheck) ? <CheckCircleIcon/>: <WarningTwoIcon/>;
-        return (<Text>{checkmark}</Text>)
+        return (
+                <Text>
+                    {checkmark}
+                </Text>
+            )
     }
 
     useEffect(()=>{
         if(registered){
             clearForm()
             navigate(extend(Path.LogIn))
+            wsDisconnect()
         }
     },[registered])
 
