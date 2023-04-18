@@ -196,6 +196,8 @@ type UseAlarms =  {
   addNewAlarm: (alarm : Alarm) => void,
   snoozer: () => void,
   resetSnooze: () => void,
+  turnOff: boolean,
+  setTurnOff: (bool:boolean) => void,
   maxAlarmTime: number,
   timeForNextLaunch: number,
   setTimeForNextLaunch: (ms:number)=>void,
@@ -556,6 +558,14 @@ const useAlarms = create<UseAlarms>()(
             },
             resetSnooze: async() =>{
               await resetSnooze()
+            },
+            turnOff: false,
+            setTurnOff: (bool) => {
+              set(
+                {
+                  turnOff: bool
+                }
+              )
             },
             maxAlarmTime: maxAlarmTime,
             timeForNextLaunch: -1,

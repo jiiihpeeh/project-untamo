@@ -47,6 +47,7 @@ type UseSettings =  {
     setVolume: (volume: number) => void,
 }
 
+
 const useSettings = create<UseSettings>()(
     persist(
       (set, get) => (

@@ -2,28 +2,32 @@ import { create } from 'zustand'
 import { getAudio, hasOrFetchAudio, keysAudio } from '../audiostorage/audioDatabase' 
 import { sleep } from '../utils'
 import useSettings from './settingsStore'
-const audioELement = document.createElement('audio')
-audioELement.setAttribute("id","audioPlayer")
-audioELement.setAttribute("autoplay","true")
-audioELement.setAttribute("playsinline","true")
 
 
-audioELement.addEventListener("playing", (event) => {
-    useAudio.setState({ plays: true })
-})
-
-audioELement.addEventListener("pause", (event) => {
-    useAudio.setState({ plays: false })
-})
-
-audioELement.addEventListener("ended", (event) => {
-    useAudio.setState({ plays: false })
-})
-
-audioELement.addEventListener("emptied", (event) => {
-    useAudio.setState({ plays: false })
-})
-
+const generateAudioELement = () => {
+    const audioELement = document.createElement('audio')
+    audioELement.setAttribute("id","audioPlayer")
+    audioELement.setAttribute("autoplay","true")
+    audioELement.setAttribute("playsinline","true")
+    
+    
+    audioELement.addEventListener("playing", (event) => {
+        useAudio.setState({ plays: true })
+    })
+    
+    audioELement.addEventListener("pause", (event) => {
+        useAudio.setState({ plays: false })
+    })
+    
+    audioELement.addEventListener("ended", (event) => {
+        useAudio.setState({ plays: false })
+    })
+    
+    audioELement.addEventListener("emptied", (event) => {
+        useAudio.setState({ plays: false })
+    })
+    return audioELement
+}
 
 type UseAudio = {
     track: string,
@@ -36,11 +40,13 @@ type UseAudio = {
     setLoop: (to:boolean)=>void,
     loopPlayBegins: number| null,
     setLoopPlayBegins: (playTime: number| null)=>void,
-    audioElement: HTMLAudioElement
+    audioElement: HTMLAudioElement,
+    setAudioElement: (audioELement: HTMLAudioElement)=>void,
 }
 
 const play = async (track: string, loop: boolean) => {
     //console.log(track, loop)
+    let audioELement = useAudio.getState().audioElement
     if(loop){
         audioELement.volume = 0.0
     }
@@ -73,6 +79,7 @@ const play = async (track: string, loop: boolean) => {
 
 const stop = () => {
     if(useAudio.getState().plays){
+        let audioELement = useAudio.getState().audioElement
         audioELement.load()
         URL.revokeObjectURL(audioELement.src) 
         audioELement.src=""
@@ -118,7 +125,15 @@ const useAudio = create<UseAudio>((set, get) => (
                 }
             )
         },
-        audioElement: audioELement,
+        audioElement: generateAudioELement(),
+        setAudioElement: (audioELement)=> {
+            set(
+                {
+                    audioElement: audioELement
+                }
+
+            )
+        },
         loopPlayBegins: null,
         setLoopPlayBegins: (playTime)=> {
             set(

@@ -1,25 +1,21 @@
 import { create } from 'zustand'
 import { useAlarms, useLogIn, useDevices } from '../stores'
-import { urlEnds } from '../utils'
+import { urlEnds, sleep } from '../utils'
 import useAudio from './audioStore'
+import useServer from './serverStore'
 import { Path } from '../type'
 
-var systemTime = Date.now()
-var timeOut : NodeJS.Timeout
-
-const compareTime = () =>{
-    clearTimeout(timeOut)
+const compareTime = async() =>{
+    await sleep(225)
     const currentTime = Date.now()    
-    if(currentTime - systemTime > 6000){
+    if(currentTime - useTimeouts.getState().systemTime > 6000){
         useTimeouts.getState().clear()
         useAlarms.getState().setReloadAlarmList()
-        useAlarms.setState({alarms: [...useAlarms.getState().alarms]})
-        useDevices.getState().fetchDevices()
-        useLogIn.getState().getUserInfo()
-        useAlarms.getState().fetchAlarms()
+        useServer.getState().wsActionReconnect()
     }
-    systemTime = currentTime
-    timeOut = setInterval(compareTime, 5000)
+    useTimeouts.getState().setSystemTime(currentTime)
+    await sleep(5000)
+    compareTime()
 }
 compareTime()
 
@@ -43,6 +39,12 @@ type UseTimeout = {
     setSnoozeIt: (status:boolean) => void,
     wsID: NodeJS.Timeout|undefined,
     setWsID: (to: NodeJS.Timeout) => void,
+    alarmOut : NodeJS.Timeout|null,
+    setAlarmOut: (to: NodeJS.Timeout) => void,
+    clearAlarmOutId: () => void,
+    systemTime: number,
+    setSystemTime: (to: number) => void,
+    clearWsID: () => void,
     clear: () => void
 }
 
@@ -109,6 +111,18 @@ const  clearWsId = () => {
         }
     }
 }
+
+const clearAlarmOutId = () => {
+    let delTimeOut = useTimeouts.getState().alarmOut
+    if(delTimeOut){
+            try {
+                clearTimeout(delTimeOut)
+            }catch(err){
+                //console.log(err)
+        }
+    }
+}
+
 const useTimeouts = create<UseTimeout>((set,get) => ({
         id: undefined,
         setId: (to) => {
@@ -196,6 +210,36 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
                 }
             )
         },
+        clearWsID: () => {
+            clearWsId()
+            set(
+                {
+                    wsID: undefined
+                }
+            )
+        },
+        alarmOut : null,
+        setAlarmOut: (to: NodeJS.Timeout) => {
+            clearAlarmOutId()
+            set(
+                    {
+                        alarmOut: to
+                    }
+                )
+        },
+        clearAlarmOutId: () => () =>{
+            clearAlarmOutId()
+            set({alarmOut: null})
+
+        },
+        systemTime: 0,
+        setSystemTime: (to: number) => {
+            set(
+                {
+                    systemTime: to
+                }
+            )
+        },
         clear:() =>{
             clearAlarmTimeout()
             clearAdminTimeout()
@@ -209,11 +253,8 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
 ))
 
 
-let locationId : NodeJS.Timeout
-useTimeouts.getState().setSnoozeIt(false)
-const locationChecker = () => {
+async function locationChecker() {
     let begins = useAudio.getState().loopPlayBegins
-    clearTimeout(locationId)
 
     if(urlEnds(Path.PlayAlarm)){
         //console.log("location trigger play alarm")
@@ -232,8 +273,16 @@ const locationChecker = () => {
             }
         }
     }
-    locationId = setTimeout(locationChecker,300) 
+    if(urlEnds(Path.Register)){
+        useServer.getState().wsRegisterConnect()
+    }
+    if(urlEnds(Path.LogIn)){
+        useServer.getState().wsRegisterDisconnect()
+        //useLogIn.getState().setSessionValid(SessionStatus.NotValid)
+    }
+    await sleep(330)
+    locationChecker()
 }
-
 locationChecker()
+
 export default useTimeouts

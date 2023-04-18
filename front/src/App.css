@@ -14,15 +14,6 @@ body {  min-width:410px; min-height: 600px; }
   }
 }
 
-input[type="text"], textarea {
-  background-color : #d1d1d1; 
-}
-
-input.Register, textarea {
-  background-color : ghostwhite; 
-}
-
-
 .table-tiny th,
 .table-tiny td {
   padding-left: 10px;
