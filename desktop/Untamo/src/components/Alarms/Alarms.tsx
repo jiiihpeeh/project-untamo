@@ -19,14 +19,6 @@ import { appWindow } from '@tauri-apps/api/window'
 import { Button } from '@chakra-ui/react'
 import { listen } from '@tauri-apps/api/event';
 
-async function listenIt() {
-    const unlisten = await listen<string>('event_name', (event) => {
-        console.log(`Got an event in window`);
-        console.log(event);
-    });
-}
-listenIt()
-
 
 const Alarms = () => {
     const containerRef =useRef<HTMLDivElement>(null)

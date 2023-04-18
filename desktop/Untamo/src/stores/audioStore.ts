@@ -29,18 +29,18 @@ const play = async (track: string, loop: boolean) => {
                 ]
     )
     command.on('close', data => {
-                                    console.log(`command finished with code ${data.code} and signal ${data.signal}`)
+                                    //console.log(`command finished with code ${data.code} and signal ${data.signal}`)
                                     useAudio.setState({plays: false })
                                     stop()
                                 }
             )
     command.on('error', error => {
-                                    console.error(`command error: "${error}"`)
+                                    //console.error(`command error: "${error}"`)
                                     useAudio.setState({plays: false })
                                     stop()
                                 }
             )
-    command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+    //command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
     //useAudio.setState({plays: true})
     let out = await command.spawn()
     //useAudio.setState({audioProcess: out})

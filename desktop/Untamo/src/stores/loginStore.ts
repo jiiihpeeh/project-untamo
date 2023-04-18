@@ -193,7 +193,7 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
 } 
 
 async function logIn(email: string, password: string) {
-    console.log("Logging in ", email, password)
+    //console.log("Logging in ", email, password)
     useLogIn.setState(
                         { 
                             sessionValid: SessionStatus.Validating 

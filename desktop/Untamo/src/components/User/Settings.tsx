@@ -94,6 +94,7 @@ const Settings = () => {
                     <ModalBody>
                         <Table
                             size={sizes.get(size)}
+                            variant='unstyled'
                         >
                             <Tbody>
                                 <Tr>

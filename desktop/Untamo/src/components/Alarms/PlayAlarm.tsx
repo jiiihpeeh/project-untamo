@@ -58,7 +58,7 @@ const PlayAlarm = () =>{
         if((closeTask === CloseTask.Obey && runAlarm && runAlarm.closeTask) || (closeTask === CloseTask.Force)){
             setShowTask(true)
         }else{
-            console.log("turn OFF")
+            //console.log("turn OFF")
             resetSnooze()
             removeAlarmObject()
             closeSequence(100)

@@ -120,7 +120,7 @@ export async function fetchAudioFiles() {
             }
             useAudio.setState({ tracks: audioTracks })
         } catch (err) {
-            console.log(err);
+            //console.log(err);
             notification("Alarm sounds", "Failed to get a listing", Status.Error)
         }
     }
@@ -135,7 +135,7 @@ export async function deleteAudioDB() {
         try{
             key?await delAudio(key):{}
         }catch(err){
-            console.log(err)
+            //console.log(err)
         }
     }
 }
