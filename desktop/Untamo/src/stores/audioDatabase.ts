@@ -24,13 +24,15 @@ async function getAudioDir(){
 }
 
 export async function storeAudio(key: string, val:Uint8Array){
-    const audioDir = await getAudioDir()
-    const audioFile = await join(audioDir, `${key}.flac`)
-    try{
-        await writeBinaryFile(audioFile, val)
-    }catch(err){
-        console.log(err)
-    }
+    let resp = await  invoke("save_track", {track: key, data: val}) as boolean
+    //const audioDir = await getAudioDir()
+    //const audioFile = await join(audioDir, `${key}.flac`)
+    // try{
+    //     await writeBinaryFile(audioFile, val)
+    // }catch(err){
+    //     console.log(err)
+    // }
+    return resp
 }
 
 export async function delAudio(key: string) {

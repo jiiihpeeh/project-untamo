@@ -139,6 +139,24 @@ impl AudioResources {
       return false;
     }
   }
+  fn save_track(&mut self, track: &str, data: &[u8]) -> bool {
+    self.set_tracks();
+    let track_file_name = format!("{}.flac", track);
+    let app_track_path = self.audio_app_path.clone().unwrap().join(track_file_name.clone());
+    if app_track_path.exists(){
+      println!("Track already exists in app directory");
+      return false;
+    }else{
+      println!("Saving track to app directory");
+      match std::fs::write(app_track_path, data){
+        Ok(_) => {self.set_tracks();return true},
+        Err(e) => {
+          println!("Failed to save track: {}", e);
+          return false;
+        }
+      }
+    }
+  }
 }
 struct AudioResourceState(Mutex<AudioResources>);
 
@@ -267,6 +285,11 @@ fn delete_track(track: &str, state: State<'_,AudioResourceState>) ->  DeleteResu
     deleted: result,
   }
 }
+#[command]
+fn save_track(track: &str, data: &[u8], state: State<'_,AudioResourceState>) ->  bool{
+  let result = state.0.lock().unwrap().save_track(track, data);
+  result
+}
 fn main() {
 
   let tray_menu = SystemTrayMenu::new()
@@ -339,7 +362,8 @@ fn main() {
                                                   get_tracks,
                                                   get_audio_app_path,
                                                   get_track_path,
-                                                  delete_track
+                                                  delete_track,
+                                                  save_track
                                               ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
