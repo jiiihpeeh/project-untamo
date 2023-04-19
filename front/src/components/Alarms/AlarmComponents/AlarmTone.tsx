@@ -55,38 +55,38 @@ const AlarmTone = () => {
                                 mt={"0px"}
                             >
                                 <Tbody>
-                                <Tr>
-                                    <Td>
-                                        <Tooltip 
-                                            label='Track name' 
-                                            fontSize='md'
+                                    <Tr>
+                                        <Td>
+                                            <Tooltip 
+                                                label='Track name' 
+                                                fontSize='md'
+                                            >
+                                                <Text>
+                                                    {tone} 
+                                                </Text>
+                                            </Tooltip>
+                                        </Td>
+                                        <Td
+                                            w="45px"
+                                            onMouseLeave= {(e)=>{setCloseOnSelect(true)}}
+                                            onMouseEnter={(e)=>{setCloseOnSelect(false)}}
+                                            onClick={(e)=>{play(tone)}}
                                         >
-                                            <Text>
-                                                {tone} 
-                                            </Text>
-                                        </Tooltip>
-                                    </Td>
-                                    <Td
-                                        w="45px"
-                                        onMouseLeave= {(e)=>{setCloseOnSelect(true)}}
-                                        onMouseEnter={(e)=>{setCloseOnSelect(false)}}
-                                        onClick={(e)=>{play(tone)}}
-                                    >
-                                        <Tooltip 
-                                            label={(plays && (tone === track))?"Stop":'Play'}
-                                            fontSize='sm'
-                                        >
-                                            <IconButton  
-                                                icon={<Icon as={(plays && (tone === track) )?StopIcon:PlayIcon} />} 
-                                                ml="5.5%" 
-                                                colorScheme='cyan'
-                                                aria-label=''
-                                                size={"sm"}
-                                                isDisabled={!tones.includes(tone) || (plays && (tone !== track) )}
-                                            />
-                                        </Tooltip>
-                                    </Td>
-                                </Tr>
+                                            <Tooltip 
+                                                label={(plays && (tone === track))?"Stop":'Play'}
+                                                fontSize='sm'
+                                            >
+                                                <IconButton  
+                                                    icon={<Icon as={(plays && (tone === track) )?StopIcon:PlayIcon} />} 
+                                                    ml="5.5%" 
+                                                    colorScheme='cyan'
+                                                    aria-label=''
+                                                    size={"sm"}
+                                                    isDisabled={!tones.includes(tone) || (plays && (tone !== track) )}
+                                                />
+                                            </Tooltip>
+                                        </Td>
+                                    </Tr>
                                 </Tbody>
                             </Table>
                         </MenuItem>

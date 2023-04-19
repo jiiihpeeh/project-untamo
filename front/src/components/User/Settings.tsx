@@ -92,7 +92,7 @@ const Settings = () => {
                             variant='unstyled'
                         >
                             <Tbody>
-                            <Tr>
+                                <Tr>
                                     <Td>
                                         Color Mode
                                     </Td>
@@ -262,7 +262,6 @@ const Settings = () => {
                                 </Tr>
                             </Tbody>
                         </Table>
-    
                     </ModalBody>
                 </ModalContent>
             </Modal>
