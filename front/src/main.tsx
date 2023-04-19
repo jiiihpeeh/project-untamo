@@ -4,10 +4,11 @@ import App from './App'
 import './index.css'
 import { BrowserRouter } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react'
+import useSettings from './stores/settingsStore'
 
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <ChakraProvider>
+  <ChakraProvider theme={useSettings.getState().theme}>
     <React.StrictMode>
       <BrowserRouter>
        <App />

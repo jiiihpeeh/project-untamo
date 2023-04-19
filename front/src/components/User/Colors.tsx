@@ -63,6 +63,13 @@ const Color = () => {
                                 >
                                     Inactive
                                 </Button>
+                                <Button
+                                    background={cardColors.background}
+                                    width={200}
+                                    onClick={()=>setMode("background")}
+                                >
+                                    Background
+                                </Button>
                                 <Divider/>
                                 <Spacer/>
                                 <Button

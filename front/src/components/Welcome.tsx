@@ -48,19 +48,19 @@ function Welcome() {
                         size="sm"
                     >
                         <Tbody>
-                        <Tr>
-                            <Td>
-                                <Text
-                                    alignContent={"right"}
-                                    textAlign="center"
-                                >
-                                    {device.deviceName}
-                                </Text>
-                            </Td>
-                            <Td>
-                                <DeviceIcons device={device.type} />
-                            </Td>
-                        </Tr>
+                            <Tr>
+                                <Td>
+                                    <Text
+                                        alignContent={"right"}
+                                        textAlign="center"
+                                    >
+                                        {device.deviceName}
+                                    </Text>
+                                </Td>
+                                <Td>
+                                    <DeviceIcons device={device.type} />
+                                </Td>
+                            </Tr>
                         </Tbody>
                     </Table>
                 </MenuItem>
