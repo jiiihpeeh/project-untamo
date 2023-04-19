@@ -49,10 +49,13 @@ type UseServer = {
     setAddress : (input:string) => void
 }
 
-const metaAddress = document.head.querySelector("[property~=server][address]")?.attributes.getNamedItem("address")?.value
-const baseAddress = (metaAddress)?metaAddress:"http://localhost:3001"
-const metaExtend = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
-const baseExtend = (metaExtend)?metaExtend:""
+const getDefaultAddress = () => {
+  const metaAddress = document.head.querySelector("[property~=server][address]")?.attributes.getNamedItem("address")?.value
+  const baseAddress = (metaAddress)?metaAddress:"http://localhost:3001"
+  const metaExtend = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
+  const baseExtend = (metaExtend)?metaExtend:""
+  return {base: baseAddress, extend: baseExtend}
+}
 const websocketAddress = (server: string) =>{
   let base = server.split("://")
   if(base[0] ==="https"){
@@ -173,10 +176,10 @@ const useServer = create<UseServer>()(
     persist(
       (set, get) => (
           {
-            address: baseAddress,
-            wsAddress: websocketAddress(baseAddress),
-            wsAction: websocketAddress(baseAddress) + '/action',
-            wsRegister: websocketAddress(baseAddress) + '/register-check',
+            address: getDefaultAddress().base,
+            wsAddress: websocketAddress(getDefaultAddress().base),
+            wsAction: websocketAddress(getDefaultAddress().base) + '/action',
+            wsRegister: websocketAddress(getDefaultAddress().base) + '/register-check',
             wsActionConnection: null,
             wsActionMessage: null,
             wsRegisterConnection: null,
@@ -234,7 +237,7 @@ const useServer = create<UseServer>()(
                     wsRegister: websocketAddress(s) + '/register-check'
                   }
             ),
-            extended: baseExtend,
+            extended: getDefaultAddress().extend,
             extend: (part) => {
                return `${get().extended}/${part}`
             },

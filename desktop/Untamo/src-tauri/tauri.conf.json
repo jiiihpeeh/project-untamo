@@ -46,7 +46,7 @@
         "unminimize": true
       },
       "http": {
-        "all": true, 
+        "all": true,
         "request": true,
         "scope": ["https://**", "http://**", "https://*", "http://*"]
       },
@@ -64,7 +64,7 @@
         "scope": ["$APPDATA/**"]
       },
       "app": {
-        "all": true, 
+        "all": true,
         "show": true,
         "hide": true
       },
@@ -72,9 +72,9 @@
         "all": true
       },
       "dialog": {
-        "all": true, 
-        "open": true, 
-        "save": true 
+        "all": true,
+        "open": true,
+        "save": true
       },
       "shell": {
         "sidecar": true,

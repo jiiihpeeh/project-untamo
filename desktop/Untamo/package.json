@@ -17,6 +17,7 @@
     "@evellior/react-qr-scanner": "^0.4.0",
     "@fseehawer/react-circular-slider": "^2.5.16",
     "@tauri-apps/api": "^1.2.0",
+    "@tauri-apps/cli": "^1.2.3",
     "blob-util": "^2.0.2",
     "chakra-dayzed-datepicker": "^0.2.7",
     "date-fns": "^2.29.3",
