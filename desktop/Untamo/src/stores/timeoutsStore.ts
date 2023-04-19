@@ -29,6 +29,7 @@ const compareTime = async() =>{
     await sleep(225)
     const currentTime = Date.now()    
     if(currentTime - useTimeouts.getState().systemTime > 6000){
+        //console.log("timeout")
         useTimeouts.getState().clear()
         useAlarms.getState().setReloadAlarmList()
         useServer.getState().wsActionReconnect()

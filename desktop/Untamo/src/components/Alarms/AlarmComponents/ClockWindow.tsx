@@ -57,7 +57,9 @@ function ClockWindow() {
             <ModalBody
                 onMouseDown={e=>e.preventDefault()}
             >
-                <Table size="sm">
+                <Table 
+                    size="sm"
+                >
                     <Tbody>
                        <Tr>
                             <Td>

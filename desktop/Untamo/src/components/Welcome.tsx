@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList, Box, Divider,
-          MenuItem , Spacer, VStack, Center, Heading, Table, Tr, Td  } from '@chakra-ui/react'
+          MenuItem , Spacer, VStack, Center, Heading, Table, Tr, Td, Tbody  } from '@chakra-ui/react'
 import { useLogIn, useDevices, extend } from "../stores"
 import usePopups from "../stores/popUpStore"
 import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
@@ -47,19 +47,21 @@ function Welcome() {
                         variant={"unstyled"}
                         size="sm"
                     >
-                        <Tr>
-                            <Td>
-                                <Text
-                                    alignContent={"right"}
-                                    textAlign="center"
-                                >
-                                    {device.deviceName}
-                                </Text>
-                            </Td>
-                            <Td>
-                                <DeviceIcons device={device.type} />
-                            </Td>
-                        </Tr>
+                        <Tbody>
+                            <Tr>
+                                <Td>
+                                    <Text
+                                        alignContent={"right"}
+                                        textAlign="center"
+                                    >
+                                        {device.deviceName}
+                                    </Text>
+                                </Td>
+                                <Td>
+                                    <DeviceIcons device={device.type} />
+                                </Td>
+                            </Tr>
+                        </Tbody>
                     </Table>
                 </MenuItem>
             )

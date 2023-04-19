@@ -2,10 +2,15 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { CloseTask, ColorMode} from '../type'
 
+import { extendTheme } from '@chakra-ui/react'
+import type { StyleFunctionProps } from '@chakra-ui/styled-system'
+import { mode } from '@chakra-ui/theme-tools'
+
 export type CardColors =  {
     even: string,
     odd: string,
     inactive: string
+    background: string
 }
 
 export enum WindowTop{
@@ -13,16 +18,21 @@ export enum WindowTop{
     Alarm="alarm",
     Never="never"
 }
-const defaultCardLight : CardColors = { 
+
+export const defaultCardLight : CardColors = { 
     inactive: "#ececec", 
     even: '#c4ffff ', 
-    odd:"#ffff9d" 
- }
-const defaultCardDark : CardColors = {
+    odd:"#ffff9d" ,
+    background: "#ffffff"
+}
+
+export const defaultCardDark : CardColors = {
     inactive:"#717171",
     even:"#00e7e7",
-    odd:"#ea9200"
+    odd:"#ea9200",
+    background: "#000000"
 }
+
 export const dialogSizes = new Map<number, string>( [[0, "sm"], [1, "md"], [2, "lg"]])
 
 type UseSettings =  {
@@ -51,6 +61,21 @@ type UseSettings =  {
     setPanelSize: (size: number) => void,
     setSnoozePress: (n: number) => void,
     setVolume: (n: number) => void,
+    theme: Record<string, any>,
+    setTheme: (light: string, dark: string) => void,
+}
+
+function themeSettings(light=defaultCardLight.background, dark=defaultCardDark.background){
+    const theme = extendTheme({
+        styles: {
+            global: (props: StyleFunctionProps) => ({
+              body: {
+                        bg: mode(light, dark)(props),
+                    }
+            })
+        },
+    })
+    return theme
 }
 
 const useSettings = create<UseSettings>()(
@@ -133,6 +158,7 @@ const useSettings = create<UseSettings>()(
                         cardColors: colors
                     }
                 )
+                document.body.style.backgroundColor = colors.background
             },
             setDefaultCardColors: () => {
                 let colorsDefault = (get().colorMode === ColorMode.Light)? defaultCardLight : defaultCardDark
@@ -141,6 +167,7 @@ const useSettings = create<UseSettings>()(
                         cardColors: colorsDefault,
                     }
                 )
+                document.body.style.backgroundColor = colorsDefault.background
             },
             setPanelSize: (size) => {
                 set(
@@ -162,6 +189,14 @@ const useSettings = create<UseSettings>()(
                 set(
                     {
                         volume: volume
+                    }
+                )
+            },
+            theme: themeSettings(),
+            setTheme: (light, dark) => {
+                set(
+                    {
+                        theme: themeSettings(light, dark)
                     }
                 )
             },
