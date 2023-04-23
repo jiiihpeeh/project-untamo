@@ -320,22 +320,17 @@ struct AlarmResponse {
 
 //get alarms by header
 async fn get_alarms_by_header(req: HttpRequest, client: web::Data<Client>) -> Vec<Alarm> {
-    let token = get_token_from_header(req).await;
-    if token.is_none() {
+    let session = get_session_by_header(req, client.clone()).await;
+    if session.is_none() {
         return vec![];
     }
-    let token = token.unwrap();
-    let user = token_to_user(token, client.clone()).await;
-    if user.is_none() {
-        return vec![];
-    }
-    let user = user.unwrap();
-    get_alarms_by_user(user, client).await
+    let user_id = session.unwrap().user_id;
+    get_alarms_by_user_id( user_id, client).await
 }
 //get alarms by user
-async fn get_alarms_by_user(user: User, client: web::Data<Client>) -> Vec<Alarm> {
+async fn get_alarms_by_user_id(user: String, client: web::Data<Client>) -> Vec<Alarm> {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-    let alarms_fetched = collection.find(doc! {"user_id": user._id.to_hex()}, None).await;
+    let alarms_fetched = collection.find(doc! {"user_id": user}, None).await;
     let alarms = match alarms_fetched {
         Ok(alarms_fetched) => alarms_fetched,
         Err(_) => return vec![],
@@ -344,14 +339,14 @@ async fn get_alarms_by_user(user: User, client: web::Data<Client>) -> Vec<Alarm>
 }
 
 //get token from header
-async fn get_token_from_header(req: HttpRequest) -> Option<String> {
+fn get_token_from_header(req: HttpRequest) -> Option<String> {
     let token = req.headers().get("token")?.to_str().ok()?;
     Some(token.to_string())
 }
 
 //get user from header and check if session is timed out
 async fn get_user_from_header(req: HttpRequest, client: web::Data<Client>) -> Option<User> {
-    let token = get_token_from_header(req).await;
+    let token = get_token_from_header(req);
     if token.is_none() {
         return None;
     }
@@ -364,20 +359,42 @@ async fn get_user_from_header(req: HttpRequest, client: web::Data<Client>) -> Op
     //check if session is timed out
     Some(user)
 }
-
-async fn get_session_by_user(user: User, client: web::Data<Client>) -> Option<Session> {
-    let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let session = collection.find_one(doc! {"user_id": user._id.to_hex()}, None).await.unwrap();
-    session
+//get user from session
+async fn get_user_from_session(session: Session, client: web::Data<Client>) -> Option<User> {
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+    let user_fetch = collection.find_one(doc! {"_id": ObjectId::parse_str(session.user_id).unwrap()}, None).await.unwrap();
+    if user_fetch.is_none() {
+        return None;
+    }
+    let user = user_fetch.unwrap();
+    Some(user)
 }
+
+//get session by header
+
 async fn get_session_by_header(req: HttpRequest, client: web::Data<Client>) -> Option<Session> {
-    let user = get_user_from_header(req, client.clone()).await?;
-    let session = get_session_by_user(user, client.clone()).await?;
-    Some(session)
+    let token = get_token_from_header(req); 
+    if token.is_none() {
+        return None;
+    }
+    let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
+    let session = collection.find_one(doc! {"token": token.clone().unwrap()}, None).await.unwrap();
+    if session.is_none() {
+        return None;
+    }
+    //current time
+    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+    //check if session is expired
+    if now > session.clone().unwrap().time {
+        //delete session
+        collection.find_one_and_delete(doc! {"token": token.clone().unwrap()}, None).await.unwrap();
+        return None;
+    }
+    session
 }
 
 async fn remove_session_by_header(req: HttpRequest, client: web::Data<Client>)-> bool {
-    let token = get_token_from_header(req).await;
+    let token = get_token_from_header(req);
     if token.is_none() {
         return false;
     }
@@ -406,6 +423,8 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
         error_response.message = String::from("Invalid QR");
         return HttpResponse::BadRequest().json(error_response);
     }
+    //add 5 years to current time
+    let timeout =  (SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64) + 157680000000;
     let response = LogInResponse {
         token: random_string(64),
         email: qr.qr_originator.clone(),
@@ -414,7 +433,7 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
         last_name: None,
         admin: false,
         owner: false,
-        time: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64,
+        time: timeout,
     };
     let session = Session{ _id: ObjectId::new(), user_id: qr.user_id.clone(), token: response.token.clone(), time: response.time };
     set_new_session(session, client).await;
@@ -638,152 +657,139 @@ struct Admin{
     time: i64,
 }
 
-async fn is_admin_token_valid_from_headers(req: HttpRequest, client: web::Data<Client>) -> bool {
+struct AdminCheck{
+    admin: Admin,
+    user: User,
+}
+async fn get_admin_from_headers(req: HttpRequest, client: web::Data<Client>) -> Option<AdminCheck> {
     //get admin token from header
+    let session_fetch = get_session_by_header(req.clone(), client.clone()).await;
+    if session_fetch.is_none() {
+        return None;
+    }
+    let session = session_fetch.unwrap();
+    let user_fetch  = get_user_from_session(session, client.clone()).await;
+    if user_fetch.is_none() {
+        return None;
+    }
+    let user = user_fetch.unwrap();
+    if !user.admin {
+        return None;
+    }
     let admin_token_headers = req.headers().get("adminToken");
     if admin_token_headers.is_none() {
-        return false;
+        return None;
     }
     let admin_token = admin_token_headers.unwrap().to_str().unwrap();
     let collection: Collection<Admin> = client.database(DB_NAME).collection(ADMINCOLL);
     let admin_fetch = collection.find_one(doc! {"token": admin_token}, None).await.unwrap();
     if admin_fetch.is_none() {
-        return false;
+        return None;
     }
     let admin = admin_fetch.unwrap();
     let time = admin.time;
     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
     if now >= time {
-        return false;
+        collection.delete_one(doc! {"token": admin_token}, None).await.unwrap();
+        return None;
     }
-    true
+    Some(AdminCheck { admin, user })
 }
 
-async fn is_admin_valid_from_headers(req: HttpRequest, client: web::Data<Client>) -> bool {
-    let token = get_token_from_header(req).await;
-    if token.is_none() {
+//delete user
+async fn delete_user_by_id(user_id: ObjectId, client: web::Data<Client>) -> bool {
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+    let result = collection.find_one_and_delete(doc! {"_id": user_id}, None).await.unwrap();
+    result.is_some()
+}
+
+//set user admin status
+async fn set_user_admin_by_id(user_id: ObjectId, admin: bool, client: web::Data<Client>) -> bool {
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+    let result = collection.find_one_and_update(doc! {"_id": user_id}, doc! {"$set": {"admin": admin}}, None).await.unwrap();
+    result.is_some()
+}
+//set user active status
+async fn set_user_active_by_id(user_id: ObjectId, active: bool, client: web::Data<Client>) -> bool {
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+    let result = collection.find_one_and_update(doc! {"_id": user_id}, doc! {"$set": {"active": active}}, None).await.unwrap();
+    result.is_some()
+}
+
+//delete alarms by user id
+async fn delete_alarms_by_user_id(user_id: ObjectId, client: web::Data<Client>) -> bool {
+    let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
+    let result = collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await.unwrap();
+    result.deleted_count > 0
+}
+//delete devices by user id
+async fn delete_devices_by_user_id(user_id: ObjectId, client: web::Data<Client>) -> bool {
+    let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
+    let result = collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await.unwrap();
+    result.deleted_count > 0
+}
+
+//delete sessions by user id
+async fn delete_sessions_by_user_id(user_id: ObjectId, client: web::Data<Client>) -> bool {
+    let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
+    let result = collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await.unwrap();
+    result.deleted_count > 0
+}
+
+//remove user 
+async fn remove_user_by_id(user_id: ObjectId, client: web::Data<Client>) -> bool {
+    //check if user is owner
+
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+    let user = collection.find_one(doc! {"_id": user_id}, None).await.unwrap();
+    if user.is_none() {
         return false;
     }
+    //check if user is owner
+    if user.clone().unwrap().owner {
+        return false;
+    }
+    //delete alarms
+    let alarm_delete = delete_alarms_by_user_id(user.clone().unwrap()._id, client.clone()).await;
+    //delete devices
+    let device_delete = delete_devices_by_user_id(user.clone().unwrap()._id, client.clone()).await;
+    //delete sessions
+    let session_delete = delete_sessions_by_user_id(user.unwrap()._id, client.clone()).await;
+    let result = collection.find_one_and_delete(doc! {"_id": user_id}, None).await.unwrap();
+
+    result.is_some()
+}
+
+//get list of users
+async fn get_users(client: web::Data<Client>) -> Vec<User> {
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+    let mut cursor = collection.find(None, None).await.unwrap();
+    let mut users: Vec<User> = Vec::new();
+    while let Some(result) = cursor.next().await {
+        match result {
+            Ok(user) => {
+                users.push(user);
+            }
+            Err(e) => {
+                println!("Error getting users: {}", e);
+            }
+        }
+    }
+    users
+}
+
+
+#[get("/admin/users")]
+async fn get_users_route(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
     
-    true
+    let admin_check = get_admin_from_headers(req, client.clone()).await;
+    if admin_check.is_none() {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+    let users = get_users(client.clone()).await;
+    HttpResponse::Ok().json(users)
 }
-
-// //check if user is logged using - middleware
-// async fn is_logged_in (req: ServiceRequest, payload: Payload) -> Result<ServiceRequest, HttpResponse> {
-//     let mut error_response = SessionNotValid {
-//         message: String::from(""),
-//     };
-//     let token = req.headers().get("token");
-//     if token.is_none() {
-//         error_response.message = String::from("Token not found");
-//         return Err(HttpResponse::BadRequest().json(error_response));
-//     }
-//     let token = token.unwrap().to_str().unwrap();
-//     let client = req.app_data::<web::Data<Client>>().unwrap();
-//     let collection_session: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-//     let session_fetch = collection_session.find_one(doc! {"token": token}, None).await.unwrap();
-//     if session_fetch.is_none() {
-//         error_response.message = String::from("Session not found");
-//         return Err(HttpResponse::BadRequest().json(error_response));
-//     }
-//     let session = session_fetch.unwrap();
-//     let collection_user: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-//     let user = collection_user.find_one(doc! {"_id": session.user_id}, None).await.unwrap();
-//     if user.is_none() {
-//         error_response.message = String::from("User not found");
-//         return Err(HttpResponse::BadRequest().json(error_response));
-//     }
-//     let user = user.unwrap();
-//     if !user.active {
-//         error_response.message = String::from("User is not active");
-//         return Err(HttpResponse::BadRequest().json(error_response));
-//     }
-//     //check time of session
-//     let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
-//     let _50_years_as_millis = 50 * 365 * 24 * 60 * 60 * 1000;
-//     if time - session.time > _50_years_as_millis {
-//         error_response.message = String::from("Session expired");
-//         return Err(HttpResponse::BadRequest().json(error_response));
-//     }
-//     req.extensions_mut().insert(user);
-//     Ok(req)
-// }
-
-//extractor for user based on token from headers
-// pub struct UserExtractor {
-//     pub user: User,
-// }
-// impl FromRequest for UserExtractor {
-//     type Error = Error;
-//     type Future = Ready<Result<Self, Self::Error>>;
-//     type Config = ();
-//     fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
-//         let mut error_response = SessionNotValid {
-//             message: String::from(""),
-//         };
-//         let token = req.headers().get("token");
-//         if token.is_none() {
-//             error_response.message = String::from("Token not found");
-//             return ready(Err(error_response.into()));
-//         }
-//         let token = token.unwrap().to_str().unwrap();
-//         let client = req.app_data::<web::Data<Client>>().unwrap();
-//         let collection_session: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-//         let session_fetch = collection_session.find_one(doc! {"token": token}, None).await.unwrap();
-//         if session_fetch.is_none() {
-//             error_response.message = String::from("Session not found");
-//             return ready(Err(error_response.into()));
-//         }
-//         let session = session_fetch.unwrap();
-//         let collection_user: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-//         let user = collection_user.find_one(doc! {"_id": session.user_id}, None).await.unwrap();
-//         if user.is_none() {
-//             error_response.message = String::from("User not found");
-//             return ready(Err(error_response.into()));
-//         }
-//         let user = user.unwrap();
-//         if !user.active {
-//             error_response.message = String::from("User is not active");
-//             return ready(Err(error_response.into()));
-//         }
-//         //check time of session
-//         let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
-//         let _50_years_as_millis = 50 * 365 * 24 * 60 * 60 * 1000;
-//         if time - session.time > _50_years_as_millis {
-//             error_response.message = String::from("Session expired");
-//             return ready(Err(error_response.into()));
-//         }
-//         ready(Ok(UserExtractor { user }))
-//     }
-// }
-
-
-
-
-
-// #[get("/api/alarms", wrap = "is_logged_in")]//, guard = "is_logged_in")]
-// async fn alarms(req: ServiceRequest , client: web::Data<Client>)-> impl Responder {
-//     let mut response = DefaultResponse {
-//         message: "[]".to_string(),
-//     };
-//     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-//     let mut cursor = collection.find(None, None).await.unwrap();
-//     let mut alarm_response = AlarmResponse {
-//         alarms: Vec::new(),
-//     };
-//     while let Some(result) = cursor.next().await {
-//         match result {
-//             Ok(alarm) => {
-//                 alarm_response.alarms.push(alarm);
-//             }
-//             Err(e) => {
-//                 response.message = format!("Error: {}", e);
-//                 return HttpResponse::BadRequest().json(response);
-//             }
-//         }
-//     }
-//     HttpResponse::Ok().json(alarm_response)
-// }
 
 /// Creates an index on the "username" field to force the values to be unique.
 async fn create_username_index(client: &Client) {
