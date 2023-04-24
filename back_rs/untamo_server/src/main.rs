@@ -23,7 +23,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use argon2::{PasswordVerifier,Argon2, password_hash::SaltString, PasswordHasher, PasswordHash};
 use itertools::Itertools;
 use std::sync::Mutex;
-
+use actix_web_actors::ws;
 
 extern crate zxcvbn;
 
