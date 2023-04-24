@@ -24,6 +24,7 @@ use argon2::{PasswordVerifier,Argon2, password_hash::SaltString, PasswordHasher,
 use itertools::Itertools;
 use std::sync::Mutex;
 use actix_web_actors::ws;
+use actix::{Actor, StreamHandler};
 
 extern crate zxcvbn;
 
@@ -1126,6 +1127,33 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
     let response = DefaultResponse {  message: "User edited".to_string()};
     HttpResponse::Ok().json(response)
 }
+
+/// Define HTTP actor
+struct MyWs;
+
+
+impl Actor for MyWs {
+    type Context = ws::WebsocketContext<Self>;
+}
+
+/// Handler for ws::Message message
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWs {
+    fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
+        match msg {
+            Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
+            Ok(ws::Message::Text(text)) => ctx.text(text),
+            Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
+            _ => (),
+        }
+    }
+}
+
+async fn ws_index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, actix_web::Error> {
+    let resp = ws::start(MyWs {}, &req, stream);
+    println!("{:?}", resp);
+    resp
+}
+
 
 
 /// Creates an index on the "username" field to force the values to be unique.
