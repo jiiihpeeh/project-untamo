@@ -18,6 +18,7 @@ use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
 use rand::rngs::OsRng;
 use std::borrow::BorrowMut;
+use std::collections::HashMap;
 use std::option::{Option};
 use std::time::{SystemTime, UNIX_EPOCH};
 use argon2::{PasswordVerifier,Argon2, password_hash::SaltString, PasswordHasher, PasswordHash};
@@ -25,6 +26,8 @@ use itertools::Itertools;
 use std::sync::Mutex;
 use actix_web_actors::ws;
 use actix::{Actor, StreamHandler};
+use actix_ws::{self, Message, MessageStream};
+
 
 extern crate zxcvbn;
 
@@ -50,8 +53,21 @@ pub fn random_string(n: usize ) -> String {
     chars
 }
 
+//randomly capitalize each letter in the string
+fn random_capital(s: &str) -> String {
+    let mut rng = thread_rng();
+    let mut chars: Vec<char> = s.chars().collect();
+    for i in 0..chars.len() {
+        if rng.gen_bool(0.5) {
+            chars[i] = chars[i].to_ascii_uppercase();
+        }
+    }
+    chars.into_iter().collect()
+}
+
+
 pub fn new_token(n:usize) -> String {
-    let stamp = format!("{}", radix(time_now(), 36));
+    let stamp = random_capital(format!("{}", radix(time_now(), 36)).as_str());
     random_string(n)+ stamp.as_str()
 }
 
@@ -1128,30 +1144,78 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
     HttpResponse::Ok().json(response)
 }
 
-/// Define HTTP actor
-struct MyWs;
 
+// struct WsMessageHandler {
+//     token_key : HashMap<String, String>,
+//     user_token: HashMap<String,  String>,
+//     key_stream: HashMap<String, MessageStream>,
+// }
+// impl WsMessageHandler {
+//     //remove stream
+//     fn remove_stream(&mut self, stream: &MessageStream) {
+//         let mut key_remove = String::new();
+//         for (key, value) in self.key_stream.iter() {
+//             if value == stream {
+//                 key_remove = key.clone();
+//             }
+//         }
+//         self.key_stream.remove(&key_remove);
+//     }
 
-impl Actor for MyWs {
-    type Context = ws::WebsocketContext<Self>;
+// }
+    
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct WsMsg{
+    mode: Option<String>,
+    token: Option<String>,
+    url: Option<String>,
 }
 
-/// Handler for ws::Message message
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWs {
-    fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
-        match msg {
-            Ok(ws::Message::Ping(msg)) => ctx.pong(&msg),
-            Ok(ws::Message::Text(text)) => ctx.text(text),
-            Ok(ws::Message::Binary(bin)) => ctx.binary(bin),
-            _ => (),
+//deserialize message check errror
+fn deserialize_msg(msg: &str) -> Result<WsMsg, serde_json::Error> {
+    let msg: WsMsg = serde_json::from_str(msg)?;
+    Ok(msg)
+}
+
+async fn action_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpResponse, actix_web::Error> {
+    let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
+    println!("New websocket connection: {}", req.peer_addr().unwrap());
+    println!("New websocket connection: {}", req.connection_info().host());
+    let headers = req.headers();
+    // //print headers
+    // for (key, value) in headers.iter() {
+    //     println!("{}: {:?}", key, value);
+    // }
+    let ws_key = headers.get("sec-websocket-key").unwrap().to_str().unwrap().to_string();
+    //key_secret.insert(ws_key, "test");
+
+    //print key secret pairs 
+
+    println!("ws key: {}", ws_key);
+    actix_rt::spawn(async move {
+        println!("Starting to listen for messages {}", ws_key);
+        while let Some(Ok(msg)) = msg_stream.next().await {
+            match msg {
+                Message::Ping(bytes) => {
+                    if session.pong(&bytes).await.is_err() {
+                        return;
+                    }
+                }
+                Message::Text(s) => { let dm = deserialize_msg(s.to_string().as_str()); println!("{:?}", dm) ;session.text(s).await.unwrap(); },
+                _ => break,
+            }
         }
-    }
-}
 
-async fn ws_index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, actix_web::Error> {
-    let resp = ws::start(MyWs {}, &req, stream);
-    println!("{:?}", resp);
-    resp
+        let closing = session.close(None).await;
+        match closing {
+            Ok(_) => println!("Closed websocket connection: {}", ws_key),
+            Err(e) => println!("Error closing websocket connection: {}", e),
+        }
+            
+        
+    });
+
+    Ok(response)
 }
 
 
@@ -1241,9 +1305,15 @@ async fn create_admin_index(client: &Client) {
         .expect("creating an index should succeed");
 }
 
+
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let client = Client::with_uri_str(MONGODB_URI).await.expect("failed to connect");
+    //create hash map key as string and value as string
+    let mut token_key : HashMap<&str, &str> = HashMap::new();
+    let token_key_mutex = Mutex::new(token_key);
     create_username_index(&client).await;
     create_session_index(&client).await;
     create_qr_index(&client).await;
@@ -1257,6 +1327,8 @@ async fn main() -> std::io::Result<()> {
             .service(register)
             .service(get_alarms)
             .app_data(web::Data::new(client.clone()))
+            //.app_data(web::Data::new(token_key_mutex))
+            .route("/action", web::get().to(action_ws))
             //.route("/logout", web::post().to(logout))
     })
     .workers(4)
