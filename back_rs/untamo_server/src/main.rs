@@ -5,6 +5,7 @@ use actix_web::web::Payload;
 use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpMessage, HttpRequest, FromRequest};
 use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::oid::ObjectId;
+use radix_fmt::{radix_36, radix};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
@@ -16,10 +17,11 @@ use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
 use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
 use rand::rngs::OsRng;
+use std::borrow::BorrowMut;
 use std::option::{Option};
 use std::time::{SystemTime, UNIX_EPOCH};
 use argon2::{PasswordVerifier,Argon2, password_hash::SaltString, PasswordHasher, PasswordHash};
-
+use itertools::Itertools;
 use std::sync::Mutex;
 
 
@@ -47,6 +49,10 @@ pub fn random_string(n: usize ) -> String {
     chars
 }
 
+pub fn new_token(n:usize) -> String {
+    let stamp = format!("{}", radix(time_now(), 36));
+    random_string(n)+ stamp.as_str()
+}
 
 fn verify_password(password: &str, hash: &str)-> bool{
     let argon2 = Argon2::default();
@@ -67,6 +73,10 @@ fn hash_password(password: &str)-> String{
             String::from("")
         }
     }
+}
+
+fn time_now() -> i64 {
+    SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -99,8 +109,8 @@ pub struct Session {
 
 impl Session {
     pub fn new (user_id: String ) -> Session {
-        let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
-        let token = random_string(64);
+        let time =time_now();
+        let token = new_token(64);
         Session { _id: ObjectId::new(), user_id, token, time }
     }
 }
@@ -112,13 +122,6 @@ struct LogIn {
     password: String,
 }
 
-
-#[post("/")]
-async fn hello(msg : web::Json<LogIn>) -> impl Responder {
-    let rand = random_string(64);
-    println!("{}, {}, {}", msg.email, msg.password,rand);
-    HttpResponse::Ok().body(rand)
-}
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -134,7 +137,7 @@ struct LogInResponse {
     time: i64,
 }
 
-async fn get_user_from_email(email: String, client: web::Data<Client>) -> Option<User> {
+async fn get_user_from_email(email: &str, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     //number of items in collection
     let user = collection.find_one(doc! {"email": email.clone()}, None).await.unwrap();
@@ -146,21 +149,31 @@ async fn get_user_from_email(email: String, client: web::Data<Client>) -> Option
     Some(user)
 }
 
-async fn set_new_session(session: Session, client: web::Data<Client>) {
+async fn set_new_session(session: Session, client: web::Data<Client>)-> bool {
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    collection.insert_one(session.clone(), None).await.unwrap();
+    let result = collection.insert_one(session.clone(), None).await.unwrap();
+    match result.inserted_id.as_object_id() {
+        Some(id) => {
+            println!("Inserted id {}", id.to_hex());
+            return true;
+        },
+        None => {
+            println!("Could not get id");
+            return false;
+        }
+    }
 }   
 
 #[post("/login")]
 async fn login(login: web::Json<LogIn>,client: web::Data<Client>) -> impl Responder {
     //number of items in collection
-    let user = get_user_from_email(login.email.clone(), client.clone()).await;
+    let user_fetch = get_user_from_email(&login.email, &client).await;
 
-    if user.is_none() {
+    if user_fetch.is_none() {
         return HttpResponse::BadRequest().json("User not found");
     }
     //verify password
-    let user = user.unwrap();
+    let user = user_fetch.unwrap();
     
     if !verify_password(&login.password, &user.password) {
         return HttpResponse::BadRequest().json("Invalid password");
@@ -169,14 +182,15 @@ async fn login(login: web::Json<LogIn>,client: web::Data<Client>) -> impl Respon
     //let session = Session::new(user.id.clone());
   
     let response = LogInResponse {
-        token: random_string(64),
+        token: new_token(64),
         email: user.email.clone(),
         screen_name: user.screen_name.clone(),
         first_name: user.first_name.clone(),
         last_name: user.last_name.clone(),
         admin: user.admin,
         owner: user.owner,
-        time: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64,
+        //add 5 years to time
+        time: time_now() + 157680000000,
     };
     let session = Session{ _id: ObjectId::new(), user_id: user._id.to_hex(), token: response.token.clone(), time: response.time };
     set_new_session(session, client.clone()).await;
@@ -204,11 +218,27 @@ struct Register {
 }
 
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct DefaultResponse {
     message: String
 }
+
+async fn add_user_to_db(user: &User, client: &web::Data<Client>) -> bool {
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+  
+    let result = collection.insert_one(user, None).await.unwrap();
+    match result.inserted_id.as_object_id() {
+        Some(id) => {
+            println!("Inserted id {}", id.to_hex());
+            return true;
+        },
+        None => {
+            println!("Could not get id");
+            return false;
+        }
+    }
+}
+
 #[post("/register")]
 async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> impl Responder {
     let mut response = DefaultResponse {
@@ -253,7 +283,11 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
 
     //add user to mongo db
     println!("User: {:?}", user);
-    collection.insert_one(user.clone(), None).await.unwrap();
+    let result = add_user_to_db(&user, &client).await;
+    if !result {
+        response.message = String::from("Could not register user");
+        return HttpResponse::BadRequest().json(response);
+    }
     response.message = String::from("User registered");
     HttpResponse::Ok().json(response)
 }
@@ -263,13 +297,9 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
 struct Qr{
     qr_token: String,
     qr_originator: String,
-    user_id: String,
+    user: String,
     time: i64,
-    created_at: i64,
 }
-
-
-
 
 //get user from token
 async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> {
@@ -319,8 +349,8 @@ struct AlarmResponse {
 }
 
 //get alarms by header
-async fn get_alarms_by_header(req: &HttpRequest, client: &web::Data<Client>) -> Vec<Alarm> {
-    let session = get_session_by_header(&req, &client).await;
+async fn get_alarms_from_header(req: &HttpRequest, client: &web::Data<Client>) -> Vec<Alarm> {
+    let session = get_session_from_header(&req, &client).await;
     if session.is_none() {
         return vec![];
     }
@@ -372,7 +402,7 @@ async fn get_user_from_session(session: &Session, client: &web::Data<Client>) ->
 
 //get session by header
 
-async fn get_session_by_header(req: &HttpRequest, client: &web::Data<Client>) -> Option<Session> {
+async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) -> Option<Session> {
     let token = get_token_from_header(&req); 
     if token.is_none() {
         return None;
@@ -383,9 +413,9 @@ async fn get_session_by_header(req: &HttpRequest, client: &web::Data<Client>) ->
         return None;
     }
     //current time
-    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+    
     //check if session is expired
-    if now > session.clone().unwrap().time {
+    if time_now() > session.clone().unwrap().time {
         //delete session
         collection.find_one_and_delete(doc! {"token": &token.unwrap()}, None).await.unwrap();
         return None;
@@ -393,7 +423,7 @@ async fn get_session_by_header(req: &HttpRequest, client: &web::Data<Client>) ->
     session
 }
 
-async fn remove_session_by_header(req: &HttpRequest, client: &web::Data<Client>)-> bool {
+async fn remove_session_from_header(req: &HttpRequest, client: &web::Data<Client>)-> bool {
     let token = get_token_from_header(&req);
     if token.is_none() {
         return false;
@@ -404,7 +434,7 @@ async fn remove_session_by_header(req: &HttpRequest, client: &web::Data<Client>)
     return result.is_some();
 }
 //find qr by qr_token
-async fn find_qr_by_token(qr_token: &str, client: &web::Data<Client>) -> Option<Qr> {
+async fn find_qr_from_token(qr_token: &str, client: &web::Data<Client>) -> Option<Qr> {
     let collection: Collection<Qr> = client.database(DB_NAME).collection(QRCOLL);
     let qr = collection.find_one(doc! {"qr_token": qr_token}, None).await.unwrap();
     if qr.is_none() {
@@ -421,21 +451,21 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
         message: String::from(""),
     };
     //number of items in collection
-    let qr = find_qr_by_token(&qr.qr_token, &client).await;
+    let qr = find_qr_from_token(&qr.qr_token, &client).await;
     if qr.is_none() {
         error_response.message = String::from("QR not found");
         return HttpResponse::BadRequest().json(error_response);
     }
     //verify password
     let qr = qr.unwrap();
-    if qr.user_id != qr.user_id {
+    if qr.user != qr.user {
         error_response.message = String::from("Invalid QR");
         return HttpResponse::BadRequest().json(error_response);
     }
     //add 5 years to current time
     let timeout =  (SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64) + 157680000000;
     let response = LogInResponse {
-        token: random_string(64),
+        token: new_token(64),
         email: qr.qr_originator.clone(),
         screen_name: qr.qr_originator.clone(),
         first_name: None,
@@ -444,7 +474,7 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
         owner: false,
         time: timeout,
     };
-    let session = Session{ _id: ObjectId::new(), user_id: qr.user_id.clone(), token: response.token.clone(), time: response.time };
+    let session = Session{ _id: ObjectId::new(), user_id: qr.user.clone(), token: response.token.clone(), time: response.time };
     set_new_session(session, client).await;
 
     let login_response = LogInResponse {
@@ -469,7 +499,7 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
         message: String::from(""),
     };
 
-    let result = remove_session_by_header(&req, &client).await;
+    let result = remove_session_from_header(&req, &client).await;
     if !result {
         response.message = String::from("Session not found");
         return HttpResponse::BadRequest().json(response);
@@ -482,42 +512,103 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
 async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
     //get user from header
     println!("get alarms");
-    let alarms =  get_alarms_by_header(&req, &client).await;
+    let alarms =  get_alarms_from_header(&req, &client).await;
     HttpResponse::Ok().json(alarms)
 }
 
-async fn edit_alarm_from_id(alarm: Alarm, client: web::Data<Client>) -> bool {
+async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
+    let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
+    let result = collection.insert_one(alarm.clone(), None).await.unwrap();
+    match result.inserted_id.as_object_id() {
+        Some(id) => {
+            println!("Inserted id {}", id.to_hex());
+            return true;
+        },
+        None => {
+            println!("Could not get id");
+            return false;
+        }
+    }
+}
+
+#[post("/api/alarm")]
+async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::Json<Alarm>) -> impl Responder {
+    let mut response = DefaultResponse {
+        message: String::from(""),
+    };
+    let user_fetch = get_user_from_header(&req, &client).await;
+    if user_fetch.is_none() {
+        response.message = String::from("User not found");
+        return HttpResponse::BadRequest().json(response);
+    }
+    let user = user_fetch.unwrap();
+    let mut alarm = alarm_in.into_inner();
+    alarm._id = ObjectId::new();
+    alarm.user = user._id.to_hex().clone();
+    alarm.devices = alarm.devices.into_iter().unique().collect();
+    //get unique items from weekdays
+    alarm.weekdays = alarm.weekdays.into_iter().unique().collect();
+    let result = add_alarm_to_db(&alarm, &client).await;
+    if !result {
+        response.message = String::from("Failed to add alarm");
+        return HttpResponse::BadRequest().json(response);
+    }
+    response.message = String::from("Alarm added");
+    HttpResponse::Ok().json(alarm)
+}
+
+
+//edit alarm by id
+async fn edit_alarm_from_id(alarm: &Alarm, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
     let alarm_id = alarm._id;
+    let alarm_fetch = collection.find_one(doc! {"_id": alarm_id}, None).await.unwrap();
+    //check if users are the same
+    if alarm_fetch.is_none() {
+        return false;
+    }
+    if alarm_fetch.unwrap().user != alarm.user {
+        return false;
+    }
     let result = collection.find_one_and_replace(doc! {"_id": alarm_id}, alarm, None).await.unwrap();
     result.is_some()
 }
 
 
 #[put("/api/alarm/{id}")]
-async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, alarm: web::Json<Alarm>) -> impl Responder {
+async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, alarm_edit: web::Json<Alarm>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
-    let user = get_user_from_header(&req, &client).await;
-    if user.is_none() {
+    let user_fetch = get_user_from_header(&req, &client).await;
+    if user_fetch.is_none() {
         response.message = String::from("User not found");
         return HttpResponse::BadRequest().json(response);
     }
-    let user = user.unwrap();
-    let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-    let alarm_id = ObjectId::parse_str(id.clone()).unwrap();
-    let alarm = collection.find_one(doc! {"_id": alarm_id, "user_id": user._id.clone()}, None).await.unwrap();
-    if alarm.is_none() {
+    let user = user_fetch.unwrap();
+    let alarm = Alarm {
+        _id: ObjectId::parse_str(id.clone()).unwrap(),
+        occurrence: alarm_edit.occurrence.clone(),
+        time: alarm_edit.time.clone(),
+        weekdays: alarm_edit.weekdays.clone().into_iter().unique().collect(),
+        date: alarm_edit.date.clone(),
+        label: alarm_edit.label.clone(),
+        devices: alarm_edit.devices.clone().into_iter().unique().collect(),
+        snooze: alarm_edit.snooze.clone(),
+        tone: alarm_edit.tone.clone(),
+        active: alarm_edit.active.clone(),
+        user: user.clone()._id.to_hex(),
+        modified: time_now(),
+        fingerprint: alarm_edit.fingerprint.clone(),
+        close_task: alarm_edit.close_task.clone(),
+    };
+    let result = edit_alarm_from_id(&alarm, &client).await;
+
+    if !result {
         response.message = String::from("Alarm not found");
         return HttpResponse::BadRequest().json(response);
     }
-    let alarm = alarm.unwrap();
-    let result = collection.find_one_and_replace(doc! {"_id": alarm_id, "user_id": user._id.clone()}, alarm, None).await.unwrap();
-    if result.is_none() {
-        response.message = String::from("Alarm not found");
-        return HttpResponse::BadRequest().json(response);
-    }
+
     response.message = String::from("Alarm updated");
     HttpResponse::Ok().json(response)
 }
@@ -545,9 +636,19 @@ async fn delete_alarm(req: HttpRequest,id: web::Path<String>, client: web::Data<
 }
 
 
-async fn add_device_to_user(device: Device, client: web::Data<Client>) {
+async fn add_device_to_user(device: &Device, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
-    collection.insert_one(device, None).await.unwrap();
+    let result = collection.insert_one(device, None).await.unwrap();
+    match result.inserted_id.as_object_id() {
+        Some(id) => {
+            println!("Inserted id {}", id.to_hex());
+            return true;
+        },
+        None => {
+            println!("Could not get id");
+            return false;
+        }
+    }
 }
 
 
@@ -571,7 +672,7 @@ struct Device{
     _id: ObjectId,
     user_device: String,
     device_name: String,
-    user_id: String,
+    user: String,
     device_type  : String
 }
 #[post("/api/device")]
@@ -589,21 +690,25 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
         _id: ObjectId::new(),
         user_device: device.user_device.clone(),
         device_name: device.device_name.clone(),
-        user_id: user._id.to_hex(),
+        user: user._id.to_hex(),
         device_type: device_type(device.device_type.clone()),
     };
-    add_device_to_user(device, client).await;
+    let result = add_device_to_user(&device, &client).await;
+    if !result {
+        response.message = String::from("Could not add device");
+        return HttpResponse::BadRequest().json(response);
+    }
     response.message = String::from("Device added");
-    HttpResponse::Ok().json(response)
+    HttpResponse::Ok().json(device)
 }
 
-async fn edit_device_by_id(device_id: &ObjectId, device: &Device, client: &web::Data<Client>) -> bool {
+async fn edit_device_from_id(device_id: &ObjectId, device: &Device, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
     let device_in_db = collection.find_one(doc! {"_id": device_id}, None).await.unwrap();
     if device_in_db.is_none() {
         return false;
     }
-    if device_in_db.unwrap().user_id != device.user_id {
+    if device_in_db.unwrap().user != device.user {
         return false;
     }
     collection.replace_one(doc! {"_id": device_id}, device, None).await.unwrap();
@@ -622,7 +727,7 @@ async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<
         return HttpResponse::BadRequest().json(response);
     }
     let user = user_fetch.unwrap();
-    if device.user_id != user._id.to_hex() {
+    if device.user != user._id.to_hex() {
         response.message = String::from("Device was not owned by user");
         return HttpResponse::BadRequest().json(response);
     }
@@ -631,10 +736,10 @@ async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<
         _id: ObjectId::parse_str(id.clone()).unwrap(),
         user_device: device.user_device.clone(),
         device_name: device.device_name.clone(),
-        user_id: user._id.to_hex(),
+        user: user._id.to_hex(),
         device_type: device_type(device.device_type.clone()),
     };
-    let resp = edit_device_by_id(&ObjectId::parse_str(id.clone()).unwrap(), &device, &client).await;
+    let resp = edit_device_from_id(&ObjectId::parse_str(id.clone()).unwrap(), &device, &client).await;
     if !resp {
         response.message = String::from("Device not found");
         return HttpResponse::BadRequest().json(response);
@@ -649,7 +754,7 @@ async fn delete_device_by_id_and_user(device_id: &ObjectId, user_id: &ObjectId, 
     if device_to_delete.is_none() {
         return false;
     }
-    if device_to_delete.unwrap().user_id != user_id.to_hex() {
+    if device_to_delete.unwrap().user != user_id.to_hex() {
         return false;
     }
     let result = collection.find_one_and_delete(doc! {"_id": device_id, "user_id": user_id.to_hex()}, None).await.unwrap();
@@ -692,7 +797,7 @@ struct AdminCheck{
 }
 async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -> Option<AdminCheck> {
     //get admin token from header
-    let session_fetch = get_session_by_header(&req, &client).await;
+    let session_fetch = get_session_from_header(&req, &client).await;
     if session_fetch.is_none() {
         return None;
     }
@@ -722,7 +827,7 @@ async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -
         return None;
     }
     let time = admin.time;
-    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+    let now = time_now();
     if now >= time {
         collection.delete_one(doc! {"token": admin_token}, None).await.unwrap();
         return None;
@@ -732,21 +837,9 @@ async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -
 
 
 
-//set user admin status
-async fn set_user_admin_by_id(user_id: ObjectId, admin: bool, client: web::Data<Client>) -> bool {
-    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let result = collection.find_one_and_update(doc! {"_id": user_id}, doc! {"$set": {"admin": admin}}, None).await.unwrap();
-    result.is_some()
-}
-//set user active status
-async fn set_user_active_by_id(user_id: &ObjectId, active: &bool, client: &web::Data<Client>) -> bool {
-    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let result = collection.find_one_and_update(doc! {"_id": user_id}, doc! {"$set": {"active": active}}, None).await.unwrap();
-    result.is_some()
-}
 
 //delete alarms by user id
-async fn delete_alarms_by_user_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
+async fn delete_alarms_from_user_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
     let result = collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await.unwrap();
     result.deleted_count > 0
@@ -773,7 +866,7 @@ async fn get_user_by_id(user_id: &ObjectId, client: &web::Data<Client>) -> Optio
 }
 
 //delete user by id
-async fn delete_user_by_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
+async fn delete_user_from_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     let result = collection.find_one_and_delete(doc! {"_id": user_id}, None).await.unwrap();
     result.is_some()
@@ -792,12 +885,12 @@ async fn remove_user_by_id(user_id: &ObjectId, client: &web::Data<Client>) -> bo
         return false;
     }
     //delete alarms
-    let alarm_delete = delete_alarms_by_user_id(&user._id, &client).await;
+    let _alarm_delete = delete_alarms_from_user_id(&user._id, &client).await;
     //delete devices
-    let device_delete = delete_devices_by_user_id(&user._id, &client).await;
+    let _device_delete = delete_devices_by_user_id(&user._id, &client).await;
     //delete sessions
-    let session_delete = delete_sessions_by_user_id(&user._id, &client).await;
-    let user_delete = delete_user_by_id(&user._id, &client).await;
+    let _session_delete = delete_sessions_by_user_id(&user._id, &client).await;
+    let user_delete = delete_user_from_id(&user._id, &client).await;
     user_delete
 }
 
@@ -820,15 +913,25 @@ async fn get_users(client: &web::Data<Client>) -> Vec<User> {
 }
 
 //set admin session
-async fn set_admin_session(admin: &Admin, client: &web::Data<Client>)  {
+async fn set_admin_session(admin: &Admin, client: &web::Data<Client>) -> bool {
     let collection: Collection<Admin> = client.database(DB_NAME).collection(ADMINCOLL);
-    collection.insert_one(admin, None).await.unwrap();
+    let result = collection.insert_one(admin, None).await.unwrap();
+    match result.inserted_id.as_object_id() {
+        Some(id) => {
+            println!("Inserted id {}", id.to_hex());
+            return true;
+        },
+        None => {
+            println!("Could not get id");
+            return false;
+        }
+    }
 }
 
 
 #[get("/admin/users")]
 async fn get_users_route(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
-    let session = get_session_by_header(&req, &client).await;
+    let session = get_session_from_header(&req, &client).await;
     if session.is_none() {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
@@ -847,7 +950,7 @@ async fn get_users_route(req: HttpRequest, client: web::Data<Client>) -> impl Re
 async fn delete_user(req: HttpRequest, user_id_str: web::Path<String>, client: web::Data<Client>) -> impl Responder {
     let user_id = ObjectId::parse_str(user_id_str.as_str()).unwrap();
 
-    let session = get_session_by_header(&req, &client).await;
+    let session = get_session_from_header(&req, &client).await;
     if session.is_none() {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
@@ -867,7 +970,7 @@ async fn delete_user(req: HttpRequest, user_id_str: web::Path<String>, client: w
     HttpResponse::Ok().json(response)
 }
 
-async fn edit_user_by_id(user_id: &ObjectId, user: &User, client: &web::Data<Client>) -> bool {
+async fn edit_user_from_id(user_id: &ObjectId, user: &User, client: &web::Data<Client>) -> bool {
     if user.owner {
         return false;
     }
@@ -885,7 +988,7 @@ async fn edit_user(req: HttpRequest, user_id_str: web::Path<String>, user: web::
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
     }
-    let user_edit = edit_user_by_id(&user_id, &user, &client).await;
+    let user_edit = edit_user_from_id(&user_id, &user, &client).await;
     if !user_edit {
         let response = DefaultResponse {  message: "Error editing user".to_string()};
         return HttpResponse::BadRequest().json(response);
@@ -900,7 +1003,7 @@ struct AdminPassword {
 }
 #[post("/api/admin")]
 async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPassword>,client: web::Data<Client>) -> impl Responder {
-    let session = get_session_by_header(&req, &client).await;
+    let session = get_session_from_header(&req, &client).await;
     if session.is_none() {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
@@ -921,13 +1024,108 @@ async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPass
         return HttpResponse::BadRequest().json(response);
     }
     //add 10 minutes to time
-    let expires = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64 + 600000;
-    let admin = Admin { _id: ObjectId::new(), token: random_string(96), user_id: user._id.to_hex(), time: expires };
-    set_admin_session(&admin, &client).await;
+    let expires = time_now() + 600000;
+    let admin = Admin { _id: ObjectId::new(), token: new_token(96), user_id: user._id.to_hex(), time: expires };
+    let result = set_admin_session(&admin, &client).await;
+    if !result {
+        let response = DefaultResponse {  message: "Error setting admin session".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
 
     HttpResponse::Ok().json(admin)
 }
 
+
+//get user
+#[get("/api/user")]
+async fn get_user(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
+    let session = get_session_from_header(&req, &client).await;
+    if session.is_none() {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+    let user_fetch = get_user_from_session(&session.unwrap(), &client).await;
+    if user_fetch.is_none() {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+    HttpResponse::Ok().json(user_fetch.unwrap())
+}
+
+//expand User struct
+#[derive(Serialize, Deserialize, Debug, Clone)]
+//camel case for json
+#[serde(rename_all = "camelCase")]
+pub struct UserEdit {
+    //rename _id to id serde
+    #[serde(rename(serialize = "id", deserialize = "_id"))]
+    pub _id: Option<ObjectId>,
+    pub email: String,
+    pub change_password: Option<String>,
+    pub confirm_password: String,
+    pub first_name: String,
+    pub last_name: String,
+    pub screen_name: String,
+}
+
+//update user info db
+async fn update_user_info(user: &User, client: &web::Data<Client>) -> bool {
+    let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
+    let result = collection.find_one_and_replace(doc! {"_id": user._id.clone()}, user, None).await.unwrap();
+    result.is_some()
+}
+
+//edit user
+#[put("/api/editUser/{email}")]
+async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: web::Json<UserEdit>, client: web::Data<Client>) -> impl Responder {
+    let session = get_session_from_header(&req, &client).await;
+    if session.is_none() {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+    let user_fetch = get_user_from_session(&session.unwrap(), &client).await;
+    if user_fetch.is_none() {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+    if user_fetch.clone().unwrap().email != email.to_string() {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+
+    if user_fetch.clone().unwrap().email != email.to_string()  && user_edit.email != email.to_string() {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+    //verify password
+    let check_password = verify_password(&user_edit.confirm_password, &user_fetch.clone().unwrap().password);
+    if !check_password {
+        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+
+    let mut password_hash = user_fetch.clone().unwrap().password;
+    if user_edit.change_password.is_some(){
+        //check if password is valid
+        let estimate = zxcvbn(&user_edit.clone().change_password.unwrap(), &[]).unwrap();
+
+        if estimate.score() < 3 || user_edit.clone().change_password.unwrap().len() < 6 {
+            let response = DefaultResponse {  message: "Password too weak".to_string()};
+            return HttpResponse::BadRequest().json(response);
+        }
+        //hash password
+        let hashed_password = hash_password(&user_edit.clone().change_password.unwrap());
+        password_hash = hashed_password;
+    }
+    let new_user = User { _id: user_fetch.clone().unwrap()._id, email: user_edit.clone().email, password: password_hash, first_name: Some(user_edit.clone().first_name), last_name: Some(user_edit.clone().last_name), screen_name: user_edit.clone().screen_name, owner: user_fetch.clone().unwrap().owner, active: user_fetch.clone().unwrap().active, admin: user_fetch.clone().unwrap().admin };
+    let update = update_user_info(&new_user, &client).await;
+    if update == false {
+        let response = DefaultResponse {  message: "Error updating user".to_string()};
+        return HttpResponse::BadRequest().json(response);
+    }
+    let response = DefaultResponse {  message: "User edited".to_string()};
+    HttpResponse::Ok().json(response)
+}
 
 
 /// Creates an index on the "username" field to force the values to be unique.
@@ -1027,7 +1225,6 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .service(hello)
             .service(login)
             .service(register)
             .service(get_alarms)
