@@ -26,7 +26,7 @@ use itertools::Itertools;
 use std::sync::Mutex;
 use actix_web_actors::ws;
 use actix::{Actor, StreamHandler};
-use actix_ws::{self, Message, MessageStream};
+use actix_ws::{self, Message, MessageStream, Session as WsSession};
 
 
 extern crate zxcvbn;
@@ -96,7 +96,7 @@ fn time_now() -> i64 {
     SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 pub struct User {
     _id: ObjectId,
     email: String,
@@ -116,7 +116,7 @@ pub fn email_is_valid(email: String) -> bool {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 pub struct Session {
     _id: ObjectId,
     user_id: String,
@@ -133,7 +133,7 @@ impl Session {
 }
  
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 struct LogIn {
     email: String,
     password: String,
@@ -142,11 +142,11 @@ struct LogIn {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 struct LogInResponse {
     token: String,
     email: String,
-    screen_name: String,
+    screen_name: Option<String>,
     first_name: Option<String>,
     last_name: Option<String>,
     admin: bool,
@@ -201,7 +201,7 @@ async fn login(login: web::Json<LogIn>,client: web::Data<Client>) -> impl Respon
     let response = LogInResponse {
         token: new_token(64),
         email: user.email.clone(),
-        screen_name: user.screen_name.clone(),
+        screen_name: Some(user.screen_name.clone()),
         first_name: user.first_name.clone(),
         last_name: user.last_name.clone(),
         admin: user.admin,
@@ -321,7 +321,7 @@ struct Qr{
 //get user from token
 async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let session = collection.find_one(doc! {"token": token.clone()}, None).await.unwrap();
+    let session = collection.find_one(doc! {"token": token}, None).await.unwrap();
     if session.is_none() {
         return None;
     }
@@ -342,7 +342,7 @@ async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> 
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 struct Alarm {
     _id: ObjectId,
     occurrence: String,
@@ -409,7 +409,9 @@ async fn get_user_from_header(req: &HttpRequest, client: &web::Data<Client>) -> 
 //get user from session
 async fn get_user_from_session(session: &Session, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let user_fetch = collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await.unwrap();
+    println!("{}", ObjectId::parse_str(&session.user_id).unwrap());
+
+    let user_fetch = collection.find_one(doc! {"id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await.unwrap();
     if user_fetch.is_none() {
         return None;
     }
@@ -484,7 +486,7 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
     let response = LogInResponse {
         token: new_token(64),
         email: qr.qr_originator.clone(),
-        screen_name: qr.qr_originator.clone(),
+        screen_name: Some(qr.qr_originator.clone()),
         first_name: None,
         last_name: None,
         admin: false,
@@ -683,7 +685,7 @@ fn device_type(device_type: String)->String{
 
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 #[serde(rename(serialize = "type", deserialize = "device_type"))]
 struct Device{
     _id: ObjectId,
@@ -800,7 +802,7 @@ async fn delete_device(req: HttpRequest, client: web::Data<Client>, id: web::Pat
 
 
 #[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+//#[serde(rename_all = "camelCase")]
 struct Admin{
     _id: ObjectId,
     token: String,
@@ -1145,25 +1147,71 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
 }
 
 
-// struct WsMessageHandler {
-//     token_key : HashMap<String, String>,
-//     user_token: HashMap<String,  String>,
-//     key_stream: HashMap<String, MessageStream>,
-// }
-// impl WsMessageHandler {
-//     //remove stream
-//     fn remove_stream(&mut self, stream: &MessageStream) {
-//         let mut key_remove = String::new();
-//         for (key, value) in self.key_stream.iter() {
-//             if value == stream {
-//                 key_remove = key.clone();
-//             }
-//         }
-//         self.key_stream.remove(&key_remove);
-//     }
+struct WsMessageHandler {
+    key_token : HashMap<String, String>,
+    token_user: HashMap<String,  String>,
+    key_session: HashMap<String, WsSession>,
+}
+impl WsMessageHandler {
 
-// }
-    
+    fn new() -> WsMessageHandler {
+        WsMessageHandler {
+            key_token: HashMap::new(),
+            token_user: HashMap::new(),
+            key_session: HashMap::new(),
+        }
+    }
+    //remove stream
+    fn remove_stream_by_key(&mut self, key: &String) {
+        self.key_session.remove(key);
+        //pop token
+        let token = self.key_token.remove(key);
+        if token.is_none() {
+            return;
+        }
+        let user = self.token_user.remove(&token.unwrap());
+        if user.is_none() {
+            return;
+        }
+    }
+    fn add_session(&mut self, key: &String, session: WsSession, user: &String, token: &String) {
+        self.key_session.insert(key.clone(), session);
+        self.key_token.insert(key.clone(), token.clone());
+        self.token_user.insert(token.clone(), user.clone());
+    }
+    fn get_user_keys_exclude_token(&self,  token: &str) -> Vec<String> {
+        let mut keys = Vec::new();
+        //get user's tokens
+        let user_id = self.token_user.get(token);
+        if user_id.is_none() {
+            return keys;
+        }
+        //get all user tokens except current token by iterating through token_user
+
+        let mut user_tokens = Vec::new();
+        for (key, value) in &self.token_user {
+            if value == user_id.unwrap() {
+                user_tokens.push(key.clone());
+            }
+        }
+
+        for (key, value) in &self.key_token {
+            if value == token {
+                continue;
+            }
+            //check if the value is in user_tokens
+            if user_tokens.contains(value) {
+                keys.push(key.clone());
+            }
+        }
+        keys
+    }
+
+    }
+
+}
+
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct WsMsg{
     mode: Option<String>,
@@ -1171,13 +1219,11 @@ struct WsMsg{
     url: Option<String>,
 }
 
-//deserialize message check errror
-fn deserialize_msg(msg: &str) -> Result<WsMsg, serde_json::Error> {
-    let msg: WsMsg = serde_json::from_str(msg)?;
-    Ok(msg)
-}
+//send message to all other sessions
 
-async fn action_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpResponse, actix_web::Error> {
+
+
+async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Client>, ws_handler : web::Data<Mutex<WsMessageHandler>> ) -> Result<HttpResponse, actix_web::Error> {
     let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
     println!("New websocket connection: {}", req.peer_addr().unwrap());
     println!("New websocket connection: {}", req.connection_info().host());
@@ -1193,6 +1239,23 @@ async fn action_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpResponse
 
     println!("ws key: {}", ws_key);
     actix_rt::spawn(async move {
+        //deserialize message check errror
+        fn deserialize_msg(msg: &str) -> Result<WsMsg, serde_json::Error> {
+            let msg: WsMsg = serde_json::from_str(msg)?;
+            Ok(msg)
+        }
+
+        async fn process_ws_action(msg: &str) -> WsMsg{
+            let msg_de = deserialize_msg(&msg);
+            if msg_de.is_err() {
+                println!("Error deserializing message");
+                return WsMsg{mode: None, token: None, url: None};
+            }
+            let msg = msg_de.unwrap();
+            println!("Message: {:?}", msg);
+            msg
+        }
+
         println!("Starting to listen for messages {}", ws_key);
         while let Some(Ok(msg)) = msg_stream.next().await {
             match msg {
@@ -1201,18 +1264,43 @@ async fn action_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpResponse
                         return;
                     }
                 }
-                Message::Text(s) => { let dm = deserialize_msg(s.to_string().as_str()); println!("{:?}", dm) ;session.text(s).await.unwrap(); },
+                Message::Text(s) => {
+                    let m = process_ws_action(s.to_string().as_str()).await;
+                    if m.mode.is_none() || m.token.is_none()  {
+                        println!("No mode or token");
+                        return;
+                    }
+                    if m.clone().mode.unwrap() == "client" && m.clone().token.unwrap().len() > 3{
+                        let token = m.token.unwrap();
+                        //move this part to another block
+                        let user_fetch = token_to_user(&token, &client).await;
+                        if user_fetch.is_none() {
+                            println!("No user found");
+                            return;
+                        }
+                        ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user_fetch.unwrap().email, &token);
+                        let keys = ws_handler.lock().unwrap().get_user_keys_exclude_token(&token);
+                        for key in keys {
+                            let session_map = ws_handler.lock().unwrap().key_session.get(&key);
+                            if session_map.is_none() {
+                                continue;
+                            }
+                            session_map.unwrap().text("connection").await.unwrap();                           
+                        }
+                    }
+                    session.text("connection").await.unwrap();
+                },
                 _ => break,
             }
         }
-
         let closing = session.close(None).await;
         match closing {
-            Ok(_) => println!("Closed websocket connection: {}", ws_key),
+            Ok(_) => { 
+                        println!("Closed websocket connection: {}", ws_key);
+                        ws_handler.lock().unwrap().remove_stream_by_key(&ws_key);
+                    },
             Err(e) => println!("Error closing websocket connection: {}", e),
         }
-            
-        
     });
 
     Ok(response)
@@ -1312,8 +1400,8 @@ async fn create_admin_index(client: &Client) {
 async fn main() -> std::io::Result<()> {
     let client = Client::with_uri_str(MONGODB_URI).await.expect("failed to connect");
     //create hash map key as string and value as string
-    let mut token_key : HashMap<&str, &str> = HashMap::new();
-    let token_key_mutex = Mutex::new(token_key);
+    //let mut message_handler =WsMessageHandler::new();
+    //let message_handler_mutex = Mutex::new(message_handler);
     create_username_index(&client).await;
     create_session_index(&client).await;
     create_qr_index(&client).await;
@@ -1327,7 +1415,7 @@ async fn main() -> std::io::Result<()> {
             .service(register)
             .service(get_alarms)
             .app_data(web::Data::new(client.clone()))
-            //.app_data(web::Data::new(token_key_mutex))
+            .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
             .route("/action", web::get().to(action_ws))
             //.route("/logout", web::post().to(logout))
     })
