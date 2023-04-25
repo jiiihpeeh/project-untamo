@@ -1207,9 +1207,9 @@ impl WsMessageHandler {
         keys
     }
 
-    }
-
 }
+
+
 
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -1236,7 +1236,7 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
     //key_secret.insert(ws_key, "test");
 
     //print key secret pairs 
-
+    let mut token = String::new();
     println!("ws key: {}", ws_key);
     actix_rt::spawn(async move {
         //deserialize message check errror
@@ -1271,21 +1271,24 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                         return;
                     }
                     if m.clone().mode.unwrap() == "client" && m.clone().token.unwrap().len() > 3{
-                        let token = m.token.unwrap();
-                        //move this part to another block
+                        token = m.token.unwrap();
                         let user_fetch = token_to_user(&token, &client).await;
                         if user_fetch.is_none() {
                             println!("No user found");
                             return;
                         }
                         ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user_fetch.unwrap().email, &token);
+
+                    }else if m.mode.unwrap() == "api" && m.url.is_some() {
                         let keys = ws_handler.lock().unwrap().get_user_keys_exclude_token(&token);
+                        let key_session = ws_handler.lock().unwrap().key_session.clone();
                         for key in keys {
-                            let session_map = ws_handler.lock().unwrap().key_session.get(&key);
+                            let mut session_map = key_session.get(&key);
                             if session_map.is_none() {
                                 continue;
                             }
-                            session_map.unwrap().text("connection").await.unwrap();                           
+                            let mut session_send = session_map.unwrap().clone();
+                            session_send.text("connection").await.unwrap() ;
                         }
                     }
                     session.text("connection").await.unwrap();
