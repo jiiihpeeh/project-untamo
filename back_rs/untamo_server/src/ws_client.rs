@@ -16,7 +16,6 @@ fn add_time(n:u8)->u64{
     *v.iter().min().unwrap() +50
 }
 
-
 //serialize and deserialize websocket messages
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct  WsMessage{
