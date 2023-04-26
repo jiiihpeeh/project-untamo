@@ -129,7 +129,7 @@ async fn set_new_session(session: Session, client: web::Data<Client>)-> bool {
 }   
 
 #[post("/login")]
-async fn login(login: web::Json<LogIn>,client: web::Data<Client>) -> impl Responder {
+async fn login(login: web::Json<LogIn>,client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     //number of items in collection
     let user_fetch = get_user_from_email(&login.email, &client).await;
 
@@ -169,7 +169,9 @@ async fn login(login: web::Json<LogIn>,client: web::Data<Client>) -> impl Respon
         time: response.time,
     };
     println!("Login response: {:?}", login_response);
-    HttpResponse::Ok().json(login_response)    
+    ws_client.lock().unwrap().try_send("/login", &login_response.token).await;
+
+    HttpResponse::Ok().json(login_response)   
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
