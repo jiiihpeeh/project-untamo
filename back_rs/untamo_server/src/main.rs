@@ -36,18 +36,15 @@ const ALARMCOLL : &str = "alarms";
 const DEVICECOLL : &str = "devices";
 const ADMINCOLL : &str = "admins";
 const PORT : u16 = 8080;
+
+
 //establish a ws client connection using rust websocket and ClientBuilder
-
-
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SessionNotValid {
     message: String,
 }
-
-
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 //#[serde(rename_all = "camelCase")]
@@ -64,10 +61,6 @@ pub struct User {
 }
 
 
-pub fn email_is_valid(email: String) -> bool {
-    let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$").unwrap();
-    re.is_match(&email)
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 //#[serde(rename_all = "camelCase")]
@@ -228,7 +221,7 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
 
     //register user
 
-    if !email_is_valid(register.email.clone()) {
+    if !utils::email_is_valid(register.email.clone()) {
         response.message = String::from("Email is not valid");
         return HttpResponse::BadRequest().json(response);
     }
@@ -238,11 +231,15 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
     } else {
         screen_name = format!("{} {}", register.first_name.clone().unwrap(), register.last_name.clone().unwrap());
     }
-
+    let hashed_result = password_hash::hash_password(&register.password);
+    if hashed_result.is_none() {
+        response.message = String::from("Could not hash password");
+        return HttpResponse::BadRequest().json(response);
+    }
     let user = User {
         _id: ObjectId::new(),
         email: register.email.clone(),
-        password: password_hash::hash_password(&register.password),
+        password: hashed_result.unwrap(),
         first_name: register.first_name.clone(),
         last_name: register.last_name.clone(),
         screen_name: screen_name.clone(),
@@ -1088,7 +1085,11 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
         }
         //hash password
         let hashed_password = password_hash::hash_password(&user_edit.clone().change_password.unwrap());
-        password_hash = hashed_password;
+        if hashed_password.is_none() {
+            let response = DefaultResponse {  message: "Error hashing password".to_string()};
+            return HttpResponse::BadRequest().json(response);
+        }
+        password_hash = hashed_password.unwrap();
     }
     let new_user = User { _id: user_fetch.clone().unwrap()._id, email: user_edit.clone().email, password: password_hash, first_name: Some(user_edit.clone().first_name), last_name: Some(user_edit.clone().last_name), screen_name: user_edit.clone().screen_name, owner: user_fetch.clone().unwrap().owner, active: user_fetch.clone().unwrap().active, admin: user_fetch.clone().unwrap().admin };
     let update = update_user_info(&new_user, &client).await;
@@ -1366,8 +1367,7 @@ async fn main() -> std::io::Result<()> {
     create_device_index(&client).await;
     create_admin_index(&client).await;
     let ws_action_uri = format!("ws://localhost:{}/action", PORT);
-    
-    
+
     HttpServer::new(move || {
         App::new()
             .service(login)
@@ -1375,6 +1375,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_alarms)
             .app_data(web::Data::new(client.clone()))
             .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
+            .app_data(web::Data::new( Mutex::new(ws_client::WsClientConnect::new(&ws_action_uri))))
             .route("/action", web::get().to(action_ws))
             //.route("/logout", web::post().to(logout))
     })

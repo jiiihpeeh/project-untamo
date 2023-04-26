@@ -1,9 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
-
 use radix_fmt::radix;
 use rand::{thread_rng, distributions::Alphanumeric, Rng};
-
-
+use regex::Regex;
 
 pub fn random_string(n: usize ) -> String {
     let mut rng = thread_rng();
@@ -12,7 +10,7 @@ pub fn random_string(n: usize ) -> String {
 }
 
 //randomly capitalize each letter in the string
-pub fn random_capital(s: &str) -> String {
+fn random_capital(s: &str) -> String {
     let mut rng = thread_rng();
     let mut chars: Vec<char> = s.chars().collect();
     for i in 0..chars.len() {
@@ -32,4 +30,9 @@ pub fn new_token(n:usize) -> String {
 
 pub fn time_now() -> i64 {
     SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64
+}
+
+pub fn email_is_valid(email: String) -> bool {
+    let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$").unwrap();
+    re.is_match(&email)
 }
