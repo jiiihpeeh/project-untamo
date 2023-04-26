@@ -4,22 +4,17 @@ use actix_web::web::Payload;
 use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpMessage, HttpRequest, FromRequest};
 use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::oid::ObjectId;
-use radix_fmt::{radix_36, radix};
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
-use rand::{Rng, thread_rng};
-use rand::distributions::Alphanumeric;
-
 use std::collections::HashMap;
-use std::option::{Option};
-
+use std::option::Option;
 use itertools::Itertools;
-use std::sync::{Mutex, Arc};
-use actix_ws::{self, Message, MessageStream, Session as WsSession};
+use std::sync::Mutex;
+use actix_ws::{self, Message, Session as WsSession};
 mod ws_client;
 mod password_hash;
 mod utils;
+mod form_check;
 extern crate zxcvbn;
 
 use zxcvbn::zxcvbn;
@@ -364,7 +359,7 @@ async fn get_user_from_session(session: &Session, client: &web::Data<Client>) ->
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     println!("{}", ObjectId::parse_str(&session.user_id).unwrap());
 
-    let user_fetch = collection.find_one(doc! {"id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await.unwrap();
+    let user_fetch = collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await.unwrap();
     if user_fetch.is_none() {
         return None;
     }
@@ -1291,6 +1286,134 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
     Ok(response)
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct CheckReport{
+    r#type: Option<String>,
+    content: Option<String>,
+    original: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct FormMsg{
+    query: Option<String>,
+    first_name: Option<String>,
+    last_name: Option<String>,
+    email: Option<String>,
+    password: Option<String>,
+}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct ZxcvbnMsg{
+    query: Option<String>,
+    password: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(untagged)]
+enum WsRegisterMsgIn{
+    FormMsg(FormMsg),
+    ZxcvbnMsg(ZxcvbnMsg),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct RegisterCheckPass{
+    guesses: u64,
+    score: u8,
+    server_minimum: u64,
+}
+
+enum WsRegisterMsgOut{
+    FormMsgOut(FormMsg),
+    ZxcvbnMsgOut(ZxcvbnMsg),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct FormMsgOut{
+    query: String,
+    content: bool
+}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct ZxcvbnMsgOut{
+    query: String,
+    content: RegisterCheckPass
+}
+async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpResponse, actix_web::Error> {
+    let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
+   
+    actix_rt::spawn(async move {
+        //deserialize message check error
+
+        while let Some(Ok(msg)) = msg_stream.next().await {
+            match msg {
+                Message::Ping(bytes) => {
+                    if session.pong(&bytes).await.is_err() {
+                        return;
+                    }
+                }
+                Message::Text(s) => {
+                    let msg_de = serde_json::from_str::<WsRegisterMsgIn>(&s);
+                    if msg_de.is_err() {
+                        println!("Error deserializing message");
+                        session.text("Error deserializing message").await.unwrap();
+                        return;
+                    }
+                    //check msg_de enum
+                    //match msg enum from WsRegisterMsg 
+                    match  msg_de.unwrap() {
+                        WsRegisterMsgIn::FormMsg(msg_de)=>{
+                            let msg = msg_de.clone();
+                            
+                            let msg_out = FormMsgOut{
+                                query: msg.query.unwrap(),
+                                content: true,
+                            };
+                            session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
+                        },
+                        WsRegisterMsgIn::ZxcvbnMsg(msg_de)=>{                            
+                            if msg_de.password.is_none() {
+                                println!("No password");    
+                            }
+
+                            // This code confirms that the password is 36 characters long.
+                            let stopper = if msg_de.password.as_ref().unwrap().len() > 35 { 35 } else { msg_de.password.as_ref().unwrap().len() };
+                            //let stop =  **vec![&msg_de.password.as_ref().unwrap().len(), &35].iter().min().unwrap() as usize;
+                            let password_slice = &msg_de.password.as_ref().unwrap()[..stopper];
+                            let entropy: zxcvbn::Entropy = zxcvbn::zxcvbn(&password_slice, &[]).unwrap();
+                            let guesses = entropy.guesses();
+                            let score = entropy.score();
+                            println!("ZxcvbnMsg {:?}", &msg_de);
+                            let register_check = RegisterCheckPass{
+                                guesses: guesses,
+                                score: score,
+                                server_minimum: 1e9 as u64,
+                            };
+                            let msg_out = ZxcvbnMsgOut{
+                                query: msg_de.query.unwrap(),
+                                content: register_check,
+                            };
+                            session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
+
+                        }
+                    }
+                    session.text("connection").await.unwrap();
+                },
+                _ => break,
+            }
+        }
+        let closing = session.close(None).await;
+        match closing {
+            Ok(_) => { 
+                        println!("Closed websocket connection");
+                    },
+            Err(e) => println!("Error closing websocket connection: {}", e),
+        }
+    });
+
+    Ok(response)
+}
+
 
 
 /// Creates an index on the "username" field to force the values to be unique.
@@ -1403,6 +1526,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
             .app_data(web::Data::new( Mutex::new(ws_client::WsClientConnect::new(&ws_action_uri))))
             .route("/action", web::get().to(action_ws))
+            .route("/register-check", web::get().to(register_ws))
             //.route("/logout", web::post().to(logout))
     })
     .workers(4)

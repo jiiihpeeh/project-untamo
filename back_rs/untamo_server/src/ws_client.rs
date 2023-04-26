@@ -5,7 +5,7 @@ use tungstenite::{connect , Message, WebSocket};
 use tungstenite::stream::MaybeTlsStream;
 use tungstenite::error::Error;
 use url::Url;
-use tokio::time::{sleep as async_sleep};
+use tokio::time::sleep as async_sleep;
 use std::time::Duration;
 
 fn add_time(n:u8)->u64{
