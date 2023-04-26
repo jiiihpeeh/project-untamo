@@ -1,5 +1,4 @@
-use actix_web::dev::ServiceRequest;
-use actix_web::http::Error;
+use actix_rt::net::TcpStream;
 use actix_web::http::header::Header;
 use actix_web::web::Payload;
 use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpMessage, HttpRequest, FromRequest};
@@ -9,30 +8,25 @@ use radix_fmt::{radix_36, radix};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
-// import models/user.rs
-//mod models;
-
-//use models::user::{User};
-//use models::random_string;
 use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
-use rand::rngs::OsRng;
-use std::borrow::BorrowMut;
+
 use std::collections::HashMap;
 use std::option::{Option};
-use std::time::{SystemTime, UNIX_EPOCH};
-use argon2::{PasswordVerifier,Argon2, password_hash::SaltString, PasswordHasher, PasswordHash};
+
 use itertools::Itertools;
-use std::sync::Mutex;
-use actix_web_actors::ws;
-use actix::{Actor, StreamHandler};
+use std::sync::{Mutex, Arc};
 use actix_ws::{self, Message, MessageStream, Session as WsSession};
-
-
+mod ws_client;
+mod password_hash;
+mod utils;
 extern crate zxcvbn;
 
 use zxcvbn::zxcvbn;
 
+//use::crate::{utils, password_hash, ws_client};
+//{random_string, random_capital, new_token, time_now}
+//{verify_password, hash_password}
 const MONGODB_URI: &str = "mongodb://root:example@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.5.4";
 const DB_NAME: &str = "Untamo";
 const USERCOLL: &str = "users";
@@ -41,60 +35,20 @@ const QRCOLL : &str = "qr";
 const ALARMCOLL : &str = "alarms";
 const DEVICECOLL : &str = "devices";
 const ADMINCOLL : &str = "admins";
+const PORT : u16 = 8080;
+//establish a ws client connection using rust websocket and ClientBuilder
+
+
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SessionNotValid {
     message: String,
 }
 
-pub fn random_string(n: usize ) -> String {
-    let mut rng = thread_rng();
-    let chars: String = (0..n).map(|_| rng.sample(Alphanumeric) as char).collect();
-    chars
-}
-
-//randomly capitalize each letter in the string
-fn random_capital(s: &str) -> String {
-    let mut rng = thread_rng();
-    let mut chars: Vec<char> = s.chars().collect();
-    for i in 0..chars.len() {
-        if rng.gen_bool(0.5) {
-            chars[i] = chars[i].to_ascii_uppercase();
-        }
-    }
-    chars.into_iter().collect()
-}
 
 
-pub fn new_token(n:usize) -> String {
-    let stamp = random_capital(format!("{}", radix(time_now(), 36)).as_str());
-    random_string(n)+ stamp.as_str()
-}
 
-fn verify_password(password: &str, hash: &str)-> bool{
-    let argon2 = Argon2::default();
-    let password_hash = PasswordHash::new(&hash).unwrap();
-    argon2.verify_password(password.as_bytes(), &password_hash).is_ok()
-}
-fn hash_password(password: &str)-> String{
-    let salt = SaltString::generate(&mut OsRng);
-    let argon2 = Argon2::default();
-    let password_hash = argon2.hash_password(password.as_bytes(), &salt);
-    match password_hash {
-        Ok(hash) => {
-            //hash to string
-            hash.to_string()
-        },
-        Err(e) => {
-            println!("Error: {}", e);
-            String::from("")
-        }
-    }
-}
-
-fn time_now() -> i64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64
-}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 //#[serde(rename_all = "camelCase")]
 pub struct User {
@@ -126,8 +80,8 @@ pub struct Session {
 
 impl Session {
     pub fn new (user_id: String ) -> Session {
-        let time =time_now();
-        let token = new_token(64);
+        let time = utils::time_now();
+        let token = utils::new_token(64);
         Session { _id: ObjectId::new(), user_id, token, time }
     }
 }
@@ -192,14 +146,14 @@ async fn login(login: web::Json<LogIn>,client: web::Data<Client>) -> impl Respon
     //verify password
     let user = user_fetch.unwrap();
     
-    if !verify_password(&login.password, &user.password) {
+    if !password_hash::verify_password(&login.password, &user.password) {
         return HttpResponse::BadRequest().json("Invalid password");
     }
     println!("User: {:?}", user);
     //let session = Session::new(user.id.clone());
   
     let response = LogInResponse {
-        token: new_token(64),
+        token: utils::new_token(64),
         email: user.email.clone(),
         screen_name: Some(user.screen_name.clone()),
         first_name: user.first_name.clone(),
@@ -207,7 +161,7 @@ async fn login(login: web::Json<LogIn>,client: web::Data<Client>) -> impl Respon
         admin: user.admin,
         owner: user.owner,
         //add 5 years to time
-        time: time_now() + 157680000000,
+        time: utils::time_now() + 157680000000,
     };
     let session = Session{ _id: ObjectId::new(), user_id: user._id.to_hex(), token: response.token.clone(), time: response.time };
     set_new_session(session, client.clone()).await;
@@ -288,7 +242,7 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
     let user = User {
         _id: ObjectId::new(),
         email: register.email.clone(),
-        password: hash_password(&register.password),
+        password: password_hash::hash_password(&register.password),
         first_name: register.first_name.clone(),
         last_name: register.last_name.clone(),
         screen_name: screen_name.clone(),
@@ -327,9 +281,9 @@ async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> 
     }
     let session = session.unwrap();
     //check if session is expired
-    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+    
     //timeout after 15 years
-    if now - session.time > 473040000000 {
+    if utils::time_now() > session.time  {
         return None;
     }
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
@@ -434,7 +388,7 @@ async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) 
     //current time
     
     //check if session is expired
-    if time_now() > session.clone().unwrap().time {
+    if utils::time_now() > session.clone().unwrap().time {
         //delete session
         collection.find_one_and_delete(doc! {"token": &token.unwrap()}, None).await.unwrap();
         return None;
@@ -482,9 +436,9 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
         return HttpResponse::BadRequest().json(error_response);
     }
     //add 5 years to current time
-    let timeout =  (SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64) + 157680000000;
+    let timeout =  utils::time_now() + 157680000000;
     let response = LogInResponse {
-        token: new_token(64),
+        token: utils::new_token(64),
         email: qr.qr_originator.clone(),
         screen_name: Some(qr.qr_originator.clone()),
         first_name: None,
@@ -617,7 +571,7 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
         tone: alarm_edit.tone.clone(),
         active: alarm_edit.active.clone(),
         user: user.clone()._id.to_hex(),
-        modified: time_now(),
+        modified: utils::time_now(),
         fingerprint: alarm_edit.fingerprint.clone(),
         close_task: alarm_edit.close_task.clone(),
     };
@@ -846,7 +800,7 @@ async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -
         return None;
     }
     let time = admin.time;
-    let now = time_now();
+    let now = utils::time_now();
     if now >= time {
         collection.delete_one(doc! {"token": admin_token}, None).await.unwrap();
         return None;
@@ -1037,14 +991,14 @@ async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPass
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
     }
-    let check_password = verify_password(&admin_password.password, &user.password);
+    let check_password = password_hash::verify_password(&admin_password.password, &user.password);
     if !check_password {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
     }
     //add 10 minutes to time
-    let expires = time_now() + 600000;
-    let admin = Admin { _id: ObjectId::new(), token: new_token(96), user_id: user._id.to_hex(), time: expires };
+    let expires = utils::time_now() + 600000;
+    let admin = Admin { _id: ObjectId::new(), token: utils::new_token(96), user_id: user._id.to_hex(), time: expires };
     let result = set_admin_session(&admin, &client).await;
     if !result {
         let response = DefaultResponse {  message: "Error setting admin session".to_string()};
@@ -1117,7 +1071,7 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
         return HttpResponse::BadRequest().json(response);
     }
     //verify password
-    let check_password = verify_password(&user_edit.confirm_password, &user_fetch.clone().unwrap().password);
+    let check_password = password_hash::verify_password(&user_edit.confirm_password, &user_fetch.clone().unwrap().password);
     if !check_password {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
@@ -1133,7 +1087,7 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
             return HttpResponse::BadRequest().json(response);
         }
         //hash password
-        let hashed_password = hash_password(&user_edit.clone().change_password.unwrap());
+        let hashed_password = password_hash::hash_password(&user_edit.clone().change_password.unwrap());
         password_hash = hashed_password;
     }
     let new_user = User { _id: user_fetch.clone().unwrap()._id, email: user_edit.clone().email, password: password_hash, first_name: Some(user_edit.clone().first_name), last_name: Some(user_edit.clone().last_name), screen_name: user_edit.clone().screen_name, owner: user_fetch.clone().unwrap().owner, active: user_fetch.clone().unwrap().active, admin: user_fetch.clone().unwrap().admin };
@@ -1278,12 +1232,13 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                             return;
                         }
                         ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user_fetch.unwrap().email, &token);
+                        session.text("connection").await.unwrap();
 
                     }else if m.mode.unwrap() == "api" && m.url.is_some() {
                         let keys = ws_handler.lock().unwrap().get_user_keys_exclude_token(&token);
                         let key_session = ws_handler.lock().unwrap().key_session.clone();
                         for key in keys {
-                            let mut session_map = key_session.get(&key);
+                            let session_map = key_session.get(&key);
                             if session_map.is_none() {
                                 continue;
                             }
@@ -1291,7 +1246,7 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                             session_send.text("connection").await.unwrap() ;
                         }
                     }
-                    session.text("connection").await.unwrap();
+                    
                 },
                 _ => break,
             }
@@ -1398,7 +1353,6 @@ async fn create_admin_index(client: &Client) {
 
 
 
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let client = Client::with_uri_str(MONGODB_URI).await.expect("failed to connect");
@@ -1411,7 +1365,9 @@ async fn main() -> std::io::Result<()> {
     create_alarm_index(&client).await;
     create_device_index(&client).await;
     create_admin_index(&client).await;
-
+    let ws_action_uri = format!("ws://localhost:{}/action", PORT);
+    
+    
     HttpServer::new(move || {
         App::new()
             .service(login)
@@ -1423,7 +1379,7 @@ async fn main() -> std::io::Result<()> {
             //.route("/logout", web::post().to(logout))
     })
     .workers(4)
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", PORT))?
     .run()
     .await
 }
