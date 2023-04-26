@@ -48,14 +48,9 @@ impl WsClient {
         self.response = response;
         Ok(())
     }
-    fn send(&mut self, msg: &str, token: &str) -> Result<(), Error> {
-        let message = WsMessage{
-            mode: String::from("url"),
-            url: msg.to_string(),
-            token: token.to_string(),
-        };
-        let message_ser = serde_json::to_string(&message).unwrap();
-        self.socket.write_message(Message::Text(message_ser))
+    fn send(&mut self, message : &str) -> Result<(), Error> {
+        
+        self.socket.write_message(Message::Text(message.to_string()))
     }
 }
 pub struct WsClientConnect{
@@ -87,7 +82,7 @@ impl WsClientConnect {
             },
         }
     }
-    pub fn send(&mut self, msg: &str, token: &str) -> bool {
+    fn send(&mut self,  message: &str) -> bool {
         //connect if not connected
         if !self.connection {
             self.connect();
@@ -96,7 +91,7 @@ impl WsClientConnect {
         if self.connection {
             match &mut self.client {
                 Some(client) => {
-                    match client.send(msg, token) {
+                    match client.send(&message) {
                         Ok(_) => true,
                         Err(_) => false,
                     }
@@ -109,10 +104,15 @@ impl WsClientConnect {
         }
     }
     pub async fn try_send(&mut self, msg: &str, token: &str) -> bool {
+        let message = WsMessage{
+            mode: String::from("url"),
+            url: msg.to_string(),
+            token: token.to_string(),
+        };
+        let message_ser = serde_json::to_string(&message).unwrap();
         self.tries = 0;
-        let mut time_add = 
         while self.tries < 20 {
-            if self.send(msg, token) {
+            if self.send(&message_ser) {
                 return true;
             }
             //use async sleep
