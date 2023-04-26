@@ -6,6 +6,14 @@ use tungstenite::stream::MaybeTlsStream;
 use tungstenite::error::Error;
 use url::Url;
 
+fn add_time(n:u8)->u64{
+    //max out at 10 seconds
+    //get minimum in Vec<u64>
+    let v: Vec<u64> =  vec![10 * (n as u64), 150];
+    //get minimum of Vec<u64>
+    *v.iter().min().unwrap() +50
+}
+
 
 //serialize and deserialize websocket messages
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,15 +108,17 @@ impl WsClientConnect {
         }
     }
     pub async fn try_send(&mut self, msg: &str, token: &str) -> bool {
-        while self.tries < 250 {
+        self.tries = 0;
+        let mut time_add = 
+        while self.tries < 20 {
             if self.send(msg, token) {
                 return true;
             }
             //use async sleep
-            tokio::time::sleep(std::time::Duration::from_millis(120)).await;
+            tokio::time::sleep(std::time::Duration::from_millis(add_time(self.tries))).await;
             self.connect();
-        }
-        self.tries = 0;
+        };
+
         false
     }
 }

@@ -481,10 +481,17 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
 }
 
 #[get("/api/alarms")]
-async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
+async fn get_alarms(req: HttpRequest, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     //get user from header
     println!("get alarms");
+    let token = get_token_from_header(&req);
+    if token.is_none() {
+        return HttpResponse::BadRequest().json(DefaultResponse{message: String::from("Invalid token")});
+    }
     let alarms =  get_alarms_from_header(&req, &client).await;
+    
+    //ws_client.lock().unwrap().try_send("/api/alarms", &token.unwrap()).await;
+
     HttpResponse::Ok().json(alarms)
 }
 
@@ -504,10 +511,15 @@ async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
 }
 
 #[post("/api/alarm")]
-async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::Json<Alarm>) -> impl Responder {
+async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::Json<Alarm>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
+    let token = get_token_from_header(&req);
+    if token.is_none() {
+        response.message = String::from("Invalid token");
+        return HttpResponse::BadRequest().json(response);
+    }
     let user_fetch = get_user_from_header(&req, &client).await;
     if user_fetch.is_none() {
         response.message = String::from("User not found");
@@ -526,6 +538,7 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
         return HttpResponse::BadRequest().json(response);
     }
     response.message = String::from("Alarm added");
+    ws_client.lock().unwrap().try_send("/api/alarm", &token.unwrap()).await;
     HttpResponse::Ok().json(alarm)
 }
 
@@ -548,10 +561,15 @@ async fn edit_alarm_from_id(alarm: &Alarm, client: &web::Data<Client>) -> bool {
 
 
 #[put("/api/alarm/{id}")]
-async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, alarm_edit: web::Json<Alarm>) -> impl Responder {
+async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, alarm_edit: web::Json<Alarm>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
+    let token = get_token_from_header(&req);
+    if token.is_none() {
+        response.message = String::from("Invalid token");
+        return HttpResponse::BadRequest().json(response);
+    }
     let user_fetch = get_user_from_header(&req, &client).await;
     if user_fetch.is_none() {
         response.message = String::from("User not found");
@@ -582,6 +600,7 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
     }
 
     response.message = String::from("Alarm updated");
+    ws_client.lock().unwrap().try_send("/api/alarm", &token.unwrap()).await;
     HttpResponse::Ok().json(response)
 }
 
@@ -592,7 +611,7 @@ async fn delete_alarm_by_id_and_user(alarm_id: &ObjectId, user_id: &ObjectId, cl
 }
 
 #[delete("/api/alarm/{id}")]
-async fn delete_alarm(req: HttpRequest,id: web::Path<String>, client: web::Data<Client> ) -> impl Responder {
+async fn delete_alarm(req: HttpRequest,id: web::Path<String>, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>> ) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -604,6 +623,7 @@ async fn delete_alarm(req: HttpRequest,id: web::Path<String>, client: web::Data<
     let user = user_resp.unwrap();
     delete_alarm_by_id_and_user(&ObjectId::parse_str(id.clone()).unwrap(), &user._id, &client).await;
     response.message = String::from("Alarm deleted");
+    ws_client.lock().unwrap().try_send("/api/alarm", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(response)
 }
 
@@ -648,7 +668,7 @@ struct Device{
     device_type  : String
 }
 #[post("/api/device")]
-async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Json<Device>) -> impl Responder {
+async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Json<Device>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -671,6 +691,7 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
         return HttpResponse::BadRequest().json(response);
     }
     response.message = String::from("Device added");
+    ws_client.lock().unwrap().try_send("/api/device", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(device)
 }
 
@@ -689,7 +710,7 @@ async fn edit_device_from_id(device_id: &ObjectId, device: &Device, client: &web
 
 
 #[put("/api/device/{id}")]
-async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, device: web::Json<Device>) -> impl Responder {
+async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, device: web::Json<Device>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -717,6 +738,7 @@ async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<
         return HttpResponse::BadRequest().json(response);
     }
     response.message = String::from("Device updated");
+    ws_client.lock().unwrap().try_send("/api/device", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(response)
 }
 
@@ -734,7 +756,7 @@ async fn delete_device_by_id_and_user(device_id: &ObjectId, user_id: &ObjectId, 
 }
 
 #[delete("/api/device/{id}")]
-async fn delete_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>) -> impl Responder {
+async fn delete_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -750,6 +772,7 @@ async fn delete_device(req: HttpRequest, client: web::Data<Client>, id: web::Pat
         return HttpResponse::BadRequest().json(response);
     }
     response.message = String::from("Device deleted");
+    ws_client.lock().unwrap().try_send("/api/device", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(response)
 }
 
@@ -1049,7 +1072,7 @@ async fn update_user_info(user: &User, client: &web::Data<Client>) -> bool {
 
 //edit user
 #[put("/api/editUser/{email}")]
-async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: web::Json<UserEdit>, client: web::Data<Client>) -> impl Responder {
+async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: web::Json<UserEdit>, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let session = get_session_from_header(&req, &client).await;
     if session.is_none() {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
@@ -1100,6 +1123,7 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
         return HttpResponse::BadRequest().json(response);
     }
     let response = DefaultResponse {  message: "User edited".to_string()};
+    ws_client.lock().unwrap().try_send("/api/editUser", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(response)
 }
 
