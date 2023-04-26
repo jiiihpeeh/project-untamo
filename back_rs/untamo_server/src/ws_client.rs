@@ -5,6 +5,8 @@ use tungstenite::{connect , Message, WebSocket};
 use tungstenite::stream::MaybeTlsStream;
 use tungstenite::error::Error;
 use url::Url;
+use tokio::time::{sleep as async_sleep};
+use std::time::Duration;
 
 fn add_time(n:u8)->u64{
     //max out at 10 seconds
@@ -115,7 +117,7 @@ impl WsClientConnect {
                 return true;
             }
             //use async sleep
-            tokio::time::sleep(std::time::Duration::from_millis(add_time(self.tries))).await;
+            async_sleep(Duration::from_millis(add_time(self.tries))).await;
             self.connect();
         };
 
