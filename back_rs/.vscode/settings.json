@@ -1,10 +1,19 @@
 {
     "cSpell.words": [
+        "actix",
         "ADMINCOLL",
         "ALARMCOLL",
+        "bson",
+        "DEVICECOLL",
+        "fuzzyform",
+        "Hasher",
         "Insertable",
+        "itertools",
         "QRCOLL",
+        "rngs",
         "SESSIONCOLL",
+        "tungstenite",
+        "Untamo",
         "USERCOLL",
         "zxcvbn"
     ]

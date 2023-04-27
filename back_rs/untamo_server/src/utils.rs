@@ -32,7 +32,7 @@ pub fn time_now() -> i64 {
     SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as i64
 }
 
-pub fn email_is_valid(email: String) -> bool {
+pub fn email_is_valid(email: &str) -> bool {
     let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$").unwrap();
     re.is_match(&email)
 }

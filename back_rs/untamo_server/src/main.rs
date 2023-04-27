@@ -99,7 +99,7 @@ struct LogInResponse {
 async fn get_user_from_email(email: &str, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     //number of items in collection
-    let user = collection.find_one(doc! {"email": email.clone()}, None).await.unwrap();
+    let user = collection.find_one(doc! {"email": email}, None).await.unwrap();
     if user.is_none() {
         return None;
     }
@@ -218,7 +218,7 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
 
     //register user
 
-    if !utils::email_is_valid(register.email.clone()) {
+    if !utils::email_is_valid(&register.email) {
         response.message = String::from("Email is not valid");
         return HttpResponse::BadRequest().json(response);
     }
@@ -639,8 +639,8 @@ async fn add_device_to_user(device: &Device, client: &web::Data<Client>) -> bool
 }
 
 
-fn device_type(device_type: String)->String{
-    match device_type.as_str() {
+fn device_type(device_type: &str)->String{
+    match device_type {
         "Browser" => String::from("Browser"),
         "Phone" => String::from("Phone"),
         "Tablet" => String::from("Tablet"),
@@ -675,10 +675,10 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
     let user = user.unwrap();
     let device = Device {
         _id: ObjectId::new(),
-        user_device: device.user_device.clone(),
-        device_name: device.device_name.clone(),
+        user_device: device.user_device.as_str().to_string(),
+        device_name: device.device_name.as_str().to_string(),
         user: user._id.to_hex(),
-        device_type: device_type(device.device_type.clone()),
+        device_type: device_type(&device.device_type),
     };
     let result = add_device_to_user(&device, &client).await;
     if !result {
@@ -721,13 +721,13 @@ async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<
     }
     //get device from json
     let device = Device {
-        _id: ObjectId::parse_str(id.clone()).unwrap(),
-        user_device: device.user_device.clone(),
-        device_name: device.device_name.clone(),
+        _id: ObjectId::parse_str(&*id).unwrap(),
+        user_device: device.user_device.as_str().to_string(),
+        device_name: device.device_name.as_str().to_string(),
         user: user._id.to_hex(),
-        device_type: device_type(device.device_type.clone()),
+        device_type: device_type(&device.device_type),
     };
-    let resp = edit_device_from_id(&ObjectId::parse_str(id.clone()).unwrap(), &device, &client).await;
+    let resp = edit_device_from_id(&ObjectId::parse_str(&*id).unwrap(), &device, &client).await;
     if !resp {
         response.message = String::from("Device not found");
         return HttpResponse::BadRequest().json(response);
@@ -761,7 +761,7 @@ async fn delete_device(req: HttpRequest, client: web::Data<Client>, id: web::Pat
         return HttpResponse::BadRequest().json(response);
     }
     let user = user_fetch.unwrap();
-    let resp = delete_device_by_id_and_user(&ObjectId::parse_str(id.clone()).unwrap(), &user._id, &client).await;
+    let resp = delete_device_by_id_and_user(&ObjectId::parse_str(&*id).unwrap(), &user._id, &client).await;
     if !resp {
         response.message = String::from("Device not found");
         return HttpResponse::BadRequest().json(response);
@@ -921,43 +921,46 @@ async fn set_admin_session(admin: &Admin, client: &web::Data<Client>) -> bool {
 
 #[get("/admin/users")]
 async fn get_users_route(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
-    let session = get_session_from_header(&req, &client).await;
-    if session.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+    if let None = get_session_from_header(&req, &client).await {
+        let response = DefaultResponse { message: "Unauthorized".to_string() };
         return HttpResponse::BadRequest().json(response);
     }
-
-    let admin_check = get_admin_from_headers(&req, &client).await;
-    if admin_check.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+    // do the same to get_admin_from_headers as above
+    if let None = get_admin_from_headers(&req, &client).await {
+        let response = DefaultResponse { message: "Unauthorized".to_string() };
         return HttpResponse::BadRequest().json(response);
     }
+    
     let users = get_users(&client).await;
     HttpResponse::Ok().json(users)
 }
 
 #[delete("/admin/user/{user_id_str}")]
 async fn delete_user(req: HttpRequest, user_id_str: web::Path<String>, client: web::Data<Client>) -> impl Responder {
-    let user_id = ObjectId::parse_str(user_id_str.as_str()).unwrap();
+    let user_id = match ObjectId::parse_str(&*user_id_str) {
+        Ok(id) => id,
+        Err(_) => {
+            let response = DefaultResponse { message: "Invalid user ID".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
 
-    let session = get_session_from_header(&req, &client).await;
-    if session.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+    if let None = get_session_from_header(&req, &client).await {
+        let response = DefaultResponse { message: "Unauthorized".to_string() };
         return HttpResponse::BadRequest().json(response);
     }
 
-    let admin_check = get_admin_from_headers(&req, &client).await;
-    if admin_check.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+    if let None = get_admin_from_headers(&req, &client).await {
+        let response = DefaultResponse { message: "Unauthorized".to_string() };
         return HttpResponse::BadRequest().json(response);
     }
-    let user_delete = remove_user_by_id(&user_id, &client).await;
-    if !user_delete {
-        let response = DefaultResponse {  message: "Error deleting user".to_string()};
+
+    if !remove_user_by_id(&user_id, &client).await {
+        let response = DefaultResponse { message: "Error deleting user".to_string() };
         return HttpResponse::BadRequest().json(response);
     }
-    let response = DefaultResponse {  message: "User deleted".to_string()};
-    HttpResponse::Ok().json(response)
+
+    HttpResponse::Ok().json(DefaultResponse { message: "User deleted".to_string() })
 }
 
 async fn edit_user_from_id(user_id: &ObjectId, user: &User, client: &web::Data<Client>) -> bool {
@@ -971,18 +974,27 @@ async fn edit_user_from_id(user_id: &ObjectId, user: &User, client: &web::Data<C
 
 #[put("/admin/user/{user_id_str}")]
 async fn edit_user(req: HttpRequest, user_id_str: web::Path<String>, user: web::Json<User>, client: web::Data<Client>) -> impl Responder {
-    let user_id = ObjectId::parse_str(user_id_str.as_str()).unwrap();
-
-    let admin_check = get_admin_from_headers(&req, &client).await;
-    if admin_check.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+    let user_id = match ObjectId::parse_str(user_id_str.as_str()) {
+        Ok(user_id) => user_id,
+        Err(_) => {
+            let response = DefaultResponse { message: "Invalid user ID".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    
+    let admin_check = match get_admin_from_headers(&req, &client).await {
+        Some(admin) => admin,
+        None => {
+            let response = DefaultResponse { message: "Unauthorized".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    
+    if !edit_user_from_id(&user_id, &user, &client).await {
+        let response = DefaultResponse { message: "Error editing user".to_string() };
         return HttpResponse::BadRequest().json(response);
     }
-    let user_edit = edit_user_from_id(&user_id, &user, &client).await;
-    if !user_edit {
-        let response = DefaultResponse {  message: "Error editing user".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
+    
     let response = DefaultResponse {  message: "User edited".to_string()};
     HttpResponse::Ok().json(response)
 }
@@ -993,17 +1005,21 @@ struct AdminPassword {
 }
 #[post("/api/admin")]
 async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPassword>,client: web::Data<Client>) -> impl Responder {
-    let session = get_session_from_header(&req, &client).await;
-    if session.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user_fetch = get_user_from_session(&session.unwrap(), &client).await;
-    if user_fetch.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user = user_fetch.unwrap();
+    let session = match get_session_from_header(&req, &client).await {
+        Some(session) => session,
+        None => {
+            return HttpResponse::BadRequest()
+                .json(DefaultResponse { message: "Unauthorized".to_string() });
+        }
+    };
+    let user = match get_user_from_session(&session, &client).await {
+        Some(user) => user,
+        None => {
+            let response = DefaultResponse { message: "Unauthorized".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    
     if !user.owner {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
@@ -1029,17 +1045,21 @@ async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPass
 //get user
 #[get("/api/user")]
 async fn get_user(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
-    let session = get_session_from_header(&req, &client).await;
-    if session.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user_fetch = get_user_from_session(&session.unwrap(), &client).await;
-    if user_fetch.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
-    HttpResponse::Ok().json(user_fetch.unwrap())
+    let session = match get_session_from_header(&req, &client).await {
+        Some(session) => session,
+        None => {
+            let response = DefaultResponse { message: "Unauthorized".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    let user = match get_user_from_session(&session, &client).await {
+        Some(user_fetch) => user_fetch,
+        None => {
+            let response = DefaultResponse { message: "Unauthorized".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    HttpResponse::Ok().json(user)
 }
 
 //expand User struct
@@ -1068,50 +1088,57 @@ async fn update_user_info(user: &User, client: &web::Data<Client>) -> bool {
 //edit user
 #[put("/api/editUser/{email}")]
 async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: web::Json<UserEdit>, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
-    let session = get_session_from_header(&req, &client).await;
-    if session.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user_fetch = get_user_from_session(&session.unwrap(), &client).await;
-    if user_fetch.is_none() {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
-    if user_fetch.clone().unwrap().email != email.to_string() {
+    let session = match get_session_from_header(&req, &client).await {
+        Some(session) => session,
+        None => {
+            let response = DefaultResponse { message: "Unauthorized".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    let user = match get_user_from_session(&session, &client).await {
+        Some(user_fetch) => user_fetch,
+        None => {
+            let response = DefaultResponse { message: "Unauthorized".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    if user.email != email.to_string() {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
     }
 
-    if user_fetch.clone().unwrap().email != email.to_string()  && user_edit.email != email.to_string() {
+    if user.email != email.to_string()  && user_edit.email != email.to_string() {
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
     }
     //verify password
-    let check_password = password_hash::verify_password(&user_edit.confirm_password, &user_fetch.clone().unwrap().password);
-    if !check_password {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
+
+    if !password_hash::verify_password(&user_edit.confirm_password, &user.password) {
+        let response = DefaultResponse { message: "Unauthorized".to_string() };
         return HttpResponse::BadRequest().json(response);
     }
+    let mut password_hash = user.password;
 
-    let mut password_hash = user_fetch.clone().unwrap().password;
-    if user_edit.change_password.is_some(){
-        //check if password is valid
-        let estimate = zxcvbn(&user_edit.clone().change_password.unwrap(), &[]).unwrap();
-
-        if estimate.score() < 3 || user_edit.clone().change_password.unwrap().len() < 6 {
-            let response = DefaultResponse {  message: "Password too weak".to_string()};
+    if let Some(new_password) = &user_edit.change_password {
+        // Check if password is valid
+        let estimate = zxcvbn(new_password, &[]).unwrap();
+    
+        if estimate.score() < 3 || new_password.len() < 6 {
+            let response = DefaultResponse { message: "Password too weak".to_string() };
             return HttpResponse::BadRequest().json(response);
         }
-        //hash password
-        let hashed_password = password_hash::hash_password(&user_edit.clone().change_password.unwrap());
-        if hashed_password.is_none() {
-            let response = DefaultResponse {  message: "Error hashing password".to_string()};
-            return HttpResponse::BadRequest().json(response);
+    
+        // Hash password
+        match password_hash::hash_password(new_password) {
+            Some(hashed_password) => password_hash = hashed_password,
+            None => {
+                let response = DefaultResponse { message: "Error hashing password".to_string() };
+                return HttpResponse::BadRequest().json(response);
+            }
         }
-        password_hash = hashed_password.unwrap();
     }
-    let new_user = User { _id: user_fetch.clone().unwrap()._id, email: user_edit.clone().email, password: password_hash, first_name: Some(user_edit.clone().first_name), last_name: Some(user_edit.clone().last_name), screen_name: user_edit.clone().screen_name, owner: user_fetch.clone().unwrap().owner, active: user_fetch.clone().unwrap().active, admin: user_fetch.clone().unwrap().admin };
+    
+    let new_user = User { _id: user._id, email: user_edit.clone().email, password: password_hash, first_name: Some(user_edit.clone().first_name), last_name: Some(user_edit.clone().last_name), screen_name: user_edit.clone().screen_name, owner: user.owner, active: user.active, admin: user.admin };
     let update = update_user_info(&new_user, &client).await;
     if update == false {
         let response = DefaultResponse {  message: "Error updating user".to_string()};
@@ -1242,31 +1269,39 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                 }
                 Message::Text(s) => {
                     let m = process_ws_action(s.to_string().as_str()).await;
-                    if m.mode.is_none() || m.token.is_none()  {
-                        println!("No mode or token");
-                        return;
-                    }
-                    if m.clone().mode.unwrap() == "client" && m.clone().token.unwrap().len() > 3{
-                        token = m.token.unwrap();
-                        let user_fetch = token_to_user(&token, &client).await;
-                        if user_fetch.is_none() {
-                            println!("No user found");
-                            return;
+                    if let Some(mode) = &m.mode {
+                        match mode.as_str() {
+                            "client" => {
+                                if let Some(token) = &m.token {
+                                    if token.len() > 3 {
+                                        let user_fetch = token_to_user(&token, &client).await;
+                                        if user_fetch.is_none() {
+                                            println!("No user found");
+                                            return;
+                                        }
+                                        ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user_fetch.unwrap().email, &token);
+                                        session.text("connection").await.unwrap();
+                                    }
+                                }
+                            },
+                            "api" => {
+                                if let Some(url) = &m.url {
+                                    let keys = ws_handler.lock().unwrap().get_user_keys_exclude_token(&token);
+                                    let key_session = ws_handler.lock().unwrap().key_session.clone();
+                                    for key in keys {
+                                        let session_map = key_session.get(&key);
+                                        if session_map.is_none() {
+                                            continue;
+                                        }
+                                        let mut session_send = session_map.unwrap().clone();
+                                        session_send.text("connection").await.unwrap() ;
+                                    }
+                                }
+                            },
+                            _ => (),
                         }
-                        ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user_fetch.unwrap().email, &token);
-                        session.text("connection").await.unwrap();
-
-                    }else if m.mode.unwrap() == "api" && m.url.is_some() {
-                        let keys = ws_handler.lock().unwrap().get_user_keys_exclude_token(&token);
-                        let key_session = ws_handler.lock().unwrap().key_session.clone();
-                        for key in keys {
-                            let session_map = key_session.get(&key);
-                            if session_map.is_none() {
-                                continue;
-                            }
-                            let mut session_send = session_map.unwrap().clone();
-                            session_send.text("connection").await.unwrap() ;
-                        }
+                    } else {
+                        println!("No mode");
                     }
                     
                 },
@@ -1317,14 +1352,9 @@ enum WsRegisterMsgIn{
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct RegisterCheckPass{
-    guesses: u64,
+    guesses: f64,
     score: u8,
-    server_minimum: u64,
-}
-
-enum WsRegisterMsgOut{
-    FormMsgOut(FormMsg),
-    ZxcvbnMsgOut(ZxcvbnMsg),
+    server_minimum: f64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -1353,51 +1383,40 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
                     }
                 }
                 Message::Text(s) => {
-                    let msg_de = serde_json::from_str::<WsRegisterMsgIn>(&s);
+                    let msg_de = serde_json::from_str::<FormMsg>(&s);
                     if msg_de.is_err() {
                         println!("Error deserializing message");
                         session.text("Error deserializing message").await.unwrap();
                         return;
                     }
+                    let msg = msg_de.unwrap();
                     //check msg_de enum
-                    //match msg enum from WsRegisterMsg 
-                    match  msg_de.unwrap() {
-                        WsRegisterMsgIn::FormMsg(msg_de)=>{
-                            let msg = msg_de.clone();
-                            
-                            let msg_out = FormMsgOut{
-                                query: msg.query.unwrap(),
-                                content: true,
-                            };
-                            session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
-                        },
-                        WsRegisterMsgIn::ZxcvbnMsg(msg_de)=>{                            
-                            if msg_de.password.is_none() {
-                                println!("No password");    
-                            }
-
-                            // This code confirms that the password is 36 characters long.
-                            let stopper = if msg_de.password.as_ref().unwrap().len() > 35 { 35 } else { msg_de.password.as_ref().unwrap().len() };
-                            //let stop =  **vec![&msg_de.password.as_ref().unwrap().len(), &35].iter().min().unwrap() as usize;
-                            let password_slice = &msg_de.password.as_ref().unwrap()[..stopper];
-                            let entropy: zxcvbn::Entropy = zxcvbn::zxcvbn(&password_slice, &[]).unwrap();
-                            let guesses = entropy.guesses();
-                            let score = entropy.score();
-                            println!("ZxcvbnMsg {:?}", &msg_de);
-                            let register_check = RegisterCheckPass{
+                    //match msg enum from WsRegisterMsg
+                    let query = msg.query.as_ref().unwrap(); 
+                    if  query == "form" {
+                        
+                        let msg_out = FormMsgOut{
+                            query: "form".to_string(),
+                            content: true,
+                        };
+                        session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
+                    }else if query == "zxcvbn" {
+                        let stopper = if msg.password.as_ref().unwrap().len() > 35 { 35 } else { msg.password.as_ref().unwrap().len() };
+                        let password_slice = &msg.password.as_ref().unwrap()[..stopper];
+                        let entropy: zxcvbn::Entropy = zxcvbn::zxcvbn(&password_slice, &[]).unwrap();
+                        let guesses = entropy.guesses_log10();
+                        let score = entropy.score();
+                        let msg_out = ZxcvbnMsgOut{
+                            query: msg.query.unwrap(),
+                            content: RegisterCheckPass{
                                 guesses: guesses,
                                 score: score,
-                                server_minimum: 1e9 as u64,
-                            };
-                            let msg_out = ZxcvbnMsgOut{
-                                query: msg_de.query.unwrap(),
-                                content: register_check,
-                            };
-                            session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
-
-                        }
+                                //get log 10 of server minimum
+                                server_minimum: f64::log10(1e9),
+                            }
+                        };
+                        session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
                     }
-                    session.text("connection").await.unwrap();
                 },
                 _ => break,
             }
