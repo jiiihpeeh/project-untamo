@@ -99,12 +99,15 @@ struct LogInResponse {
 async fn get_user_from_email(email: &str, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     //number of items in collection
-    let user = collection.find_one(doc! {"email": email}, None).await.unwrap();
-    if user.is_none() {
-        return None;
-    }
+    let user = match collection.find_one(doc! {"email": email}, None).await {
+        Ok(user) => user.unwrap(),
+        Err(e) => {
+            println!("Error: {}", e);
+            return None;
+        }
+    };
+
     //verify password
-    let user = user.unwrap();
     Some(user)
 }
 
@@ -269,11 +272,14 @@ struct Qr{
 //get user from token
 async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let session = collection.find_one(doc! {"token": token}, None).await.unwrap();
-    if session.is_none() {
-        return None;
-    }
-    let session = session.unwrap();
+    let session = match  collection.find_one(doc! {"token": token}, None).await {
+        Ok(session) => session.unwrap(),
+        Err(e) => {
+            println!("Error: {:?}", e);
+            return None;
+        }
+    };
+
     //check if session is expired
     
     //timeout after 15 years
@@ -281,11 +287,14 @@ async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> 
         return None;
     }
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let user = collection.find_one(doc! {"_id": ObjectId::parse_str(session.user_id).unwrap()}, None).await.unwrap();
-    if user.is_none() {
-        return None;
-    }
-    let user = user.unwrap();
+    let user = match  collection.find_one(doc! {"_id": ObjectId::parse_str(session.user_id).unwrap()}, None).await {
+        Ok(user) => user.unwrap(),
+        Err(e) => {
+            println!("Error: {:?}", e);
+            return None;
+        }
+    };
+
     Some(user)
 }
 
@@ -315,11 +324,12 @@ struct AlarmResponse {
 
 //get alarms by header
 async fn get_alarms_from_header(req: &HttpRequest, client: &web::Data<Client>) -> Vec<Alarm> {
-    let session = get_session_from_header(&req, &client).await;
-    if session.is_none() {
-        return vec![];
-    }
-    let user_id = session.unwrap().user_id;
+    let session = match get_session_from_header(&req, &client).await {
+        Some(session) => session,
+        None => return vec![],
+    };
+
+    let user_id = session.user_id;
     get_alarms_by_user_id( &user_id, &client).await
 }
 //get alarms by user
@@ -341,16 +351,16 @@ fn get_token_from_header(req: &HttpRequest) -> Option<String> {
 
 //get user from header and check if session is timed out
 async fn get_user_from_header(req: &HttpRequest, client: &web::Data<Client>) -> Option<User> {
-    let token = get_token_from_header(&req);
-    if token.is_none() {
-        return None;
-    }
-    let token = token.unwrap();
-    let user = token_to_user(&token, &client).await;
-    if user.is_none() {
-        return None;
-    }
-    let user = user.unwrap();
+    let token = match get_token_from_header(&req){
+        Some(token) => token,
+        None => return None,
+    };
+
+    let user = match token_to_user(&token, &client).await {
+        Some(user) => user,
+        None => return None,
+    };
+
     //check if session is timed out
     Some(user)
 }
@@ -359,11 +369,11 @@ async fn get_user_from_session(session: &Session, client: &web::Data<Client>) ->
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     println!("{}", ObjectId::parse_str(&session.user_id).unwrap());
 
-    let user_fetch = collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await.unwrap();
-    if user_fetch.is_none() {
-        return None;
-    }
-    let user = user_fetch.unwrap();
+    let user  = match  collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await {
+        Ok(user_fetch) => user_fetch.unwrap(),
+        Err(_) => return None,
+    };
+
     Some(user)
 }
 
@@ -375,27 +385,28 @@ async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) 
         return None;
     }
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let session = collection.find_one(doc! {"token": token.clone().unwrap()}, None).await.unwrap();
-    if session.is_none() {
-        return None;
-    }
+    let session = match collection.find_one(doc! {"token": token.clone().unwrap()}, None).await {
+        Ok(session) => session.unwrap(),
+        Err(_) => return None,
+    };
+
     //current time
     
     //check if session is expired
-    if utils::time_now() > session.clone().unwrap().time {
+    if utils::time_now() > session.time {
         //delete session
         collection.find_one_and_delete(doc! {"token": &token.unwrap()}, None).await.unwrap();
         return None;
     }
-    session
+    Some(session)
 }
 
 async fn remove_session_from_header(req: &HttpRequest, client: &web::Data<Client>)-> bool {
-    let token = get_token_from_header(&req);
-    if token.is_none() {
-        return false;
-    }
-    let token = token.unwrap();
+    let token = match get_token_from_header(&req) {
+        Some(token) => token,
+        None => return false,
+    };
+
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
     let result = collection.find_one_and_delete(doc! {"token": token}, None).await.unwrap();
     return result.is_some();
@@ -466,8 +477,7 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
         message: String::from(""),
     };
 
-    let result = remove_session_from_header(&req, &client).await;
-    if !result {
+    if !remove_session_from_header(&req, &client).await {
         response.message = String::from("Session not found");
         return HttpResponse::BadRequest().json(response);
     }
@@ -479,10 +489,11 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
 async fn get_alarms(req: HttpRequest, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     //get user from header
     println!("get alarms");
-    let token = get_token_from_header(&req);
-    if token.is_none() {
-        return HttpResponse::BadRequest().json(DefaultResponse{message: String::from("Invalid token")});
-    }
+    let _token = match get_token_from_header(&req){
+        Some(token) => token,
+        None => return HttpResponse::BadRequest().json(DefaultResponse{message: String::from("Invalid token")})
+    };
+
     let alarms =  get_alarms_from_header(&req, &client).await;
     
     //ws_client.lock().unwrap().try_send("/api/alarms", &token.unwrap()).await;
@@ -510,17 +521,22 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
     let mut response = DefaultResponse {
         message: String::from(""),
     };
-    let token = get_token_from_header(&req);
-    if token.is_none() {
-        response.message = String::from("Invalid token");
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user_fetch = get_user_from_header(&req, &client).await;
-    if user_fetch.is_none() {
-        response.message = String::from("User not found");
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user = user_fetch.unwrap();
+    let token = match get_token_from_header(&req) {
+        Some(token) => token,
+        None => {
+            response.message = String::from("Invalid token");
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+
+    let user = match get_user_from_header(&req, &client).await {
+        Some(user) => user,
+        None => {
+            response.message = String::from("User not found");
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+ 
     let mut alarm = alarm_in.into_inner();
     alarm._id = ObjectId::new();
     alarm.user = user._id.to_hex().clone();
@@ -533,7 +549,7 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
         return HttpResponse::BadRequest().json(response);
     }
     response.message = String::from("Alarm added");
-    ws_client.lock().unwrap().try_send("/api/alarm", &token.unwrap()).await;
+    ws_client.lock().unwrap().try_send("/api/alarm", &token).await;
     HttpResponse::Ok().json(alarm)
 }
 
@@ -542,12 +558,13 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
 async fn edit_alarm_from_id(alarm: &Alarm, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
     let alarm_id = alarm._id;
-    let alarm_fetch = collection.find_one(doc! {"_id": alarm_id}, None).await.unwrap();
+    let alarm = match collection.find_one(doc! {"_id": alarm_id}, None).await {
+        Ok(alarm) => alarm.unwrap(),
+        Err(_) => return false,
+    };
     //check if users are the same
-    if alarm_fetch.is_none() {
-        return false;
-    }
-    if alarm_fetch.unwrap().user != alarm.user {
+
+    if alarm.user != alarm.user {
         return false;
     }
     let result = collection.find_one_and_replace(doc! {"_id": alarm_id}, alarm, None).await.unwrap();
@@ -610,12 +627,14 @@ async fn delete_alarm(req: HttpRequest,id: web::Path<String>, client: web::Data<
     let mut response = DefaultResponse {
         message: String::from(""),
     };
-    let user_resp = get_user_from_header(&req, &client).await;
-    if user_resp.is_none() {
-        response.message = String::from("User not found");
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user = user_resp.unwrap();
+    let user = match get_user_from_header(&req, &client).await {
+        Some(user) => user,
+        None => {
+            response.message = String::from("User not found");
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+
     delete_alarm_by_id_and_user(&ObjectId::parse_str(id.clone()).unwrap(), &user._id, &client).await;
     response.message = String::from("Alarm deleted");
     ws_client.lock().unwrap().try_send("/api/alarm", &get_token_from_header(&req).unwrap()).await;
@@ -667,12 +686,14 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
     let mut response = DefaultResponse {
         message: String::from(""),
     };
-    let user = get_user_from_header(&req, &client).await;
-    if user.is_none() {
-        response.message = String::from("User not found");
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user = user.unwrap();
+    let user = match  get_user_from_header(&req, &client).await {
+        Some(user) => user,
+        None => {
+            response.message = String::from("User not found");
+            return HttpResponse::BadRequest().json(response);
+        }
+    }; 
+
     let device = Device {
         _id: ObjectId::new(),
         user_device: device.user_device.as_str().to_string(),
@@ -680,8 +701,7 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
         user: user._id.to_hex(),
         device_type: device_type(&device.device_type),
     };
-    let result = add_device_to_user(&device, &client).await;
-    if !result {
+    if !add_device_to_user(&device, &client).await {
         response.message = String::from("Could not add device");
         return HttpResponse::BadRequest().json(response);
     }
@@ -692,11 +712,12 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
 
 async fn edit_device_from_id(device_id: &ObjectId, device: &Device, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
-    let device_in_db = collection.find_one(doc! {"_id": device_id}, None).await.unwrap();
-    if device_in_db.is_none() {
-        return false;
-    }
-    if device_in_db.unwrap().user != device.user {
+    let device_in_db = match collection.find_one(doc! {"_id": device_id}, None).await {
+        Ok(result) => result.unwrap(),
+        Err(_) => return false,
+    };
+
+    if device_in_db.user != device.user {
         return false;
     }
     collection.replace_one(doc! {"_id": device_id}, device, None).await.unwrap();
@@ -787,31 +808,36 @@ struct AdminCheck{
 }
 async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -> Option<AdminCheck> {
     //get admin token from header
-    let session_fetch = get_session_from_header(&req, &client).await;
-    if session_fetch.is_none() {
-        return None;
-    }
-    let session = session_fetch.unwrap();
-    let user_fetch  = get_user_from_session(&session, &client).await;
-    if user_fetch.is_none() {
-        return None;
-    }
-    let user = user_fetch.unwrap();
+    let session = match get_session_from_header(&req, &client).await{
+        Some(session) => session,
+        None => return None,
+    };
+
+
+    // clean the above
+    let user  = match get_user_from_session(&session, &client).await {
+        Some(user) => user,
+        None => return None,
+    };
+
     if !user.admin {
         return None;
     }
-    
-    let admin_token_headers = req.headers().get("adminToken");
-    if admin_token_headers.is_none() {
-        return None;
-    }
-    let admin_token = admin_token_headers.unwrap().to_str().unwrap();
+   // let user: Option<User> = get_user_from_session(&session, &client).await;
+
+
+    let admin_token_headers = match req.headers().get("adminToken"){
+        Some(token) => token,
+        None => return None,
+    };
+  
+    let admin_token = admin_token_headers.to_str().unwrap();
     let collection: Collection<Admin> = client.database(DB_NAME).collection(ADMINCOLL);
-    let admin_fetch = collection.find_one(doc! {"token": admin_token}, None).await.unwrap();
-    if admin_fetch.is_none() {
-        return None;
-    }
-    let admin = admin_fetch.unwrap();
+    let admin = match collection.find_one(doc! {"token": admin_token}, None).await{
+        Ok(admin) => admin.unwrap(),
+        Err(_) => return None,
+    };
+
     //check if user id is the same
     if admin.user_id != user._id.to_hex() {
         return None;
@@ -865,11 +891,11 @@ async fn delete_user_from_id(user_id: &ObjectId, client: &web::Data<Client>) -> 
 //remove user 
 async fn remove_user_by_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     //check if user is owner
-    let user_fetch = get_user_by_id(&user_id, &client).await;
-    if user_fetch.is_none() {
-        return false;
-    }
-    let user = user_fetch.unwrap();
+    let user = match get_user_by_id(&user_id, &client).await {
+        Some(user) => user,
+        None => return false,
+    };
+
     //check if user is owner
     if user.owner {
         return false;
@@ -982,7 +1008,7 @@ async fn edit_user(req: HttpRequest, user_id_str: web::Path<String>, user: web::
         }
     };
     
-    let admin_check = match get_admin_from_headers(&req, &client).await {
+    let _admin_check = match get_admin_from_headers(&req, &client).await {
         Some(admin) => admin,
         None => {
             let response = DefaultResponse { message: "Unauthorized".to_string() };
@@ -1032,8 +1058,7 @@ async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPass
     //add 10 minutes to time
     let expires = utils::time_now() + 600000;
     let admin = Admin { _id: ObjectId::new(), token: utils::new_token(96), user_id: user._id.to_hex(), time: expires };
-    let result = set_admin_session(&admin, &client).await;
-    if !result {
+    if !set_admin_session(&admin, &client).await {
         let response = DefaultResponse {  message: "Error setting admin session".to_string()};
         return HttpResponse::BadRequest().json(response);
     }
@@ -1168,14 +1193,15 @@ impl WsMessageHandler {
     fn remove_stream_by_key(&mut self, key: &String) {
         self.key_session.remove(key);
         //pop token
-        let token = self.key_token.remove(key);
-        if token.is_none() {
-            return;
-        }
-        let user = self.token_user.remove(&token.unwrap());
-        if user.is_none() {
-            return;
-        }
+        
+        let token = match self.key_token.remove(key){
+            Some(token) => token,
+            None => return,
+        };
+        let _user = match self.token_user.remove(&token) {
+            Some(user) => user,
+            None => return,
+        };
     }
     fn add_session(&mut self, key: &String, session: WsSession, user: &String, token: &String) {
         self.key_session.insert(key.clone(), session);
@@ -1185,15 +1211,16 @@ impl WsMessageHandler {
     fn get_user_keys_exclude_token(&self,  token: &str) -> Vec<String> {
         let mut keys = Vec::new();
         //get user's tokens
-        let user_id = self.token_user.get(token);
-        if user_id.is_none() {
-            return keys;
-        }
+        let user_id = match self.token_user.get(token) {
+            Some(user_id) => user_id,
+            None => return keys,
+        };
+            
         //get all user tokens except current token by iterating through token_user
 
         let mut user_tokens = Vec::new();
         for (key, value) in &self.token_user {
-            if value == user_id.unwrap() {
+            if value == user_id {
                 user_tokens.push(key.clone());
             }
         }
@@ -1248,13 +1275,15 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
             Ok(msg)
         }
 
-        async fn process_ws_action(msg: &str) -> WsMsg{
-            let msg_de = deserialize_msg(&msg);
-            if msg_de.is_err() {
-                println!("Error deserializing message");
-                return WsMsg{mode: None, token: None, url: None};
-            }
-            let msg = msg_de.unwrap();
+        async fn process_ws_action(msg_ws: &str) -> WsMsg{
+            let msg = match deserialize_msg(&msg_ws) {
+                Ok(msg) => msg,
+                Err(e) => {
+                    println!("Error deserializing message: {}", e);
+                    return WsMsg{mode: None, token: None, url: None};
+                }
+                
+            };
             println!("Message: {:?}", msg);
             msg
         }
@@ -1274,12 +1303,15 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                             "client" => {
                                 if let Some(token) = &m.token {
                                     if token.len() > 3 {
-                                        let user_fetch = token_to_user(&token, &client).await;
-                                        if user_fetch.is_none() {
-                                            println!("No user found");
-                                            return;
-                                        }
-                                        ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user_fetch.unwrap().email, &token);
+                                        let user = match token_to_user(&token, &client).await{
+                                            Some(user) => user,
+                                            None => {
+                                                println!("No user found");
+                                                return;
+                                            }
+                                        };
+ 
+                                        ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user.email, &token);
                                         session.text("connection").await.unwrap();
                                     }
                                 }
@@ -1383,13 +1415,14 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
                     }
                 }
                 Message::Text(s) => {
-                    let msg_de = serde_json::from_str::<FormMsg>(&s);
-                    if msg_de.is_err() {
-                        println!("Error deserializing message");
-                        session.text("Error deserializing message").await.unwrap();
-                        return;
-                    }
-                    let msg = msg_de.unwrap();
+                    let msg = match serde_json::from_str::<FormMsg>(&s){
+                        Ok(msg) => msg,
+                        Err(e) => {
+                            println!("Error deserializing message: {}", e);
+                            return;
+                        }
+                    };
+                    
                     //check msg_de enum
                     //match msg enum from WsRegisterMsg
                     let query = msg.query.as_ref().unwrap(); 
