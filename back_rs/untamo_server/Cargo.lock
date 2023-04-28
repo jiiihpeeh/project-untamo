@@ -1074,15 +1074,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fuzzy-matcher"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54614a3312934d066701a80f20f15fa3b56d67ac7722b39eea5b4c9dd1d66c94"
-dependencies = [
- "thread_local",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2033,6 +2024,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "similar-string"
+version = "1.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3ac42455f28f7f9fc2ca816746b7143356f51ae195abb35d5bb4ac3808c7fa3"
+
+[[package]]
 name = "slab"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2146,16 +2143,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.15",
-]
-
-[[package]]
-name = "thread_local"
-version = "1.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fdd6f064ccff2d6567adcb3873ca630700f00b5ad3f060c25b5dcfd9a4ce152"
-dependencies = [
- "cfg-if",
- "once_cell",
 ]
 
 [[package]]
@@ -2410,7 +2397,6 @@ dependencies = [
  "clap",
  "dotenv",
  "futures",
- "fuzzy-matcher",
  "itertools",
  "mongodb",
  "nanoid",
@@ -2420,6 +2406,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "similar-string",
  "tokio",
  "tungstenite",
  "url",

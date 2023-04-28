@@ -43,7 +43,7 @@ impl WsClient {
     }
     fn connect(&mut self) -> Result<(), Error> {
         let url = Url::parse(&self.url).unwrap();
-        let (mut socket, response) = connect(url)?;
+        let ( socket, response) = connect(url)?;
         self.socket = socket;
         self.response = response;
         Ok(())

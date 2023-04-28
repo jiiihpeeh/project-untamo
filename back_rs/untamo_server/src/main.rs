@@ -1,7 +1,7 @@
-use actix_rt::net::TcpStream;
-use actix_web::http::header::Header;
-use actix_web::web::Payload;
-use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpMessage, HttpRequest, FromRequest};
+// use actix_rt::net::TcpStream;
+// use actix_web::http::header::Header;
+// use actix_web::web::Payload;
+use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpRequest};
 use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
@@ -408,15 +408,15 @@ async fn remove_session_from_header(req: &HttpRequest, client: &web::Data<Client
     };
 
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let result = match collection.find_one_and_delete(doc! {"token": token}, None).await {
-        Ok(result) => return true,
+    match collection.find_one_and_delete(doc! {"token": token}, None).await {
+        Ok(_) => return true,
         Err(_) => return false,
     };
 }
 //find qr by qr_token
 async fn find_qr_from_token(qr_token: &str, client: &web::Data<Client>) -> Option<Qr> {
     let collection: Collection<Qr> = client.database(DB_NAME).collection(QRCOLL);
-    let qr = match  collection.find_one(doc! {"qr_token": qr_token}, None).await {
+    match  collection.find_one(doc! {"qr_token": qr_token}, None).await {
         Ok(qr) => return  qr,
         Err(_) => return None,
     };
@@ -488,7 +488,7 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
 }
 
 #[get("/api/alarms")]
-async fn get_alarms(req: HttpRequest, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
+async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
     //get user from header
     println!("get alarms");
     let _token = match get_token_from_header(&req){
@@ -570,7 +570,7 @@ async fn edit_alarm_from_id(alarm: &Alarm, client: &web::Data<Client>) -> bool {
         return false;
     }
     match collection.find_one_and_replace(doc! {"_id": alarm_id}, alarm, None).await {
-        Ok(alarm) => return true,
+        Ok(_) => return true,
         Err(_) => return false,
     };
 }
@@ -627,7 +627,7 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
 async fn delete_alarm_by_id_and_user(alarm_id: &ObjectId, user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
     match collection.find_one_and_delete(doc! {"_id": alarm_id, "user_id": user_id}, None).await {
-        Ok(alarm) =>  return true,
+        Ok(_) =>  return true,
         Err(_) => return false,
     };
 }
@@ -1238,8 +1238,8 @@ impl WsMessageHandler {
             None => return,
         };
     }
-    fn add_session(&mut self, key: &String, session: WsSession, user: &String, token: &String) {
-        self.key_session.insert(key.clone(), session);
+    fn add_session(&mut self, key: &String, session: &WsSession, user: &String, token: &String) {
+        self.key_session.insert(key.clone(), session.clone());
         self.key_token.insert(key.clone(), token.clone());
         self.token_user.insert(token.clone(), user.clone());
     }
@@ -1301,7 +1301,15 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
     //key_secret.insert(ws_key, "test");
 
     //print key secret pairs 
-    let mut token = String::new();
+    //let mut token = String::new();
+    //get token from key
+    let token = match ws_handler.lock().unwrap().key_token.get(&ws_key) {
+        Some(token) => token.clone(),
+        None => {
+            println!("No token found for key: {}", ws_key);
+            return Ok(response);
+        }
+    };
     println!("ws key: {}", ws_key);
     actix_rt::spawn(async move {
         //deserialize message check errror
@@ -1346,23 +1354,21 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                                             }
                                         };
  
-                                        ws_handler.lock().unwrap().add_session(&ws_key, session.clone(), &user.email, &token);
+                                        ws_handler.lock().unwrap().add_session(&ws_key, &session, &user.email, &token);
                                         session.text("connection").await.unwrap();
                                     }
                                 }
                             },
                             "api" => {
-                                if let Some(url) = &m.url {
-                                    let keys = ws_handler.lock().unwrap().get_user_keys_exclude_token(&token);
-                                    let key_session = ws_handler.lock().unwrap().key_session.clone();
-                                    for key in keys {
-                                        let session_map =  match key_session.get(&key){
-                                            Some(session) => session,
-                                            None => continue,
-                                        };
-                               
-                                        let mut session_send = session_map.clone();
-                                        session_send.text("connection").await.unwrap() ;
+                                if let Some(_url) = &m.url {
+                                    let ws_handler = ws_handler.lock().unwrap();
+                                    let key_session = &ws_handler.key_session;
+                                    //let key_session = ws_handler.lock().unwrap().key_session.clone();
+                                    for key in ws_handler.get_user_keys_exclude_token(&token) {
+                                        if let Some(session) = key_session.get(&key) {
+                                            let mut session_send = session.clone();
+                                            session_send.text("connection").await.unwrap();
+                                        }
                                     }
                                 }
                             },
@@ -1429,7 +1435,8 @@ struct RegisterCheckPass{
 #[serde(rename_all = "camelCase")]
 struct FormMsgOut{
     query: String,
-    content: bool
+    content: bool,
+    messages: Option<Vec<String>>,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -1463,9 +1470,16 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
                     //match msg enum from WsRegisterMsg
                     match msg.query.as_ref().unwrap().as_str(){
                         "form" => {
+                            let mut form_check_hash = HashMap::new();
+                            form_check_hash.insert(String::from("first_name"), &msg.first_name);
+                            form_check_hash.insert(String::from("last_name"), &msg.last_name);
+                            form_check_hash.insert(String::from("email"), &msg.email);
+                            form_check_hash.insert(String::from("password"), &msg.password);
+                            let form_check_result: form_check::Message = form_check::form_check(&form_check_hash);
                             let msg_out = FormMsgOut{
                                 query: "form".to_string(),
-                                content: true,
+                                content: form_check_result.pass,
+                                messages: Some(form_check_result.messages),
                             };
                             session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
                         },
