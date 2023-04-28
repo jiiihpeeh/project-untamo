@@ -6,7 +6,7 @@ use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Deref};
 use std::option::Option;
 use itertools::Itertools;
 use std::sync::Mutex;
@@ -560,7 +560,8 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
     alarm.user = user._id.to_hex().clone();
     alarm.devices = alarm.devices.into_iter().unique().collect();
     //get unique items from weekdays
-    alarm.weekdays = alarm.weekdays.into_iter().unique().collect();
+    alarm.weekdays = check_weekdays(&alarm.weekdays);//alarm.weekdays.into_iter().unique().collect();
+
     let result = add_alarm_to_db(&alarm, &client).await;
     if !result {
         response.message = String::from("Failed to add alarm");
@@ -612,11 +613,12 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
             return HttpResponse::BadRequest().json(response);
         }
     };
+    let weekdays = check_weekdays(&alarm_edit.weekdays);
     let alarm = Alarm {
         _id: ObjectId::parse_str(id.clone()).unwrap(),
         occurrence: alarm_edit.occurrence.clone(),
         time: alarm_edit.time.clone(),
-        weekdays: alarm_edit.weekdays.clone().into_iter().unique().collect(),
+        weekdays: weekdays,
         date: alarm_edit.date.clone(),
         label: alarm_edit.label.clone(),
         devices: alarm_edit.devices.clone().into_iter().unique().collect(),
@@ -628,9 +630,8 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
         fingerprint: alarm_edit.fingerprint.clone(),
         close_task: alarm_edit.close_task.clone(),
     };
-    let result = edit_alarm_from_id(&alarm, &client).await;
 
-    if !result {
+    if !edit_alarm_from_id(&alarm, &client).await {
         response.message = String::from("Alarm not found");
         return HttpResponse::BadRequest().json(response);
     }
@@ -1534,6 +1535,18 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
 }
 
 
+//remove item if not in the  Weekdays
+fn check_weekdays(vec: &Vec<String>)->Vec<String>{
+    let weekdays = vec!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    let mut new_vec = vec.clone();
+    new_vec.sort();
+    new_vec.dedup();
+    //remove duplicates
+    //remove items not in weekdays
+    new_vec.retain(|x| weekdays.contains(&x.as_str()));
+    new_vec.to_vec()
+}
 
 /// Creates an index on the "username" field to force the values to be unique.
 async fn create_username_index(client: &Client) {
