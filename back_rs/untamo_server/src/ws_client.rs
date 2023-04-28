@@ -33,7 +33,7 @@ impl WsClient {
     //derive WsClient from url
     fn new(url: &str) -> Result<WsClient, Error> {
         let url_parsed = String::from(url);
-        let (mut socket, response) = connect(url_parsed)?;
+        let ( socket, response) = connect(url_parsed)?;
         let client = WsClient {
             socket,
             response,

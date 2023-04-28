@@ -36,11 +36,6 @@ pub fn form_check(form_map: &HashMap<String,&Option<String>>)-> Message{
    
     //generate a vector of filled fields from form
     let mut filled_fields : Vec<String> = Vec::new();
-    //iterate all fields in form struct using serde
-
-    //convert Form struct to hashmap using serde iterate over hashmap
-  
-
     //check if email is valid from form_map
     match form_map.get("email") {
         Some(email) => {
@@ -64,21 +59,17 @@ pub fn form_check(form_map: &HashMap<String,&Option<String>>)-> Message{
     }
 
     for (key, value) in  form_map.iter(){
-        //if field is filled
-        //exclude password from filled_fields
         if key == "password" {
             continue;
         }
         match value {
             Some(value) => {
-                //add field value as lowercase to filled_fields 
                 filled_fields.push(value.to_lowercase());
             },
             None => {}
         }
     }
     //combine first_name and last_name to full_name from form_map
-
     match (form_map.get("first_name"), form_map.get("last_name")) {
         (Some(first_name), Some(last_name)) => {
             match (first_name, last_name) {
@@ -105,7 +96,6 @@ pub fn form_check(form_map: &HashMap<String,&Option<String>>)-> Message{
         },
         None => ()
     }
-    
     let mut scores : Vec<f64> = Vec::new();
     // find best similarity for password convert password to lowercase
     let lowercase_password = form_map.get("password").unwrap().as_ref().unwrap().to_lowercase();
@@ -119,7 +109,6 @@ pub fn form_check(form_map: &HashMap<String,&Option<String>>)-> Message{
             println!("None");
         }
     }
-
     //lowercase password and replace leetspeak
     let leet_password = from_leet(&lowercase_password.to_lowercase());
     match find_best_similarity(&leet_password, &filled_fields){
@@ -159,11 +148,9 @@ pub fn form_check(form_map: &HashMap<String,&Option<String>>)-> Message{
             pass = false;
         }
     }
-
     Message { 
         messages: messages, 
         pass: pass 
     }
-   
 }
     
