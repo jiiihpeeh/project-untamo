@@ -239,7 +239,12 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
         true => register.email.split("@").next().unwrap().to_string(),
         false => format!("{} {}", register.first_name.as_ref().unwrap(), register.last_name.as_ref().unwrap()),
     };
-
+    let mut form_check_hash = HashMap::new();
+    form_check_hash.insert(String::from("first_name"), &register.first_name);
+    form_check_hash.insert(String::from("last_name"), &register.last_name);
+    // form_check_hash.insert(String::from("email"), &Some(register.email.to_string()));
+    // form_check_hash.insert(String::from("password"), &Some(register.password));
+    let form_check_result: form_check::Message = form_check::form_check(&form_check_hash);
     let hashed = match password_hash::hash_password(&register.password) {
         Some(hashed) => hashed,
         None => {
@@ -386,7 +391,12 @@ async fn get_user_from_session(session: &Session, client: &web::Data<Client>) ->
     println!("{}", ObjectId::parse_str(&session.user_id).unwrap());
 
     let user  = match  collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await {
-        Ok(user_fetch) => user_fetch.unwrap(),
+        Ok(user_fetch) => {
+            match user_fetch {
+                Some(user_fetch) => user_fetch,
+                None => return None,
+            }
+        },
         Err(_) => return None,
     };
 
@@ -402,7 +412,12 @@ async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) 
     } ;
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
     let session = match collection.find_one(doc! {"token": &token}, None).await {
-        Ok(session) => session.unwrap(),
+        Ok(session) => {
+            match session {
+                Some(session) => session,
+                None => return None,
+            }
+        },
         Err(_) => return None,
     };
 
@@ -856,7 +871,6 @@ async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -
     }
    // let user: Option<User> = get_user_from_session(&session, &client).await;
 
-
     let admin_token_headers = match req.headers().get("adminToken"){
         Some(token) => token,
         None => return None,
@@ -881,8 +895,6 @@ async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -
     }
     Some(AdminCheck { admin: admin, user: user })
 }
-
-
 
 
 //delete alarms by user id
@@ -1113,6 +1125,21 @@ async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPass
     HttpResponse::Ok().json(admin)
 }
 
+#[get("/api/is-session-valid")]
+async fn is_session_valid(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
+    println!("is_session_valid");
+
+    match get_session_from_header(&req, &client).await {
+        Some(_) => {
+            let response = DefaultResponse { message: "Session valid".to_string() };
+            return HttpResponse::Ok().json(response);
+        },
+        None => {
+            let response = DefaultResponse { message: "Unauthorized".to_string() };
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+}
 
 //get user
 #[get("/api/user")]
@@ -1545,7 +1572,7 @@ fn check_weekdays(vec: &Vec<String>)->Vec<String>{
     //remove duplicates
     //remove items not in weekdays
     new_vec.retain(|x| weekdays.contains(&x.as_str()));
-    new_vec.to_vec()
+    new_vec
 }
 
 /// Creates an index on the "username" field to force the values to be unique.
