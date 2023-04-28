@@ -1,12 +1,15 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 use radix_fmt::radix;
-use rand::{thread_rng, distributions::Alphanumeric, Rng};
+//use rand::{thread_rng, distributions::Alphanumeric, Rng};
+use rand::{thread_rng, Rng};
 use regex::Regex;
+use nanoid::nanoid;
 
 pub fn random_string(n: usize ) -> String {
-    let mut rng = thread_rng();
-    let chars: String = (0..n).map(|_| rng.sample(Alphanumeric) as char).collect();
-    chars
+    //let mut rng = thread_rng();
+    //let chars: String = (0..n).map(|_| rng.sample(Alphanumeric) as char).collect();
+    nanoid!(n)
+    //chars
 }
 
 //randomly capitalize each letter in the string

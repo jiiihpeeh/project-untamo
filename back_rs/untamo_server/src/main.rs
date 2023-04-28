@@ -224,21 +224,23 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
         response.message = String::from("Email is not valid");
         return HttpResponse::BadRequest().json(response);
     }
-    let mut screen_name = String::from("");
-    if register.first_name.is_none() && register.last_name.is_none() {
-        screen_name = register.email.split("@").next().unwrap().to_string();
-    } else {
-        screen_name = format!("{} {}", register.first_name.clone().unwrap(), register.last_name.clone().unwrap());
-    }
-    let hashed_result = password_hash::hash_password(&register.password);
-    if hashed_result.is_none() {
-        response.message = String::from("Could not hash password");
-        return HttpResponse::BadRequest().json(response);
-    }
+    let screen_name = match register.first_name.is_none() && register.last_name.is_none() {
+        true => register.email.split("@").next().unwrap().to_string(),
+        false => format!("{} {}", register.first_name.as_ref().unwrap(), register.last_name.as_ref().unwrap()),
+    };
+
+    let hashed = match password_hash::hash_password(&register.password) {
+        Some(hashed) => hashed,
+        None => {
+            response.message = String::from("Could not hash password");
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+        
     let user = User {
         _id: ObjectId::new(),
         email: register.email.clone(),
-        password: hashed_result.unwrap(),
+        password: hashed,
         first_name: register.first_name.clone(),
         last_name: register.last_name.clone(),
         screen_name: screen_name.clone(),
@@ -406,8 +408,10 @@ async fn remove_session_from_header(req: &HttpRequest, client: &web::Data<Client
     };
 
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let result = collection.find_one_and_delete(doc! {"token": token}, None).await.unwrap();
-    return result.is_some();
+    let result = match collection.find_one_and_delete(doc! {"token": token}, None).await {
+        Ok(result) => return true,
+        Err(_) => return false,
+    };
 }
 //find qr by qr_token
 async fn find_qr_from_token(qr_token: &str, client: &web::Data<Client>) -> Option<Qr> {
@@ -425,13 +429,15 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
         message: String::from(""),
     };
     //number of items in collection
-    let qr = find_qr_from_token(&qr.qr_token, &client).await;
-    if qr.is_none() {
-        error_response.message = String::from("QR not found");
-        return HttpResponse::BadRequest().json(error_response);
-    }
+    let qr = match find_qr_from_token(&qr.qr_token, &client).await {
+        Some(qr) => qr,
+        None => {
+            error_response.message = String::from("QR not found");
+            return HttpResponse::BadRequest().json(error_response);
+        }
+    };
+
     //verify password
-    let qr = qr.unwrap();
     if qr.user != qr.user {
         error_response.message = String::from("Invalid QR");
         return HttpResponse::BadRequest().json(error_response);
@@ -563,8 +569,10 @@ async fn edit_alarm_from_id(alarm: &Alarm, client: &web::Data<Client>) -> bool {
     if alarm.user != alarm.user {
         return false;
     }
-    let result = collection.find_one_and_replace(doc! {"_id": alarm_id}, alarm, None).await.unwrap();
-    result.is_some()
+    match collection.find_one_and_replace(doc! {"_id": alarm_id}, alarm, None).await {
+        Ok(alarm) => return true,
+        Err(_) => return false,
+    };
 }
 
 
@@ -618,8 +626,10 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
 
 async fn delete_alarm_by_id_and_user(alarm_id: &ObjectId, user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-    let result = collection.find_one_and_delete(doc! {"_id": alarm_id, "user_id": user_id}, None).await.unwrap();
-    result.is_some()
+    match collection.find_one_and_delete(doc! {"_id": alarm_id, "user_id": user_id}, None).await {
+        Ok(alarm) =>  return true,
+        Err(_) => return false,
+    };
 }
 
 #[delete("/api/alarm/{id}")]
@@ -730,12 +740,14 @@ async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<
     let mut response = DefaultResponse {
         message: String::from(""),
     };
-    let user_fetch = get_user_from_header(&req, &client).await;
-    if user_fetch.is_none() {
-        response.message = String::from("User not found");
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user = user_fetch.unwrap();
+    let user = match get_user_from_header(& req, &client).await {
+        Some(user) => user,
+        None => {
+            response.message = String::from("User not found");
+            return HttpResponse::BadRequest().json(response);
+        },
+    };
+  
     if device.user != user._id.to_hex() {
         response.message = String::from("Device was not owned by user");
         return HttpResponse::BadRequest().json(response);
@@ -760,15 +772,18 @@ async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<
 
 async fn delete_device_by_id_and_user(device_id: &ObjectId, user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
-    let device_to_delete = collection.find_one(doc! {"_id": device_id}, None).await.unwrap();
-    if device_to_delete.is_none() {
+    let device_to_delete = match collection.find_one(doc! {"_id": device_id}, None).await {
+        Ok(result) => result.unwrap(),
+        Err(_) => return false,
+    };
+
+    if device_to_delete.user != user_id.to_hex() {
         return false;
     }
-    if device_to_delete.unwrap().user != user_id.to_hex() {
-        return false;
-    }
-    let result = collection.find_one_and_delete(doc! {"_id": device_id, "user_id": user_id.to_hex()}, None).await.unwrap();
-    result.is_some()
+    match collection.find_one_and_delete(doc! {"_id": device_id, "user_id": user_id.to_hex()}, None).await{
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 #[delete("/api/device/{id}")]
@@ -776,14 +791,15 @@ async fn delete_device(req: HttpRequest, client: web::Data<Client>, id: web::Pat
     let mut response = DefaultResponse {
         message: String::from(""),
     };
-    let user_fetch = get_user_from_header(&req, &client).await;
-    if user_fetch.is_none() {
-        response.message = String::from("User not found");
-        return HttpResponse::BadRequest().json(response);
-    }
-    let user = user_fetch.unwrap();
-    let resp = delete_device_by_id_and_user(&ObjectId::parse_str(&*id).unwrap(), &user._id, &client).await;
-    if !resp {
+    let user = match get_user_from_header(&req, &client).await{
+        Some(user) => user,
+        None => {
+            response.message = String::from("User not found");
+            return HttpResponse::BadRequest().json(response);
+        },
+    };
+
+    if !delete_device_by_id_and_user(&ObjectId::parse_str(&*id).unwrap(), &user._id, &client).await {
         response.message = String::from("Device not found");
         return HttpResponse::BadRequest().json(response);
     }
@@ -813,8 +829,6 @@ async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -
         None => return None,
     };
 
-
-    // clean the above
     let user  = match get_user_from_session(&session, &client).await {
         Some(user) => user,
         None => return None,
@@ -884,8 +898,10 @@ async fn get_user_by_id(user_id: &ObjectId, client: &web::Data<Client>) -> Optio
 //delete user by id
 async fn delete_user_from_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let result = collection.find_one_and_delete(doc! {"_id": user_id}, None).await.unwrap();
-    result.is_some()
+    match collection.find_one_and_delete(doc! {"_id": user_id}, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 //remove user 
@@ -994,8 +1010,10 @@ async fn edit_user_from_id(user_id: &ObjectId, user: &User, client: &web::Data<C
         return false;
     }
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let result = collection.find_one_and_replace(doc! {"_id": user_id}, user, None).await.unwrap();
-    result.is_some()
+    match collection.find_one_and_replace(doc! {"_id": user_id}, user, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 #[put("/admin/user/{user_id_str}")]
@@ -1050,18 +1068,24 @@ async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPass
         let response = DefaultResponse {  message: "Unauthorized".to_string()};
         return HttpResponse::BadRequest().json(response);
     }
-    let check_password = password_hash::verify_password(&admin_password.password, &user.password);
-    if !check_password {
-        let response = DefaultResponse {  message: "Unauthorized".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
+    match  password_hash::verify_password(&admin_password.password, &user.password){
+        true => (),
+        false => {
+            let response = DefaultResponse {  message: "Unauthorized".to_string()};
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+ 
     //add 10 minutes to time
     let expires = utils::time_now() + 600000;
     let admin = Admin { _id: ObjectId::new(), token: utils::new_token(96), user_id: user._id.to_hex(), time: expires };
-    if !set_admin_session(&admin, &client).await {
-        let response = DefaultResponse {  message: "Error setting admin session".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
+    match set_admin_session(&admin, &client).await{
+        true => (),
+        false => {
+            let response = DefaultResponse {  message: "Error setting admin session".to_string()};
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
 
     HttpResponse::Ok().json(admin)
 }
@@ -1106,8 +1130,10 @@ pub struct UserEdit {
 //update user info db
 async fn update_user_info(user: &User, client: &web::Data<Client>) -> bool {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let result = collection.find_one_and_replace(doc! {"_id": user._id.clone()}, user, None).await.unwrap();
-    result.is_some()
+    match collection.find_one_and_replace(doc! {"_id": user._id.clone()}, user, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 //edit user
@@ -1164,11 +1190,14 @@ async fn edit_user_info(req: HttpRequest, email: web::Path<String>, user_edit: w
     }
     
     let new_user = User { _id: user._id, email: user_edit.clone().email, password: password_hash, first_name: Some(user_edit.clone().first_name), last_name: Some(user_edit.clone().last_name), screen_name: user_edit.clone().screen_name, owner: user.owner, active: user.active, admin: user.admin };
-    let update = update_user_info(&new_user, &client).await;
-    if update == false {
-        let response = DefaultResponse {  message: "Error updating user".to_string()};
-        return HttpResponse::BadRequest().json(response);
-    }
+    match update_user_info(&new_user, &client).await{
+        true => (),
+        false => {
+            let response = DefaultResponse {  message: "Error updating user".to_string()};
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+
     let response = DefaultResponse {  message: "User edited".to_string()};
     ws_client.lock().unwrap().try_send("/api/editUser", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(response)
@@ -1426,31 +1455,32 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
                     
                     //check msg_de enum
                     //match msg enum from WsRegisterMsg
-                    let query = msg.query.as_ref().unwrap(); 
-                    if  query == "form" {
-                        
-                        let msg_out = FormMsgOut{
-                            query: "form".to_string(),
-                            content: true,
-                        };
-                        session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
-                    }else if query == "zxcvbn" {
-                        let stopper = if msg.password.as_ref().unwrap().len() > 35 { 35 } else { msg.password.as_ref().unwrap().len() };
-                        let password_slice = &msg.password.as_ref().unwrap()[..stopper];
-                        let entropy: zxcvbn::Entropy = zxcvbn::zxcvbn(&password_slice, &[]).unwrap();
-                        let guesses = entropy.guesses_log10();
-                        let score = entropy.score();
-                        let msg_out = ZxcvbnMsgOut{
-                            query: msg.query.unwrap(),
-                            content: RegisterCheckPass{
-                                guesses: guesses,
-                                score: score,
-                                //get log 10 of server minimum
-                                server_minimum: f64::log10(1e9),
-                            }
-                        };
-                        session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
-                    }
+                    match msg.query.as_ref().unwrap().as_str(){
+                        "form" => {
+                            let msg_out = FormMsgOut{
+                                query: "form".to_string(),
+                                content: true,
+                            };
+                            session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
+                        },
+                        "zxcvbn" => {
+                            let stopper = if msg.password.as_ref().unwrap().len() > 35 { 35 } else { msg.password.as_ref().unwrap().len() };
+                            let password_slice = &msg.password.as_ref().unwrap()[..stopper];
+                            let entropy: zxcvbn::Entropy = zxcvbn::zxcvbn(&password_slice, &[]).unwrap();
+                            let guesses = entropy.guesses_log10();
+                            let score = entropy.score();
+                            let msg_out = ZxcvbnMsgOut{
+                                query: msg.query.unwrap(),
+                                content: RegisterCheckPass{
+                                    guesses: guesses,
+                                    score: score,
+                                    server_minimum: 0.0,
+                                }
+                            };
+                            session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
+                        },
+                        _ => (),
+                    }; 
                 },
                 _ => break,
             }
