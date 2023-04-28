@@ -871,21 +871,27 @@ async fn get_admin_from_headers(req: &HttpRequest, client: &web::Data<Client>) -
 //delete alarms by user id
 async fn delete_alarms_from_user_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-    let result = collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await.unwrap();
-    result.deleted_count > 0
+    match collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 //delete devices by user id
 async fn delete_devices_by_user_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
-    let result = collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await.unwrap();
-    result.deleted_count > 0
+    match collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 //delete sessions by user id
 async fn delete_sessions_by_user_id(user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let result = collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await.unwrap();
-    result.deleted_count > 0
+    match collection.delete_many(doc! {"user_id": user_id.to_hex()}, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 //fetch user by id
