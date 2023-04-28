@@ -186,20 +186,31 @@ struct DefaultResponse {
     message: String
 }
 
-async fn add_user_to_db(user: &User, client: &web::Data<Client>) -> bool {
+struct RegisterMessage{
+    message: String,
+    success: bool,
+}
+async fn add_user_to_db(user: &User, client: &web::Data<Client>) -> RegisterMessage {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-  
-    let result = collection.insert_one(user, None).await.unwrap();
-    match result.inserted_id.as_object_id() {
-        Some(id) => {
-            println!("Inserted id {}", id.to_hex());
-            return true;
+    //check if email is already in use and return error if it is
+    match collection.find_one(doc! {"email": &user.email}, None).await {
+        Ok(_) => return RegisterMessage { message: String::from("email in use"), success: false },
+        Err(_) => ()
+    };
+    //check if id is already in use 
+    match collection.find_one(doc! {"_id": &user._id}, None).await {
+        Ok(_) => return RegisterMessage { message: String::from("id in use"), success: false },
+        Err(_) => ()
+    };
+    match  collection.insert_one(&*user, None).await {
+        Ok(_) => {
+            return RegisterMessage { message: String::from("success"), success: true };
         },
-        None => {
-            println!("Could not get id");
-            return false;
+        Err(e) => {
+            println!("Error: {}", e);
+            return RegisterMessage { message: String::from("error"), success: false };
         }
-    }
+    };
 }
 
 #[post("/register")]
@@ -252,10 +263,15 @@ async fn register(register: web::Json<Register>,client: web::Data<Client>,) -> i
 
     //add user to mongo db
     println!("User: {:?}", user);
-    if !add_user_to_db(&user, &client).await {
-        response.message = String::from("Could not register user");
-        return HttpResponse::BadRequest().json(response);
-    }
+    match add_user_to_db(&user, &client).await {
+        RegisterMessage { message, success } => {
+            if !success {
+                response.message = message;
+                return HttpResponse::BadRequest().json(response);
+            }
+        }
+    };
+
     response.message = String::from("User registered");
     HttpResponse::Ok().json(response)
 }
