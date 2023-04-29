@@ -1,13 +1,17 @@
 // use actix_rt::net::TcpStream;
 // use actix_web::http::header::Header;
 // use actix_web::web::Payload;
+//use actix_web::{web, App, Error, HttpRequest, HttpResponse, HttpServer};
 use actix_cors::Cors;
 use actix_files::NamedFile;
+use actix_web::error::{ErrorInternalServerError, InternalError};
+use actix_web::http::StatusCode;
 use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpRequest, http};
 use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
+use utils::new_token;
 use std::fs;
 use std::path::{PathBuf, Path};
 use std::{collections::HashMap, ops::Deref};
@@ -894,21 +898,32 @@ async fn get_audio_resources(req: HttpRequest, client :   web::Data<Client>  ) -
     HttpResponse::Ok().json(files)
 }
 
-fn audio_file(req: HttpRequest) -> actix_web::Result<NamedFile> {
-    //let path: PathBuf = req.match_info().query("filename").parse().unwrap();
-    //set path by joining req.match_info().query("filename") with "audio-resources/"
-    //if not return error
-    //return file
+#[get("/audio-resources/{filename}")]
+async fn audio_file(req: HttpRequest, client :   web::Data<Client>) -> Result<NamedFile, actix_web::Error>{
+    let mut response = DefaultResponse {
+        message: String::from(""),
+    };
+
+    match get_user_from_header(&req, &client).await {
+        Some(_) => (),
+        None => {
+            response.message = String::from("User not found");
+            let err: InternalError<String> = actix_web::error::InternalError::new(format!("{:?}", HttpResponse::BadRequest().json(response)), StatusCode::BAD_REQUEST);
+            return Err(err.into());
+        }
+    };
+    response.message = String::from("File not found");
+
+    let err = actix_web::error::InternalError::new(format!("{:?}", HttpResponse::BadRequest().json(response)), StatusCode::BAD_REQUEST);
 
     let path = Path::new("audio-resources").join(req.match_info().query("filename"));
         //check if file ends with [flac, mp3 or opus]
     let allowed = [".flac", ".mp3", ".opus"];
-    if !path.exists() ||( !path.is_file() && !allowed.iter().any(|extension| path.ends_with(extension))) {
-        return Err(actix_web::error::ErrorNotFound("File not found"));
+    if !path.is_file() && !allowed.iter().any(|extension| path.ends_with(extension)) {
+        return Err(err.into());
     }
-    Ok(NamedFile::open(path)?)
+    NamedFile::open_async(path).await.map_err(|_| err.into())
 }
-
 
 #[put("/api/device/{id}")]
 async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, device: web::Json<Device>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
@@ -1839,6 +1854,7 @@ async fn main() -> std::io::Result<()> {
             .service(delete_user)
             .service(get_devices)
             .service(get_audio_resources)
+            .service(audio_file)
             .app_data(web::Data::new(client.clone()))
             .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
             .app_data(web::Data::new( Mutex::new(ws_client::WsClientConnect::new(&ws_action_uri))))
