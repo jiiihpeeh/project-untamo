@@ -2,11 +2,14 @@
 // use actix_web::http::header::Header;
 // use actix_web::web::Payload;
 use actix_cors::Cors;
+use actix_files::NamedFile;
 use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpRequest, http};
 use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
+use std::fs;
+use std::path::{PathBuf, Path};
 use std::{collections::HashMap, ops::Deref};
 use std::option::Option;
 use itertools::Itertools;
@@ -601,7 +604,7 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
     alarm.user = user._id.to_hex().clone();
     alarm.devices = alarm.devices.into_iter().unique().collect();
     //get unique items from weekdays
-    alarm.weekdays = check_weekdays(&alarm.weekdays);//alarm.weekdays.into_iter().unique().collect();
+    alarm.weekdays = utils::check_weekdays(&alarm.weekdays);//alarm.weekdays.into_iter().unique().collect();
 
     let result = add_alarm_to_db(&alarm, &client).await;
     if !result {
@@ -659,7 +662,7 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
             return HttpResponse::BadRequest().json(response);
         }
     };
-    let weekdays = check_weekdays(&alarm_edit.weekdays);
+    let weekdays = utils::check_weekdays(&alarm_edit.weekdays);
     let alarm = Alarm {
         _id: ObjectId::parse_str(id.clone()).unwrap(),
         occurrence: alarm_edit.occurrence.clone(),
@@ -838,6 +841,72 @@ async fn edit_device_from_id(device_id: &ObjectId, device: &Device, client: &web
         Ok(_) => return true,
         Err(_) => return false,
     };
+}
+
+//get alarm tunes listing from  filesystem
+#[get("/audio-resources/resource_list.json")]
+async fn get_audio_resources(req: HttpRequest, client :   web::Data<Client>  ) -> impl Responder {
+    let mut response = DefaultResponse {
+        message: String::from(""),
+    };
+    //check user is logged in
+    match get_user_from_header(&req, &client).await {
+        Some(_) => (),
+        None => {
+            response.message = String::from("User not found");
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    //list files in directory exclude json file
+    let mut files: Vec<String> = Vec::new();
+    for entry in fs::read_dir("audio-resources").unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        //get basename of file
+        let basename = match path.file_name(){
+            Some(basename) => {
+                if basename.to_str().unwrap().ends_with(".json") {
+                    continue;
+                }
+                basename.to_str()
+            },
+            None => continue,
+        };
+
+        //remove file extension "flac, mp3, opus etc.." 
+        let basename_base = match basename {
+            Some(basename) => {
+                let mut basename = basename.to_string();
+                let index = basename.rfind(".").unwrap();
+                basename.truncate(index);
+                basename
+            },
+            None => continue,
+        };
+        
+        //check if path is already in vector
+        if files.contains(&basename_base) {
+            continue;
+        }
+
+        files.push(basename_base);
+    }
+    HttpResponse::Ok().json(files)
+}
+
+fn audio_file(req: HttpRequest) -> actix_web::Result<NamedFile> {
+    //let path: PathBuf = req.match_info().query("filename").parse().unwrap();
+    //set path by joining req.match_info().query("filename") with "audio-resources/"
+    //if not return error
+    //return file
+
+    let path = Path::new("audio-resources").join(req.match_info().query("filename"));
+        //check if file ends with [flac, mp3 or opus]
+    let allowed = [".flac", ".mp3", ".opus"];
+    if !path.exists() ||( !path.is_file() && !allowed.iter().any(|extension| path.ends_with(extension))) {
+        return Err(actix_web::error::ErrorNotFound("File not found"));
+    }
+    Ok(NamedFile::open(path)?)
 }
 
 
@@ -1642,17 +1711,8 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
 
 
 //remove item if not in the  Weekdays
-fn check_weekdays(vec: &Vec<String>)->Vec<String>{
-    let weekdays = vec!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-    let mut new_vec = vec.clone();
-    new_vec.sort();
-    new_vec.dedup();
-    //remove duplicates
-    //remove items not in weekdays
-    new_vec.retain(|x| weekdays.contains(&x.as_str()));
-    new_vec
-}
+
 
 /// Creates an index on the "username" field to force the values to be unique.
 async fn create_username_index(client: &Client) {
@@ -1778,12 +1838,14 @@ async fn main() -> std::io::Result<()> {
             .service(delete_device)
             .service(delete_user)
             .service(get_devices)
+            .service(get_audio_resources)
             .app_data(web::Data::new(client.clone()))
             .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
             .app_data(web::Data::new( Mutex::new(ws_client::WsClientConnect::new(&ws_action_uri))))
             .route("/action", web::get().to(action_ws))
             .route("/register-check", web::get().to(register_ws))
             .route("/api/is-session-valid", web::get().to(is_session_valid))
+            //.route("/{filename:.*}", web::get().to(audio_file))
             //.route("/logout", web::post().to(logout))
     })
     .workers(4)

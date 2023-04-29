@@ -30,6 +30,7 @@ url="2.3.1"
 similar-string = "*"
 nanoid = "0.4.0"
 actix-cors="0.6.4"
+actix-files="0.6.2"
 
 [profile.release]
 strip = true 

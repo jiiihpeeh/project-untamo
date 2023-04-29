@@ -39,3 +39,15 @@ pub fn email_is_valid(email: &str) -> bool {
     let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$").unwrap();
     re.is_match(&email)
 }
+
+pub fn check_weekdays(vec: &Vec<String>)->Vec<String>{
+    let weekdays = vec!["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    let mut new_vec = vec.clone();
+    new_vec.sort();
+    new_vec.dedup();
+    //remove duplicates
+    //remove items not in weekdays
+    new_vec.retain(|x| weekdays.contains(&x.as_str()));
+    new_vec
+}
