@@ -1,7 +1,8 @@
 // use actix_rt::net::TcpStream;
 // use actix_web::http::header::Header;
 // use actix_web::web::Payload;
-use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpRequest};
+use actix_cors::Cors;
+use actix_web::{get, post, put, delete, web, App, HttpResponse, HttpServer, Responder, HttpRequest, http};
 use futures::{StreamExt, TryStreamExt};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
@@ -1706,9 +1707,13 @@ async fn main() -> std::io::Result<()> {
     create_device_index(&client).await;
     create_admin_index(&client).await;
     let ws_action_uri = format!("ws://localhost:{}/action", PORT);
-
+    //let cors_uri = format!("http://localhost:{}", PORT);
+  
     HttpServer::new(move || {
+        let cors = Cors::permissive();
+
         App::new()
+            .wrap(cors)
             .service(login)
             .service(register)
             .service(get_alarms)
