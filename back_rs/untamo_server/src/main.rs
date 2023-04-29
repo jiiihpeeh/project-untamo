@@ -754,6 +754,42 @@ struct Device{
     user: String,
     device_type  : String
 }
+//get devices from db
+async fn get_devices_by_user(user_id: &ObjectId, client: &web::Data<Client>) -> Vec<Device> {
+    let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
+    let mut cursor = collection.find(doc! {"user": user_id.to_hex()}, None).await.unwrap();
+    let mut devices: Vec<Device> = Vec::new();
+    while let Some(result) = cursor.next().await {
+        match result {
+            Ok(document) => {
+                devices.push(document);
+            },
+            Err(_) => {
+                println!("Error getting devices");
+            }
+        }
+    }
+    devices
+}
+
+
+#[get("/api/devices")]
+async fn get_devices(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
+    let mut response = DefaultResponse {
+        message: String::from(""),
+    };
+    let user = match get_user_from_header(&req, &client).await {
+        Some(user) => user,
+        None => {
+            response.message = String::from("User not found");
+            return HttpResponse::BadRequest().json(response);
+        }
+    };
+    let devices = get_devices_by_user(&user._id, &client).await;
+    HttpResponse::Ok().json(devices)
+}
+
+
 #[post("/api/device")]
 async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Json<Device>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
@@ -1178,6 +1214,16 @@ async fn is_session_valid(req: HttpRequest, client: web::Data<Client>) -> impl R
     };
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+struct UserOut{
+    email: String,
+    first_name: String,
+    last_name: String,
+    screen_name: String,
+    admin: bool,
+    owner: bool,
+}
 //get user
 #[get("/api/user")]
 async fn get_user(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
@@ -1195,7 +1241,8 @@ async fn get_user(req: HttpRequest, client: web::Data<Client>) -> impl Responder
             return HttpResponse::BadRequest().json(response);
         }
     };
-    HttpResponse::Ok().json(user)
+    let user_out = UserOut { email: user.email, first_name: user.first_name.unwrap_or("".to_string()), last_name: user.last_name.unwrap_or("".to_string()), screen_name: user.screen_name, admin: user.admin, owner: user.owner };
+    HttpResponse::Ok().json(user_out)
 }
 
 //expand User struct
@@ -1716,6 +1763,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .service(login)
             .service(register)
+            .service(get_user)
             .service(get_alarms)
             .service(edit_alarm)
             .service(edit_device)
@@ -1729,6 +1777,7 @@ async fn main() -> std::io::Result<()> {
             .service(delete_alarm)
             .service(delete_device)
             .service(delete_user)
+            .service(get_devices)
             .app_data(web::Data::new(client.clone()))
             .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
             .app_data(web::Data::new( Mutex::new(ws_client::WsClientConnect::new(&ws_action_uri))))
