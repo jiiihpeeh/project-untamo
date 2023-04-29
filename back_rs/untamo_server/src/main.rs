@@ -543,8 +543,8 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
 async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
     //get user from header
     println!("get alarms");
-    let _token = match get_token_from_header(&req){
-        Some(token) => token,
+    match get_token_from_header(&req){
+        Some(_) => (),
         None => return HttpResponse::BadRequest().json(DefaultResponse{message: String::from("Invalid token")})
     };
 
@@ -618,7 +618,12 @@ async fn edit_alarm_from_id(alarm: &Alarm, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
     let alarm_id = alarm._id;
     let alarm = match collection.find_one(doc! {"_id": alarm_id}, None).await {
-        Ok(alarm) => alarm.unwrap(),
+        Ok(alarm) => {
+            match alarm {
+                Some(alarm) => alarm,
+                None => return false,
+            }
+        },
         Err(_) => return false,
     };
     //check if users are the same
@@ -780,15 +785,22 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
 async fn edit_device_from_id(device_id: &ObjectId, device: &Device, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
     let device_in_db = match collection.find_one(doc! {"_id": device_id}, None).await {
-        Ok(result) => result.unwrap(),
+        Ok(result) => {
+            match result {
+                Some(device) => device,
+                None => return false,
+            }
+        },
         Err(_) => return false,
     };
 
     if device_in_db.user != device.user {
         return false;
     }
-    collection.replace_one(doc! {"_id": device_id}, device, None).await.unwrap();
-    true
+    match collection.replace_one(doc! {"_id": device_id}, device, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 

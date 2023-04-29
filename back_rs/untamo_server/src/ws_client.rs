@@ -9,11 +9,11 @@ use tokio::time::sleep as async_sleep;
 use std::time::Duration;
 
 fn add_time(n:u8)->u64{
-    //max out at 10 seconds
-    //get minimum in Vec<u64>
-    let v: Vec<u64> =  vec![10 * (n as u64), 150];
-    //get minimum of Vec<u64>
-    *v.iter().min().unwrap() +50
+    if 10 * (n as u64) > 150 {
+        return 200;
+    } else {
+        return 10 * (n as u64) + 50;
+    };
 }
 
 //serialize and deserialize websocket messages
@@ -24,10 +24,10 @@ struct  WsMessage{
     token: String,
 }
 
-struct WsClient{
-    socket: WebSocket<MaybeTlsStream<TcpStream>>,
-    response: Response<Option<Vec<u8>>>,
-    url: String,
+pub struct WsClient{
+    pub socket: WebSocket<MaybeTlsStream<TcpStream>>,
+    pub response: Response<Option<Vec<u8>>>,
+    pub url: String,
 }
 impl WsClient {
     //derive WsClient from url
@@ -54,10 +54,10 @@ impl WsClient {
     }
 }
 pub struct WsClientConnect{
-    uri: String,
-    client: Option<WsClient>,
-    connection: bool,
-    tries: u8,
+    pub uri: String,
+    pub client: Option<WsClient>,
+    pub connection: bool,
+    pub tries: u8,
 }
 
 impl WsClientConnect {
