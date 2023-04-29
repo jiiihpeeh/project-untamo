@@ -99,31 +99,46 @@ struct LogInResponse {
 async fn get_user_from_email(email: &str, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     //number of items in collection
-    let user = match collection.find_one(doc! {"email": email}, None).await {
-        Ok(user) => user.unwrap(),
+    match collection.find_one(doc! {"email": email}, None).await {
+        Ok(result) => {
+            match result {
+                Some(user) => {
+                    println!("Found user: {}", user.email);
+                    return Some(user);
+                },
+                None => {
+                    println!("User not found");
+                    return None;
+                }
+            }
+        },
         Err(e) => {
             println!("Error: {}", e);
             return None;
         }
     };
-
-    //verify password
-    Some(user)
 }
 
 async fn set_new_session(session: Session, client: web::Data<Client>)-> bool {
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let result = collection.insert_one(session.clone(), None).await.unwrap();
-    match result.inserted_id.as_object_id() {
-        Some(id) => {
-            println!("Inserted id {}", id.to_hex());
-            return true;
+    match collection.insert_one(session.clone(), None).await {
+        Ok(result) => {
+            match result.inserted_id.as_object_id() {
+                Some(id) => {
+                    println!("Inserted id {}", id.to_hex());
+                    return true;
+                },
+                None => {
+                    println!("Could not get id");
+                    return false;
+                }
+            }
         },
-        None => {
-            println!("Could not get id");
+        Err(e) => {
+            println!("Error: {}", e);
             return false;
         }
-    }
+    };
 }   
 
 #[post("/login")]
@@ -294,7 +309,12 @@ struct Qr{
 async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
     let session = match  collection.find_one(doc! {"token": token}, None).await {
-        Ok(session) => session.unwrap(),
+        Ok(session) => {
+            match session {
+                Some(session) => session,
+                None => return None,
+            }
+        },
         Err(e) => {
             println!("Error: {:?}", e);
             return None;
@@ -308,15 +328,20 @@ async fn token_to_user(token: &str, client: &web::Data<Client>) -> Option<User> 
         return None;
     }
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    let user = match  collection.find_one(doc! {"_id": ObjectId::parse_str(session.user_id).unwrap()}, None).await {
-        Ok(user) => user.unwrap(),
+    match  collection.find_one(doc! {"_id": ObjectId::parse_str(session.user_id).unwrap()}, None).await {
+        Ok(user) => {
+            match user {
+                Some(user) => {
+                    return Some(user);
+                },
+                None => return None,
+            }
+        }
         Err(e) => {
             println!("Error: {:?}", e);
             return None;
         }
     };
-
-    Some(user)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -377,30 +402,26 @@ async fn get_user_from_header(req: &HttpRequest, client: &web::Data<Client>) -> 
         None => return None,
     };
 
-    let user = match token_to_user(&token, &client).await {
-        Some(user) => user,
+    match token_to_user(&token, &client).await {
+        Some(user) => return Some(user),
         None => return None,
     };
-
-    //check if session is timed out
-    Some(user)
 }
 //get user from session
 async fn get_user_from_session(session: &Session, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
     println!("{}", ObjectId::parse_str(&session.user_id).unwrap());
 
-    let user  = match  collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await {
+    match  collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await {
         Ok(user_fetch) => {
             match user_fetch {
-                Some(user_fetch) => user_fetch,
+                Some(user_fetch) => return Some(user_fetch),
+
                 None => return None,
             }
         },
         Err(_) => return None,
     };
-
-    Some(user)
 }
 
 //get session by header
@@ -536,17 +557,21 @@ async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Respond
 
 async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-    let result = collection.insert_one(alarm.clone(), None).await.unwrap();
-    match result.inserted_id.as_object_id() {
-        Some(id) => {
-            println!("Inserted id {}", id.to_hex());
-            return true;
+    match collection.insert_one(alarm.clone(), None).await {
+        Ok(result) => {
+            match result.inserted_id.as_object_id() {
+                Some(id) => {
+                    println!("Inserted id {}", id.to_hex());
+                    return true;
+                },
+                None => {
+                    println!("Could not get id");
+                    return false;
+                }
+            }
         },
-        None => {
-            println!("Could not get id");
-            return false;
-        }
-    }
+        Err(_) => return false,
+    };
 }
 
 #[post("/api/alarm")]
@@ -1125,10 +1150,9 @@ async fn admin_login_route(req: HttpRequest, admin_password: web::Json<AdminPass
     HttpResponse::Ok().json(admin)
 }
 
-#[get("/api/is-session-valid")]
-async fn is_session_valid(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
-    println!("is_session_valid");
 
+//#[get("/api/is-session-valid")]
+async fn is_session_valid(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
     match get_session_from_header(&req, &client).await {
         Some(_) => {
             let response = DefaultResponse { message: "Session valid".to_string() };
@@ -1318,9 +1342,6 @@ impl WsMessageHandler {
 
 }
 
-
-
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct WsMsg{
     mode: Option<String>,
@@ -1329,8 +1350,6 @@ struct WsMsg{
 }
 
 //send message to all other sessions
-
-
 
 async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Client>, ws_handler : web::Data<Mutex<WsMessageHandler>> ) -> Result<HttpResponse, actix_web::Error> {
     let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
@@ -1681,11 +1700,24 @@ async fn main() -> std::io::Result<()> {
             .service(login)
             .service(register)
             .service(get_alarms)
+            .service(edit_alarm)
+            .service(edit_device)
+            .service(edit_user)
+            .service(edit_user_info)
+            .service(qr_login)
+            .service(logout)
+            .service(admin_login_route)
+            .service(add_device)
+            .service(add_alarm)
+            .service(delete_alarm)
+            .service(delete_device)
+            .service(delete_user)
             .app_data(web::Data::new(client.clone()))
             .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
             .app_data(web::Data::new( Mutex::new(ws_client::WsClientConnect::new(&ws_action_uri))))
             .route("/action", web::get().to(action_ws))
             .route("/register-check", web::get().to(register_ws))
+            .route("/api/is-session-valid", web::get().to(is_session_valid))
             //.route("/logout", web::post().to(logout))
     })
     .workers(4)
