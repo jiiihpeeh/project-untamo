@@ -362,7 +362,7 @@ struct Alarm {
     date: String,
     label: String,
     devices: Vec<String>,
-    snooze: Vec<String>,
+    snooze: Vec<i64>,
     tone: String,
     active: bool,
     user: String,
@@ -370,6 +370,25 @@ struct Alarm {
     fingerprint: String,
     close_task: bool,
 }
+#[derive(Debug, Serialize, Deserialize)]
+struct AlarmMsg{
+    #[serde(rename = "id")]
+    _id: Option<String>,
+    occurrence: String,
+    time: String,
+    weekdays: Vec<String>,
+    date: String,
+    label: String,
+    devices: Vec<String>,
+    snooze: Vec<i64>,
+    tone: String,
+    active: bool,
+    modified: i64,
+    fingerprint: String,
+    #[serde(rename = "closeTask")]
+    close_task: bool,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct AlarmResponse {
@@ -547,6 +566,48 @@ async fn logout(req:  HttpRequest, client: web::Data<Client>) -> impl Responder 
     HttpResponse::Ok().json(response)
 }
 
+fn alarm_to_alarm_msg(alarm: Alarm) -> AlarmMsg {
+    AlarmMsg {
+        _id: Some(alarm._id.to_hex()),
+        occurrence: alarm.occurrence,
+        time: alarm.time,
+        weekdays: alarm.weekdays,
+        date: alarm.date,
+        label: alarm.label,
+        devices: alarm.devices,
+        snooze: alarm.snooze,
+        tone: alarm.tone,
+        active: alarm.active,
+        modified: alarm.modified,
+        fingerprint: alarm.fingerprint,
+        close_task: alarm.close_task,
+    }
+}
+
+fn alarm_msg_to_alarm(alarm_msg: AlarmMsg, user_id: ObjectId) -> Alarm {
+    let id = match alarm_msg._id {
+        Some(id) => ObjectId::parse_str(&id).unwrap(),
+        None => ObjectId::new(),
+    };
+    Alarm {
+        _id: id,
+        occurrence: alarm_msg.occurrence,
+        time: alarm_msg.time,
+        weekdays: alarm_msg.weekdays,
+        date: alarm_msg.date,
+        label: alarm_msg.label,
+        devices: alarm_msg.devices,
+        snooze: alarm_msg.snooze,
+        tone: alarm_msg.tone,
+        active: alarm_msg.active,
+        modified: alarm_msg.modified,
+        user: user_id.to_hex(),
+        fingerprint: alarm_msg.fingerprint,
+        close_task: alarm_msg.close_task,
+    }
+}
+
+
 #[get("/api/alarms")]
 async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
     //get user from header
@@ -559,8 +620,14 @@ async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Respond
     let alarms =  get_alarms_from_header(&req, &client).await;
     
     //ws_client.lock().unwrap().try_send("/api/alarms", &token.unwrap()).await;
+    //map alarms to AlarmMsg
+    let mut alarm_msgs: Vec<AlarmMsg> = Vec::new();
+    for alarm in alarms {
+        let alarm_msg = alarm_to_alarm_msg(alarm);
+        alarm_msgs.push(alarm_msg);
+    };
 
-    HttpResponse::Ok().json(alarms)
+    HttpResponse::Ok().json(alarm_msgs)
 }
 
 async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
@@ -583,7 +650,7 @@ async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
 }
 
 #[post("/api/alarm")]
-async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::Json<Alarm>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
+async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::Json<AlarmMsg>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -602,10 +669,9 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
             return HttpResponse::BadRequest().json(response);
         }
     };
- 
-    let mut alarm = alarm_in.into_inner();
-    alarm._id = ObjectId::new();
-    alarm.user = user._id.to_hex().clone();
+    //AlarmMsg to Alarm
+    let mut alarm = alarm_msg_to_alarm(alarm_in.into_inner(), user._id);
+
     alarm.devices = alarm.devices.into_iter().unique().collect();
     //get unique items from weekdays
     alarm.weekdays = utils::check_weekdays(&alarm.weekdays);//alarm.weekdays.into_iter().unique().collect();
@@ -617,7 +683,8 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
     }
     response.message = String::from("Alarm added");
     ws_client.lock().unwrap().try_send("/api/alarm", &token).await;
-    HttpResponse::Ok().json(alarm)
+    let alarm_msg = alarm_to_alarm_msg(alarm);
+    HttpResponse::Ok().json(alarm_msg)
 }
 
 
@@ -647,7 +714,7 @@ async fn edit_alarm_from_id(alarm: &Alarm, client: &web::Data<Client>) -> bool {
 
 
 #[put("/api/alarm/{id}")]
-async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, alarm_edit: web::Json<Alarm>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
+async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, alarm_edit: web::Json<AlarmMsg>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -666,23 +733,10 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
             return HttpResponse::BadRequest().json(response);
         }
     };
-    let weekdays = utils::check_weekdays(&alarm_edit.weekdays);
-    let alarm = Alarm {
-        _id: ObjectId::parse_str(id.clone()).unwrap(),
-        occurrence: alarm_edit.occurrence.clone(),
-        time: alarm_edit.time.clone(),
-        weekdays: weekdays,
-        date: alarm_edit.date.clone(),
-        label: alarm_edit.label.clone(),
-        devices: alarm_edit.devices.clone().into_iter().unique().collect(),
-        snooze: alarm_edit.snooze.clone(),
-        tone: alarm_edit.tone.clone(),
-        active: alarm_edit.active.clone(),
-        user: user.clone()._id.to_hex(),
-        modified: utils::time_now(),
-        fingerprint: alarm_edit.fingerprint.clone(),
-        close_task: alarm_edit.close_task.clone(),
-    };
+    let mut alarm = alarm_msg_to_alarm(alarm_edit.into_inner(), user._id);
+    alarm.weekdays = utils::check_weekdays(&alarm.weekdays);
+    alarm.devices = alarm.devices.into_iter().unique().collect();
+    
 
     if !edit_alarm_from_id(&alarm, &client).await {
         response.message = String::from("Alarm not found");
