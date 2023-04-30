@@ -472,6 +472,9 @@ app.ws('/action', asyncHandler(async(ws, req) => {
 			}
 
 		}
+		if(msg && msg.hasOwnProperty('mode') && msg.mode === 'ping'){
+			ws.send(JSON.stringify({mode:'pong'}));
+		}
     }));
 	ws.on('close', asyncHandler(async(msgs) => {
 		console.log('closing...')

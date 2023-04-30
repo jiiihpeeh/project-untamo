@@ -167,7 +167,7 @@ router.post("/device",function(req,res) {
 		}
 		//return res.status(201).json({message:"New Device Created"});
 		//onsole.log(saved)
-		return res.status(201).json({message: "Success. Device Created", device: saved.deviceName, id: saved._id, type: saved.type});
+		return res.status(201).json({message: "Success. Device Created", deviceName: saved.deviceName, id: saved._id, type: saved.type});
 	})
 })
 
