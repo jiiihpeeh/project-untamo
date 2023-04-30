@@ -750,7 +750,7 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
 
 async fn delete_alarm_by_id_and_user(alarm_id: &ObjectId, user_id: &ObjectId, client: &web::Data<Client>) -> bool {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-    match collection.find_one_and_delete(doc! {"_id": alarm_id, "user_id": user_id}, None).await {
+    match collection.find_one_and_delete(doc! {"_id": alarm_id, "user": user_id}, None).await {
         Ok(_) =>  return true,
         Err(_) => return false,
     };
@@ -769,7 +769,13 @@ async fn delete_alarm(req: HttpRequest,id: web::Path<String>, client: web::Data<
         }
     };
 
-    delete_alarm_by_id_and_user(&ObjectId::parse_str(id.clone()).unwrap(), &user._id, &client).await;
+    match delete_alarm_by_id_and_user(&ObjectId::parse_str(&*id).unwrap(), &user._id, &client).await {
+        false => {
+            response.message = String::from("Alarm not found");
+            return HttpResponse::BadRequest().json(response);
+        },
+        true => (),
+    };
     response.message = String::from("Alarm deleted");
     ws_client.lock().unwrap().try_send("/api/alarm", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(response)
