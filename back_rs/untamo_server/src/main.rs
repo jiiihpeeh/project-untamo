@@ -92,7 +92,7 @@ struct LogIn {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-//#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 struct LogInResponse {
     token: String,
     email: String,
@@ -753,13 +753,21 @@ fn device_type(device_type: &str)->String{
 
 #[derive(Debug, Serialize, Deserialize)]
 //#[serde(rename_all = "camelCase")]
-#[serde(rename(serialize = "type", deserialize = "device_type"))]
 struct Device{
     _id: ObjectId,
-    user_device: String,
+    //user_device: String,
     device_name: String,
     user: String,
     device_type  : String
+}
+#[derive(Debug, Serialize, Deserialize)]
+struct DeviceMsg{
+    #[serde(rename = "id")]
+    _id: Option<String>,
+    #[serde(rename = "deviceName")]
+    device_name: String,
+    #[serde(rename = "type")]
+    device_type: String
 }
 //get devices from db
 async fn get_devices_by_user(user_id: &ObjectId, client: &web::Data<Client>) -> Vec<Device> {
@@ -793,12 +801,18 @@ async fn get_devices(req: HttpRequest, client: web::Data<Client>) -> impl Respon
         }
     };
     let devices = get_devices_by_user(&user._id, &client).await;
-    HttpResponse::Ok().json(devices)
+    //map devices to DeviceMsg
+    let devices_out: Vec<DeviceMsg> = devices.into_iter().map(|device| DeviceMsg {
+        _id: Some(device._id.to_hex()),
+        device_name: device.device_name,
+        device_type: device_type(&device.device_type)
+    }).collect();
+    HttpResponse::Ok().json(devices_out)
 }
 
 
 #[post("/api/device")]
-async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Json<Device>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
+async fn add_device(req: HttpRequest, client: web::Data<Client>, device_add: web::Json<DeviceMsg>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -812,36 +826,41 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device: web::Js
 
     let device = Device {
         _id: ObjectId::new(),
-        user_device: device.user_device.as_str().to_string(),
-        device_name: device.device_name.as_str().to_string(),
+        //user_device: device.user_device.as_str().to_string(),
+        device_name: device_add.device_name.as_str().to_string(),
         user: user._id.to_hex(),
-        device_type: device_type(&device.device_type),
+        device_type: device_type(&device_add.device_type),
     };
+    println!("Device {:?}", device);
+
     if !add_device_to_user(&device, &client).await {
         response.message = String::from("Could not add device");
         return HttpResponse::BadRequest().json(response);
     }
     response.message = String::from("Device added");
     ws_client.lock().unwrap().try_send("/api/device", &get_token_from_header(&req).unwrap()).await;
-    HttpResponse::Ok().json(device)
+    //map device to DeviceMsg
+    let device_out = DeviceMsg {
+        _id: Some(device._id.to_hex()),
+        device_name: device.device_name,
+        device_type: device_type(&device.device_type)
+    };
+    HttpResponse::Ok().json(device_out)
 }
 
-async fn edit_device_from_id(device_id: &ObjectId, device: &Device, client: &web::Data<Client>) -> bool {
+async fn edit_device_from_struct(device: &Device, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
-    let device_in_db = match collection.find_one(doc! {"_id": device_id}, None).await {
-        Ok(result) => {
-            match result {
-                Some(device) => device,
-                None => return false,
-            }
-        },
-        Err(_) => return false,
-    };
+    // match collection.find_one(doc! {"_id": &device._id, "user": &device.user}, None).await {
+    //     Ok(result) => {
+    //         match result {
+    //             Some(_device) => (),
+    //             None => return false,
+    //         }
+    //     },
+    //     Err(_) => return false,
+    // };
 
-    if device_in_db.user != device.user {
-        return false;
-    }
-    match collection.replace_one(doc! {"_id": device_id}, device, None).await {
+    match collection.replace_one(doc! {"_id": device._id,  "user": &device.user}, device, None).await {
         Ok(_) => return true,
         Err(_) => return false,
     };
@@ -853,6 +872,8 @@ async fn get_audio_resources(req: HttpRequest, client :   web::Data<Client>  ) -
     let mut response = DefaultResponse {
         message: String::from(""),
     };
+    let allowed = [".flac", ".mp3", ".opus"];
+
     //check user is logged in
     match get_user_from_header(&req, &client).await {
         Some(_) => (),
@@ -867,33 +888,21 @@ async fn get_audio_resources(req: HttpRequest, client :   web::Data<Client>  ) -
         let entry = entry.unwrap();
         let path = entry.path();
         //get basename of file
-        let basename = match path.file_name(){
+        match path.file_name(){
             Some(basename) => {
-                if basename.to_str().unwrap().ends_with(".json") {
+                //check if file extension is allowed by checking if path ends in  one of the allowed extensions
+                if allowed.iter().any(|ext| path.ends_with(ext)) {
+                    //convert basename to string and split  at last "." and get first part using rsplit
+                    let base_string = basename.to_str().unwrap().rsplit(".").next().unwrap().to_string();
+                    if !files.contains(&base_string) {
+                        files.push(base_string);
+                    }
+                } else {
                     continue;
                 }
-                basename.to_str()
             },
             None => continue,
         };
-
-        //remove file extension "flac, mp3, opus etc.." 
-        let basename_base = match basename {
-            Some(basename) => {
-                let mut basename = basename.to_string();
-                let index = basename.rfind(".").unwrap();
-                basename.truncate(index);
-                basename
-            },
-            None => continue,
-        };
-        
-        //check if path is already in vector
-        if files.contains(&basename_base) {
-            continue;
-        }
-
-        files.push(basename_base);
     }
     HttpResponse::Ok().json(files)
 }
@@ -903,7 +912,6 @@ async fn audio_file(req: HttpRequest, client :   web::Data<Client>) -> Result<Na
     let mut response = DefaultResponse {
         message: String::from(""),
     };
-
     match get_user_from_header(&req, &client).await {
         Some(_) => (),
         None => {
@@ -917,7 +925,7 @@ async fn audio_file(req: HttpRequest, client :   web::Data<Client>) -> Result<Na
     let err = actix_web::error::InternalError::new(format!("{:?}", HttpResponse::BadRequest().json(response)), StatusCode::BAD_REQUEST);
 
     let path = Path::new("audio-resources").join(req.match_info().query("filename"));
-        //check if file ends with [flac, mp3 or opus]
+    //check if file ends with [flac, mp3 or opus]
     let allowed = [".flac", ".mp3", ".opus"];
     if !path.is_file() && !allowed.iter().any(|extension| path.ends_with(extension)) {
         return Err(err.into());
@@ -926,7 +934,7 @@ async fn audio_file(req: HttpRequest, client :   web::Data<Client>) -> Result<Na
 }
 
 #[put("/api/device/{id}")]
-async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, device: web::Json<Device>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
+async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<String>, device_msg: web::Json<DeviceMsg>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -937,24 +945,30 @@ async fn edit_device(req: HttpRequest, client: web::Data<Client>, id: web::Path<
             return HttpResponse::BadRequest().json(response);
         },
     };
-  
-    if device.user != user._id.to_hex() {
-        response.message = String::from("Device was not owned by user");
-        return HttpResponse::BadRequest().json(response);
-    }
-    //get device from json
-    let device = Device {
-        _id: ObjectId::parse_str(&*id).unwrap(),
-        user_device: device.user_device.as_str().to_string(),
-        device_name: device.device_name.as_str().to_string(),
-        user: user._id.to_hex(),
-        device_type: device_type(&device.device_type),
+    //check if id is some
+    let device_id = match ObjectId::parse_str(&*id) {
+        Ok(device_id) => device_id,
+        Err(_) => {
+            response.message = String::from("Device not found");
+            return HttpResponse::BadRequest().json(response);
+        },
     };
-    let resp = edit_device_from_id(&ObjectId::parse_str(&*id).unwrap(), &device, &client).await;
-    if !resp {
-        response.message = String::from("Device not found");
-        return HttpResponse::BadRequest().json(response);
-    }
+    let device  = Device{
+        _id: device_id,
+        device_name: device_msg.device_name.as_str().to_string(),
+        user: user._id.to_hex(),
+        device_type: device_type(&device_msg.device_type),
+    };
+    //get device from json
+
+    match edit_device_from_struct(&device, &client).await {
+        true => (),
+        false => {
+            response.message = String::from("Device not found");
+            return HttpResponse::BadRequest().json(response);
+        },
+    };
+
     response.message = String::from("Device updated");
     ws_client.lock().unwrap().try_send("/api/device", &get_token_from_header(&req).unwrap()).await;
     HttpResponse::Ok().json(response)
@@ -970,7 +984,7 @@ async fn delete_device_by_id_and_user(device_id: &ObjectId, user_id: &ObjectId, 
     if device_to_delete.user != user_id.to_hex() {
         return false;
     }
-    match collection.find_one_and_delete(doc! {"_id": device_id, "user_id": user_id.to_hex()}, None).await{
+    match collection.find_one_and_delete(doc! {"_id": device_id, "user": user_id.to_hex()}, None).await{
         Ok(_) => return true,
         Err(_) => return false,
     };
@@ -1510,13 +1524,13 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
     //print key secret pairs 
     //let mut token = String::new();
     //get token from key
-    let token = match ws_handler.lock().unwrap().key_token.get(&ws_key) {
-        Some(token) => token.clone(),
-        None => {
-            println!("No token found for key: {}", ws_key);
-            return Ok(response);
-        }
-    };
+    // let token = match ws_handler.lock().unwrap().key_token.get(&ws_key) {
+    //     Some(token) => token.clone(),
+    //     None => {
+    //         println!("No token found for key: {}", ws_key)
+    //         return Ok(response);
+    //     }
+    // };
     println!("ws key: {}", ws_key);
     actix_rt::spawn(async move {
         //deserialize message check errror
@@ -1551,6 +1565,13 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                     if let Some(mode) = &m.mode {
                         match mode.as_str() {
                             "client" => {
+                                // let token = match ws_handler.lock().unwrap().key_token.get(&ws_key) {
+                                //     Some(token) => token.clone(),
+                                //     None => {
+                                //         println!("No token found for key: {}", ws_key)
+                                //         return Ok(response);
+                                //     }
+                                // };
                                 if let Some(token) = &m.token {
                                     if token.len() > 3 {
                                         let user = match token_to_user(&token, &client).await{
@@ -1568,6 +1589,7 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                             },
                             "api" => {
                                 if let Some(_url) = &m.url {
+                                    let token = m.token.unwrap();
                                     let ws_handler = ws_handler.lock().unwrap();
                                     let key_session = &ws_handler.key_session;
                                     //let key_session = ws_handler.lock().unwrap().key_session.clone();
