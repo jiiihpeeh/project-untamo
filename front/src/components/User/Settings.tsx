@@ -34,10 +34,10 @@ const Settings = () => {
     const setVolume = useSettings((state) => state.setVolume)
 
     useEffect(()=>{
-        if(windowSize.height < 740){
+        if(windowSize.height < 745){
             setSize(0)
             maxSize.current = 0
-        }else if(windowSize.height < 915){
+        }else if(windowSize.height < 920){
             if(size === 2){
                 setSize(1)
             }

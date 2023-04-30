@@ -129,14 +129,14 @@ const addDevice = async (name: string, type: DeviceType)=> {
         interface Resp{
             id: string,
             type: DeviceType,
-            device: string
+            deviceName: string
         }
 
         let deviceData: Resp = res.data
         let newDevice : Device= {
                                     id:deviceData.id, 
                                     type: deviceData.type, 
-                                    deviceName: deviceData.device
+                                    deviceName: deviceData.deviceName
                                 }
         if(newDevice.deviceName !== name && newDevice.type !== type){
             return
