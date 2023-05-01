@@ -370,7 +370,7 @@ struct Alarm {
     fingerprint: String,
     close_task: bool,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize,PartialEq,Clone)]
 struct AlarmMsg{
     #[serde(rename = "id")]
     _id: Option<String>,
@@ -585,6 +585,8 @@ fn alarm_to_alarm_msg(alarm: Alarm) -> AlarmMsg {
 }
 
 fn alarm_msg_to_alarm(alarm_msg: AlarmMsg, user_id: ObjectId) -> Alarm {
+    //print alarm_msg;
+    println!("Alarm msg: {:?}", alarm_msg);
     let id = match alarm_msg._id {
         Some(id) => ObjectId::parse_str(&id).unwrap(),
         None => ObjectId::new(),
@@ -649,8 +651,9 @@ async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
     };
 }
 
-#[post("/api/alarm")]
-async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::Json<AlarmMsg>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
+#[post("/api/alarm/")]
+async fn add_alarm(req: HttpRequest, alarm_in: web::Json<AlarmMsg>, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
+    println!("add alarm");
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -670,7 +673,14 @@ async fn add_alarm(req: HttpRequest, client: web::Data<Client>, alarm_in: web::J
         }
     };
     //AlarmMsg to Alarm
-    let mut alarm = alarm_msg_to_alarm(alarm_in.into_inner(), user._id);
+    //alarm_in to AlarmMsg
+    let mut alarm_in = alarm_in.into_inner();
+    alarm_in._id = None;
+    println!("Alarm in: {:?}", alarm_in);
+
+    let mut alarm = alarm_msg_to_alarm(alarm_in, user._id);
+    println!("Alarm: {:?}", alarm);
+
 
     alarm.devices = alarm.devices.into_iter().unique().collect();
     //get unique items from weekdays
@@ -733,7 +743,16 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
             return HttpResponse::BadRequest().json(response);
         }
     };
-    let mut alarm = alarm_msg_to_alarm(alarm_edit.into_inner(), user._id);
+    let mut alarm_edit = alarm_edit.into_inner();
+    //check if id is valid ObjectId if not generate new one
+    let alarm_id = match ObjectId::parse_str(&*id) {
+        Ok(id) => id,
+        Err(_) => {
+            ObjectId::new()
+        }
+    };
+    alarm_edit._id = Some(alarm_id.to_hex());
+    let mut alarm = alarm_msg_to_alarm(alarm_edit, user._id);
     alarm.weekdays = utils::check_weekdays(&alarm.weekdays);
     alarm.devices = alarm.devices.into_iter().unique().collect();
     
@@ -745,7 +764,7 @@ async fn edit_alarm(req: HttpRequest, client: web::Data<Client>, id: web::Path<S
 
     response.message = String::from("Alarm updated");
     ws_client.lock().unwrap().try_send("/api/alarm", &token).await;
-    HttpResponse::Ok().json(response)
+    HttpResponse::Ok().json(alarm_to_alarm_msg(alarm))
 }
 
 async fn delete_alarm_by_id_and_user(alarm_id: &ObjectId, user_id: &ObjectId, client: &web::Data<Client>) -> bool {
@@ -784,17 +803,10 @@ async fn delete_alarm(req: HttpRequest,id: web::Path<String>, client: web::Data<
 
 async fn add_device_to_user(device: &Device, client: &web::Data<Client>) -> bool {
     let collection: Collection<Device> = client.database(DB_NAME).collection(DEVICECOLL);
-    let result = collection.insert_one(device, None).await.unwrap();
-    match result.inserted_id.as_object_id() {
-        Some(id) => {
-            println!("Inserted id {}", id.to_hex());
-            return true;
-        },
-        None => {
-            println!("Could not get id");
-            return false;
-        }
-    }
+    match collection.insert_one(device, None).await {
+        Ok(_) => return true,
+        Err(_) => return false,
+    };
 }
 
 
@@ -1694,7 +1706,9 @@ struct CheckReport{
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct FormMsg{
     query: Option<String>,
+    #[serde(rename = "firstName")]
     first_name: Option<String>,
+    #[serde(rename = "lastName")]
     last_name: Option<String>,
     email: Option<String>,
     password: Option<String>,
@@ -1723,14 +1737,14 @@ struct RegisterCheckPass{
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct FormMsgOut{
-    query: String,
+    r#type: String,
     content: bool,
     messages: Option<Vec<String>>,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct ZxcvbnMsgOut{
-    query: String,
+    r#type: String,
     content: RegisterCheckPass
 }
 async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpResponse, actix_web::Error> {
@@ -1748,7 +1762,10 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
                 }
                 Message::Text(s) => {
                     let msg = match serde_json::from_str::<FormMsg>(&s){
-                        Ok(msg) => msg,
+                        Ok(msg) => {
+                            //println!("Message: {:?}", msg);    
+                            msg
+                        },
                         Err(e) => {
                             println!("Error deserializing message: {}", e);
                             return;
@@ -1766,10 +1783,11 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
                             form_check_hash.insert(String::from("password"), &msg.password);
                             let form_check_result: form_check::Message = form_check::form_check(&form_check_hash);
                             let msg_out = FormMsgOut{
-                                query: "form".to_string(),
+                                r#type: "form".to_string(),
                                 content: form_check_result.pass,
                                 messages: Some(form_check_result.messages),
                             };
+                            //println!("msg_out: {:?}", msg_out);
                             session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
                         },
                         "zxcvbn" => {
@@ -1779,13 +1797,14 @@ async fn register_ws(req: HttpRequest, body: web::Payload ) -> Result<HttpRespon
                             let guesses = entropy.guesses_log10();
                             let score = entropy.score();
                             let msg_out = ZxcvbnMsgOut{
-                                query: msg.query.unwrap(),
+                                r#type: msg.query.unwrap(),
                                 content: RegisterCheckPass{
                                     guesses: guesses,
                                     score: score,
-                                    server_minimum: 0.0,
+                                    server_minimum: 8.1,
                                 }
                             };
+                            //println!("msg_out: {:?}", msg_out);
                             session.text(serde_json::to_string(&msg_out).unwrap()).await.unwrap();
                         },
                         _ => (),
