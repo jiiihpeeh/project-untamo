@@ -84,6 +84,7 @@ const Register = () => {
         clearPasswordTimeout()
         let query = setTimeout(() =>{   
                                         if(password.length > 4){
+                                            //console.log("Sending...")
                                             sendMessage(JSON.stringify({password: password, query: Query.ZXCVBN}))
                                             sendMessage(JSON.stringify({...getFormData(), query: Query.Form}))
                                         }
@@ -92,16 +93,19 @@ const Register = () => {
     },[password])
 
     useEffect(()=>{
+        console.log("wsRegisterMessage", wsRegisterMessage)
         if(!wsRegisterMessage){
             return
         }
+        console.log(wsRegisterMessage)
         switch(wsRegisterMessage.type){
             case Query.ZXCVBN:
+
                 let content = wsRegisterMessage.content as Content
-                let passwordCheck = content.guesses > content.server_minimum
+                let passwordCheck = content.guesses > content.serverMinimum
                 setPasswordCheck(passwordCheck)
                 setScore(content.score)
-                setServerMinimum(content.server_minimum)    
+                setServerMinimum(content.serverMinimum)    
                 break
             case Query.Form:
                 setFormCheck(wsRegisterMessage.content as boolean)

@@ -234,6 +234,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     tone: alarm.tone,
     fingerprint : fingerprint(),
     modified : Date.now(),
+    snooze: [0],
     closeTask: alarm.closeTask 
   }
   switch(alarm.occurrence){
@@ -340,6 +341,10 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
 const postOfflineEdit = async(alarm: Alarm) => {
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
+  if (alarm.id.endsWith("OFFLINE")){
+    postOfflineAlarms()
+    return
+  }
   try {
     const res = await axios.put(
                                   `${server}/api/alarm/`+alarm.id, 
@@ -376,7 +381,7 @@ const postOfflineAlarms = async() =>{
     if(!alarm){
       return 
     }
-    try {
+  try {
       const res = await axios.post(
                                   `${server}/api/alarm/`, 
                                       postAlarm, 
@@ -415,8 +420,11 @@ const deleteAlarm = async() =>{
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
   let id =  useAlarms.getState().toDelete
-
   if(!id){
+    return
+  }
+  if(id.endsWith("OFFLINE")){
+    postOfflineAlarms()
     return
   }
   try {
@@ -441,6 +449,7 @@ const deleteAlarm = async() =>{
 }
 
 const activityChange = async (id: string) => {
+
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
   let alarmArr = alarms.filter(alarm => alarm.id === id)
@@ -450,6 +459,10 @@ const activityChange = async (id: string) => {
   alarm.modified = Date.now()
   alarm.offline = false
   try{
+      if(id.endsWith("OFFLINE")){
+        postOfflineAlarms()
+        throw new Error("Offline alarm")
+      }
       const res = await axios.put(
                                     `${server}/api/alarm/`+alarm.id,alarm, 
                                         {

@@ -357,6 +357,10 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
 const postOfflineEdit = async(alarm: Alarm) => {
   const {server, token} = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
+  if (alarm.id.endsWith("OFFLINE")){
+    postOfflineAlarms()
+    return
+  }
   try {
     const client = await getClient()
     const res   = await client.request(

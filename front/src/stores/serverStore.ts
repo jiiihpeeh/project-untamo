@@ -13,7 +13,7 @@ type wsActionMsg = {
 export interface Content{
   guesses: number,
   score: number,
-  server_minimum: number
+  serverMinimum: number
 }
 export enum Query{
   ZXCVBN = "zxcvbn",
@@ -85,7 +85,7 @@ function wsRegisterListener(msg:any){
     case Query.ZXCVBN:
       if(msg.content){
         let content = msg.content as Content
-        if(content.hasOwnProperty('guesses') && content.hasOwnProperty('score') && content.hasOwnProperty('server_minimum')){
+        if(content.hasOwnProperty('guesses') && content.hasOwnProperty('score') && content.hasOwnProperty('serverMinimum')){
           let parsed_msg : wsRegisterMsg ={
             type: Query.ZXCVBN,
             content: content
@@ -95,17 +95,17 @@ function wsRegisterListener(msg:any){
       }
       break
     case Query.Form:
-            if(msg.content){
-                let content = msg.content as boolean
-                if(content === true || content === false){
-                    let parsed_msg : wsRegisterMsg ={
-                        type: Query.Form,
-                        content: content
-                    } 
-                    useServer.getState().setWSRegisterMessage(parsed_msg)
-                } 
-              
-              }
+      if(msg.content){
+          let content = msg.content as boolean
+          if(content === true || content === false){
+              let parsed_msg : wsRegisterMsg ={
+                  type: Query.Form,
+                  content: content
+              } 
+              useServer.getState().setWSRegisterMessage(parsed_msg)
+          } 
+        
+        }
       break
     default:
       break

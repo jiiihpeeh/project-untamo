@@ -98,10 +98,10 @@ const Register = () => {
         switch(wsRegisterMessage.type){
             case Query.ZXCVBN:
                 let content = wsRegisterMessage.content as Content
-                let passwordCheck = content.guesses > content.server_minimum
+                let passwordCheck = content.guesses > content.serverMinimum
                 setPasswordCheck(passwordCheck)
                 setScore(content.score)
-                setServerMinimum(content.server_minimum)    
+                setServerMinimum(content.serverMinimum)    
                 break
             case Query.Form:
                 setFormCheck(wsRegisterMessage.content as boolean)
