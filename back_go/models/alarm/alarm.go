@@ -1,5 +1,10 @@
 package alarm
 
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"untamo_server.zzz/utils/id"
+)
+
 const (
 	Monday    = "Monday"
 	Tuesday   = "Tuesday"
@@ -11,20 +16,20 @@ const (
 )
 
 type Alarm struct {
-	ID          string   `bson:"_id,omitempty"`
-	Occurrence  string   `bson:"occurrence,omitempty"`
-	Time        string   `bson:"time,omitempty"`
-	Weekdays    []string `bson:"weekdays,omitempty"`
-	Date        string   `bson:"date,omitempty"`
-	Label       string   `bson:"label,omitempty"`
-	Devices     []string `bson:"devices,omitempty"`
-	Snooze      []int64  `bson:"snooze,omitempty"`
-	Tune        string   `bson:"tune,omitempty"`
-	Active      bool     `json:"active,omitempty"`
-	User        string   `bson:"user,omitempty"`
-	Modified    int64    `bson:"modified,omitempty"`
-	Fingerprint string   `bson:"fingerprint,omitempty"`
-	CloseTask   bool     `bson:"close_task,omitempty"`
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	Occurrence  string             `bson:"occurrence,omitempty"`
+	Time        string             `bson:"time,omitempty"`
+	Weekdays    []string           `bson:"weekdays,omitempty"`
+	Date        string             `bson:"date,omitempty"`
+	Label       string             `bson:"label,omitempty"`
+	Devices     []string           `bson:"devices,omitempty"`
+	Snooze      []int64            `bson:"snooze,omitempty"`
+	Tune        string             `bson:"tune,omitempty"`
+	Active      bool               `json:"active,omitempty"`
+	User        string             `bson:"user,omitempty"`
+	Modified    int64              `bson:"modified,omitempty"`
+	Fingerprint string             `bson:"fingerprint,omitempty"`
+	CloseTask   bool               `bson:"close_task,omitempty"`
 }
 
 // allow only enum values in Weekdays
@@ -78,7 +83,7 @@ type AlarmOut struct {
 // convert Alarm to AlarmOutput
 func (a *Alarm) ToAlarmOut() AlarmOut {
 	return AlarmOut{
-		ID:          a.ID,
+		ID:          a.ID.Hex(),
 		Occurrence:  a.Occurrence,
 		Time:        a.Time,
 		Weekdays:    a.Weekdays,
@@ -97,7 +102,7 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 // convert AlarmOutput to Alarm ask user Id
 func (a *AlarmOut) ToAlarm(userId string) Alarm {
 	return Alarm{
-		ID:          a.ID,
+		ID:          id.IdFromString(a.ID),
 		Occurrence:  a.Occurrence,
 		Time:        a.Time,
 		Weekdays:    a.Weekdays,

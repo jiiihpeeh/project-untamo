@@ -265,6 +265,7 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//add alarm to db
+	alarmIn.ID = id.GenerateId().Hex()
 	newAlarm := alarmIn.ToAlarm(userSession.UserId)
 	if !mongoDB.AddAlarm(&newAlarm, client) {
 		c.JSON(500, gin.H{
