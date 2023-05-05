@@ -81,6 +81,9 @@ func main() {
 	router.POST("/logout", func(c *gin.Context) {
 		rest.LogOut(c, client)
 	})
+	router.POST("/register", func(c *gin.Context) {
+		rest.RegisterUser(c, client)
+	})
 	router.POST("/qr-login", func(c *gin.Context) {
 		rest.QRLogIn(c, client)
 	})

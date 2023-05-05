@@ -3,6 +3,7 @@
         "ADMINCOLL",
         "bson",
         "SESSIONCOLL",
+        "strutil",
         "untamo",
         "wshandler",
         "wsupgrader"

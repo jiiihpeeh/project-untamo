@@ -356,3 +356,30 @@ func UpdateSession(session *session.Session, client *mongo.Client) bool {
 	_, err := collection.UpdateOne(context.Background(), bson.M{"token": session.Token}, bson.M{"$set": session})
 	return err == nil
 }
+
+// count number of users
+func CountUsers(client *mongo.Client) int64 {
+	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	count, err := collection.CountDocuments(context.Background(), bson.M{})
+	if err != nil {
+		return 0
+	}
+	return count
+}
+
+// add user to db
+func AddUser(user *user.User, client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	_, err := collection.InsertOne(context.Background(), user)
+	return err == nil
+}
+
+// check if email is already in use
+func CheckEmail(email string, client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	count, err := collection.CountDocuments(context.Background(), bson.M{"email": email})
+	if err != nil {
+		return false
+	}
+	return count > 0
+}

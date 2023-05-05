@@ -16,6 +16,7 @@ import (
 	"untamo_server.zzz/models/device"
 	"untamo_server.zzz/models/login"
 	"untamo_server.zzz/models/qr"
+	"untamo_server.zzz/models/register"
 	"untamo_server.zzz/models/session"
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/utils/hash"
@@ -851,4 +852,91 @@ func RefreshToken(c *gin.Context, client *mongo.Client) {
 	}
 	//return refresh as json
 	c.JSON(200, refresh)
+}
+
+func RegisterUser(c *gin.Context, client *mongo.Client) {
+	registerRequest := register.RegisterRequest{}
+	if err := c.ShouldBindJSON(&registerRequest); err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	//check if email and password are not empty
+	if registerRequest.Email == "" || registerRequest.Password == "" {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	//check if email is valid
+	if !registerRequest.CheckEmail() {
+		c.JSON(400, gin.H{
+			"message": "Bad email",
+		})
+		return
+	}
+	//check if email is already in use
+	if mongoDB.CheckEmail(registerRequest.Email, client) {
+		c.JSON(400, gin.H{
+			"message": "Email already in use",
+		})
+		return
+	}
+	//check if password is valid
+	if !registerRequest.CheckPassword() {
+		c.JSON(400, gin.H{
+			"message": "Redundant password",
+		})
+		return
+	}
+
+	//check if password is strong enough using zxcvbn
+	estimate := zxcvbn.PasswordStrength(registerRequest.Password, nil)
+	if estimate.Score < 3 {
+
+		c.JSON(400, gin.H{
+			"message": "Password is not strong enough",
+		})
+		return
+	}
+	if estimate.Guesses < hash.MinimumGuesses {
+		c.JSON(400, gin.H{
+			"message": "Password is not strong enough",
+		})
+		return
+	}
+	//hash password
+	passwordHashed, err := hash.HashPassword(registerRequest.Password)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to hash password",
+		})
+		return
+	}
+
+	//create user using User struct
+	ownerAdmin := mongoDB.CountUsers(client) == 0
+	user := user.User{
+		ID:         id.GenerateId(),
+		Email:      registerRequest.Email,
+		Password:   passwordHashed,
+		ScreenName: registerRequest.FormScreenName(),
+		FirstName:  registerRequest.FirstName,
+		LastName:   registerRequest.LastName,
+		Admin:      ownerAdmin,
+		Owner:      ownerAdmin,
+	}
+
+	//add user to db
+	if !mongoDB.AddUser(&user, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to add user to db",
+		})
+		return
+	}
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "User registered",
+	})
 }
