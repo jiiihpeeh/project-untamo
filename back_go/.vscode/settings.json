@@ -6,6 +6,7 @@
         "strutil",
         "untamo",
         "wshandler",
-        "wsupgrader"
+        "wsupgrader",
+        "zxcvbn"
     ]
 }

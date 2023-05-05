@@ -8,7 +8,11 @@ import (
 	"github.com/adrg/strutil/metrics"
 )
 
-var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+var EmailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+const (
+	MaxPasswordSimilarity = 0.8
+)
 
 type RegisterRequest struct {
 	Email     string `json:"email"`
@@ -30,7 +34,7 @@ func (r *RegisterRequest) FormScreenName() string {
 // check using regex that email is valid
 func (r *RegisterRequest) CheckEmail() bool {
 	//use regex library to check r.Email using emailRegexp
-	return emailRegexp.MatchString(r.Email)
+	return EmailRegexp.MatchString(r.Email)
 }
 
 // convert leet speak string to normal string
@@ -74,11 +78,11 @@ func (r *RegisterRequest) CheckPassword() bool {
 	//loop through array and check similarity
 	for _, field := range lowerFields {
 		scoreNorm := strutil.Similarity(password, field, metrics.NewLevenshtein())
-		if scoreNorm > 0.8 {
+		if scoreNorm > MaxPasswordSimilarity {
 			return false
 		}
 		scoreLeet := strutil.Similarity(passwordLeet, field, metrics.NewLevenshtein())
-		if scoreLeet > 0.8 {
+		if scoreLeet > MaxPasswordSimilarity {
 			return false
 		}
 	}

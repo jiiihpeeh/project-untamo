@@ -639,6 +639,18 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	if !editUser.CheckEmail() {
+		c.JSON(400, gin.H{
+			"message": "Email is not valid",
+		})
+		return
+	}
+	if editUser.CheckPassword() {
+		c.JSON(400, gin.H{
+			"message": "Password is redundant",
+		})
+		return
+	}
 	//check if confirm password matches password using hash
 	match := hash.ComparePasswordAndHash(editUser.ConfirmPassword, userInSession.Password)
 	if !match {
