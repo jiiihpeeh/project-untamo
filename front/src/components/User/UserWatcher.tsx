@@ -62,9 +62,10 @@ const UserWatcher = () => {
         return
       }
 
-      let urlSplit : Array<string> = wsMessage.url.split('/')
-
-      if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
+      //let urlSplit : Array<string> = wsMessage.url.split('/')
+      let urlApi = wsMessage.url
+      //if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'alarm'){
+      if (urlApi  === "/api/alarm"  ){ 
         let runner : Alarm | undefined
         if (runAlarm){
           runner = alarms.filter(alarm => alarm.id === runAlarm.id)[0]
@@ -74,11 +75,13 @@ const UserWatcher = () => {
         fetchAlarms()
         
       }
-      if((urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && ["device", "devices"].includes(urlSplit[urlSplit.length - 2]))||(urlSplit.length > 2 && urlSplit[2] === "device")){
+      //if((urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && ["device", "devices"].includes(urlSplit[urlSplit.length - 2]))||(urlSplit.length > 2 && urlSplit[2] === "device")){
+      if (urlApi  === "/api/device"){
         await sleep(500)
         fetchDevices()
       }
-      if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'editUser'){
+      if (urlApi  === "/api/user"){
+      //if(urlSplit.length > 2 && urlSplit[urlSplit.length - 3] === 'api' && urlSplit[urlSplit.length - 2] === 'editUser'){
         await sleep(5000)
         userInfoFetch()
       }
@@ -95,11 +98,13 @@ const UserWatcher = () => {
       if(!wsConnection){
         while(true){
           await sleep(300)
-          if (!useServer.getState().wsActionConnection){
+          console.log(useServer.getState().wsActionConnection, useServer.getState().wsActionConnection?.OPEN)
+          if (!useServer.getState().wsActionConnection?.OPEN){
             wsConnect()
           }
           await sleep(200)
-          if (useServer.getState().wsActionConnection){
+          console.log(useServer.getState().wsActionConnection)
+          if (useServer.getState().wsActionConnection?.OPEN){
             break
           } 
         }

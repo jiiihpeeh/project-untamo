@@ -338,3 +338,21 @@ func UpdateUser(user *user.User, client *mongo.Client) bool {
 	_, err := collection.UpdateOne(context.Background(), bson.M{"_id": user.ID}, bson.M{"$set": user})
 	return err == nil
 }
+
+func DeleteUserSessions(userID primitive.ObjectID, client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	_, err := collection.DeleteMany(context.Background(), bson.M{"user_id": userID})
+	return err == nil
+}
+
+func RemoveUser(userID primitive.ObjectID, client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": userID})
+	return err == nil
+}
+
+func UpdateSession(session *session.Session, client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	_, err := collection.UpdateOne(context.Background(), bson.M{"token": session.Token}, bson.M{"$set": session})
+	return err == nil
+}

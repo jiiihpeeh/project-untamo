@@ -239,14 +239,22 @@ func GetUserAlarms(c *gin.Context, client *mongo.Client) {
 }
 
 func AddAlarm(c *gin.Context, client *mongo.Client) {
+	fmt.Println("AddAlarm")
 	// check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
-	if session == nil {
+	userSession, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	if userSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
 		return
 	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+
 	//get alarm from json
 	alarmIn := alarm.AlarmOut{}
 	if err := c.ShouldBindJSON(&alarmIn); err != nil {
@@ -256,7 +264,7 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//add alarm to db
-	newAlarm := alarmIn.ToAlarm(session.UserId)
+	newAlarm := alarmIn.ToAlarm(userSession.UserId)
 	if !mongoDB.AddAlarm(&newAlarm, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to add alarm to db",
@@ -688,9 +696,159 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 }
 
 func EditUserState(c *gin.Context, client *mongo.Client) {
-
+	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	if adminSession == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	userID := c.Param("id")
+	adminRequest := admin.AdminRequest{}
+	if err := c.ShouldBindJSON(&adminRequest); err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	//get user by id
+	userEdit := mongoDB.GetUserFromID(id.IdFromString(userID), client)
+	if userEdit == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//check if user is owner
+	if userEdit.Owner {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	//check if userInSession has same id as user and return unauthorized if it is
+	if userInSession.ID.Hex() == userEdit.ID.Hex() {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	userEdit.Admin = adminRequest.Admin
+	userEdit.Owner = adminRequest.Active
+	updated := mongoDB.UpdateUser(userEdit, client)
+	if !updated {
+		c.JSON(500, gin.H{
+			"message": "Failed to update user",
+		})
+		return
+	}
+	//if edited user is remove all sessions from db
+	if !adminRequest.Active {
+		if !mongoDB.DeleteUserSessions(userEdit.ID, client) {
+			c.JSON(500, gin.H{
+				"message": "Failed to delete user sessions",
+			})
+			return
+		}
+	}
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "User updated",
+	})
 }
 
 func RemoveUser(c *gin.Context, client *mongo.Client) {
+	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	if adminSession == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	userID := c.Param("id")
+	//get user by id
+	userEdit := mongoDB.GetUserFromID(id.IdFromString(userID), client)
+	if userEdit == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//check if user is owner
+	if userEdit.Owner {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	//check if userInSession has same id as user and return unauthorized if it is
+	if userInSession.ID.Hex() == userEdit.ID.Hex() {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	//delete user from db
+	if !mongoDB.RemoveUser(userEdit.ID, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to delete user",
+		})
+		return
+	}
+	//delete all user sessions from db
+	if !mongoDB.DeleteUserSessions(userEdit.ID, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to delete user sessions",
+		})
+		return
+	}
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "User deleted",
+	})
+}
 
+func RefreshToken(c *gin.Context, client *mongo.Client) {
+	//get session from header
+	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+
+	newToken := token.GenerateToken(64)
+	session.Token = newToken
+	session.Time = now.Now() + 157680000000
+	//update session in db
+	if !mongoDB.UpdateSession(session, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to update session",
+		})
+		return
+	}
+	refresh := login.RefreshToken{
+		Token: session.Token,
+		Time:  session.Time,
+	}
+	//return refresh as json
+	c.JSON(200, refresh)
 }

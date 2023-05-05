@@ -63,7 +63,7 @@ const refreshToken = async () =>{
         return
     }
     try {
-        let res = await axios.post(`${server}/api/refreshToken`,  
+        let res = await axios.post(`${server}/api/refresh-token`,  
                                     {
                                         token: token
                                     },
@@ -101,7 +101,8 @@ const checkSession = async () => {
             let res = await axios.get(`${server}/api/is-session-valid`,  {
                 headers: 
                     {
-                        token: token
+                        token: token,
+                        AllowCrossOriginRequests: "true"
                     }
             })
             if(res.data.status){
@@ -133,13 +134,13 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
     const user = useLogIn.getState().user
     const { server, token } = getCommunicationInfo()
     let reqFormData : Partial<FormData> = Object.assign({}, formData)
-    delete reqFormData.confirm_password
+    delete reqFormData.confirmPassword
     if(!changePassword){
-        delete reqFormData.change_password
+        delete reqFormData.changePassword
     }
     try {
         const res = await axios.put(
-                                    `${server}/api/editUser/`+formData.email,
+                                    `${server}/api/edit-user/`+formData.email,
                                         reqFormData ,
                                             {
                                                 headers:

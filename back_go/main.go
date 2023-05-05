@@ -111,6 +111,9 @@ func main() {
 	router.GET("/api/is-session-valid", func(c *gin.Context) {
 		rest.IsSessionValid(c, client)
 	})
+	router.POST("/api/refresh-token", func(c *gin.Context) {
+		rest.RefreshToken(c, client)
+	})
 	router.POST("/api/admin", func(c *gin.Context) {
 		rest.AdminLogIn(c, client)
 	})

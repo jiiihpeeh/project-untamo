@@ -50,8 +50,8 @@ export interface FormData{
     email: string,
     screenName: string,
     password: string,
-    change_password: string,
-    confirm_password: string
+    changePassword: string,
+    confirmPassword: string
 }
 
 export enum OpenDeviceDialog{

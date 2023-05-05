@@ -142,9 +142,11 @@ async function actionConnecting(){
     return null
   }
   //console.log("websocket connecting")
-  let ws = new WebSocket(useServer.getState().wsAction)
+  let socketAddress = `${websocketAddress(useServer.getState().address)}/${useLogIn.getState().token}`
+  let ws = new WebSocket(socketAddress)
+  //let ws = new WebSocket(useServer.getState().wsAction)
   ws.onopen = (event : Event) => {
-    ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
+    //ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
     useAlarms.getState().fetchAlarms()
     useLogIn.getState().getUserInfo()
     useDevices.getState().fetchDevices()

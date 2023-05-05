@@ -15,8 +15,8 @@ const emptyForm : FormData= {
     email: '',
     screenName: '',
     password: '',
-    change_password: '',
-    confirm_password:''
+    changePassword: '',
+    confirmPassword:''
 } 
 
 function EditProfile() {
@@ -36,8 +36,8 @@ function EditProfile() {
             email: userInfo.email,
             screenName: userInfo.screenName,
             password: '',
-            change_password: '',
-            confirm_password:''
+            changePassword: '',
+            confirmPassword:''
         } 
     }
     const onChange = (event:React.FormEvent<HTMLDivElement>) => {
@@ -75,9 +75,9 @@ function EditProfile() {
                return
             }
             if(changePassword){
-                if (formData.change_password.length > 5 && 
-                    (formData.change_password === formData.confirm_password) && 
-                    (formData.change_password !== formData.password)){
+                if (formData.changePassword.length > 5 && 
+                    (formData.changePassword === formData.confirmPassword) && 
+                    (formData.changePassword !== formData.password)){
                     setFormChecks(true)
                     return
                 }else{
@@ -200,28 +200,28 @@ function EditProfile() {
                         </h2>
                         <AccordionPanel pb={4}>
                             <FormLabel 
-                                htmlFor="change_password"
+                                htmlFor="changePassword"
                             >
                                 New Password
                             </FormLabel>
                             <Input 
-                                name='change_password'
+                                name='changePassword'
                                 id="edit-newPassword" 
                                 onChange={onChange}
-                                value={formData.change_password}
+                                value={formData.changePassword}
                                 type="password" 
                             />
 
                             <FormLabel 
-                                htmlFor="confirm_password"
+                                htmlFor="confirmPassword"
                             >
                                 Confirm new Password
                             </FormLabel>
                             <Input 
-                                name='confirm_password'
+                                name='confirmPassword'
                                 id="edit-confirmPassword"
                                 onChange={onChange}
-                                value={formData.confirm_password}
+                                value={formData.confirmPassword}
                                 type="password"
                             />
                         </AccordionPanel>

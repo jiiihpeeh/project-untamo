@@ -75,7 +75,7 @@ const refreshToken = async () =>{
         const client = await getClient()
         const res = await client.request(
                                             {
-                                                url: `${server}/api/refreshToken`,
+                                                url: `${server}/api/refresh-token`,
                                                 method: 'POST', 
                                                 headers: {
                                                     token: token
@@ -162,7 +162,7 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
         const client = await getClient()
         const res = await client.request(
                                             {
-                                                url: `${server}/api/editUser/`+formData.email,
+                                                url: `${server}/api/edit-user/`+formData.email,
                                                 method: 'PUT',
                                                 headers: {
                                                     token: token

@@ -17,3 +17,8 @@ type AdminData struct {
 	AdminToken string `json:"adminToken"`
 	Time       int64  `json:"time"`
 }
+
+type AdminRequest struct {
+	Active bool `json:"active"`
+	Admin  bool `json:"admin"`
+}

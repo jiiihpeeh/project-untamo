@@ -73,7 +73,7 @@ const fetchAlarms = async () => {
                                           }
                                         ) 
         isSuccess(res)
-        fetchedAlarms = alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
+        fetchedAlarms = res.data as Array<Alarm>//alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
         let alarms = useAlarms.getState().alarms
         const newIds = fetchedAlarms.map(alarm => alarm.id)
         const oldIds = alarms.map(alarm => alarm.id)
@@ -258,7 +258,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     const client = await getClient()
     const res = await client.request(
                                       {
-                                        url: `${server}/api/alarm/`,
+                                        url: `${server}/api/alarm`,
                                         method: "POST",
                                         headers: {
                                           token: token  
@@ -271,8 +271,8 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
       interface Data {
         alarm: Alarm
       }
-      let data = res.data as Data
-      let dataAlarm = data.alarm  
+      let dataAlarm = res.data as Alarm
+      //let dataAlarm = data.alarm  
       let addedAlarm = dataAlarm.id as string
       let alarmWithID = alarm
       alarmWithID.id = addedAlarm 
@@ -404,7 +404,7 @@ const postOfflineAlarms = async() =>{
       const client = await getClient()
       const res = await client.request(
                                         {
-                                          url: `${server}/api/alarm/`,
+                                          url: `${server}/api/alarm`,
                                           method: "POST",
                                           headers: {
                                             token: token
@@ -417,8 +417,8 @@ const postOfflineAlarms = async() =>{
         alarm: Alarm  
       }
       isSuccess(res)
-      let data = res.data as Data
-      let addedAlarm = data.alarm.id 
+      let data = res.data as Alarm
+      let addedAlarm = data.id 
       let alarmWithID  = postAlarm as Alarm
       alarmWithID.id = addedAlarm
       notification("Alarm", "Offline Alarm inserted to an online database")

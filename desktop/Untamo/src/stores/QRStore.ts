@@ -17,7 +17,7 @@ const fetchQRKey = async() =>{
         const client = await getClient();
         let res = await client.request(
             {
-                url: `${server}/api/qrToken`,
+                url: `${server}/api/qr-token`,
                 method: "POST",
                 body: Body.json({msg: "Generate a qr token for me, please... No hurry."}),
                 responseType: ResponseType.JSON,
