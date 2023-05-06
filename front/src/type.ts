@@ -91,7 +91,7 @@ export type Alarm = {
     active: boolean,
     snooze: Array<number>,
     id: string,
-    tone: string,
+    tune: string,
     fingerprint: string,
     modified: number,
     closeTask:boolean,

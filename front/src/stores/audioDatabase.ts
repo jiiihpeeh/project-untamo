@@ -87,7 +87,7 @@ export const fetchAudioFiles = async () => {
                     audioTracks.push(audio)
                 }
             }
-            //useAlarm.setState({tones: audioTracks})
+            //useAlarm.setState({tunes: audioTracks})
             useAudio.setState({tracks: audioTracks})
 
         } catch(err){

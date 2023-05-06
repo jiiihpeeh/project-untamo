@@ -82,7 +82,7 @@ const PlayAlarm = () =>{
             setLaunchMode(LaunchMode.None)
             if(runAlarm){
                 //setSnoozeIt(false)
-                setTrack(runAlarm.tone)
+                setTrack(runAlarm.tune)
                 setLoop(true)
                 let step = 0
                 while(!urlEnds(Path.PlayAlarm) || step > 300){

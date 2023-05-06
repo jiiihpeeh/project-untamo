@@ -121,7 +121,7 @@ type AlarmStates = {
     id: string,
     setId: (id:string) =>void,
     onAddOpen: () => void,
-    tone: string
+    tune: string
     alarmFromDialog: () => Alarm,
     alarmToEditDialog: (alarm: Alarm) => void,
 }
@@ -221,8 +221,8 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 id: id
             }
         ),
-        tone: 'rooster',
-        //tones: [],
+        tune: 'rooster',
+        //tunes: [],
         onAddOpen: () => set (
             {
                 occurrence: AlarmCases.Weekly,
@@ -234,7 +234,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 snoozed: [0],
                 id: '',
                 active: true,
-                tone: 'rooster'
+                tune: 'rooster'
             }
         ),
         alarmFromDialog:()=>{
@@ -248,7 +248,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                             active : get().active,
                             snooze : get().snoozed,
                             id : get().id,
-                            tone: get().tone,
+                            tune: get().tune,
                             fingerprint: fingerprint(),
                             modified: Date.now(),
                             closeTask: get().closeTask,
@@ -267,7 +267,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                     label: alarm.label,
                     snoozed: alarm.snooze,
                     date: stringToDate(alarm.date),
-                    tone: alarm.tone,
+                    tune: alarm.tune,
                     closeTask: alarm.closeTask,
                 }
             )

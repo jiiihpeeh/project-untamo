@@ -9,9 +9,9 @@ import { BsFillPlayFill as PlayIcon} from 'react-icons/bs'
 import { MdStop as StopIcon} from 'react-icons/md'
 import { useAudio } from "../../../stores";
 
-const AlarmTone = () => {
-    const alarmTone = useAlarm((state)=> state.tone);
-    const tones = useAudio((state)=> state.tracks)
+const AlarmTune = () => {
+    const alarmTune = useAlarm((state)=> state.tune);
+    const tunes = useAudio((state)=> state.tracks)
     const track = useAudio((state)=> state.track)
     const plays = useAudio((state) => state.plays)
     const playAudio = useAudio((state) => state.play)
@@ -20,35 +20,35 @@ const AlarmTone = () => {
     const setLoop = useAudio((state)=>state.setLoop)
     const [closeOnSelect, setCloseOnSelect ] = useState(false)
   
-    const play = async (tone:string) =>{
+    const play = async (tune:string) =>{
         if(plays){
             stopAudio()
         }else{
             setLoop(false)
-            setTrack(tone)
+            setTrack(tune)
             playAudio()
         }
     }
 
     const menuTones = () => {
-        if(tones.length === 0){
+        if(tunes.length === 0){
             fetchAudioFiles()
         }
-        let modTones = tones
-        if(!tones.includes(alarmTone)){
-            modTones.push(alarmTone)
+        let modTones = tunes
+        if(!tunes.includes(alarmTune)){
+            modTones.push(alarmTune)
         }
-        return modTones.map(tone => 
+        return modTones.map(tune => 
             { return (
                         <MenuItem 
-                            onClick={()=> useAlarm.setState( { tone: tone })}
-                            key={`audio-${tone}`}
+                            onClick={()=> useAlarm.setState( { tune: tune })}
+                            key={`audio-${tune}`}
                             w="100%"
                             closeOnSelect={closeOnSelect}
                         >   
                             <Table  
-                                id={`alarm-${tone}`} 
-                                key={`alarmKey-${tone}`} 
+                                id={`alarm-${tune}`} 
+                                key={`alarmKey-${tune}`} 
                                 variant="unstyled" 
                                 size="sm" 
                                 mb={"0px"} 
@@ -62,7 +62,7 @@ const AlarmTone = () => {
                                                 fontSize='md'
                                             >
                                                 <Text>
-                                                    {tone} 
+                                                    {tune} 
                                                 </Text>
                                             </Tooltip>
                                         </Td>
@@ -70,19 +70,19 @@ const AlarmTone = () => {
                                             w="45px"
                                             onMouseLeave= {(e)=>{setCloseOnSelect(true)}}
                                             onMouseEnter={(e)=>{setCloseOnSelect(false)}}
-                                            onClick={(e)=>{play(tone)}}
+                                            onClick={(e)=>{play(tune)}}
                                         >
                                             <Tooltip 
-                                                label={(plays && (tone === track))?"Stop":'Play'}
+                                                label={(plays && (tune === track))?"Stop":'Play'}
                                                 fontSize='sm'
                                             >
                                                 <IconButton  
-                                                    icon={<Icon as={(plays && (tone === track) )?StopIcon:PlayIcon} />} 
+                                                    icon={<Icon as={(plays && (tune === track) )?StopIcon:PlayIcon} />} 
                                                     ml="5.5%" 
                                                     colorScheme='cyan'
                                                     aria-label=''
                                                     size={"sm"}
-                                                    isDisabled={!tones.includes(tone) || (plays && (tone !== track) )}
+                                                    isDisabled={!tunes.includes(tune) || (plays && (tune !== track) )}
                                                 />
                                             </Tooltip>
                                         </Td>
@@ -106,7 +106,7 @@ const AlarmTone = () => {
                     rightIcon={<Down/>}
                     width="100%"
                 >
-                    Choose the alarm tone: {alarmTone}
+                    Choose the alarm tune: {alarmTune}
                 </MenuButton>
                 <MenuList>
                     {menuTones()}
@@ -124,4 +124,4 @@ const AlarmTone = () => {
        )
 }
 
-export default AlarmTone;
+export default AlarmTune;

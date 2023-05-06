@@ -3,7 +3,7 @@ import TimeSelector from "./TimeSelector"
 import DeviceChecker from "./DeviceChecker"
 import Message from "./Message"
 import React from "react"
-import AlarmTone from "./AlarmTone"
+import AlarmTune from "./AlarmTune"
 import AlarmToggles from "./AlarmToggles"
 
 const AlarmDaily = () => {
@@ -14,7 +14,7 @@ const AlarmDaily = () => {
                 <TimeSelector/>
                 <DeviceChecker/>
                 <AlarmToggles/>
-                <AlarmTone/>
+                <AlarmTune/>
             </Stack>
         </Center>
        )

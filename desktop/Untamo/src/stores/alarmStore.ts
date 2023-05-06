@@ -237,7 +237,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
     occurrence: alarm.occurrence,
     time: alarm.time,
     weekdays: alarm.weekdays,
-    tone: alarm.tone,
+    tune: alarm.tune,
     fingerprint : fingerprint(),
     modified : Date.now(),
     closeTask: alarm.closeTask 
@@ -308,7 +308,7 @@ const editAlarmFromDialog = async (alarm: Alarm) => {
     time: alarm.time,
     weekdays: alarm.weekdays,
     id: alarm.id,
-    tone:alarm.tone,
+    tune:alarm.tune,
     fingerprint : fingerprint(),
     modified : Date.now(),
     closeTask: alarm.closeTask
@@ -538,7 +538,7 @@ const useAlarms = create<UseAlarms>()(
             alarms: [],
             runAlarm: undefined,
             toDelete: undefined,
-            tone: 'rooster',
+            tune: 'rooster',
             toggleActivity: async (id) => {
               await activityChange(id)
             },

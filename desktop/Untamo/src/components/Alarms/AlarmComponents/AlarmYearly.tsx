@@ -4,7 +4,7 @@ import DateSelector from "./DateSelector"
 import DeviceChecker from "./DeviceChecker"
 import Message from "./Message"
 import React from "react"
-import AlarmTone from "./AlarmTone"
+import AlarmTune from "./AlarmTune"
 import AlarmToggles from "./AlarmToggles"
 
 const AlarmYearly = () => {
@@ -16,7 +16,7 @@ const AlarmYearly = () => {
                     <DateSelector/>
                     <DeviceChecker/>
                     <AlarmToggles/>
-                    <AlarmTone/>
+                    <AlarmTune/>
                 </Stack>
             </Center>
             )

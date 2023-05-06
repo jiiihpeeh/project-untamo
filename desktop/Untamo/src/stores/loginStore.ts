@@ -22,7 +22,7 @@ type UseLogIn = {
     user: UserInfo,
     expire: number,
     tokenTime: number,
-    tones: Array<string>,
+    tunes: Array<string>,
     fingerprint: string,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
@@ -326,7 +326,7 @@ const useLogIn = create<UseLogIn>()(
             user:  emptyUser,
             expire: -1,
             tokenTime: -1,
-            tones: [],
+            tunes: [],
             fingerprint: [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             setToken: (s) => set(
                   { 
