@@ -3,10 +3,12 @@ package wshandler
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/mongo"
+	"untamo_server.zzz/actions/wshandler/wsConnections"
 	"untamo_server.zzz/db/mongoDB"
 )
 
@@ -14,16 +16,20 @@ var wsupgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		fmt.Println("check origin")
-		origin := r.Header.Get("Origin")
-		fmt.Println("origin: ", origin)
+		//fmt.Println("check origin")
+		//origin := r.Header.Get("Origin")
+		//fmt.Println("origin: ", origin)
 		//check if origin is localhost or not
 
 		return true
 	},
 }
 
+// create connection hashmap
+
 func Action(c *gin.Context, client *mongo.Client) {
+	//sleep 50 milliseconds
+	time.Sleep(50 * time.Millisecond)
 	fmt.Println("websocket handler")
 	wsToken := c.Param("token")
 	fmt.Println("wsToken: ", wsToken)
@@ -53,20 +59,40 @@ func Action(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	defer conn.Close()
+	//get wsConnectionsMutex
+	cons := wsConnections.WsConnectionsMutex
+	//add connection to hashmap
+	cons.Lock()
+	//find if connection already exists using IsTokenConnected
+	if wsConnections.WsConnections.IsTokenConnected(wsToken) {
+		//sleep 5 seconds
+		fmt.Println("connection already exists")
+		time.Sleep(5 * time.Second)
+		conn.Close()
+		return
+	} else {
+		wsConnections.WsConnections.AddConnection(wsToken, user.ID.Hex(), conn)
+	}
+
+	cons.Unlock()
+
 	fmt.Println("websocket connection established")
 	for {
-		mt, msg, err := conn.ReadMessage()
+		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read message"})
 			return
 		}
-		if string(msg) == "ping" {
+		if string(msg) == "." {
+			//sleep 5 seconds
+			time.Sleep(5 * time.Second)
 			msg = []byte("pong")
 		}
 		fmt.Printf("message received: %s\n", msg)
-		err = conn.WriteMessage(mt, msg)
+		err = conn.WriteMessage(0, msg)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to write message"})
+			fmt.Println(err)
+			//c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to write message"})
 			return
 		}
 	}

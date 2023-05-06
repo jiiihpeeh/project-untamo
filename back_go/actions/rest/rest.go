@@ -974,3 +974,29 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		"message": "User registered",
 	})
 }
+
+func GetUser(c *gin.Context, client *mongo.Client) {
+	//get user from header
+	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//get user from db
+	user := mongoDB.GetUserFromID(userInSession.ID, client)
+	if user == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//return user as json
+	c.JSON(200, user.ToUserOut())
+}

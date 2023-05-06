@@ -24,7 +24,7 @@ func main() {
 	corsConfig := cors.Config{
 		AllowOrigins:           []string{"*"},
 		AllowMethods:           []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:           []string{"adminToken", "Access-Control-Allow-Header", "Origin", "Content-Type, Date", "Content-Length", "accept", "origin", "Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Credentials", "Access-Control-Max-Age", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Host", "User-Agent", "token"},
+		AllowHeaders:           []string{"AllowCrossOriginRequests", "adminToken", "Access-Control-Allow-Header", "Origin", "Content-Type, Date", "Content-Length", "accept", "origin", "Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Credentials", "Access-Control-Max-Age", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Host", "User-Agent", "token"},
 		AllowCredentials:       true,
 		AllowWildcard:          true,
 		AllowBrowserExtensions: true,
@@ -113,6 +113,9 @@ func main() {
 	})
 	router.GET("/api/is-session-valid", func(c *gin.Context) {
 		rest.IsSessionValid(c, client)
+	})
+	router.GET("/api/user", func(c *gin.Context) {
+		rest.GetUser(c, client)
 	})
 	router.POST("/api/refresh-token", func(c *gin.Context) {
 		rest.RefreshToken(c, client)

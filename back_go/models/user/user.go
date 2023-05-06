@@ -22,20 +22,26 @@ type User struct {
 }
 
 type UserOut struct {
-	User   string `json:"user"`
-	Email  string `json:"email"`
-	Active bool   `json:"active"`
-	Admin  bool   `json:"admin"`
-	Owner  bool   `json:"owner"`
+	User       string `json:"user"`
+	Email      string `json:"email"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	ScreenName string `json:"screenName"`
+	Active     bool   `json:"active"`
+	Admin      bool   `json:"admin"`
+	Owner      bool   `json:"owner"`
 }
 
 func (u *User) ToUserOut() *UserOut {
 	return &UserOut{
-		User:   u.ID.Hex(),
-		Email:  u.Email,
-		Active: u.Active,
-		Admin:  u.Admin,
-		Owner:  u.Owner,
+		User:       u.ID.Hex(),
+		Email:      u.Email,
+		FirstName:  u.FirstName,
+		LastName:   u.LastName,
+		ScreenName: u.ScreenName,
+		Active:     u.Active,
+		Admin:      u.Admin,
+		Owner:      u.Owner,
 	}
 }
 
