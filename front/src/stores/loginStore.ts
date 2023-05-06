@@ -95,33 +95,28 @@ const refreshToken = async () =>{
     }
 }
 
-const checkSession = async () => {
+async function checkSession() {
     const { server, token } = getCommunicationInfo()
-    let status : SessionStatus 
-    if (token.length > 3){
+    let status: SessionStatus
+    if (token.length > 3) {
         try {
-            let res = await axios.get(`${server}/api/is-session-valid`,  {
-                headers: 
-                    {
-                        token: token,
-                        AllowCrossOriginRequests: "true"
-                    }
+            let res = await axios.get(`${server}/api/is-session-valid`, {
+                headers: {
+                    token: token,
+                }
             })
-            if(res.data.status){
-                useAlarms.getState().fetchAlarms()
-                useLogIn.getState().getUserInfo()
-                useDevices.getState().fetchDevices()
-                notification("Session", "Continuing session.", Status.Info)
-                setTimeout(refreshToken,30000)
-                status = SessionStatus.Valid
-            } else {
-                status = SessionStatus.NotValid
-            }
-        } catch(err: any){
-            if(err.response.status === 403){
+            useAlarms.getState().fetchAlarms()
+            useLogIn.getState().getUserInfo()
+            useDevices.getState().fetchDevices()
+            notification("Session", "Continuing session.", Status.Info)
+            setTimeout(refreshToken, 30000)
+            status = SessionStatus.Valid
+            
+        } catch (err: any) {
+            if (err.response.status === 403) {
                 notification("Session", "Session invalid.", Status.Error)
                 status = SessionStatus.NotValid
-            }else{
+            } else {
                 notification("Session", "Can not contact server.", Status.Warning)
                 status = SessionStatus.NotValid
             }
@@ -130,6 +125,7 @@ const checkSession = async () => {
         status = SessionStatus.NotValid
     }
     await sleep(1)
+    console.log(status)
     return status
 } 
 const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
