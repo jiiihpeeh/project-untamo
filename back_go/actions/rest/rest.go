@@ -68,10 +68,11 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 	//add 5 yers in ms to now
 	expires := now.Now() + 157680000000
 	newSession := session.Session{
-		ID:     id.GenerateId(),
-		Time:   expires,
-		UserId: user.ID.Hex(),
-		Token:  token.GenerateToken(64),
+		ID:      id.GenerateId(),
+		Time:    expires,
+		UserId:  user.ID.Hex(),
+		Token:   token.GenerateToken(64),
+		WsToken: token.GenerateToken(66),
 	}
 	//add session to db
 	//marshal session to json
@@ -92,6 +93,7 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 		Admin:      user.Admin,
 		Owner:      user.Owner,
 		Time:       newSession.Time,
+		WsToken:    newSession.WsToken,
 	}
 	//return session as json
 	c.JSON(200, logInResponse)
@@ -179,8 +181,9 @@ func EditDevice(c *gin.Context, client *mongo.Client) {
 	}
 
 	//edit device in db
+	uID, _ := id.IdFromString(deviceId)
 	editedDevice := device.Device{
-		ID:         id.IdFromString(deviceId),
+		ID:         uID,
 		User:       session.UserId,
 		DeviceName: deviceIn.DeviceName,
 		DeviceType: deviceIn.DeviceType,
@@ -206,9 +209,14 @@ func DeleteDevice(c *gin.Context, client *mongo.Client) {
 	}
 	//get device id from url
 	deviceId := c.Param("id")
-	//check if device exists
-	//delete device from db
-	if !mongoDB.DeleteDevice(id.IdFromString(deviceId), session.UserId, client) {
+	uID, err := id.IdFromString(deviceId)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	if !mongoDB.DeleteDevice(uID, session.UserId, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete device from db",
 		})
@@ -329,7 +337,8 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 	//get alarm id from url
 	alarmId := c.Param("id")
 	//remove alarm from db
-	if !mongoDB.DeleteAlarm(id.IdFromString(alarmId), session.UserId, client) {
+	uID, _ := id.IdFromString(alarmId)
+	if !mongoDB.DeleteAlarm(uID, session.UserId, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete alarm from db",
 		})
@@ -458,10 +467,11 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 	}
 	//set up a new session
 	session := session.Session{
-		ID:     id.GenerateId(),
-		Time:   now.Now() + 157680000000,
-		UserId: qr.User,
-		Token:  token.GenerateToken(64),
+		ID:      id.GenerateId(),
+		Time:    now.Now() + 157680000000,
+		UserId:  qr.User,
+		Token:   token.GenerateToken(64),
+		WsToken: token.GenerateToken(66),
 	}
 	//add session to db
 	if !mongoDB.AddSession(&session, client) {
@@ -478,7 +488,8 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//get user from db
-	user := mongoDB.GetUserFromID(id.IdFromString(session.UserId), client)
+	uID, _ := id.IdFromString(session.UserId)
+	user := mongoDB.GetUserFromID(uID, client)
 	if user == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -488,6 +499,7 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 
 	//form LogInResponse
 	login := login.LogInResponse{
+		WsToken:    session.WsToken,
 		Token:      session.Token,
 		Email:      session.UserId,
 		ScreenName: user.ScreenName,
@@ -732,7 +744,9 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//get user by id
-	userEdit := mongoDB.GetUserFromID(id.IdFromString(userID), client)
+	uID, _ := id.IdFromString(userID)
+
+	userEdit := mongoDB.GetUserFromID(uID, client)
 	if userEdit == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -793,7 +807,14 @@ func RemoveUser(c *gin.Context, client *mongo.Client) {
 	}
 	userID := c.Param("id")
 	//get user by id
-	userEdit := mongoDB.GetUserFromID(id.IdFromString(userID), client)
+	uID, err := id.IdFromString(userID)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	userEdit := mongoDB.GetUserFromID(uID, client)
 	if userEdit == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",

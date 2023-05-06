@@ -12,7 +12,7 @@ const UserWatcher = () => {
   const alarms = useAlarms((state)=> state.alarms)
 
   const fetchDevices = useDevices((state)=> state.fetchDevices)
-  const token = useLogIn((state) => state.token)
+  const wsToken = useLogIn((state) => state.wsToken)
 
   const userInfoFetch = useLogIn((state) => state.getUserInfo)
   const [ runner, setRunner ] = useState(runAlarm)
@@ -91,7 +91,7 @@ const UserWatcher = () => {
 
   useEffect(() => {
       wsReconnect()
-  },[token])
+  },[wsToken])
 
   useEffect(() => {
     async function connector (){

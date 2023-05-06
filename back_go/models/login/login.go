@@ -2,6 +2,7 @@ package login
 
 type LogInResponse struct {
 	Token      string `json:"token"`
+	WsToken    string `json:"wsToken"`
 	Email      string `json:"email"`
 	ScreenName string `json:"screenName"`
 	FirstName  string `json:"firstName"`

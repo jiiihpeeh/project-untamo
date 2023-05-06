@@ -15,6 +15,7 @@ import { sleep, isSuccess } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 
 type UseLogIn = {
+    wsToken: string
     token : string,
     signedIn: number,
     sessionValid: SessionStatus,
@@ -33,6 +34,7 @@ type UseLogIn = {
     logIn:(user:string, password: string) => void,
     logOut: () => void,
     refreshToKen:()=>void,
+    getWsToken: () => string
 }
 
 const userInfoFetch = async () =>{
@@ -224,6 +226,7 @@ async function logIn(email: string, password: string) {
             email: string
             time: number
             owner: boolean
+            wsToken: string
         }
         isSuccess(res)
         let resp: Resp = res.data as Resp
@@ -241,6 +244,7 @@ async function logIn(email: string, password: string) {
                 },
                 sessionValid: SessionStatus.Valid,
                 token: resp.token,
+                wsToken: resp.wsToken,
                 expire: resp.time,
                 signedIn: now,
                 tokenTime: now
@@ -304,6 +308,7 @@ const logOutProcedure = async () => {
                             expire:-1,
                             tokenTime:-1,
                             token: '',
+                            wsToken: ''
                         }
                     )
     //localStorage.clear()
@@ -312,9 +317,10 @@ const logOutProcedure = async () => {
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false}
 const useLogIn = create<UseLogIn>()(
     persist(
-      (set) => (
+      (set,get) => (
           {
             token: '',
+            wsToken: '',
             signedIn: -1,
             sessionValid: SessionStatus.Unknown,
             user:  emptyUser,
@@ -367,7 +373,10 @@ const useLogIn = create<UseLogIn>()(
             },
             refreshToKen: async()=>{
                 await refreshToken()
-            },   
+            },
+            getWsToken: () => {
+                return get().wsToken
+            } 
         }
       ),
       {
@@ -376,6 +385,7 @@ const useLogIn = create<UseLogIn>()(
           partialize: (state) => (
               { 
                 token: state.token,
+                wsToken: state.wsToken,
                 signedIn: state.signedIn,
                 user: state.user,
                 expire: state.expire,

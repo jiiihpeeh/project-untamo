@@ -39,8 +39,10 @@ func (d *Device) ToDeviceOut() DeviceOut {
 
 // convert DeviceOut to Device ask user Id
 func (d *DeviceOut) ToDevice(userId string) Device {
+	uID, _ := id.IdFromString(d.ID)
+
 	return Device{
-		ID:         id.IdFromString(d.ID),
+		ID:         uID,
 		DeviceName: d.DeviceName,
 		DeviceType: d.DeviceType,
 		User:       userId,

@@ -101,8 +101,9 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 
 // convert AlarmOutput to Alarm ask user Id
 func (a *AlarmOut) ToAlarm(userId string) Alarm {
+	uID, _ := id.IdFromString(userId)
 	return Alarm{
-		ID:          id.IdFromString(a.ID),
+		ID:          uID,
 		Occurrence:  a.Occurrence,
 		Time:        a.Time,
 		Weekdays:    a.Weekdays,

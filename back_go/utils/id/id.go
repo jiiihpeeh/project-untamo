@@ -6,10 +6,10 @@ func GenerateId() primitive.ObjectID {
 	return primitive.NewObjectID()
 }
 
-func IdFromString(id string) primitive.ObjectID {
+func IdFromString(id string) (primitive.ObjectID, error) {
 	idPrimitive, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return primitive.ObjectID{}
+		return GenerateId(), nil
 	}
-	return idPrimitive
+	return idPrimitive, nil
 }

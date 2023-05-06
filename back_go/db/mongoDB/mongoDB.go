@@ -59,7 +59,12 @@ func GetSessionFromToken(token string, client *mongo.Client) (*session.Session, 
 	if err != nil {
 		return nil, nil
 	}
-	userInSession := GetUserFromID(id.IdFromString(session.UserId), client)
+	uID, err := id.IdFromString(session.UserId)
+	if err != nil {
+		return nil, nil
+	}
+
+	userInSession := GetUserFromID(uID, client)
 	//fmt.Println("User in session: ", userInSession)
 	if userInSession == nil {
 		return nil, nil
@@ -100,7 +105,13 @@ func GetSession(token string, client *mongo.Client) (*session.Session, *user.Use
 		DeleteSession(token, client)
 		return nil, nil
 	}
-	user := GetUserFromID(id.IdFromString(session.UserId), client)
+	uID, err := id.IdFromString(session.UserId)
+	if err != nil {
+		DeleteSession(token, client)
+		return nil, nil
+	}
+
+	user := GetUserFromID(uID, client)
 	//fmt.Println("User check: ", user)
 	if user == nil {
 		DeleteSession(token, client)
@@ -382,4 +393,25 @@ func CheckEmail(email string, client *mongo.Client) bool {
 		return false
 	}
 	return count > 0
+}
+
+//get session and user  from wsToken
+
+func GetUserAndSessionFromWsToken(wsToken string, client *mongo.Client) (*session.Session, *user.User) {
+	session := &session.Session{}
+	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	err := collection.FindOne(context.Background(), bson.M{"ws_token": wsToken}).Decode(&session)
+	if err != nil {
+		return nil, nil
+	}
+	uID, err := id.IdFromString(session.UserId)
+	if err != nil {
+		return nil, nil
+	}
+
+	user := GetUserFromID(uID, client)
+	if user == nil {
+		return nil, nil
+	}
+	return session, user
 }

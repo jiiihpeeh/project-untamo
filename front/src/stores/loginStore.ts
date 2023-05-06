@@ -10,6 +10,7 @@ import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep } from '../utils'
 
 type UseLogIn = {
+    wsToken: string,
     token : string,
     signedIn: number,
     sessionValid: SessionStatus,
@@ -28,6 +29,7 @@ type UseLogIn = {
     logIn:(user:string, password: string) => void,
     logOut: () => void,
     refreshToKen:()=>void,
+    getWsToken: () => string,
 }
 
 const userInfoFetch = async () =>{
@@ -181,6 +183,7 @@ const logIn = async(email: string, password: string) => {
                                         }
                                     )
         interface Resp{
+            wsToken: string,
             token: string,
             screenName: string,
             firstName: string,
@@ -206,6 +209,7 @@ const logIn = async(email: string, password: string) => {
                                         },
                                 sessionValid: SessionStatus.Valid,
                                 token: resp.token,
+                                wsToken: resp.wsToken,
                                 expire: resp.time,
                                 signedIn: now,
                                 tokenTime:now
@@ -217,6 +221,7 @@ const logIn = async(email: string, password: string) => {
         const randomTime = Math.ceil(Math.random()*7200000)
         setTimeout(refreshToken,2*24*60*60*1000+randomTime)
         notification("Logged In", "Successfully logged in")
+        useLogIn.setState({sessionValid: SessionStatus.Valid})
     }catch(err:any){
         notification("Log In", "Log In Failed", Status.Error)
         useLogIn.setState({sessionValid: SessionStatus.NotValid})
@@ -265,6 +270,7 @@ const logOutProcedure = async () => {
                             expire:-1,
                             tokenTime:-1,
                             token: '',
+                            wsToken: '',
                         }
                     )
     //localStorage.clear()
@@ -273,8 +279,9 @@ const logOutProcedure = async () => {
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false}
 const useLogIn = create<UseLogIn>()(
     persist(
-      (set) => (
+      (set,get) => (
           {
+            wsToken: '',
             token: '',
             signedIn: -1,
             sessionValid: SessionStatus.Unknown,
@@ -330,7 +337,10 @@ const useLogIn = create<UseLogIn>()(
             },
             refreshToKen: async()=>{
                 await refreshToken()
-            },   
+            },
+            getWsToken: () => {
+                return get().wsToken
+            }  
         }
       ),
       {
@@ -338,6 +348,7 @@ const useLogIn = create<UseLogIn>()(
           storage: createJSONStorage(() => localStorage), 
           partialize: (state) => (
               { 
+                wsToken: state.wsToken,
                 token: state.token,
                 signedIn: state.signedIn,
                 user: state.user,

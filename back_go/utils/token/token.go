@@ -1,6 +1,7 @@
 package token
 
 import (
+	"bytes"
 	"math/rand"
 	"strconv"
 
@@ -13,13 +14,20 @@ const (
 
 // generate token
 func GenerateToken(n int16) string {
-	b := make([]rune, n)
+	b := make([]byte, n)
 	for i := range b {
-		b[i] = rune(letters[rand.Intn(len(letters))])
+		b[i] = letters[rand.Intn(len(letters))]
 	}
 	//convert now to radix 36
-	nowStr := strconv.FormatUint(uint64(now.Now()), 36)
+	nowStr := strconv.FormatUint(uint64(now.NowNano()), 36)
+	//convert nowStr to rune
+	t := []byte(nowStr)
+	for i := range t {
+		//randomly capitalize a letter in nowStr
+		if rand.Intn(2) == 1 {
+			t[i] = bytes.ToUpper(t[i : i+1])[0]
+		}
+	}
 	//randomly capitalize a letter in nowStr
-
-	return string(b) + nowStr
+	return string(b) + string(t)
 }

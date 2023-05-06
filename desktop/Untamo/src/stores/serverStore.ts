@@ -142,7 +142,7 @@ async function actionConnecting(){
     return null
   }
   //console.log("websocket connecting")
-  let socketAddress = `${websocketAddress(useServer.getState().address)}/${useLogIn.getState().token}`
+  let socketAddress = `${websocketAddress(useServer.getState().address)}/${useLogIn.getState().getWsToken()}`
   let ws = new WebSocket(socketAddress)
   //let ws = new WebSocket(useServer.getState().wsAction)
   ws.onopen = (event : Event) => {
