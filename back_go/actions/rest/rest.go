@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/trustelem/zxcvbn"
 	"go.mongodb.org/mongo-driver/mongo"
+	"untamo_server.zzz/actions/wshandler"
 	"untamo_server.zzz/db/mongoDB"
 	"untamo_server.zzz/models/admin"
 	"untamo_server.zzz/models/alarm"
@@ -19,6 +21,7 @@ import (
 	"untamo_server.zzz/models/register"
 	"untamo_server.zzz/models/session"
 	"untamo_server.zzz/models/user"
+	"untamo_server.zzz/models/wsOut"
 	"untamo_server.zzz/utils/hash"
 	"untamo_server.zzz/utils/id"
 	"untamo_server.zzz/utils/list"
@@ -77,13 +80,15 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 	//add session to db
 	//marshal session to json
 	//fmt.Println(newSession)
-	if !mongoDB.AddSession(&newSession, client) {
+	sID, err := mongoDB.AddSession(&newSession, client)
+	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add session to db",
 		})
 		return
 	}
-	//make LogInResponse struct
+	newSession.ID = sID
+
 	logInResponse := login.LogInResponse{
 		Token:      newSession.Token,
 		Email:      user.Email,
@@ -137,19 +142,27 @@ func AddDevice(c *gin.Context, client *mongo.Client) {
 	}
 	//add device to db
 	newDevice := device.Device{
-		ID:         id.GenerateId(),
+		//ID:         id.GenerateId(),
 		User:       session.UserId,
 		DeviceName: deviceIn.DeviceName,
 		DeviceType: deviceIn.DeviceType,
 	}
-	if !mongoDB.AddDevice(&newDevice, client) {
+	dID, err := mongoDB.AddDevice(&newDevice, client)
+	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add device to db",
 		})
 		return
 	}
+	newDevice.ID = dID
+
 	//return device as json
-	c.JSON(200, newDevice.ToDeviceOut())
+	deviceOut := newDevice.ToDeviceOut()
+	out := wsOut.WsOut{Type: "deviceAdd", Data: deviceOut}
+	//marshal out to json
+	outJson, _ := json.Marshal(out)
+	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
+	c.JSON(200, deviceOut)
 }
 
 func EditDevice(c *gin.Context, client *mongo.Client) {
@@ -194,8 +207,13 @@ func EditDevice(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	deviceOut := editedDevice.ToDeviceOut()
+	out := wsOut.WsOut{Type: "deviceEdit", Data: deviceOut}
+	//marshal out to json
+	outJson, _ := json.Marshal(out)
+	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
 	//return device as json
-	c.JSON(200, editedDevice.ToDeviceOut())
+	c.JSON(200, deviceOut)
 }
 
 func DeleteDevice(c *gin.Context, client *mongo.Client) {
@@ -223,6 +241,10 @@ func DeleteDevice(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//return device as json
+	out := wsOut.WsOut{Type: "deviceDelete", Data: deviceId}
+	//marshal out to json
+	outJson, _ := json.Marshal(out)
+	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
 	c.JSON(200, gin.H{
 		"message": "Device deleted",
 	})
@@ -273,22 +295,35 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//add alarm to db
-	alarmIn.ID = id.GenerateId().Hex()
-	newAlarm := alarmIn.ToAlarm(userSession.UserId)
-	if !mongoDB.AddAlarm(&newAlarm, client) {
+
+	newAlarm := alarmIn.ToNewAlarm(userSession.UserId)
+	//empty ID field
+
+	//marshal newAlarm to json
+	// j := newAlarm.ToAlarmOut()
+	// fmt.Println("newAlarm: ", j)
+	alarmId, err := mongoDB.AddAlarm(&newAlarm, client)
+	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add alarm to db",
 		})
 		return
 	}
-	//return alarm as json
-	c.JSON(200, newAlarm.ToAlarmOut())
+	newAlarm.ID = alarmId
+	//send message to websocket
+	//marshal out to json
+
+	added := newAlarm.ToAlarmOut()
+	wsOut := wsOut.WsOut{Type: "alarmAdd", Data: added}
+	wsOutJson, _ := json.Marshal(wsOut)
+	go wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
+	c.JSON(200, added)
 }
 
 func EditAlarm(c *gin.Context, client *mongo.Client) {
 	// check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
-	if session == nil {
+	userSession, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	if userSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
@@ -314,15 +349,19 @@ func EditAlarm(c *gin.Context, client *mongo.Client) {
 	}
 
 	//edit alarm in db
-	editedAlarm := alarmIn.ToAlarm(session.UserId)
+	editedAlarm := alarmIn.ToAlarm(userSession.UserId)
 	if !mongoDB.EditAlarm(&editedAlarm, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to edit alarm in db",
 		})
 		return
 	}
+	edited := editedAlarm.ToAlarmOut()
+	wsOut := wsOut.WsOut{Type: "alarmEdit", Data: edited}
+	wsOutJson, _ := json.Marshal(wsOut)
+	go wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
 	//return alarm as json
-	c.JSON(200, editedAlarm.ToAlarmOut())
+	c.JSON(200, edited)
 }
 
 func DeleteAlarm(c *gin.Context, client *mongo.Client) {
@@ -345,6 +384,10 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//return alarm as json
+	msg := wsOut.WsOut{Type: "alarmDelete", Data: alarmId}
+	//marshal msg to json
+	msgJson, _ := json.Marshal(msg)
+	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(msgJson))
 	c.JSON(200, gin.H{
 		"message": "Alarm deleted",
 	})
@@ -356,6 +399,7 @@ func IsSessionValid(c *gin.Context, client *mongo.Client) {
 	//c.Header("Access-Control-Allow-Origin", "*")
 	// check if user is logged in by getting a session from db
 	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	fmt.Print("Session: ", session)
 	//fmt.Println("Session: ", session, "User: ", user)
 	if session == nil {
 		c.JSON(401, gin.H{
@@ -474,12 +518,14 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		WsToken: token.GenerateToken(66),
 	}
 	//add session to db
-	if !mongoDB.AddSession(&session, client) {
+	sID, err := mongoDB.AddSession(&session, client)
+	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add session to db",
 		})
 		return
 	}
+	session.ID = sID
 	//delete qr from db
 	if !mongoDB.DeleteQr(qr.QrToken, client) {
 		c.JSON(500, gin.H{
@@ -715,6 +761,11 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	out := user.ToUserOut()
+	//marshal out to json
+	userOut := wsOut.WsOut{Type: "userEdit", Data: out}
+	outJson, _ := json.Marshal(userOut)
+	go wshandler.WsServing.ServeMessage(user.ID.Hex(), session.WsToken, []byte(outJson))
 	//return message success
 	c.JSON(200, gin.H{
 		"message": "User updated",
@@ -952,7 +1003,6 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 	//create user using User struct
 	ownerAdmin := mongoDB.CountUsers(client) == 0
 	user := user.User{
-		ID:         id.GenerateId(),
 		Email:      registerRequest.Email,
 		Password:   passwordHashed,
 		ScreenName: registerRequest.FormScreenName(),
@@ -963,13 +1013,15 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 	}
 
 	//add user to db
-	if !mongoDB.AddUser(&user, client) {
+	uID, err := mongoDB.AddUser(&user, client)
+	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add user to db",
 		})
 		return
 	}
-	//return message success
+	user.ID = uID
+
 	c.JSON(200, gin.H{
 		"message": "User registered",
 	})
@@ -999,4 +1051,35 @@ func GetUser(c *gin.Context, client *mongo.Client) {
 	}
 	//return user as json
 	c.JSON(200, user.ToUserOut())
+}
+
+// update WsToKen in session
+func UpdateWsToken(c *gin.Context, client *mongo.Client) {
+	//get session from header
+	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//generate new wsToken
+	newWsToken := token.GenerateToken(66)
+	session.WsToken = newWsToken
+	//update session in db
+	if !mongoDB.UpdateSession(session, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to update session",
+		})
+		return
+	}
+	//return new wsToken as json
+	c.JSON(200, gin.H{
+		"wsToken": newWsToken,
+	})
 }

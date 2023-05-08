@@ -24,7 +24,7 @@ func main() {
 	corsConfig := cors.Config{
 		AllowOrigins:           []string{"*"},
 		AllowMethods:           []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:           []string{"AllowCrossOriginRequests", "adminToken", "Access-Control-Allow-Header", "Origin", "Content-Type, Date", "Content-Length", "accept", "origin", "Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Credentials", "Access-Control-Max-Age", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Host", "User-Agent", "token"},
+		AllowHeaders:           []string{"AllowCrossOriginRequests", "adminToken", "Access-Control-Allow-Header", "Origin", "Content-Type, Date", "Content-Length", "accept", "origin", "Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Credentials", "Access-Control-Max-Age", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Host", "User-Agent", "token", "Upgrade", "Sec-WebSocket-Version", "Sec-WebSocket-Key", "Sec-WebSocket-Extensions", "Pragma", "Cache-Control", "Upgrade", "Sec-WebSocket-Version", "Sec-WebSocket-Key", "Sec-WebSocket-Extensions", "Pragma", "Cache-Control"},
 		AllowCredentials:       true,
 		AllowWildcard:          true,
 		AllowBrowserExtensions: true,
@@ -93,6 +93,9 @@ func main() {
 	router.GET("/api/devices", func(c *gin.Context) {
 		rest.GetDevices(c, client)
 	})
+	router.POST("/api/device", func(c *gin.Context) {
+		rest.AddDevice(c, client)
+	})
 	router.PUT("/api/device/:id", func(c *gin.Context) {
 		rest.EditDevice(c, client)
 	})
@@ -117,8 +120,11 @@ func main() {
 	router.GET("/api/user", func(c *gin.Context) {
 		rest.GetUser(c, client)
 	})
-	router.POST("/api/refresh-token", func(c *gin.Context) {
+	router.GET("/api/refresh-token", func(c *gin.Context) {
 		rest.RefreshToken(c, client)
+	})
+	router.GET("/api/ws-token", func(c *gin.Context) {
+		rest.UpdateWsToken(c, client)
 	})
 	router.POST("/api/admin", func(c *gin.Context) {
 		rest.AdminLogIn(c, client)

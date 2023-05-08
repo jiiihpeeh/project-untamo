@@ -2,6 +2,7 @@ package mongoDB
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -127,6 +128,7 @@ func GetSession(token string, client *mongo.Client) (*session.Session, *user.Use
 }
 func GetSessionFromHeader(req *http.Request, client *mongo.Client) (*session.Session, *user.User) {
 	token := GetTokenFromHeader(req)
+	//fmt.Println("Token: ", token)
 	return GetSession(token, client)
 }
 
@@ -176,10 +178,16 @@ func GetDevices(userID string, client *mongo.Client) []*device.Device {
 	return devices
 }
 
-func AddAlarm(alarm *alarm.Alarm, client *mongo.Client) bool {
+func AddAlarm(alarm *alarm.Alarm, client *mongo.Client) (primitive.ObjectID, error) {
 	collection := client.Database(DB_NAME).Collection(ALARMCOLL)
-	_, err := collection.InsertOne(context.Background(), alarm)
-	return err == nil
+	//insert alarm and get id
+
+	insert, err := collection.InsertOne(context.Background(), alarm)
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+	insertedID := insert.InsertedID.(primitive.ObjectID)
+	return insertedID, err
 }
 
 func EditAlarm(alarm *alarm.Alarm, client *mongo.Client) bool {
@@ -216,16 +224,26 @@ func GetUserFromEmail(email string, client *mongo.Client) *user.User {
 	return user
 }
 
-func AddSession(session *session.Session, client *mongo.Client) bool {
+func AddSession(session *session.Session, client *mongo.Client) (primitive.ObjectID, error) {
 	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
-	_, err := collection.InsertOne(context.Background(), session)
-	return err == nil
+	//insert session and get id
+	insert, err := collection.InsertOne(context.Background(), session)
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+	insertedID := insert.InsertedID.(primitive.ObjectID)
+	return insertedID, err
 }
 
-func AddDevice(device *device.Device, client *mongo.Client) bool {
+func AddDevice(device *device.Device, client *mongo.Client) (primitive.ObjectID, error) {
 	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
-	_, err := collection.InsertOne(context.Background(), device)
-	return err == nil
+	//insert device and get id
+	insert, err := collection.InsertOne(context.Background(), device)
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+	insertedID := insert.InsertedID.(primitive.ObjectID)
+	return insertedID, err
 }
 
 func AddQr(qr *qr.QR, client *mongo.Client) bool {
@@ -379,10 +397,15 @@ func CountUsers(client *mongo.Client) int64 {
 }
 
 // add user to db
-func AddUser(user *user.User, client *mongo.Client) bool {
+func AddUser(user *user.User, client *mongo.Client) (primitive.ObjectID, error) {
 	collection := client.Database(DB_NAME).Collection(USERCOLL)
-	_, err := collection.InsertOne(context.Background(), user)
-	return err == nil
+	//insert user and get id
+	insert, err := collection.InsertOne(context.Background(), user)
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+	insertedID := insert.InsertedID.(primitive.ObjectID)
+	return insertedID, err
 }
 
 // check if email is already in use

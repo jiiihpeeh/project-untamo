@@ -25,7 +25,7 @@ type Alarm struct {
 	Devices     []string           `bson:"devices,omitempty"`
 	Snooze      []int64            `bson:"snooze,omitempty"`
 	Tune        string             `bson:"tune,omitempty"`
-	Active      bool               `json:"active,omitempty"`
+	Active      bool               `bson:"active,omitempty"`
 	User        string             `bson:"user,omitempty"`
 	Modified    int64              `bson:"modified,omitempty"`
 	Fingerprint string             `bson:"fingerprint,omitempty"`
@@ -40,7 +40,7 @@ func (a *Alarm) SetWeekdays(weekdays []string) {
 		set[weekday] = true
 	}
 	a.Weekdays = []string{}
-	for key, _ := range set {
+	for key := range set {
 		a.Weekdays = append(a.Weekdays, key)
 	}
 
@@ -101,9 +101,28 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 
 // convert AlarmOutput to Alarm ask user Id
 func (a *AlarmOut) ToAlarm(userId string) Alarm {
-	uID, _ := id.IdFromString(userId)
+	aID, _ := id.IdFromString(a.ID)
 	return Alarm{
-		ID:          uID,
+		ID:          aID,
+		Occurrence:  a.Occurrence,
+		Time:        a.Time,
+		Weekdays:    a.Weekdays,
+		Date:        a.Date,
+		Label:       a.Label,
+		Devices:     a.Devices,
+		Snooze:      a.Snooze,
+		Tune:        a.Tune,
+		Active:      a.Active,
+		User:        userId,
+		Modified:    a.Modified,
+		Fingerprint: a.Fingerprint,
+		CloseTask:   a.CloseTask,
+	}
+}
+
+func (a *AlarmOut) ToNewAlarm(userId string) Alarm {
+	return Alarm{
+		//ID:          uID,
 		Occurrence:  a.Occurrence,
 		Time:        a.Time,
 		Weekdays:    a.Weekdays,

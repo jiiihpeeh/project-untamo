@@ -3,6 +3,8 @@ package id
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 func GenerateId() primitive.ObjectID {
+	primitive.NewObjectID()
+
 	return primitive.NewObjectID()
 }
 

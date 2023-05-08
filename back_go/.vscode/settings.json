@@ -4,6 +4,7 @@
         "ALARMCOLL",
         "bson",
         "DEVICECOLL",
+        "msgb",
         "QRCOLL",
         "SESSIONCOLL",
         "strutil",
