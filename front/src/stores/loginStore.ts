@@ -30,6 +30,7 @@ type UseLogIn = {
     logOut: () => void,
     refreshToKen:()=>void,
     getWsToken: () => string,
+    fetchWsToken: () => Promise<string | null>,
 }
 
 const userInfoFetch = async () =>{
@@ -65,10 +66,7 @@ const refreshToken = async () =>{
         return
     }
     try {
-        let res = await axios.post(`${server}/api/refresh-token`,  
-                                    {
-                                        token: token
-                                    },
+        let res = await axios.get(`${server}/api/refresh-token`,  
                                     {
                                         headers: 
                                                 {
@@ -272,6 +270,34 @@ const logOutProcedure = async () => {
     //localStorage.clear()
     sessionStorage.clear()
 }
+
+async function fetchWsToken() {
+    const { server, token } = getCommunicationInfo()
+    if(token.length < 3){
+        return null
+    }
+    try {
+        let res = await axios.get(`${server}/api/ws-token`, 
+                                    {
+                                        headers: 
+                                                {
+                                                    token: token
+                                                }
+                                    }
+                                )
+        interface WSToken {
+            wsToken: string
+        }
+        let keyJson =  res.data as WSToken 
+        //console.log(keyJson.wsToken)                      
+        useLogIn.setState({wsToken: keyJson.wsToken})
+        return keyJson.wsToken
+    }catch(err:any){
+        //console.log(err)
+        return null    
+    }
+}
+
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false}
 const useLogIn = create<UseLogIn>()(
     persist(
@@ -336,7 +362,15 @@ const useLogIn = create<UseLogIn>()(
             },
             getWsToken: () => {
                 return get().wsToken
-            }  
+            },
+            fetchWsToken: async() => {
+                let wsToken = await fetchWsToken()
+                if(wsToken){
+                    set({wsToken: wsToken})
+                    return wsToken
+                }
+                return null
+            },
         }
       ),
       {

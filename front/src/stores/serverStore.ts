@@ -1,10 +1,11 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { Path } from '../type'
+import { Alarm, Device, Path, SessionStatus, UserInfo } from '../type'
 import { urlEnds, sleep } from '../utils'
 import useLogIn from './loginStore'
 import useAlarms from './alarmStore'
 import useDevices from './deviceStore'
+import { da, de, sl } from 'date-fns/locale'
 
 type wsActionMsg = {
   url?: string,
@@ -63,18 +64,101 @@ const websocketAddress = (server: string) => {
   }
   return "ws://" + base[1]
 }
+function filterUniqueIds(array: Array<any>) {
+  return array.filter((array, index, self) =>
+    index === self.findIndex((t) => (
+      t.id === array.id
+    ))
+  )
+}
+function alarmAdd(alarm: Alarm) {
+  let alarms = useAlarms.getState().alarms
+  alarms.push(alarm)
+  //only unique alarms
+  alarms = filterUniqueIds(alarms)
+  useAlarms.setState({ alarms: [...alarms] })
+}
+function alarmDelete(id: string) {
+  let alarms = useAlarms.getState().alarms
+  let filtered = alarms.filter((alarm) => alarm.id !== id)
+  useAlarms.setState({ alarms: [...filtered] })
+}
+
+function alarmEdit(alarm: Alarm) {
+  let alarms = useAlarms.getState().alarms
+  let filtered = alarms.filter((a) => a.id !== alarm.id)
+  filtered.push(alarm)
+  useAlarms.setState({ alarms: [...filtered] })
+}
+
+//filter:only unique id
+
+
+function deviceAdd(device: Device) {
+  let devices = useDevices.getState().devices
+  devices.push(device)
+  //only unique devices
+  devices = filterUniqueIds(devices)
+  useDevices.setState({ devices: [...devices] })
+}
+
+function deviceDelete(id: string) {
+  let devices = useDevices.getState().devices
+  let filtered = devices.filter((device) => device.id !== id)
+  useDevices.setState({ devices: [...filtered] })
+}
+
+function deviceEdit(device: Device) {
+  let devices = useDevices.getState().devices
+  let filtered = devices.filter((d) => d.id !== device.id)
+  filtered.push(device)
+
+  useDevices.setState({ devices: [...filtered] })
+}
+function userEdit(user: UserInfo) {
+
+  useLogIn.setState({ user: user })
+}
+
 function wsActionListener(data: any) {
   console.log(data)
   if (typeof data === 'object') {
     try {
-      if (data.hasOwnProperty('url') && typeof data.url === 'string' && data.url !== '') {
-        useServer.getState().setWSActionMessage(data)
+      if (data.hasOwnProperty('type')) {
+        let dataType = data.type as string
+        switch (dataType) {
+          case "alarmAdd":
+            alarmAdd(data.data as Alarm)
+            break
+          case "alarmDelete":
+            alarmDelete(data.data as string)
+            break
+          case "alarmEdit":
+            alarmEdit(data.data as Alarm)
+            break
+          case "deviceAdd":
+            deviceAdd(data.data as Device)
+            break
+          case "deviceDelete":
+            deviceDelete(data.data as string)
+            break
+          case "deviceEdit":
+            deviceEdit(data.data as Device)
+            break
+          case "userEdit":
+            userEdit(data.data as UserInfo)
+            break
+          default:
+            break
+        }
+
+        //useServer.getState().setWSActionMessage(data)
       }
 
     } catch (e) {
       useServer.getState().wsActionConnection?.close()
       useServer.getState().setWsActionConnection(null)
-    }
+    } 
   }
 }
 
@@ -120,6 +204,7 @@ async function registerConnecting() {
   if (!useServer.getState().wsRegisterConnection) {
     let ws = new WebSocket(useServer.getState().wsRegister)
     ws.onmessage = (event: MessageEvent) => {
+      console.log(event.data)
       try {
         wsRegisterListener(JSON.parse(event.data))
       } catch (e) {
@@ -135,6 +220,9 @@ async function registerConnecting() {
 }
 
 async function onOpenRoutine(ws: WebSocket) {
+  if (!checkIfConnected){
+    return
+  }
   await sleep(2000)
   //check if ws is still open
   if (ws.readyState !== 1) {
@@ -145,46 +233,86 @@ async function onOpenRoutine(ws: WebSocket) {
   useLogIn.getState().getUserInfo()
   useDevices.getState().fetchDevices()
 }
-async function actionConnecting() {
-  await sleep(20)
+function actionConnecting() {
+  //await sleep(20)
   if (useLogIn.getState().token.length < 3) {
-    await sleep(200)
+    //await sleep(200)
     return null
   }
+  //return null
+
   //console.log("websocket connecting")
-  let socketAddress = `${useServer.getState().wsAction}/${useLogIn.getState().getWsToken()}`
+  let wsToken =  useLogIn.getState().getWsToken()
+  if (!wsToken || wsToken.length < 3) {
+    //await sleep(200)
+    return null
+  }
+  let socketAddress = `${useServer.getState().wsAction}/${wsToken}`
   let ws = new WebSocket(socketAddress)
   ws.onopen = (event: Event) => {
     //ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
     onOpenRoutine(ws)
   }
   ws.onmessage = (event: MessageEvent) => {
+    console.log(event.data)
     try {
-      console.log(event.data)
+     // console.log(event.data)
       wsActionListener(JSON.parse(event.data))
     } catch (e) {
 
       //console.log(e)  
     }
     try {
+      //send pong
       ws.send(".")
     } catch (e) { }
   }
-
   ws.onerror = (event: Event) => {
-    try {
-      useServer.getState().wsActionConnection?.close()
-      useServer.getState().setWsActionConnection(null)
-    } catch (e) {
-      //console.log(e)
-    }
+    // try {
+    //   useServer.getState().wsActionConnection?.close()
+    //   useServer.getState().setWsActionConnection(null)
+    // } catch (e) {
+    //   //console.log(e)
+    // }
   }
   ws.onclose = (event: CloseEvent) => {
     ws.removeEventListener("message", wsActionListener)
-    useServer.getState().setWsActionConnection(null)
+    sleep(5000).then(() => {
+      useServer.getState().wsActionReconnect()
+    })
+    //check if session is still valid
+    //reconnectRoutine()
+    //useServer.getState().setWsActionConnection(null)
   }
   return ws
 }
+
+
+
+
+async function actionPinger(){
+  while(true){
+    await sleep(8000)
+    useServer.getState().wsActionConnection?.send(".")
+  }
+}
+//actionPinger()
+
+async function checkIfConnected() {
+  let conn = useServer.getState().wsActionConnection
+  if (conn) {
+    conn.send("test")
+    await sleep(2000)
+    conn.send("test")
+    await sleep(200)
+    if (conn.readyState === 1) {
+      return true
+    }
+  }
+  return false
+}
+
+
 const useServer = create<UseServer>()(
   persist(
     (set, get) => (
@@ -218,24 +346,44 @@ const useServer = create<UseServer>()(
         wsRegisterSendMessage: (message) => {
           get().wsRegisterConnection?.send(message)
         },
-        setWsActionConnection: (ws) => set({ wsActionConnection: ws }),
+        setWsActionConnection: (ws) => set(
+                                            { 
+                                              wsActionConnection: ws 
+                                            }
+        ),
         setWSActionMessage: (message) => set({ wsActionMessage: message }),
-        wsActionConnect: async () => {
-          get().wsActionConnection?.close()
-          let ws = await actionConnecting()
+        wsActionConnect:  () => {
+          useLogIn.getState().validateSession()
+          //await sleep(200)
+          // let status = useLogIn.getState().sessionValid
+          // if (status !== SessionStatus.Valid) {
+          //   return
+          // }
+          let wsAction = get().wsActionConnection
+          let continueConnecting = true
+          if (wsAction) {
+            //continueConnecting =   checkIfConnected()
+          }else{
+            continueConnecting = false
+          }
+          if (continueConnecting) {
+            return
+          }
+          let ws =  actionConnecting()
           set(
             {
-              wsActionConnection: ws
+              wsActionConnection: ws,
             }
           )
         },
         wsActionDisconnect: () => {
-          get().wsActionConnection?.close()
-          set({ wsActionConnection: null })
+         // get().wsActionConnection?.close()
+
+         // set({ wsActionConnection: null })
         },
-        wsActionReconnect: async () => {
+        wsActionReconnect: () => {
           get().wsActionConnection?.close()
-          let ws = await actionConnecting()
+          let ws = actionConnecting()
           set(
             {
               wsActionConnection: ws

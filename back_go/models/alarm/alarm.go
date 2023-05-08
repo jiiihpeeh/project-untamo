@@ -82,6 +82,18 @@ type AlarmOut struct {
 
 // convert Alarm to AlarmOutput
 func (a *Alarm) ToAlarmOut() AlarmOut {
+	//check  a.snooze is not nil
+	if a.Snooze == nil {
+		a.Snooze = []int64{}
+	}
+	//same for a.devices
+	if a.Devices == nil {
+		a.Devices = []string{}
+	}
+	//a.weekdays
+	if a.Weekdays == nil {
+		a.Weekdays = []string{}
+	}
 	return AlarmOut{
 		ID:          a.ID.Hex(),
 		Occurrence:  a.Occurrence,

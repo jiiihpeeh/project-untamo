@@ -192,7 +192,14 @@ func AddAlarm(alarm *alarm.Alarm, client *mongo.Client) (primitive.ObjectID, err
 
 func EditAlarm(alarm *alarm.Alarm, client *mongo.Client) bool {
 	collection := client.Database(DB_NAME).Collection(ALARMCOLL)
-	_, err := collection.UpdateOne(context.Background(), bson.M{"_id": alarm.ID, "user": alarm.User}, bson.M{"$set": alarm})
+	//delete alarm by alarm id and user id
+	//get alarm and delete it
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": alarm.ID, "user": alarm.User})
+	if err != nil {
+		return false
+	}
+	//insert alarm and get id
+	_, err = collection.InsertOne(context.Background(), alarm)
 	return err == nil
 }
 

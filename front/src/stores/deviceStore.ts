@@ -119,10 +119,10 @@ const addDevice = async (name: string, type: DeviceType)=> {
                                                                 type: type
                                                             }, 
                                                             {
-                                                            headers: 
-                                                                {
-                                                                    token: token
-                                                                }
+                                                                headers: 
+                                                                        {
+                                                                            token: token
+                                                                        }
                                                             }
                                 )
     
