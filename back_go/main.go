@@ -87,7 +87,7 @@ func main() {
 	router.POST("/qr-login", func(c *gin.Context) {
 		rest.QRLogIn(c, client)
 	})
-	router.POST("/api/qr-token", func(c *gin.Context) {
+	router.GET("/api/qr-token", func(c *gin.Context) {
 		rest.GetQRToken(c, client)
 	})
 	router.GET("/api/devices", func(c *gin.Context) {

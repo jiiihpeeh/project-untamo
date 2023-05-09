@@ -18,8 +18,7 @@ const fetchQRKey = async() =>{
         let res = await client.request(
             {
                 url: `${server}/api/qr-token`,
-                method: "POST",
-                body: Body.json({msg: "Generate a qr token for me, please... No hurry."}),
+                method: "GET",
                 responseType: ResponseType.JSON,
                 headers: {
                     token: token
@@ -27,14 +26,12 @@ const fetchQRKey = async() =>{
             }
         )
         isSuccess(res)
-        interface Resp{
-                        key: string
-                     }
-        if(res && res.data){
-            let data = res.data as Resp
-            let key =  data.key
-            useFetchQR.setState({qrKey: key})
+        interface QRKey {
+            qrToken: string
         }
+        let keyJson =  res.data as QRKey 
+        //console.log(keyJson.qrToken)                      
+        useFetchQR.setState({qrKey: keyJson.qrToken})
 
     }catch(err:any){
         //console.log(err)

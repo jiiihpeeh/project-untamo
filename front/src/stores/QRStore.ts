@@ -12,10 +12,7 @@ type UseFetchQR = {
 const fetchQRKey = async() =>{
     const {server, token} = getCommunicationInfo()
     try{
-        let res = await axios.post(`${server}/api/qr-token`, 
-                                    {
-                                      msg: "Generate a qr token for me, please... No hurry."
-                                    }, 
+        let res = await axios.get(`${server}/api/qr-token`, 
                                     {
                                       headers: 
                                                 {
@@ -27,7 +24,7 @@ const fetchQRKey = async() =>{
             qrToken: string
         }
         let keyJson =  res.data as QRKey 
-        console.log(keyJson.qrToken)                      
+        //console.log(keyJson.qrToken)                      
         useFetchQR.setState({qrKey: keyJson.qrToken})
     }catch(err:any){
         //console.log(err)
