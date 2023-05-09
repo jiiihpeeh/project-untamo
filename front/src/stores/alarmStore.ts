@@ -137,12 +137,6 @@ const resetSnooze = async() => {
   useAlarms.setState({alarms: [...filterAlarms,alarm]})
 }
 
-// This code is used to update an alarm in the backend database.
-// The code is used to update the snooze array of an alarm when the user snoozes an alarm. 
-// The alarm object is a parameter of the function. The alarm object is the alarm that is snoozed.
-// The alarm object is updated by adding the current time to the snooze array.
-// The alarm object is then sent to the backend to update the database.
-// The alarm object is then added to the alarms array in the useAlarms state.
 
 const snoozer = async () =>{
   const {server, token} = getCommunicationInfo()
