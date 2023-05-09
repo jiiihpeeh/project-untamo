@@ -16,6 +16,8 @@ type UseAudio = {
     loopPlayBegins: number| null,
     setLoopPlayBegins: (playTime: number| null)=>void,
     audioProcess: Array<Child> | null
+    playingAlarm: string,
+    setPlayingAlarm: (alarm: string)=>void
 }
 
 const play = async (track: string, loop: boolean) => {
@@ -109,6 +111,14 @@ const useAudio = create<UseAudio>((set, get) => (
             set(
                 { 
                     loop: to 
+                }
+            )
+        },
+        playingAlarm: "",
+        setPlayingAlarm: (alarm: string)=>{
+            set(
+                {
+                    playingAlarm: alarm
                 }
             )
         },

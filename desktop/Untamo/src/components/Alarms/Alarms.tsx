@@ -14,10 +14,6 @@ import { shallow } from 'zustand/shallow'
 import { SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
 import { useNavigate } from "react-router-dom"
-import { invoke } from '@tauri-apps/api/tauri'
-import { appWindow } from '@tauri-apps/api/window'
-import { Button } from '@chakra-ui/react'
-import { listen } from '@tauri-apps/api/event';
 
 
 const Alarms = () => {

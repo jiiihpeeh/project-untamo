@@ -10,7 +10,6 @@ import Clueless from './components/Clueless'
 import GenerateQRPairingKey from './components/QR/GenerateQRPairingKey'
 import PlayAlarm from './components/Alarms/PlayAlarm'
 import AlarmWatcher from './components/Alarms/AlarmWatcher'
-import UserWatcher from './components/User/UserWatcher'
 import Admin from './components/Admin/Admin'
 import DeleteAlarm from './components/Alarms/DeleteAlarm'
 import EditAlarm from './components/Alarms/EditAlarm'
@@ -95,7 +94,6 @@ function App() {
                 </Routes>
                 <GenerateQRPairingKey/>
                 <AlarmWatcher/>
-                <UserWatcher/>
                 <DeleteAlarm/>
                 <EditAlarm/>
                 <DeviceDelete/>

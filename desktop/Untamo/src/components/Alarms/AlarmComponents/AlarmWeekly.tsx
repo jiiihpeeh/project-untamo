@@ -7,19 +7,19 @@ import AlarmTune from "./AlarmTune"
 import React from "react"
 import AlarmToggles from "./AlarmToggles"
 
-const AlarmWeekly = () => {
-    return(
+function AlarmWeekly() {
+    return (
         <Center>
             <Stack>
                 <Message />
-                <TimeSelector/>
-                <SelectedWeekdays/>
-                <DeviceChecker/>
-                <AlarmToggles/>
-                <AlarmTune/>
+                <TimeSelector />
+                <SelectedWeekdays />
+                <DeviceChecker />
+                <AlarmToggles />
+                <AlarmTune />
             </Stack>
         </Center>
-       )
+    )
 }
 
 export default AlarmWeekly

@@ -11,26 +11,26 @@ import { Path } from '../../type'
 import {  WindowTop } from '../../stores/settingsStore'
 import useTimeouts from '../../stores/timeoutsStore'
 
-const closeFunction = async() => {
+async function closeFunction() {
     const unlistenAsync = await appWindow.onCloseRequested(async (event) => {
         event.preventDefault()
-        if(!urlEnds(Path.PlayAlarm)){
+        if (!urlEnds(Path.PlayAlarm)) {
             usePopups.getState().setShowCloseApp(true)
-        }else{
+        } else {
             notification("Not so fast", "Alarm is On", Status.Info)
         }
     })
-    const unlisten  = await appWindow.onFocusChanged(async (event) => {
+    const unlisten = await appWindow.onFocusChanged(async (event) => {
         let onTop = useSettings.getState().onTop
-        if(onTop === WindowTop.Always){
+        if (onTop === WindowTop.Always) {
             await appWindow.setAlwaysOnTop(true)
-        }else{
-            if(!useAudio.getState().plays){
+        } else {
+            if (!useAudio.getState().plays) {
                 await appWindow.setAlwaysOnTop(false)
             }
         }
-    })    
-    await appWindow.setMinSize(new PhysicalSize(410,600))
+    })
+    await appWindow.setMinSize(new PhysicalSize(410, 600))
     return unlistenAsync
 }
 closeFunction()

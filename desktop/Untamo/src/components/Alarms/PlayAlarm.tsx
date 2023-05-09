@@ -89,6 +89,7 @@ const PlayAlarm = () =>{
                     await sleep(10)
                     step++
                 }
+                useAudio.getState().setPlayingAlarm(runAlarm.id)
                 playAudio()
             }else{
                 clearRunTimeout()

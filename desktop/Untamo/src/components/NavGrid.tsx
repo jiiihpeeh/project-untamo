@@ -61,14 +61,14 @@ const NavGrid = () => {
         minutes: number,
         seconds: number
     }
-    const timeOutput = ({ minutes, seconds,}: TimeOutput) => {
-        return (<Text 
-                    color={"red"} 
-                    as ="b"
-                > 
-                    ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds(Path.Admin))?<Icon as={pointing} />:""}
-                </Text>
-            )
+    function timeOutput({ minutes, seconds, }: TimeOutput) {
+        return (<Text
+            color={"red"}
+            as="b"
+        >
+            ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds(Path.Admin)) ? <Icon as={pointing} /> : ""}
+        </Text>
+        )
     }
 
     useEffect(() => {

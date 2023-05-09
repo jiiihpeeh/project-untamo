@@ -13,6 +13,8 @@ import useAlarms from './alarmStore'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, isSuccess } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
+import { postOfflineAlarms } from "./alarmStore"
+import { Alarm, Device, Path } from "../type"
 
 type UseLogIn = {
     wsToken: string
@@ -34,7 +36,11 @@ type UseLogIn = {
     logIn:(user:string, password: string) => void,
     logOut: () => void,
     refreshToKen:()=>void,
-    getWsToken: () => string
+    getWsToken: () => string,
+    fetchWsToken: () => void,
+    updateState: () => void,
+    navigateTo: null | Path,
+    setNavigateTo: (path: Path | null) => void,
 }
 
 const userInfoFetch = async () =>{
@@ -60,6 +66,40 @@ const userInfoFetch = async () =>{
     }catch(err){
     }
 }
+
+async function fetchWsToken() {
+    const { server, token } = getCommunicationInfo()
+    if(token.length < 3){
+        return null
+    }
+    try {
+        const client = await getClient()
+        const res = await client.request(
+                                            {
+                                                url: `${server}/api/ws-token`,
+                                                method: 'GET',
+                                                headers: {
+                                                    token: token
+                                                },
+                                                responseType: ResponseType.JSON
+                                            }
+                                        )
+        isSuccess(res)
+
+        interface WSToken {
+            wsToken: string
+        }
+        let keyJson =  res.data as WSToken 
+        //console.log(keyJson.wsToken)                      
+        useLogIn.setState({wsToken: keyJson.wsToken})
+        return keyJson.wsToken
+    }catch(err:any){
+        //console.log(err)
+        return null    
+    }
+}
+
+
 
 const refreshToken = async () =>{
     const { server, token } = getCommunicationInfo()
@@ -128,9 +168,10 @@ async function checkSession() {
             )
             isSuccess(res)
             if (res && res.status === 200) {
-                useAlarms.getState().fetchAlarms()
-                useLogIn.getState().getUserInfo()
-                useDevices.getState().fetchDevices()
+                // useAlarms.getState().fetchAlarms()
+                // useLogIn.getState().getUserInfo()
+                // useDevices.getState().fetchDevices()
+                useLogIn.getState().updateState()
                 notification("Session", "Continuing session.", Status.Info)
                 //setTimeout(refreshToken, 30000)
                 status = SessionStatus.Valid
@@ -194,6 +235,38 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
     }
 } 
 
+
+async function updateState(){
+    const { server, token } = getCommunicationInfo()
+    if (token.length < 3) {
+        return
+    }
+    try {
+        const client = await getClient()
+        const res = await client.request(
+                                            {
+                                                url: `${server}/api/update`,
+                                                method: 'GET',
+                                                headers: {
+                                                    token: token
+                                                },
+                                                responseType: ResponseType.JSON
+                                            }
+                                        )   
+        isSuccess(res)
+        interface Update {
+            user: UserInfo
+            alarms: Array<Alarm>
+            devices: Array<Device>
+        }
+        let userData = res.data as Update
+        useLogIn.setState({ user: userData.user })
+        useAlarms.setState({ alarms: [...userData.alarms] })
+        useDevices.setState({ devices: [...userData.devices] })
+    } catch (err) {
+        notification("Update", "Update failed", Status.Error)
+    }
+}
 async function logIn(email: string, password: string) {
     //console.log("Logging in ", email, password)
     useLogIn.setState(
@@ -251,12 +324,14 @@ async function logIn(email: string, password: string) {
             }
         )
         fetchAudioFiles()
-        useDevices.getState().fetchDevices()
-        useAlarms.getState().fetchAlarms()
+        //useDevices.getState().fetchDevices()
+        //useAlarms.getState().fetchAlarms()
+        useLogIn.getState().updateState()
         const randomTime = Math.ceil(Math.random() * 7200000)
         //setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
         notification("Logged In", "Successfully logged in")
     } catch (err: any) {
+        //console.log(err)
         notification("Log In", "Log In Failed", Status.Error)
         useLogIn.setState({ sessionValid: SessionStatus.NotValid })
         //console.error(err)
@@ -376,7 +451,22 @@ const useLogIn = create<UseLogIn>()(
             },
             getWsToken: () => {
                 return get().wsToken
-            } 
+            },
+            fetchWsToken: async () => {
+                await fetchWsToken()
+            },
+            updateState: async () => {
+                await postOfflineAlarms()
+                await updateState()
+            },
+            navigateTo: null,
+            setNavigateTo: (path) => {
+                                        set(
+                                                {
+                                                    navigateTo: path
+                                                }
+                                            )
+            }
         }
       ),
       {

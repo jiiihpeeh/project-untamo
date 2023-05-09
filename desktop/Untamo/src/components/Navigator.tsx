@@ -1,33 +1,41 @@
 import { useNavigate } from "react-router-dom"
 import React, { useEffect } from "react"
-import { useDevices, useLogIn, useAdmin, extend } from "../stores"
+import { useDevices, useLogIn, useAdmin, extend, useAlarms } from "../stores"
 import { SessionStatus, Path } from "../type"
 
-const Navigator = () => {
-    const currentDevice = useDevices((state)=> state.currentDevice)
+function Navigator() {
+    const currentDevice = useDevices((state) => state.currentDevice)
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const adminNavigate = useAdmin((state) => state.adminNavigate)
+    const navigateTo = useLogIn((state) => state.navigateTo)
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
 
-    const  navigate = useNavigate()
+    const navigate = useNavigate()
 
-    useEffect(() =>{
+    useEffect(() => {
         //console.log(sessionStatus, currentDevice,adminNavigate)        
-
-        if(sessionStatus !== SessionStatus.Valid){
+        if (sessionStatus !== SessionStatus.Valid) {
             navigate(extend(Path.LogIn))
-        }else if(sessionStatus === SessionStatus.Valid &&!currentDevice) {
+        } else if (sessionStatus === SessionStatus.Valid && !currentDevice) {
             navigate(extend(Path.Welcome))
-        }else if(sessionStatus === SessionStatus.Valid  && currentDevice){
+        } else if (sessionStatus === SessionStatus.Valid && currentDevice) {
             navigate(extend(Path.Alarms))
         }
 
-    },[sessionStatus, currentDevice])
-    useEffect(() =>{
-        if(sessionStatus === SessionStatus.Valid && adminNavigate){
+    }, [sessionStatus, currentDevice])
+    useEffect(() => {
+        if (sessionStatus === SessionStatus.Valid && adminNavigate) {
             navigate(extend(Path.Admin))
-            useAdmin.setState({adminNavigate:false})
+            useAdmin.setState({ adminNavigate: false })
         }
-    },[adminNavigate])
-    return(<></>)
+    }, [adminNavigate])
+
+    useEffect(() => {
+        if (navigateTo) {
+            navigate(extend(navigateTo))
+            setNavigateTo(null)
+        }
+    },[navigateTo])
+    return (<></>)
 }
 export default Navigator

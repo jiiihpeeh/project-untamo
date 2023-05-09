@@ -11,66 +11,68 @@ export const enum Direction {
     Decrease="dec"
 }
 
-const fingerprint = () => useLogIn.getState().fingerprint
-
-const toggleWeekdays = (d : WeekDay, w : Array<WeekDay>) => {
-    if(w.includes(d)){
-        return w.filter(wd=>wd !== d)
-    }
-    return [...w,d]
+function fingerprint() {
+    return useLogIn.getState().fingerprint
 }
-const toggleDevices = (d : string|undefined, ds : Array<string>) => {
-    if(d && ds.includes(d)){
-        return ds.filter(dd=>dd !== d) as Array<string>
-    }else if ( d){
-        return [...ds,d] as Array<string>
+
+function toggleWeekdays(d: WeekDay, w: Array<WeekDay>) {
+    if (w.includes(d)) {
+        return w.filter(wd => wd !== d)
+    }
+    return [...w, d]
+}
+function toggleDevices(d: string | undefined, ds: Array<string>) {
+    if (d && ds.includes(d)) {
+        return ds.filter(dd => dd !== d) as Array<string>
+    } else if (d) {
+        return [...ds, d] as Array<string>
     }
     return ds
 }
-const timeValue = (t: string, oldTime : string) => {
+function timeValue(t: string, oldTime: string) {
     let timeArr = `${t}`.split(':')
-    if(timeArr.length !== 2){
+    if (timeArr.length !== 2) {
         return oldTime
     }
-    let minutes : number
-    let hours : number
-    try{
-       minutes = parseInt(timeArr[1])
-       hours = parseInt(timeArr[0])
-    } catch(err:any){
+    let minutes: number
+    let hours: number
+    try {
+        minutes = parseInt(timeArr[1])
+        hours = parseInt(timeArr[0])
+    } catch (err: any) {
         return oldTime
     }
-    if(!isNaN(minutes) && !isNaN(hours) && hours < 24 && hours >=0 && minutes >=0 && minutes < 60 ){
+    if (!isNaN(minutes) && !isNaN(hours) && hours < 24 && hours >= 0 && minutes >= 0 && minutes < 60) {
         return `${timePadding(hours)}:${timePadding(minutes)}`
-    }else{
+    } else {
         return oldTime
     }
 }
 
-const changeTime = (oldTime: string, direction: Direction, multiplier: number) => {
+function changeTime(oldTime: string, direction: Direction, multiplier: number) {
     let timeArr = `${oldTime}`.split(':')
-    if(timeArr.length !== 2){
+    if (timeArr.length !== 2) {
         return oldTime
     }
-    let minutes : number
-    let hours : number
-    try{
-       minutes = parseInt(timeArr[1])
-       hours = parseInt(timeArr[0])
-    } catch(err:any){
+    let minutes: number
+    let hours: number
+    try {
+        minutes = parseInt(timeArr[1])
+        hours = parseInt(timeArr[0])
+    } catch (err: any) {
         return oldTime
     }
     let date = new Date()
     date.setHours(hours)
     date.setMinutes(minutes)
     date.setSeconds(0)
-    let newDate : number
-    switch(direction){
+    let newDate: number
+    switch (direction) {
         case Direction.Decrease:
-            newDate = date.getTime() - ( multiplier  * 60 * 1000)
+            newDate = date.getTime() - (multiplier * 60 * 1000)
             break
         case Direction.Increase:
-            newDate = date.getTime() + ( multiplier  * 60 * 1000)
+            newDate = date.getTime() + (multiplier * 60 * 1000)
             break
     }
     date.setTime(newDate)
@@ -78,8 +80,8 @@ const changeTime = (oldTime: string, direction: Direction, multiplier: number) =
 }
 
 
-const occurrenceDateFormat = (cases:AlarmCases) =>{
-    switch(cases){
+function occurrenceDateFormat(cases: AlarmCases) {
+    switch (cases) {
         case AlarmCases.Once:
             return 'dd.MM.yyy'
         case AlarmCases.Yearly:
@@ -89,9 +91,9 @@ const occurrenceDateFormat = (cases:AlarmCases) =>{
     }
 }
 
-const alarmTimeInit = () => {
-    let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
-    return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`;
+function alarmTimeInit() {
+    let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000)
+    return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
 }
 
 

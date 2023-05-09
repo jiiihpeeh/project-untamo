@@ -8,26 +8,26 @@ import { Divider } from "@chakra-ui/react"
 import useAlarm from "./alarmStates"
 import { AlarmCases }  from "../../../type"
 
-const AlarmSelector = () => {
-    const alarmCase = useAlarm((state)=> state.occurrence)
+function AlarmSelector() {
+    const alarmCase = useAlarm((state) => state.occurrence)
     const renderCase = () => {
-        switch(alarmCase){
+        switch (alarmCase) {
             case AlarmCases.Once:
-                return(<AlarmOnce/>)
+                return (<AlarmOnce />)
             case AlarmCases.Weekly:
-                return(<AlarmWeekly/>)
+                return (<AlarmWeekly />)
             case AlarmCases.Daily:
-                return(<AlarmDaily/>)
+                return (<AlarmDaily />)
             case AlarmCases.Yearly:
-                return(<AlarmYearly/>)
+                return (<AlarmYearly />)
         }
     }
-    return(<>
-                <AlarmCase/>
-                <Divider m={'5px'}/>
-                {renderCase()}
-            </>
-          )
+    return (<>
+        <AlarmCase />
+        <Divider m={'5px'} />
+        {renderCase()}
+    </>
+    )
 }
 
 export default AlarmSelector
