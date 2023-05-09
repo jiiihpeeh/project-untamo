@@ -2,7 +2,6 @@ import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { useNavigate } from "react-router-dom"
 import { useDevices, useTimeouts, useAlarms, useAudio, extend } from "../../stores"
-import { urlEnds } from "../../utils"
 import { Path } from "../../type"
 
 const AlarmWatcher  = () => {

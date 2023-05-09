@@ -20,6 +20,7 @@ import (
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/register"
 	"untamo_server.zzz/models/session"
+	"untamo_server.zzz/models/update"
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/models/wsOut"
 	"untamo_server.zzz/utils/hash"
@@ -350,6 +351,7 @@ func EditAlarm(c *gin.Context, client *mongo.Client) {
 
 	//edit alarm in db
 	editedAlarm := alarmIn.ToAlarm(userSession.UserId)
+	editedAlarm.Modified = now.Now()
 	if !mongoDB.EditAlarm(&editedAlarm, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to edit alarm in db",
@@ -394,12 +396,12 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 }
 
 func IsSessionValid(c *gin.Context, client *mongo.Client) {
-	fmt.Println("IsSessionValid")
+	//fmt.Println("IsSessionValid")
 	//add allow header
 	//c.Header("Access-Control-Allow-Origin", "*")
 	// check if user is logged in by getting a session from db
 	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
-	fmt.Print("Session: ", session)
+	//fmt.Print("Session: ", session)
 	//fmt.Println("Session: ", session, "User: ", user)
 	if session == nil {
 		c.JSON(401, gin.H{
@@ -662,7 +664,7 @@ func GetUsers(c *gin.Context, client *mongo.Client) {
 	usersOut := []user.UserOut{}
 	for _, user := range users {
 		userOut := user.ToUserOut()
-		usersOut = append(usersOut, *userOut)
+		usersOut = append(usersOut, userOut)
 	}
 	//return usersOut as json
 	c.JSON(200, usersOut)
@@ -1082,4 +1084,56 @@ func UpdateWsToken(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, gin.H{
 		"wsToken": newWsToken,
 	})
+}
+
+func GetUpdate(c *gin.Context, client *mongo.Client) {
+	//get session from header
+	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//get update from db
+	alarms := mongoDB.GetUserAlarms(session.UserId, client)
+	if alarms == nil {
+		c.JSON(404, gin.H{
+			"message": "Alarms not found",
+		})
+		return
+	}
+	devices := mongoDB.GetDevices(session.UserId, client)
+	if devices == nil {
+		c.JSON(404, gin.H{
+			"message": "Devices not found",
+		})
+		return
+	}
+	//convert alarms to []AlarmOut
+	alarmsOut := []alarm.AlarmOut{}
+	for _, alarm := range alarms {
+		alarmsOut = append(alarmsOut, alarm.ToAlarmOut())
+	}
+	//convert devices to []DeviceOut
+	devicesOut := []device.DeviceOut{}
+	for _, device := range devices {
+		devicesOut = append(devicesOut, device.ToDeviceOut())
+	}
+	//convert userInSession to UserOut
+	userInSessionOut := userInSession.ToUserOut()
+	//form update
+	update := update.Update{
+		Alarms:  alarmsOut,
+		Devices: devicesOut,
+		User:    userInSessionOut,
+	}
+
+	//return update as json
+	c.JSON(200, update)
 }

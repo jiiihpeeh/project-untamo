@@ -31,7 +31,6 @@ const PlayAlarm = () =>{
     const turnOffValue = useAlarms((state)=>state.turnOff)
     const setTurnOffValue = useAlarms((state)=>state.setTurnOff)
     const clearAlarmOutId = useTimeouts((state)=>state.clearAlarmOutId)
-    const setAlarmOut = useTimeouts((state)=>state.setAlarmOut)
     const [ pressTime, setPressTime ] = useState(0)
     
     useEffect(() => {
@@ -89,6 +88,7 @@ const PlayAlarm = () =>{
                     await sleep(10)
                     step++
                 }
+                useAudio.getState().setPlayingAlarm(runAlarm.id)
                 playAudio()
             }else{
                 clearRunTimeout()

@@ -22,19 +22,19 @@ function ClockWindow() {
     const clock24 = useSettings((state)=> state.clock24)
     const [ parsedTime, setParsedTime ] = useState({hours: 0, minutes: 0})
 
-    const acceptTime = () => {
-        setTime(`${timePadding(Math.floor(parsedTime.hours))}:${timePadding(Math.floor(parsedTime.minutes))}`)
+    function acceptTime() {
+        setTime(`${timePadding(Math.floor(parsedTime.hours))}:${timePadding(Math.floor(parsedTime.minutes))}`);
     }    
     useEffect(()=>{
-        const setParsed = async () => {
-            let timeArr = time.split(":")
+        async function setParsed() {
+            let timeArr = time.split(":");
             setParsedTime(parsedTime => {
-                                            return {
-                                                        hours: Math.round(parseInt(timeArr[0])), 
-                                                        minutes: Math.round(parseInt(timeArr[1]))
-                                                    }
-                                        }
-                            ) 
+                return {
+                    hours: Math.round(parseInt(timeArr[0])),
+                    minutes: Math.round(parseInt(timeArr[1]))
+                };
+            }
+            );
         }
         if(showTimepicker){
             setParsed()

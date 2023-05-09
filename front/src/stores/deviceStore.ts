@@ -103,73 +103,71 @@ const useDevices = create<UseDevices>()(
         }
     )
 )
-const addDevice = async (name: string, type: DeviceType)=> {
+async function addDevice(name: string, type: DeviceType) {
     const { server, token } = getCommunicationInfo()
     const devices = useDevices.getState().devices
     let deviceSameName = devices.filter(device => device.deviceName === name)
-    if(name.length < 1 || deviceSameName.length >0){
+    if (name.length < 1 || deviceSameName.length > 0) {
         notification("Device", "Name taken or too short", Status.Error)
         return
     }
-    
-    try{
-        let res = await axios.post(`${server}/api/device`, 
-                                                            {
-                                                                deviceName: name, 
-                                                                type: type
-                                                            }, 
-                                                            {
-                                                                headers: 
-                                                                        {
-                                                                            token: token
-                                                                        }
-                                                            }
-                                )
-    
-        interface Resp{
-            id: string,
-            type: DeviceType,
+
+    try {
+        let res = await axios.post(`${server}/api/device`,
+            {
+                deviceName: name,
+                type: type
+            },
+            {
+                headers: {
+                    token: token
+                }
+            }
+        )
+
+        interface Resp {
+            id: string
+            type: DeviceType
             deviceName: string
         }
 
         let deviceData: Resp = res.data
-        let newDevice : Device= {
-                                    id:deviceData.id, 
-                                    type: deviceData.type, 
-                                    deviceName: deviceData.deviceName
-                                }
-        if(newDevice.deviceName !== name && newDevice.type !== type){
+        let newDevice: Device = {
+            id: deviceData.id,
+            type: deviceData.type,
+            deviceName: deviceData.deviceName
+        }
+        if (newDevice.deviceName !== name && newDevice.type !== type) {
             return
         }
-        if(devices.length === 0){
-            useDevices.setState({ currentDevice: newDevice.id})
+        if (devices.length === 0) {
+            useDevices.setState({ currentDevice: newDevice.id })
         }
         //console.log([...devices, newDevice])
-        useDevices.setState({ devices: [...devices, newDevice]})
+        useDevices.setState({ devices: [...devices, newDevice] })
         let viewableDevices = useDevices.getState().viewableDevices
         viewableDevices = [...viewableDevices, newDevice.id]
-        useDevices.setState({ viewableDevices: viewableDevices})
+        useDevices.setState({ viewableDevices: viewableDevices })
 
         notification("Device", "A new device was added")
-    }catch(err){
+    } catch (err) {
         notification("Device", "Failed to add a device", Status.Error)
     }
 }
 
-const fetchDevices = async () => {
+async function fetchDevices() {
     const { server, token } = getCommunicationInfo()
-    if(token.length < 3){
+    if (token.length < 3) {
         return
     }
     let fetchedDevices = [] as Array<Device>
-    try{
+    try {
         let res = await axios.get(`${server}/api/devices`,
-                                                            {
-                                                                headers: 
-                                                                    {
-                                                                        token: token
-                                                                    }
-                                                            }
+            {
+                headers: {
+                    token: token
+                }
+            }
         )
         let devices = res.data as Array<Device>
         //console.log(devices)
@@ -179,97 +177,95 @@ const fetchDevices = async () => {
             }
         )
         let viewableDevices = useDevices.getState().viewableDevices
-        if(viewableDevices.length === 0){
+        if (viewableDevices.length === 0) {
             let currentDevice = useDevices.getState().currentDevice
-            if(!currentDevice){
-                useDevices.setState({viewableDevices :[...devices.map(device => device.id)]}) 
+            if (!currentDevice) {
+                useDevices.setState({ viewableDevices: [...devices.map(device => device.id)] })
             }
         }
-    }catch(err:any){
-        (validSession())?notification("Devices", "Couldn't fetch the device list", Status.Error):{}
+    } catch (err: any) {
+        (validSession()) ? notification("Devices", "Couldn't fetch the device list", Status.Error) : {}
     }
 }
 
-const deviceEdit = async (id: string , name: string, type: DeviceType) => {
+async function deviceEdit(id: string, name: string, type: DeviceType) {
     const { server, token } = getCommunicationInfo()
-    const editDevice : Device =  {
-                                    id: id,
-                                    deviceName: name,
-                                    type: type
-                                  }
+    const editDevice: Device = {
+        id: id,
+        deviceName: name,
+        type: type
+    }
     const devices = useDevices.getState().devices
-    if(editDevice){
-      let deviceObject = devices.filter(device => device.id === editDevice.id)
-      if(deviceObject.length !== 1){
-        notification("Device", "Unknown device", Status.Error)
-        return 
-      }
-      if(editDevice.deviceName.length <1) {
-        notification("Device", "Name too short", Status.Error)
-        return 
-      }
-      let deviceMatchName = devices.filter(device => device.deviceName === editDevice.deviceName)
-      if(deviceMatchName.length > 1){
-        notification("Device", "Name taken", Status.Error)
-        return 
-      }
-      if((deviceMatchName.length === 1) && (deviceMatchName[0].deviceName !== editDevice.deviceName)){
-        notification("Device", "Name taken", Status.Error)
-        return 
-      }
+    if (editDevice) {
+        let deviceObject = devices.filter(device => device.id === editDevice.id)
+        if (deviceObject.length !== 1) {
+            notification("Device", "Unknown device", Status.Error)
+            return
+        }
+        if (editDevice.deviceName.length < 1) {
+            notification("Device", "Name too short", Status.Error)
+            return
+        }
+        let deviceMatchName = devices.filter(device => device.deviceName === editDevice.deviceName)
+        if (deviceMatchName.length > 1) {
+            notification("Device", "Name taken", Status.Error)
+            return
+        }
+        if ((deviceMatchName.length === 1) && (deviceMatchName[0].deviceName !== editDevice.deviceName)) {
+            notification("Device", "Name taken", Status.Error)
+            return
+        }
 
-      try{
-        let res = await axios.put(`${server}/api/device/`+ editDevice.id,
-                                                                        {
-                                                                            deviceName: editDevice.deviceName, 
-                                                                            type: editDevice.type, 
-                                                                            id: editDevice.id 
-                                                                        }, 
-                                                                        {
-                                                                            headers: 
-                                                                                        {
-                                                                                            token: token
-                                                                                        }
-                                                                        }
-                                    )
-        let devicesFiltered = devices.filter(device => device.id !== editDevice.id)            
-        notification("Device", "A device was updated")
+        try {
+            let res = await axios.put(`${server}/api/device/` + editDevice.id,
+                {
+                    deviceName: editDevice.deviceName,
+                    type: editDevice.type,
+                    id: editDevice.id
+                },
+                {
+                    headers: {
+                        token: token
+                    }
+                }
+            )
+            let devicesFiltered = devices.filter(device => device.id !== editDevice.id)
+            notification("Device", "A device was updated")
 
-        useDevices.setState(
-                                { 
-                                    devices: [...devicesFiltered, editDevice],
-                                    toEdit: null
-                                }
-                            )
-            
-    }catch(err){
-        notification("Device", "Failed to update a device", Status.Error)
-    }
+            useDevices.setState(
+                {
+                    devices: [...devicesFiltered, editDevice],
+                    toEdit: null
+                }
+            )
+
+        } catch (err) {
+            notification("Device", "Failed to update a device", Status.Error)
+        }
     }
 }
 
-const deleteDevice = async (id: string ) => {
+async function deleteDevice(id: string) {
     const { server, token } = getCommunicationInfo()
-    
+
     const devices = useDevices.getState().devices
     const deleteDevices = devices.filter(device => device.id === id)
 
-    if(deleteDevices.length !== 1){
-        return 
+    if (deleteDevices.length !== 1) {
+        return
     }
     const deleteDevice = deleteDevices[0]
     try {
-        let res = await axios.delete( `${server}/api/device/` + deleteDevice.id, 
-                                                                                {
-                                                                                    headers: 
-                                                                                                {
-                                                                                                    token: token
-                                                                                                }
-                                                                                } 
-                                    )
+        let res = await axios.delete(`${server}/api/device/` + deleteDevice.id,
+            {
+                headers: {
+                    token: token
+                }
+            }
+        )
         //console.log(res.data)
         const currentDevice = useDevices.getState().currentDevice
-        if(currentDevice === deleteDevice.id){
+        if (currentDevice === deleteDevice.id) {
             useDevices.setState(
                 {
                     currentDevice: null
@@ -277,31 +273,30 @@ const deleteDevice = async (id: string ) => {
             )
         }
         const viewableDevices = useDevices.getState().viewableDevices
-        if (viewableDevices.includes(deleteDevice.id)){
-          let viewableDevicesFiltered = viewableDevices.filter(device => device !== deleteDevice.id)
-          useDevices.setState(
-            {
-                viewableDevices: viewableDevicesFiltered
-            }
-          )
+        if (viewableDevices.includes(deleteDevice.id)) {
+            let viewableDevicesFiltered = viewableDevices.filter(device => device !== deleteDevice.id)
+            useDevices.setState(
+                {
+                    viewableDevices: viewableDevicesFiltered
+                }
+            )
         }
- 
+
         useDevices.setState(
-                                { 
-                                    devices: devices.filter(device => device.id !== deleteDevice.id),
-                                    toDelete: null
-                                
-                                }
-                            ) 
-    }catch(err){
+            {
+                devices: devices.filter(device => device.id !== deleteDevice.id),
+                toDelete: null
+            }
+        )
+    } catch (err) {
         //console.log(err)
         notification("Device", "Can not delete device", Status.Error)
     }
 }
 
-const toggleViewableDevices = (id:string, viewableDevices: Array<string>) => {
-    if(viewableDevices.includes(id)){
-        return [ ...viewableDevices.filter(DId => DId !== id)]
+function toggleViewableDevices(id: string, viewableDevices: Array<string>) {
+    if (viewableDevices.includes(id)) {
+        return [...viewableDevices.filter(DId => DId !== id)]
     }
     return [...viewableDevices, id]
 }

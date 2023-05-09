@@ -7,19 +7,19 @@ import React from "react"
 import AlarmTune from "./AlarmTune"
 import AlarmToggles from "./AlarmToggles"
 
-const AlarmYearly = () => {
-    return(
-            <Center>
-                <Stack>
-                    <Message />
-                    <TimeSelector/>
-                    <DateSelector/>
-                    <DeviceChecker/>
-                    <AlarmToggles/>
-                    <AlarmTune/>
-                </Stack>
-            </Center>
-            )
-};
+function AlarmYearly() {
+    return (
+        <Center>
+            <Stack>
+                <Message />
+                <TimeSelector />
+                <DateSelector />
+                <DeviceChecker />
+                <AlarmToggles />
+                <AlarmTune />
+            </Stack>
+        </Center>
+    )
+}
 
 export default AlarmYearly

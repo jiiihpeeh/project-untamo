@@ -46,14 +46,14 @@ const DeviceEdit = () => {
                               }
                       )
     }
-    const cancelEdit = () => {
+    function cancelEdit() {
       setShowEdit(false)
       setToEdit(null)
-    }
-    const requestDeviceEdit = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  }
+    async function requestDeviceEdit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       event.currentTarget.disabled = true
-      if(toEditDevice && deviceEditInfo){
-        deviceEdit(deviceEditInfo.id ,deviceEditInfo.deviceName, deviceEditInfo.type)
+      if (toEditDevice && deviceEditInfo) {
+        deviceEdit(deviceEditInfo.id, deviceEditInfo.deviceName, deviceEditInfo.type)
       }
       setShowEdit(false)
     }

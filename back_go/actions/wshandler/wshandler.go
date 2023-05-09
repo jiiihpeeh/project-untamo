@@ -45,6 +45,11 @@ func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token strin
 	connection, _ := upgrader.Upgrade(w, r, nil)
 	//mutex.Lock()
 	hashMapMutex.Lock()
+	//close  token connection
+	if server.tokenConnection[token] != nil {
+		server.tokenConnection[token].Close()
+	}
+
 	server.tokenConnection[token] = connection
 	server.userTokens[userID] = unique(append(server.userTokens[userID], token))
 	server.clients[connection] = true // Save the connection using it as a key
@@ -61,29 +66,9 @@ func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token strin
 			connection.WriteMessage(websocket.PongMessage, []byte{})
 			hashMapMutex.Unlock()
 		}
-		// if mt == websocket.PongMessage {
-		// 	hashMapMutex.Lock()
-		// 	connection.WriteMessage(websocket.PingMessage, []byte{})
-		// 	hashMapMutex.Unlock()
-		// }
-		//go server.handleMessage(message)
-		//server.ServeMessage(userID, token, message)
-		//fmt.Println("message: ", message)
+
 	}
-	// 	hashMapMutex.Lock()
-	// 	//print tokens
 
-	// 	//delete(server.clients, connection) // Removing the connection
-
-	// connection.Close()
-	// //remove connection from hashmap
-	// delete(server.tokenConnection, token)
-	// //remove token from hashmap
-	// delete(server.userTokens, token)
-	// //remove user from hashmap
-	// delete(server.userTokens, userID)
-	// //fmt.Println(server.tokenConnection.keys())
-	// hashMapMutex.Unlock()
 }
 
 // uniques items in array
@@ -115,10 +100,13 @@ func (server *WsServer) ServeMessage(userId string, token string, message []byte
 	server.userTokens[userId] = tokens
 
 	for _, tokenM := range tokens {
-		fmt.Println("loop token: ", tokenM)
+		//fmt.Println("loop token: ", tokenM)
 		if tokenM != token {
 			conn := server.tokenConnection[tokenM]
-
+			if conn == nil {
+				fmt.Println("conn is nil")
+				continue
+			}
 			conn.WriteMessage(websocket.TextMessage, message)
 		}
 	}
@@ -131,25 +119,26 @@ func (server *WsServer) ServeMessage(userId string, token string, message []byte
 // }
 
 func Action(c *gin.Context, client *mongo.Client) {
+	//fmt.Println("websocket handler CALLED")
 	//sleep 15 milliseconds
 	time.Sleep(15 * time.Millisecond)
 	//cons := wsConnections.WsConnectionsMutex
 
-	fmt.Println("websocket handler")
+	//fmt.Println("websocket handler")
 	wsToken := c.Param("token")
 
-	fmt.Println("wsToken: ", wsToken)
+	//fmt.Println("wsToken: ", wsToken)
 	//get session from db
 	session, user := mongoDB.GetUserAndSessionFromWsToken(wsToken, client)
 	// if action is not found, return
 	if session == nil {
-		fmt.Println("session not found")
+		//	fmt.Println("session not found")
 		return
 	}
-	fmt.Println("session found")
+	//fmt.Println("session found")
 
 	if user == nil {
-		fmt.Println("user not found")
+		//	fmt.Println("user not found")
 		return
 	}
 	WsServing.echo(c.Writer, c.Request, wsToken, user.ID.Hex())

@@ -29,62 +29,62 @@ function EditProfile() {
     const [formData, setFormData] = useState<FormData>(emptyForm)
     const [ changePassword, setChangePassword ] = useState(false)
     const [ formChecks, setFormChecks ] = useState(true)
-    const getInitForm = () =>{
+    function getInitForm() {
         return {
             firstName: userInfo.firstName,
-            lastName:userInfo.lastName,
+            lastName: userInfo.lastName,
             email: userInfo.email,
             screenName: userInfo.screenName,
             password: '',
             changePassword: '',
-            confirmPassword:''
-        } 
+            confirmPassword: ''
+        }
     }
-    const onChange = (event:React.FormEvent<HTMLDivElement>) => {
-        if(!event){
-           return
+    function onChange(event: React.FormEvent<HTMLDivElement>) {
+        if (!event) {
+            return
         }
         let eventTarget = event.target as HTMLInputElement
         //console.log(eventTarget.name,eventTarget.value)
         setFormData((formData) => {
             return {
-                     ...formData,
-                      [eventTarget.name] : eventTarget.value
-                   }
+                ...formData,
+                [eventTarget.name]: eventTarget.value
             }
+        }
         )
     }
 
-    const onRegister = async () => {
+    async function onRegister() {
         editUserInfo(formData, changePassword)
         setShowEditProfile(false)
     }
 
-    const onCloseFixed = () => {
-          setChangePassword(false)
-          setFormData(emptyForm)
-          setShowEditProfile(false)
+    function onCloseFixed() {
+        setChangePassword(false)
+        setFormData(emptyForm)
+        setShowEditProfile(false)
     }
-    const drawerOpen = () => {
+    function drawerOpen() {
         setFormData(getInitForm())
     }
     useEffect(() => {
-        const passwordChecker = () => {
-        if(formData && formData.password && formData.password.length < 6){
-            setFormChecks(false)
-               return
+        function passwordChecker() {
+            if (formData && formData.password && formData.password.length < 6) {
+                setFormChecks(false)
+                return
             }
-            if(changePassword){
-                if (formData.changePassword.length > 5 && 
-                    (formData.changePassword === formData.confirmPassword) && 
-                    (formData.changePassword !== formData.password)){
+            if (changePassword) {
+                if (formData.changePassword.length > 5 &&
+                    (formData.changePassword === formData.confirmPassword) &&
+                    (formData.changePassword !== formData.password)) {
                     setFormChecks(true)
                     return
-                }else{
+                } else {
                     setFormChecks(false)
                     return
                 }
-            }else{
+            } else {
                 setFormChecks(true)
                 return
             }

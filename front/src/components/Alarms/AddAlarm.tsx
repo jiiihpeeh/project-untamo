@@ -11,7 +11,6 @@ import { useAlarms, usePopups } from '../../stores'
 
 function AddAlarm() {
 const btnRef = useRef<HTMLButtonElement>(null)
-const onAddOpen = useAlarm((state)=>state.onAddOpen)
 const addNewAlarm = useAlarms((state) => state.addNewAlarm)
 const setShowToast = usePopups((state)=>state.setShowToast)
 const showAddAlarm = usePopups((state)=>state.showAddAlarm)

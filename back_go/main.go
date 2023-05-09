@@ -120,6 +120,9 @@ func main() {
 	router.GET("/api/user", func(c *gin.Context) {
 		rest.GetUser(c, client)
 	})
+	router.GET("/api/update", func(c *gin.Context) {
+		rest.GetUpdate(c, client)
+	})
 	router.GET("/api/refresh-token", func(c *gin.Context) {
 		rest.RefreshToken(c, client)
 	})

@@ -1,26 +1,26 @@
-export enum WeekDay  {
-    Monday="Monday",
-    Tuesday="Tuesday",
-    Wednesday="Wednesday",
-    Thursday="Thursday",
-    Friday="Friday",
-    Saturday="Saturday",
-    Sunday="Sunday"
+export enum WeekDay {
+    Monday = "Monday",
+    Tuesday = "Tuesday",
+    Wednesday = "Wednesday",
+    Thursday = "Thursday",
+    Friday = "Friday",
+    Saturday = "Saturday",
+    Sunday = "Sunday"
 }
 
-export enum Path  {
-    PlayAlarm="play-alarm",
+export enum Path {
+    PlayAlarm = "play-alarm",
     Alarms = "alarms",
     Welcome = "welcome",
     LogIn = "login",
     Register = "register",
     Admin = "admin",
-    Clueless="clueless",
-    Base= ""
+    Clueless = "clueless",
+    Base = ""
 }
-export enum ColorMode{
-    Light="light",
-    Dark="dark"
+export enum ColorMode {
+    Light = "light",
+    Dark = "dark"
 }
 export enum SessionStatus {
     NotValid = "not-valid",
@@ -44,7 +44,7 @@ export type Device = {
     type: DeviceType
 }
 
-export interface FormData{
+export interface FormData {
     firstName: string,
     lastName: string,
     email: string,
@@ -54,15 +54,15 @@ export interface FormData{
     confirmPassword: string
 }
 
-export enum OpenDeviceDialog{
+export enum OpenDeviceDialog {
     Menu = "menu",
     Other = "other"
 }
 
 export enum AdminAction {
-    Activity= 'activity',
-    Admin= "admin",
-    Delete="delete"
+    Activity = 'activity',
+    Admin = "admin",
+    Delete = "delete"
 }
 
 export declare type UserInfo = {
@@ -82,7 +82,7 @@ export enum AlarmCases {
 }
 
 export type Alarm = {
-    occurrence : AlarmCases,
+    occurrence: AlarmCases,
     time: string,
     date: string,
     devices: Array<string>,
@@ -94,7 +94,7 @@ export type Alarm = {
     tune: string,
     fingerprint: string,
     modified: number,
-    closeTask:boolean,
+    closeTask: boolean,
     offline: boolean
 }
 

@@ -4,25 +4,25 @@ import { sleep } from '../utils'
 import useSettings from './settingsStore'
 
 
-const generateAudioELement = () => {
+function generateAudioELement() {
     const audioELement = document.createElement('audio')
-    audioELement.setAttribute("id","audioPlayer")
-    audioELement.setAttribute("autoplay","true")
-    audioELement.setAttribute("playsinline","true")
-    
-    
+    audioELement.setAttribute("id", "audioPlayer")
+    audioELement.setAttribute("autoplay", "true")
+    audioELement.setAttribute("playsinline", "true")
+
+
     audioELement.addEventListener("playing", (event) => {
         useAudio.setState({ plays: true })
     })
-    
+
     audioELement.addEventListener("pause", (event) => {
         useAudio.setState({ plays: false })
     })
-    
+
     audioELement.addEventListener("ended", (event) => {
         useAudio.setState({ plays: false })
     })
-    
+
     audioELement.addEventListener("emptied", (event) => {
         useAudio.setState({ plays: false })
     })
@@ -42,48 +42,50 @@ type UseAudio = {
     setLoopPlayBegins: (playTime: number| null)=>void,
     audioElement: HTMLAudioElement,
     setAudioElement: (audioELement: HTMLAudioElement)=>void,
+    playingAlarm: string,
+    setPlayingAlarm: (alarm: string)=>void
 }
 
-const play = async (track: string, loop: boolean) => {
+async function play(track: string, loop: boolean) {
     //console.log(track, loop)
     let audioELement = useAudio.getState().audioElement
-    if(loop){
+    if (loop) {
         audioELement.volume = 0.0
     }
-    let audioData =  await getAudio(track)
+    let audioData = await getAudio(track)
     audioELement.src = URL.createObjectURL(audioData)
-    if(!loop){
+    if (!loop) {
         audioELement.removeAttribute("loop")
-    }else{
-       audioELement.setAttribute("loop", `${loop}`) 
-       useAudio.getState().setLoopPlayBegins(Date.now())
+    } else {
+        audioELement.setAttribute("loop", `${loop}`)
+        useAudio.getState().setLoopPlayBegins(Date.now())
     }
     //audioELement.load()
     await sleep(3)
-    try{
+    try {
         await audioELement.play()
-        if(loop){
-            let cap = Math.floor(useSettings.getState().volume *100)
-            for(let i = 0; i < cap; i++){
+        if (loop) {
+            let cap = Math.floor(useSettings.getState().volume * 100)
+            for (let i = 0; i < cap; i++) {
                 await sleep(100)
-                audioELement.volume = i/100
+                audioELement.volume = i / 100
             }
-            
+
         }
         audioELement.volume = useSettings.getState().volume
-    }catch(err:any){
+    } catch (err: any) {
         console.log(err)
     }
-    
+
 }
 
-const stop = () => {
-    if(useAudio.getState().plays){
+function stop() {
+    if (useAudio.getState().plays) {
         let audioELement = useAudio.getState().audioElement
         audioELement.load()
-        URL.revokeObjectURL(audioELement.src) 
-        audioELement.src=""
-        if(useAudio.getState().loop){
+        URL.revokeObjectURL(audioELement.src)
+        audioELement.src = ""
+        if (useAudio.getState().loop) {
             useAudio.getState().setLoopPlayBegins(null)
         }
     }
@@ -132,6 +134,15 @@ const useAudio = create<UseAudio>((set, get) => (
                     audioElement: audioELement
                 }
 
+            )
+        },
+        
+        playingAlarm: "",
+        setPlayingAlarm: (alarm: string)=>{
+            set(
+                {
+                    playingAlarm: alarm
+                }
             )
         },
         loopPlayBegins: null,

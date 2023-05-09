@@ -7,19 +7,19 @@ import React from "react";
 import AlarmTune from "./AlarmTune"
 import AlarmToggles from "./AlarmToggles"
 
-const AlarmOnce = () => {
-    return(
+function AlarmOnce() {
+    return (
         <Center>
             <Stack>
                 <Message />
-                <TimeSelector  />
-                <DateSelector/>
-                <DeviceChecker/>
-                <AlarmToggles/>
-                <AlarmTune/>
+                <TimeSelector />
+                <DateSelector />
+                <DeviceChecker />
+                <AlarmToggles />
+                <AlarmTune />
             </Stack>
         </Center>
-       )
+    )
 }
 
 export default AlarmOnce

@@ -16,39 +16,39 @@ const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'imag
 const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
-type AlarmSerialized = {
-    occurrence : AlarmCases,
-    time: string,
-    date: string,
-    devices: Array<string>,
-    label: string,
-    weekdays: Array<WeekDay>,
-    active: boolean,
-    snooze: Array<number>,
-    fingerprint: string,
-    modified: number,
-    _id: string,
-    __v: number
-}
+// type AlarmSerialized = {
+//     occurrence : AlarmCases,
+//     time: string,
+//     date: string,
+//     devices: Array<string>,
+//     label: string,
+//     weekdays: Array<WeekDay>,
+//     active: boolean,
+//     snooze: Array<number>,
+//     fingerprint: string,
+//     modified: number,
+//     _id: string,
+//     __v: number
+// }
 
 
-interface AlarmSerializedEdit extends AlarmSerialized {
-  id: string 
-  offline: boolean
-}
-const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>{
+// interface AlarmSerializedEdit extends AlarmSerialized {
+//   id: string 
+//   offline: boolean
+// }
+// const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>{
   
-  return alarms.map(alarm => { 
-    let newAlarm : Partial<AlarmSerializedEdit> = alarm 
-    newAlarm.id = newAlarm._id
-    delete newAlarm._id
-    delete newAlarm.__v
-    newAlarm.weekdays = [...new Set(newAlarm.weekdays)]
-    newAlarm.devices = [...new Set(newAlarm.devices)]
-    newAlarm.offline = false
-    return newAlarm as Alarm
-  })
-}
+//   return alarms.map(alarm => { 
+//     let newAlarm : Partial<AlarmSerializedEdit> = alarm 
+//     newAlarm.id = newAlarm._id
+//     delete newAlarm._id
+//     delete newAlarm.__v
+//     newAlarm.weekdays = [...new Set(newAlarm.weekdays)]
+//     newAlarm.devices = [...new Set(newAlarm.devices)]
+//     newAlarm.offline = false
+//     return newAlarm as Alarm
+//   })
+// }
 
 
 const fetchAlarms = async () => {
@@ -67,7 +67,7 @@ const fetchAlarms = async () => {
                                                                         }
                                                           }
                                     )
-        console.log(res.data)
+        //console.log(res.data)
         fetchedAlarms = res.data as Array<Alarm>//alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
         let alarms = useAlarms.getState().alarms
         const newIds = fetchedAlarms.map(alarm => alarm.id)
@@ -372,34 +372,33 @@ const postOfflineEdit = async(alarm: Alarm) => {
   }
 }
 
-const postOfflineAlarms = async() =>{
-  const {server, token} = getCommunicationInfo()
+export async function postOfflineAlarms() {
+  const { server, token } = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
   let offlineAlarms = alarms.filter(alarm => alarm.id.endsWith("OFFLINE"))
-  for(const alarm of offlineAlarms){
-    let postAlarm : Partial<Alarm> = {...alarm}
+  for (const alarm of offlineAlarms) {
+    let postAlarm: Partial<Alarm> = { ...alarm }
     delete postAlarm.id
-    if(!alarm){
-      return 
+    if (!alarm) {
+      return
     }
-  try {
+    try {
       const res = await axios.post(
-                                  `${server}/api/alarm`, 
-                                      postAlarm, 
-                                      {
-                                        headers: 
-                                                {
-                                                  token: token
-                                                }
-                                      } 
-                                  )
+        `${server}/api/alarm`,
+        postAlarm,
+        {
+          headers: {
+            token: token
+          }
+        }
+      )
       let addedAlarm = res.data.id as string
-      let alarmWithID  = postAlarm as Alarm
+      let alarmWithID = postAlarm as Alarm
       alarmWithID.id = addedAlarm
       notification("Alarm", "Offline Alarm inserted to an online database")
-      let filteredAlarms = alarms.filter(oldAlarm => oldAlarm.id!== alarm.id)
-      useAlarms.setState( { alarms: [...filteredAlarms, alarmWithID]}) 
-    } catch (err:any){
+      let filteredAlarms = alarms.filter(oldAlarm => oldAlarm.id !== alarm.id)
+      useAlarms.setState({ alarms: [...filteredAlarms, alarmWithID] })
+    } catch (err: any) {
       notification("Edit Alarm", " Offline Alarm save failed ", Status.Error)
     }
   }

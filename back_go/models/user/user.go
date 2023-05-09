@@ -32,8 +32,8 @@ type UserOut struct {
 	Owner      bool   `json:"owner"`
 }
 
-func (u *User) ToUserOut() *UserOut {
-	return &UserOut{
+func (u *User) ToUserOut() UserOut {
+	return UserOut{
 		User:       u.ID.Hex(),
 		Email:      u.Email,
 		FirstName:  u.FirstName,

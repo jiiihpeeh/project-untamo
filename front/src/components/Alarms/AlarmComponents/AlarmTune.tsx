@@ -9,101 +9,100 @@ import { BsFillPlayFill as PlayIcon} from 'react-icons/bs'
 import { MdStop as StopIcon} from 'react-icons/md'
 import { useAudio } from "../../../stores";
 
-const AlarmTune = () => {
-    const alarmTune = useAlarm((state)=> state.tune);
-    const tunes = useAudio((state)=> state.tracks)
-    const track = useAudio((state)=> state.track)
-    const plays = useAudio((state) => state.plays)
-    const playAudio = useAudio((state) => state.play)
-    const setTrack = useAudio((state)=>state.setTrack)
-    const stopAudio = useAudio((state)=>state.stop)
-    const setLoop = useAudio((state)=>state.setLoop)
-    const [closeOnSelect, setCloseOnSelect ] = useState(false)
-  
-    const play = async (tune:string) =>{
-        if(plays){
-            stopAudio()
-        }else{
-            setLoop(false)
-            setTrack(tune)
-            playAudio()
+function AlarmTune() {
+    const alarmTune = useAlarm((state) => state.tune);
+    const tunes = useAudio((state) => state.tracks);
+    const track = useAudio((state) => state.track);
+    const plays = useAudio((state) => state.plays);
+    const playAudio = useAudio((state) => state.play);
+    const setTrack = useAudio((state) => state.setTrack);
+    const stopAudio = useAudio((state) => state.stop);
+    const setLoop = useAudio((state) => state.setLoop);
+    const [closeOnSelect, setCloseOnSelect] = useState(false);
+
+    async function play(tune: string) {
+        if (plays) {
+            stopAudio();
+        } else {
+            setLoop(false);
+            setTrack(tune);
+            playAudio();
         }
     }
 
-    const menuTones = () => {
-        if(tunes.length === 0){
-            fetchAudioFiles()
+    function menuTones() {
+        if (tunes.length === 0) {
+            fetchAudioFiles();
         }
-        let modTones = tunes
-        if(!tunes.includes(alarmTune)){
-            modTones.push(alarmTune)
+        let modTones = tunes;
+        if (!tunes.includes(alarmTune)) {
+            modTones.push(alarmTune);
         }
-        return modTones.map(tune => 
-            { return (
-                        <MenuItem 
-                            onClick={()=> useAlarm.setState( { tune: tune })}
-                            key={`audio-${tune}`}
-                            w="100%"
-                            closeOnSelect={closeOnSelect}
-                        >   
-                            <Table  
-                                id={`alarm-${tune}`} 
-                                key={`alarmKey-${tune}`} 
-                                variant="unstyled" 
-                                size="sm" 
-                                mb={"0px"} 
-                                mt={"0px"}
-                            >
-                                <Tbody>
-                                    <Tr>
-                                        <Td>
-                                            <Tooltip 
-                                                label='Track name' 
-                                                fontSize='md'
-                                            >
-                                                <Text>
-                                                    {tune} 
-                                                </Text>
-                                            </Tooltip>
-                                        </Td>
-                                        <Td
-                                            w="45px"
-                                            onMouseLeave= {(e)=>{setCloseOnSelect(true)}}
-                                            onMouseEnter={(e)=>{setCloseOnSelect(false)}}
-                                            onClick={(e)=>{play(tune)}}
-                                        >
-                                            <Tooltip 
-                                                label={(plays && (tune === track))?"Stop":'Play'}
-                                                fontSize='sm'
-                                            >
-                                                <IconButton  
-                                                    icon={<Icon as={(plays && (tune === track) )?StopIcon:PlayIcon} />} 
-                                                    ml="5.5%" 
-                                                    colorScheme='cyan'
-                                                    aria-label=''
-                                                    size={"sm"}
-                                                    isDisabled={!tunes.includes(tune) || (plays && (tune !== track) )}
-                                                />
-                                            </Tooltip>
-                                        </Td>
-                                    </Tr>
-                                </Tbody>
-                            </Table>
-                        </MenuItem>
-                    )
-            }
-        )
+        return modTones.map(tune => {
+            return (
+                <MenuItem
+                    onClick={() => useAlarm.setState({ tune: tune })}
+                    key={`audio-${tune}`}
+                    w="100%"
+                    closeOnSelect={closeOnSelect}
+                >
+                    <Table
+                        id={`alarm-${tune}`}
+                        key={`alarmKey-${tune}`}
+                        variant="unstyled"
+                        size="sm"
+                        mb={"0px"}
+                        mt={"0px"}
+                    >
+                        <Tbody>
+                            <Tr>
+                                <Td>
+                                    <Tooltip
+                                        label='Track name'
+                                        fontSize='md'
+                                    >
+                                        <Text>
+                                            {tune}
+                                        </Text>
+                                    </Tooltip>
+                                </Td>
+                                <Td
+                                    w="45px"
+                                    onMouseLeave={(e) => { setCloseOnSelect(true); } }
+                                    onMouseEnter={(e) => { setCloseOnSelect(false); } }
+                                    onClick={(e) => { play(tune); } }
+                                >
+                                    <Tooltip
+                                        label={(plays && (tune === track)) ? "Stop" : 'Play'}
+                                        fontSize='sm'
+                                    >
+                                        <IconButton
+                                            icon={<Icon as={(plays && (tune === track)) ? StopIcon : PlayIcon} />}
+                                            ml="5.5%"
+                                            colorScheme='cyan'
+                                            aria-label=''
+                                            size={"sm"}
+                                            isDisabled={!tunes.includes(tune) || (plays && (tune !== track))} />
+                                    </Tooltip>
+                                </Td>
+                            </Tr>
+                        </Tbody>
+                    </Table>
+                </MenuItem>
+            );
+        }
+        );
     }
 
-    return(
-            <Center 
-                mb={'15px'} >
+    return (
+        <Center
+            mb={'15px'}>
             <Menu
                 matchWidth={true}
             >
-                <MenuButton 
-                    as={Button} 
-                    rightIcon={<Down/>}
+                <MenuButton
+                    as={Button}
+                    rightIcon={<Down />}
                     width="100%"
                 >
                     Choose the alarm tune: {alarmTune}
@@ -112,16 +111,15 @@ const AlarmTune = () => {
                     {menuTones()}
                 </MenuList>
             </Menu>
-            <IconButton 
-                size='xs' 
-                icon={<RepeatIcon/>} 
-                ml="4%" 
+            <IconButton
+                size='xs'
+                icon={<RepeatIcon />}
+                ml="4%"
                 colorScheme='blue'
                 aria-label=''
-                onClick= {() => {fetchAudioFiles()}}
-            />
+                onClick={() => { fetchAudioFiles(); } } />
         </Center>
-       )
+    );
 }
 
 export default AlarmTune;

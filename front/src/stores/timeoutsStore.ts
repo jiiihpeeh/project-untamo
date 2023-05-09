@@ -11,7 +11,7 @@ const compareTime = async() =>{
     if(currentTime - useTimeouts.getState().systemTime > 6000){
         useTimeouts.getState().clear()
         useAlarms.getState().setReloadAlarmList()
-        useServer.getState().wsActionReconnect()
+        //useServer.getState().wsActionReconnect()
     }
     useTimeouts.getState().setSystemTime(currentTime)
     await sleep(5000)
@@ -277,7 +277,9 @@ async function locationChecker() {
         useServer.getState().wsRegisterConnect()
     }
     if(urlEnds(Path.LogIn)){
-        useServer.getState().wsRegisterDisconnect()
+        try{
+            useServer.getState().wsRegisterDisconnect()
+        }catch(err){}
         //useLogIn.getState().setSessionValid(SessionStatus.NotValid)
     }
     await sleep(330)

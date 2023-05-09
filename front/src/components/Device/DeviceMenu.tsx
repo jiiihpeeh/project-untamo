@@ -8,116 +8,114 @@ import DeviceIcons from "./DeviceIcons"
 
 
 
-const DeviceMenu = () => {
-    const viewableDevices = useDevices((state)=> state.viewableDevices)
-    const toggleViewableDevices = useDevices((state)=>state.toggleViewableDevices)
+function DeviceMenu() {
+    const viewableDevices = useDevices((state) => state.viewableDevices)
+    const toggleViewableDevices = useDevices((state) => state.toggleViewableDevices)
     const setShowDelete = usePopups((state) => state.setShowDeleteDevice)
     const setShowEdit = usePopups((state) => state.setShowEditDevice)
     const devices = useDevices((state) => state.devices)
-    const setToDelete = useDevices((state)=>state.setToDelete)
-    const setCurrentDevice = useDevices((state)=>state.setCurrentDevice)
-    const currentDevice = useDevices((state)=>state.currentDevice)
-    const setToEdit = useDevices((state)=>state.setToEdit)
-    const setShowAddDevice = usePopups((state)=> state.setShowAddDevice)
-    const setShowDeviceMenu = usePopups((state)=> state.setShowDeviceMenu)
-    const showDeviceMenu = usePopups((state)=> state.showDeviceMenu)
-    const setShowQRDialog = usePopups((state)=> state.setShowQRDialog)
+    const setToDelete = useDevices((state) => state.setToDelete)
+    const setCurrentDevice = useDevices((state) => state.setCurrentDevice)
+    const currentDevice = useDevices((state) => state.currentDevice)
+    const setToEdit = useDevices((state) => state.setToEdit)
+    const setShowAddDevice = usePopups((state) => state.setShowAddDevice)
+    const setShowDeviceMenu = usePopups((state) => state.setShowDeviceMenu)
+    const showDeviceMenu = usePopups((state) => state.showDeviceMenu)
+    const setShowQRDialog = usePopups((state) => state.setShowQRDialog)
 
-    const openDelete = async(value:string) => {
+    async function openDelete(value: string) {
         let delDevice = devices.filter(dev => dev.id === value)[0]
-        if(delDevice){
+        if (delDevice) {
             setToDelete(delDevice)
             setShowDelete(true)
         }
     }
 
-    const openEdit = async(value:string) => {
+    async function openEdit(value: string) {
         let editDevice = devices.filter(dev => dev.id === value)[0]
-        if(editDevice){
+        if (editDevice) {
             setToEdit(editDevice)
             setShowEdit(true)
         }
     }
 
-    const deviceMenu = ()=> {
+    function deviceMenu() {
         return devices.map(deviceItem => {
             let ID = deviceItem.id
-            return(
-                    <Tr key={ID}>
-                        <Td>
-                            <Text size={"xs"}>
-                                {deviceItem.deviceName} <DeviceIcons device={deviceItem.type}/>
-                            </Text>
-                        </Td>
-                        <Td>
-                            <Center>
-                                <Checkbox
-                                    isChecked={viewableDevices.includes(deviceItem.id)}
-                                    onChange={()=>toggleViewableDevices(deviceItem.id)} 
-                                >
-                                </Checkbox>
-                            </Center>
-                        </Td>
-                        <Td>
-                            <Center>
-                                <Radio 
-                                    isChecked={currentDevice === ID} 
-                                    onClick={()=>setCurrentDevice(ID)}
-                                />
-                            </Center>
-                        </Td>
-                        <Td>
-                            <Tooltip 
-                                label='Edit device' 
-                                fontSize='md'
+            return (
+                <Tr key={ID}>
+                    <Td>
+                        <Text size={"xs"}>
+                            {deviceItem.deviceName} <DeviceIcons device={deviceItem.type} />
+                        </Text>
+                    </Td>
+                    <Td>
+                        <Center>
+                            <Checkbox
+                                isChecked={viewableDevices.includes(deviceItem.id)}
+                                onChange={() => toggleViewableDevices(deviceItem.id)}
                             >
-                            <IconButton 
-                                alignItems={"right"} 
-                                size='xs' 
-                                value = {ID}
-                                onClick={(e) =>openEdit(ID)} 
-                                icon={<EditIcon />} 
-                                aria-label=""
-                            />
-                            </Tooltip>
-                        </Td>
-                        <Td>
-                            <Tooltip 
-                                label='Delete device' 
-                                fontSize='md'
-                            >
-                            <IconButton 
-                                alignItems={"right"}  
+                            </Checkbox>
+                        </Center>
+                    </Td>
+                    <Td>
+                        <Center>
+                            <Radio
+                                isChecked={currentDevice === ID}
+                                onClick={() => setCurrentDevice(ID)} />
+                        </Center>
+                    </Td>
+                    <Td>
+                        <Tooltip
+                            label='Edit device'
+                            fontSize='md'
+                        >
+                            <IconButton
+                                alignItems={"right"}
                                 size='xs'
-                                value = {ID}
-                                onClick={(e)=> openDelete(ID)} 
-                                icon={<DeleteIcon/>} 
-                                aria-label=""
-                            />
-                            </Tooltip>
-                        </Td>
-                    </Tr>
-            )})
+                                value={ID}
+                                onClick={(e) => openEdit(ID)}
+                                icon={<EditIcon />}
+                                aria-label="" />
+                        </Tooltip>
+                    </Td>
+                    <Td>
+                        <Tooltip
+                            label='Delete device'
+                            fontSize='md'
+                        >
+                            <IconButton
+                                alignItems={"right"}
+                                size='xs'
+                                value={ID}
+                                onClick={(e) => openDelete(ID)}
+                                icon={<DeleteIcon />}
+                                aria-label="" />
+                        </Tooltip>
+                    </Td>
+                </Tr>
+            )
+        })
     }
 
-    return(
-            <Modal 
-                isOpen={showDeviceMenu} 
-                onClose={() => setShowDeviceMenu(!showDeviceMenu)}
-                isCentered
+    return (
+        <Modal
+            isOpen={showDeviceMenu}
+            onClose={() => setShowDeviceMenu(!showDeviceMenu)}
+            isCentered
+        >
+            <ModalOverlay />
+            <ModalContent
+                onMouseDown={e => e.preventDefault()}
             >
-                <ModalOverlay />
-                <ModalContent
-                    onMouseDown={e=>e.preventDefault()}
-                >
-                    <ModalHeader>
-                        Device Options
-                    </ModalHeader>
-                    <ModalCloseButton/>
-                    <ModalBody>
-                        <Table 
-                            size="sm"
-                        >
+                <ModalHeader>
+                    Device Options
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Table
+                        size="sm"
+                    >
                         <Thead>
                             <Tr>
                                 <Th>Device</Th>
@@ -127,37 +125,37 @@ const DeviceMenu = () => {
                                 <Th>Delete</Th>
                             </Tr>
                         </Thead>
-                            <Tbody>
-                                {deviceMenu()}
-                            </Tbody>
-                        </Table>
-                        <VStack mt={"5px"}>
-                            <Button
-                                onClick={()=>setShowQRDialog(true)}
+                        <Tbody>
+                            {deviceMenu()}
+                        </Tbody>
+                    </Table>
+                    <VStack mt={"5px"}>
+                        <Button
+                            onClick={() => setShowQRDialog(true)}
+                        >
+                            <Text
+                                w="100%"
+                                align={"center"}
                             >
-                                <Text 
-                                    w="100%"
-                                    align={"center"}
-                                >
-                                    Pair a device (QR code)
-                                </Text>
-                            </Button>
-                            <Button
-                                onClick={()=>setShowAddDevice(true)} 
+                                Pair a device (QR code)
+                            </Text>
+                        </Button>
+                        <Button
+                            onClick={() => setShowAddDevice(true)}
+                        >
+                            <Text
+                                id="add-device-button"
+                                key="add-device-button"
+                                w="100%"
+                                align={"center"}
                             >
-                                <Text 
-                                    id="add-device-button"
-                                    key="add-device-button"
-                                    w="100%"
-                                    align={"center"}
-                                >
-                                    Add a device
-                                </Text>
-                            </Button>
-                        </VStack>
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
+                                Add a device
+                            </Text>
+                        </Button>
+                    </VStack>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
     )
 
 }

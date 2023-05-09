@@ -6,18 +6,18 @@ import React from "react"
 import AlarmTune from "./AlarmTune"
 import AlarmToggles from "./AlarmToggles"
 
-const AlarmDaily = () => {
-    return(
+function AlarmDaily() {
+    return (
         <Center>
             <Stack>
-                <Message/>
-                <TimeSelector/>
-                <DeviceChecker/>
-                <AlarmToggles/>
-                <AlarmTune/>
+                <Message />
+                <TimeSelector />
+                <DeviceChecker />
+                <AlarmToggles />
+                <AlarmTune />
             </Stack>
         </Center>
-       )
+    )
 }
 
 export default AlarmDaily

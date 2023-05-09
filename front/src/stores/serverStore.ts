@@ -5,11 +5,20 @@ import { urlEnds, sleep } from '../utils'
 import useLogIn from './loginStore'
 import useAlarms from './alarmStore'
 import useDevices from './deviceStore'
-import { da, de, sl } from 'date-fns/locale'
+import useAudio from './audioStore'
 
 type wsActionMsg = {
   url?: string,
   mode?: string,
+}
+enum WsMessage {
+  AlarmAdd = "alarmAdd",
+  AlarmDelete = "alarmDelete",
+  AlarmEdit = "alarmEdit",
+  DeviceAdd = "deviceAdd",
+  DeviceDelete = "deviceDelete",
+  DeviceEdit = "deviceEdit",
+  UserEdit = "userEdit"
 }
 export interface Content {
   guesses: number,
@@ -35,10 +44,8 @@ type UseServer = {
   wsActionMessage: wsActionMsg | null,
   wsRegisterConnection: WebSocket | null,
   wsRegisterMessage: wsRegisterMsg | null,
-  wsActionDisconnect: () => void,
   setWsActionConnection: (ws: WebSocket | null) => void,
   setWSActionMessage: (message: wsActionMsg | null) => void,
-  wsActionReconnect: () => void,
   wsActionConnect: () => void,
   setWsRegisterConnection: (ws: WebSocket | null) => void,
   setWSRegisterMessage: (message: wsRegisterMsg | null) => void,
@@ -49,7 +56,7 @@ type UseServer = {
   setAddress: (input: string) => void
 }
 
-const getDefaultAddress = () => {
+function getDefaultAddress() {
   const metaAddress = document.head.querySelector("[property~=server][address]")?.attributes.getNamedItem("address")?.value
   const baseAddress = (metaAddress) ? metaAddress : "http://localhost:3001"
   const metaExtend = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
@@ -57,7 +64,7 @@ const getDefaultAddress = () => {
   return { base: baseAddress, extend: baseExtend }
 }
 
-const websocketAddress = (server: string) => {
+function websocketAddress(server: string) {
   let base = server.split("://")
   if (base[0] === "https") {
     return "wss://" + base[1]
@@ -88,10 +95,18 @@ function alarmEdit(alarm: Alarm) {
   let alarms = useAlarms.getState().alarms
   let filtered = alarms.filter((a) => a.id !== alarm.id)
   filtered.push(alarm)
+  //check if the aram is playing in the background and stop it
+  let playing = useAudio.getState().plays
+  //check URL Path
+  if(urlEnds(Path.PlayAlarm) && playing ){
+    //check the id of playing alarm
+    if (useAudio.getState().playingAlarm === alarm.id){
+      useAudio.getState().stop()
+      useLogIn.getState().setNavigateTo(Path.Alarms)
+    }
+  }
   useAlarms.setState({ alarms: [...filtered] })
 }
-
-//filter:only unique id
 
 
 function deviceAdd(device: Device) {
@@ -116,36 +131,35 @@ function deviceEdit(device: Device) {
   useDevices.setState({ devices: [...filtered] })
 }
 function userEdit(user: UserInfo) {
-
   useLogIn.setState({ user: user })
 }
 
 function wsActionListener(data: any) {
-  console.log(data)
+  //console.log(data)
   if (typeof data === 'object') {
     try {
-      if (data.hasOwnProperty('type')) {
-        let dataType = data.type as string
+      if (data.hasOwnProperty('type') && data.hasOwnProperty('data')) {
+        let dataType = data.type as WsMessage
         switch (dataType) {
-          case "alarmAdd":
+          case WsMessage.AlarmAdd:
             alarmAdd(data.data as Alarm)
             break
-          case "alarmDelete":
+          case WsMessage.AlarmDelete:
             alarmDelete(data.data as string)
             break
-          case "alarmEdit":
+          case WsMessage.AlarmEdit:
             alarmEdit(data.data as Alarm)
             break
-          case "deviceAdd":
+          case WsMessage.DeviceAdd:
             deviceAdd(data.data as Device)
             break
-          case "deviceDelete":
+          case WsMessage.DeviceDelete:
             deviceDelete(data.data as string)
             break
-          case "deviceEdit":
+          case WsMessage.DeviceEdit:
             deviceEdit(data.data as Device)
             break
-          case "userEdit":
+          case WsMessage.UserEdit:
             userEdit(data.data as UserInfo)
             break
           default:
@@ -229,9 +243,10 @@ async function onOpenRoutine(ws: WebSocket) {
     return
   }
   ws.send(".")
-  useAlarms.getState().fetchAlarms()
-  useLogIn.getState().getUserInfo()
-  useDevices.getState().fetchDevices()
+  //useAlarms.getState().fetchAlarms()
+ // useLogIn.getState().getUserInfo()
+  //useDevices.getState().fetchDevices()
+  useLogIn.getState().updateState()
 }
 function actionConnecting() {
   //await sleep(20)
@@ -254,7 +269,7 @@ function actionConnecting() {
     onOpenRoutine(ws)
   }
   ws.onmessage = (event: MessageEvent) => {
-    console.log(event.data)
+   // console.log(event.data)
     try {
      // console.log(event.data)
       wsActionListener(JSON.parse(event.data))
@@ -277,9 +292,9 @@ function actionConnecting() {
   }
   ws.onclose = (event: CloseEvent) => {
     ws.removeEventListener("message", wsActionListener)
-    sleep(5000).then(() => {
-      useServer.getState().wsActionReconnect()
-    })
+    // sleep(5000).then(() => {
+    //   useServer.getState().wsActionReconnect() 
+    // })
     //check if session is still valid
     //reconnectRoutine()
     //useServer.getState().setWsActionConnection(null)
@@ -290,13 +305,7 @@ function actionConnecting() {
 
 
 
-async function actionPinger(){
-  while(true){
-    await sleep(8000)
-    useServer.getState().wsActionConnection?.send(".")
-  }
-}
-//actionPinger()
+
 
 async function checkIfConnected() {
   let conn = useServer.getState().wsActionConnection
@@ -353,12 +362,13 @@ const useServer = create<UseServer>()(
         ),
         setWSActionMessage: (message) => set({ wsActionMessage: message }),
         wsActionConnect:  () => {
-          useLogIn.getState().validateSession()
+          //useLogIn.getState().validateSession()
           //await sleep(200)
           // let status = useLogIn.getState().sessionValid
           // if (status !== SessionStatus.Valid) {
           //   return
           // }
+         console.log( "Reconnecting, bitches")
           let wsAction = get().wsActionConnection
           let continueConnecting = true
           if (wsAction) {
@@ -376,20 +386,7 @@ const useServer = create<UseServer>()(
             }
           )
         },
-        wsActionDisconnect: () => {
-         // get().wsActionConnection?.close()
 
-         // set({ wsActionConnection: null })
-        },
-        wsActionReconnect: () => {
-          get().wsActionConnection?.close()
-          let ws = actionConnecting()
-          set(
-            {
-              wsActionConnection: ws
-            }
-          )
-        },
         setAddress: (s) => set(
           {
             address: s,
@@ -419,5 +416,21 @@ const useServer = create<UseServer>()(
     }
   )
 )
+
+
+async function actionChecker(){
+  while(true){
+    await sleep(15000)
+    let conn = useServer.getState().wsActionConnection
+    if (conn){
+      if ((conn.readyState !== 1) && (conn.readyState !== 0)){
+        useServer.getState().wsActionConnect()
+      }
+    } else {
+      useServer.getState().wsActionConnect()
+    }
+  }
+}
+actionChecker()
 
 export default useServer
