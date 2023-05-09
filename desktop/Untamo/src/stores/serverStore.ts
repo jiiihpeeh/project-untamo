@@ -12,6 +12,16 @@ type wsActionMsg = {
   url?: string,
   mode?: string,
 }
+enum WsMessage {
+  AlarmAdd = "alarmAdd",
+  AlarmDelete = "alarmDelete",
+  AlarmEdit = "alarmEdit",
+  DeviceAdd = "deviceAdd",
+  DeviceDelete = "deviceDelete",
+  DeviceEdit = "deviceEdit",
+  UserEdit = "userEdit"
+}
+
 export interface Content{
   guesses: number,
   score: number,
@@ -90,9 +100,7 @@ function alarmEdit(alarm: Alarm) {
   let playing = useAudio.getState().plays
   //check URL Path
   if(urlEnds(Path.PlayAlarm) && playing ){
-    //check the id of playing alarm
     if (useAudio.getState().playingAlarm === alarm.id){
-      //stop playing
       useAudio.getState().stop()
       useLogIn.getState().setNavigateTo(Path.Alarms)
     }
@@ -131,45 +139,39 @@ function wsActionListener(data: any) {
   if (typeof data === 'object') {
     try {
       if (data.hasOwnProperty('type') && data.hasOwnProperty('data')) {
-        let dataType = data.type as string
+        let dataType = data.type as WsMessage
         switch (dataType) {
-          case "alarmAdd":
+          case WsMessage.AlarmAdd:
             alarmAdd(data.data as Alarm)
             break
-          case "alarmDelete":
+          case WsMessage.AlarmDelete:
             alarmDelete(data.data as string)
             break
-          case "alarmEdit":
+          case WsMessage.AlarmEdit:
             alarmEdit(data.data as Alarm)
             break
-          case "deviceAdd":
+          case WsMessage.DeviceAdd:
             deviceAdd(data.data as Device)
             break
-          case "deviceDelete":
+          case WsMessage.DeviceDelete:
             deviceDelete(data.data as string)
             break
-          case "deviceEdit":
+          case WsMessage.DeviceEdit:
             deviceEdit(data.data as Device)
             break
-          case "userEdit":
+          case WsMessage.UserEdit:
             userEdit(data.data as UserInfo)
             break
           default:
             break
         }
-
-        //useServer.getState().setWSActionMessage(data)
       }
-
     } catch (e) {
       useServer.getState().wsActionConnection?.close()
       useServer.getState().setWsActionConnection(null)
     } 
   }
 }
-
-
-
 
 
 function wsRegisterListener(msg:any){
