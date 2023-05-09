@@ -100,9 +100,7 @@ function alarmEdit(alarm: Alarm) {
   let playing = useAudio.getState().plays
   //check URL Path
   if(urlEnds(Path.PlayAlarm) && playing ){
-    //check the id of playing alarm
     if (useAudio.getState().playingAlarm === alarm.id){
-      //stop playing
       useAudio.getState().stop()
       useLogIn.getState().setNavigateTo(Path.Alarms)
     }
