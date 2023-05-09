@@ -105,9 +105,6 @@ async function checkSession() {
                     token: token,
                 }
             })
-            //useAlarms.getState().fetchAlarms()
-            //useLogIn.getState().getUserInfo()
-            //useDevices.getState().fetchDevices()
             useLogIn.getState().updateState()
             notification("Session", "Continuing session.", Status.Info)
             setTimeout(refreshToken, 30000)
@@ -246,7 +243,15 @@ async function updateState(){
         let userData = res.data as Update
         useLogIn.setState({ user: userData.user })
         useAlarms.setState({ alarms: [...userData.alarms] })
+        let deviceOld = useDevices.getState().devices
         useDevices.setState({ devices: [...userData.devices] })
+        //set all device viewable if deviceOld is empty
+        if (deviceOld.length === 0) {
+            //get userData.devices ids
+            let deviceIds = userData.devices.map((device) => device.id)
+            //set all devices to viewable
+            useDevices.getState().setViewableDevices(deviceIds)
+        }
     } catch (err) {
         notification("Update", "Update failed", Status.Error)
     }
