@@ -342,13 +342,22 @@ const useServer = create<UseServer>()(
             setWsActionConnection: (ws) => set({wsActionConnection: ws}),
             setWSActionMessage: (message) => set({wsActionMessage: message}),
             wsActionConnect: async () => {
-              get().wsActionConnection?.close()
-              let ws = await actionConnecting()
+              let wsAction = get().wsActionConnection
+              let continueConnecting = true
+              if (wsAction) {
+                continueConnecting =  [0,1].includes(wsAction.readyState)
+              }else{
+                continueConnecting = false
+              }
+              if (continueConnecting) {
+                return
+              }
+              let ws =  actionConnecting()
               set(
-                  {
-                    wsActionConnection: ws
-                  }
-                )
+                {
+                  wsActionConnection: ws,
+                }
+              )
             },
             setAddress: (s) => set(
                   { 

@@ -362,17 +362,11 @@ const useServer = create<UseServer>()(
         ),
         setWSActionMessage: (message) => set({ wsActionMessage: message }),
         wsActionConnect:  () => {
-          //useLogIn.getState().validateSession()
-          //await sleep(200)
-          // let status = useLogIn.getState().sessionValid
-          // if (status !== SessionStatus.Valid) {
-          //   return
-          // }
-         console.log( "Reconnecting, bitches")
+          console.log( "Reconnecting, bitches")
           let wsAction = get().wsActionConnection
           let continueConnecting = true
           if (wsAction) {
-            //continueConnecting =   checkIfConnected()
+            continueConnecting =  [0,1].includes(wsAction.readyState)
           }else{
             continueConnecting = false
           }
@@ -386,7 +380,6 @@ const useServer = create<UseServer>()(
             }
           )
         },
-
         setAddress: (s) => set(
           {
             address: s,
