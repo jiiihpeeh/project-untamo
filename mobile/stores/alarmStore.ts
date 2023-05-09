@@ -217,7 +217,7 @@ const addAlarmFromDialog = async (alarm: Alarm) => {
         break
     } 
     const res = await axios.post(
-                                `${server}/api/alarm/`, 
+                                `${server}/api/alarm`, 
                                     newAlarm, 
                                     {
                                       headers: 

@@ -176,7 +176,7 @@ const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
     }
     try {
         const res = await axios.put(
-                                    `${server}/api/editUser/`+formData.email,
+                                    `${server}/api/edit-user/`+formData.email,
                                         reqFormData ,
                                             {
                                                 headers:

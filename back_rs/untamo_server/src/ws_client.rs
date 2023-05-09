@@ -84,6 +84,8 @@ impl WsClientConnect {
     }
     fn send(&mut self,  message: &str) -> bool {
         //connect if not connected
+        println!("sending api message");
+
         if !self.connection {
             self.connect();
         }

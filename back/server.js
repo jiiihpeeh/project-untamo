@@ -401,8 +401,9 @@ var headersUserMap = new Map()
 var tokenHeadersMap = new Map()
 var tokenUserMap = new Map()
 
-app.ws('/action', asyncHandler(async(ws, req) => {
+app.ws('/action/:token', asyncHandler(async(ws, req) => {
     //console.log(req.headers);
+	let token = req.params.token
     let headers = req.headers['sec-websocket-key']
 	//console.log(headers)
     ws.on('message',asyncHandler(async (msgs) => {

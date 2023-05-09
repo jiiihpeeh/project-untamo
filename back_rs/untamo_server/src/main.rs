@@ -14,6 +14,7 @@ use mongodb::{bson::doc, options::IndexOptions, Client, Collection, IndexModel};
 use utils::new_token;
 use std::fs;
 use std::path::{PathBuf, Path};
+use std::time::Duration;
 use std::{collections::HashMap, ops::Deref};
 use std::option::Option;
 use itertools::Itertools;
@@ -23,7 +24,9 @@ mod ws_client;
 mod password_hash;
 mod utils;
 mod form_check;
+//mod start_action_connection;
 extern crate zxcvbn;
+use tokio::time::sleep as async_sleep;
 
 use zxcvbn::zxcvbn;
 
@@ -38,7 +41,7 @@ const QRCOLL : &str = "qr";
 const ALARMCOLL : &str = "alarms";
 const DEVICECOLL : &str = "devices";
 const ADMINCOLL : &str = "admins";
-const PORT : u16 = 8080;
+const PORT : u16 = 3001;
 
 
 //establish a ws client connection using rust websocket and ClientBuilder
@@ -189,7 +192,7 @@ async fn login(login: web::Json<LogIn>,client: web::Data<Client>, ws_client: web
         time: response.time,
     };
     println!("Login response: {:?}", login_response);
-    ws_client.lock().unwrap().try_send("/login", &login_response.token).await;
+    //ws_client.lock().unwrap().try_send("/login", &login_response.token).await;
 
     HttpResponse::Ok().json(login_response)   
 }
@@ -401,14 +404,14 @@ async fn get_alarms_from_header(req: &HttpRequest, client: &web::Data<Client>) -
         Some(session) => session,
         None => return vec![],
     };
-
     let user_id = session.user_id;
+    
     get_alarms_by_user_id( &user_id, &client).await
 }
 //get alarms by user
 async fn get_alarms_by_user_id(user: &str, client: &web::Data<Client>) -> Vec<Alarm> {
     let collection: Collection<Alarm> = client.database(DB_NAME).collection(ALARMCOLL);
-    let alarms_fetched = collection.find(doc! {"user_id": user}, None).await;
+    let alarms_fetched = collection.find(doc! {"user": user}, None).await;
     let alarms = match alarms_fetched {
         Ok(alarms_fetched) => alarms_fetched,
         Err(_) => return vec![],
@@ -437,7 +440,7 @@ async fn get_user_from_header(req: &HttpRequest, client: &web::Data<Client>) -> 
 //get user from session
 async fn get_user_from_session(session: &Session, client: &web::Data<Client>) -> Option<User> {
     let collection: Collection<User> = client.database(DB_NAME).collection(USERCOLL);
-    println!("{}", ObjectId::parse_str(&session.user_id).unwrap());
+    //println!("{}", ObjectId::parse_str(&session.user_id).unwrap());
 
     match  collection.find_one(doc! {"_id": ObjectId::parse_str(&session.user_id).unwrap()}, None).await {
         Ok(user_fetch) => {
@@ -451,15 +454,9 @@ async fn get_user_from_session(session: &Session, client: &web::Data<Client>) ->
     };
 }
 
-//get session by header
-
-async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) -> Option<Session> {
-    let token = match get_token_from_header(&req) {
-        Some(token) => token,
-        None => return None,
-    } ;
+async fn get_session_from_token(token: &str, client :   &web::Data<Client>) ->  Option<Session>{
     let collection: Collection<Session> = client.database(DB_NAME).collection(SESSIONCOLL);
-    let session = match collection.find_one(doc! {"token": &token}, None).await {
+    let session = match collection.find_one(doc! {"token": token}, None).await {
         Ok(session) => {
             match session {
                 Some(session) => session,
@@ -474,11 +471,28 @@ async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) 
     //check if session is expired
     if utils::time_now() > session.time {
         //delete session
-        collection.find_one_and_delete(doc! {"token": &token}, None).await.unwrap();
+        collection.find_one_and_delete(doc! {"token": token}, None).await.unwrap();
         return None;
     }
     Some(session)
 }
+
+async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) -> Option<Session> {
+    let token = match get_token_from_header(&req) {
+        Some(token) => token,
+        None => return None,
+    };
+    match get_session_from_token(&token, &client).await{
+        Some(session) => return Some(session),
+        None => return None,
+    };
+}
+
+
+
+
+
+
 
 async fn remove_session_from_header(req: &HttpRequest, client: &web::Data<Client>)-> bool {
     let token = match get_token_from_header(&req) {
@@ -492,6 +506,8 @@ async fn remove_session_from_header(req: &HttpRequest, client: &web::Data<Client
         Err(_) => return false,
     };
 }
+
+
 //find qr by qr_token
 async fn find_qr_from_token(qr_token: &str, client: &web::Data<Client>) -> Option<Qr> {
     let collection: Collection<Qr> = client.database(DB_NAME).collection(QRCOLL);
@@ -546,7 +562,7 @@ async fn qr_login(qr: web::Json<Qr>,client: web::Data<Client>) -> impl Responder
         owner: response.owner,
         time: response.time,
     };
-    println!("Login response: {:?}", login_response);
+    //println!("Login response: {:?}", login_response);
     HttpResponse::Ok().json(login_response)    
 }
 
@@ -586,7 +602,7 @@ fn alarm_to_alarm_msg(alarm: Alarm) -> AlarmMsg {
 
 fn alarm_msg_to_alarm(alarm_msg: AlarmMsg, user_id: ObjectId) -> Alarm {
     //print alarm_msg;
-    println!("Alarm msg: {:?}", alarm_msg);
+    //println!("Alarm msg: {:?}", alarm_msg);
     let id = match alarm_msg._id {
         Some(id) => ObjectId::parse_str(&id).unwrap(),
         None => ObjectId::new(),
@@ -613,7 +629,7 @@ fn alarm_msg_to_alarm(alarm_msg: AlarmMsg, user_id: ObjectId) -> Alarm {
 #[get("/api/alarms")]
 async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Responder {
     //get user from header
-    println!("get alarms");
+    //println!("get alarms");
     match get_token_from_header(&req){
         Some(_) => (),
         None => return HttpResponse::BadRequest().json(DefaultResponse{message: String::from("Invalid token")})
@@ -628,6 +644,7 @@ async fn get_alarms(req: HttpRequest, client: web::Data<Client>) -> impl Respond
         let alarm_msg = alarm_to_alarm_msg(alarm);
         alarm_msgs.push(alarm_msg);
     };
+    //println!("Alarm msgs: {:?}", alarm_msgs);
 
     HttpResponse::Ok().json(alarm_msgs)
 }
@@ -637,8 +654,8 @@ async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
     match collection.insert_one(alarm.clone(), None).await {
         Ok(result) => {
             match result.inserted_id.as_object_id() {
-                Some(id) => {
-                    println!("Inserted id {}", id.to_hex());
+                Some(_id) => {
+                    //println!("Inserted id {}", id.to_hex());
                     return true;
                 },
                 None => {
@@ -653,7 +670,7 @@ async fn add_alarm_to_db(alarm: &Alarm, client: &web::Data<Client>) ->bool{
 
 #[post("/api/alarm/")]
 async fn add_alarm(req: HttpRequest, alarm_in: web::Json<AlarmMsg>, client: web::Data<Client>, ws_client: web::Data<Mutex<ws_client::WsClientConnect>>) -> impl Responder {
-    println!("add alarm");
+    //println!("add alarm");
     let mut response = DefaultResponse {
         message: String::from(""),
     };
@@ -676,10 +693,10 @@ async fn add_alarm(req: HttpRequest, alarm_in: web::Json<AlarmMsg>, client: web:
     //alarm_in to AlarmMsg
     let mut alarm_in = alarm_in.into_inner();
     alarm_in._id = None;
-    println!("Alarm in: {:?}", alarm_in);
+    //println!("Alarm in: {:?}", alarm_in);
 
     let mut alarm = alarm_msg_to_alarm(alarm_in, user._id);
-    println!("Alarm: {:?}", alarm);
+    //println!("Alarm: {:?}", alarm);
 
 
     alarm.devices = alarm.devices.into_iter().unique().collect();
@@ -692,8 +709,14 @@ async fn add_alarm(req: HttpRequest, alarm_in: web::Json<AlarmMsg>, client: web:
         return HttpResponse::BadRequest().json(response);
     }
     response.message = String::from("Alarm added");
-    ws_client.lock().unwrap().try_send("/api/alarm", &token).await;
+    //spawn thread to send alarm to ws_client
+    let ws_client = ws_client.clone();
+    let token = token.clone();
+    //ws_client.lock().unwrap().try_send("/api/alarm", &token).await;
     let alarm_msg = alarm_to_alarm_msg(alarm);
+    //println!("Alarm msg: {:?}", alarm_msg);
+    //print alarm_msg as json 
+    println!("Alarm msg: {:?}", serde_json::to_string(&alarm_msg));
     HttpResponse::Ok().json(alarm_msg)
 }
 
@@ -852,7 +875,7 @@ async fn get_devices_by_user(user_id: &ObjectId, client: &web::Data<Client>) -> 
                 devices.push(document);
             },
             Err(_) => {
-                println!("Error getting devices");
+                //println!("Error getting devices");
             }
         }
     }
@@ -903,7 +926,7 @@ async fn add_device(req: HttpRequest, client: web::Data<Client>, device_add: web
         user: user._id.to_hex(),
         device_type: device_type(&device_add.device_type),
     };
-    println!("Device {:?}", device);
+    //println!("Device {:?}", device);
 
     if !add_device_to_user(&device, &client).await {
         response.message = String::from("Could not add device");
@@ -1215,8 +1238,8 @@ async fn get_users(client: &web::Data<Client>) -> Vec<User> {
             Ok(user) => {
                 users.push(user);
             }
-            Err(e) => {
-                println!("Error getting users: {}", e);
+            Err(_e) => {
+                //println!("Error getting users: {}", e);
             }
         }
     }
@@ -1228,12 +1251,12 @@ async fn set_admin_session(admin: &Admin, client: &web::Data<Client>) -> bool {
     let collection: Collection<Admin> = client.database(DB_NAME).collection(ADMINCOLL);
     let result = collection.insert_one(admin, None).await.unwrap();
     match result.inserted_id.as_object_id() {
-        Some(id) => {
-            println!("Inserted id {}", id.to_hex());
+        Some(_id) => {
+            //println!("Inserted id {}", id.to_hex());
             return true;
         },
         None => {
-            println!("Could not get id");
+            //println!("Could not get id");
             return false;
         }
     }
@@ -1536,10 +1559,12 @@ impl WsMessageHandler {
             None => return,
         };
     }
-    fn add_session(&mut self, key: &String, session: &WsSession, user: &String, token: &String) {
+    fn add_ws_session(&mut self, key: &String, session: &WsSession, user: &String, token: &String) {
         self.key_session.insert(key.clone(), session.clone());
         self.key_token.insert(key.clone(), token.clone());
         self.token_user.insert(token.clone(), user.clone());
+        //print all keys
+        println!("Keys: {:?}", self.key_session.keys());
     }
     fn get_user_keys_exclude_token(&self,  token: &str) -> Vec<String> {
         let mut keys = Vec::new();
@@ -1572,6 +1597,8 @@ impl WsMessageHandler {
 
 }
 
+
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct WsMsg{
     mode: Option<String>,
@@ -1580,47 +1607,46 @@ struct WsMsg{
 }
 
 //send message to all other sessions
-
-async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Client>, ws_handler : web::Data<Mutex<WsMessageHandler>> ) -> Result<HttpResponse, actix_web::Error> {
-    let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
+//#[get("/action/{token}")]
+async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Client>, token_path: web::Path<String> , ws_handler : web::Data<Mutex<WsMessageHandler>> ) -> Result<HttpResponse, actix_web::Error> {
+    let (response, mut ws_session, mut msg_stream) = actix_ws::handle(&req, body)?;
     println!("New websocket connection: {}", req.peer_addr().unwrap());
     println!("New websocket connection: {}", req.connection_info().host());
-    let headers = req.headers();
-    // //print headers
-    // for (key, value) in headers.iter() {
-    //     println!("{}: {:?}", key, value);
-    // }
-    let ws_key = headers.get("sec-websocket-key").unwrap().to_str().unwrap().to_string();
-    //key_secret.insert(ws_key, "test");
+    let token = token_path.to_string();
 
-    //print key secret pairs 
-    //let mut token = String::new();
-    //get token from key
-    // let token = match ws_handler.lock().unwrap().key_token.get(&ws_key) {
-    //     Some(token) => token.clone(),
-    //     None => {
-    //         println!("No token found for key: {}", ws_key)
-    //         return Ok(response);
-    //     }
-    // };
+    let session  = match get_session_from_token(&token, &client).await {    
+        Some(session) => session,
+        None => {
+            println!("No session found for token: {}", token);
+            return Ok(response);
+        }
+    };
+    let headers = req.headers();
+    let ws_key = headers.get("sec-websocket-key").unwrap().to_str().unwrap().to_string();
+    ws_handler.lock().unwrap().add_ws_session(&ws_key, &ws_session, &session.user_id, &token);
+    
+ 
     println!("ws key: {}", ws_key);
     actix_rt::spawn(async move {
         //deserialize message check errror
         fn deserialize_msg(msg: &str) -> Result<WsMsg, serde_json::Error> {
+            if msg == "." {
+                return Ok(WsMsg{mode: Some(".".to_string()), token: None, url: None});
+            }
             let msg: WsMsg = serde_json::from_str(msg)?;
             Ok(msg)
         }
 
         async fn process_ws_action(msg_ws: &str) -> WsMsg{
+  
             let msg = match deserialize_msg(&msg_ws) {
                 Ok(msg) => msg,
                 Err(e) => {
                     println!("Error deserializing message: {}", e);
                     return WsMsg{mode: None, token: None, url: None};
                 }
-                
             };
-            println!("Message: {:?}", msg);
+            //println!("Message: {:?}", msg);
             msg
         }
 
@@ -1628,37 +1654,15 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
         while let Some(Ok(msg)) = msg_stream.next().await {
             match msg {
                 Message::Ping(bytes) => {
-                    if session.pong(&bytes).await.is_err() {
+                    if ws_session.pong(&bytes).await.is_err() {
                         return;
                     }
                 }
+                Message::Pong(_) => (),
                 Message::Text(s) => {
                     let m = process_ws_action(s.to_string().as_str()).await;
                     if let Some(mode) = &m.mode {
                         match mode.as_str() {
-                            "client" => {
-                                // let token = match ws_handler.lock().unwrap().key_token.get(&ws_key) {
-                                //     Some(token) => token.clone(),
-                                //     None => {
-                                //         println!("No token found for key: {}", ws_key)
-                                //         return Ok(response);
-                                //     }
-                                // };
-                                if let Some(token) = &m.token {
-                                    if token.len() > 3 {
-                                        let user = match token_to_user(&token, &client).await{
-                                            Some(user) => user,
-                                            None => {
-                                                println!("No user found");
-                                                return;
-                                            }
-                                        };
- 
-                                        ws_handler.lock().unwrap().add_session(&ws_key, &session, &user.email, &token);
-                                        session.text("connection").await.unwrap();
-                                    }
-                                }
-                            },
                             "api" => {
                                 if let Some(_url) = &m.url {
                                     let token = m.token.unwrap();
@@ -1666,24 +1670,40 @@ async fn action_ws(req: HttpRequest, body: web::Payload, client: web::Data<Clien
                                     let key_session = &ws_handler.key_session;
                                     //let key_session = ws_handler.lock().unwrap().key_session.clone();
                                     for key in ws_handler.get_user_keys_exclude_token(&token) {
-                                        if let Some(session) = key_session.get(&key) {
-                                            let mut session_send = session.clone();
-                                            session_send.text("connection").await.unwrap();
+                                        if let Some(ws_session) = key_session.get(&key) {
+                                            let mut ws_session_send = ws_session.clone();
+                                            ws_session_send.text("connection").await.unwrap();
                                         }
                                     }
                                 }
+                                async_sleep(Duration::from_millis(7000)).await;
+                                ws_session.text(".").await.unwrap();
                             },
-                            _ => (),
+                            "." => {
+                                // prin time as hh:mm:ss
+                                println!("Ping");
+                                async_sleep(Duration::from_millis(7000)).await;
+                                //let keys = ws_handler.lock().unwrap().key_session.keys().try_collect();
+                                //print keys
+                                ws_session.text(".").await.unwrap();
+                            },
+                            _ => {
+                                println!("Other mode. Message: {}", s);
+                            },
                         }
                     } else {
-                        println!("No mode");
+                        println!("No mode. Message: {}", s);
                     }
                     
                 },
-                _ => break,
+                _ => {
+                    println!("Other message type {:?}", msg);
+                    async_sleep(Duration::from_millis(7000)).await;
+                    ws_session.text(".").await.unwrap();
+                },
             }
         }
-        let closing = session.close(None).await;
+        let closing = ws_session.close(None).await;
         match closing {
             Ok(_) => { 
                         println!("Closed websocket connection: {}", ws_key);
@@ -1959,7 +1979,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(client.clone()))
             .app_data(web::Data::new(Mutex::new(WsMessageHandler::new())))
             .app_data(web::Data::new( Mutex::new(ws_client::WsClientConnect::new(&ws_action_uri))))
-            .route("/action", web::get().to(action_ws))
+            .route("/action/{token}", web::get().to(action_ws))
             .route("/register-check", web::get().to(register_ws))
             .route("/api/is-session-valid", web::get().to(is_session_valid))
             //.route("/{filename:.*}", web::get().to(audio_file))

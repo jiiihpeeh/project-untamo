@@ -22,7 +22,7 @@ type UseFetchQR = {
 const fetchQRKey = async() =>{
     const {server, token} = getCommunicationInfo()
     try{
-        let res = await axios.post(`${server}/api/qrToken`, 
+        let res = await axios.post(`${server}/api/qr-token`, 
                                     {
                                       msg: "Generate a qr token for me, please... No hurry."
                                     }, 
