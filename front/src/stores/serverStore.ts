@@ -165,17 +165,13 @@ function wsActionListener(data: any) {
           default:
             break
         }
-
-        //useServer.getState().setWSActionMessage(data)
       }
-
     } catch (e) {
       useServer.getState().wsActionConnection?.close()
       useServer.getState().setWsActionConnection(null)
     } 
   }
 }
-
 
 
 function wsRegisterListener(msg: any) {
@@ -222,7 +218,6 @@ async function registerConnecting() {
       try {
         wsRegisterListener(JSON.parse(event.data))
       } catch (e) {
-        //console.log(e)
       }
     }
     ws.onclose = (event: CloseEvent) => {
@@ -243,15 +238,10 @@ async function onOpenRoutine(ws: WebSocket) {
     return
   }
   ws.send(".")
-  //useAlarms.getState().fetchAlarms()
- // useLogIn.getState().getUserInfo()
-  //useDevices.getState().fetchDevices()
   useLogIn.getState().updateState()
 }
 function actionConnecting() {
-  //await sleep(20)
   if (useLogIn.getState().token.length < 3) {
-    //await sleep(200)
     return null
   }
   //return null
