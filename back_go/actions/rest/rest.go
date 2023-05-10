@@ -76,6 +76,7 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 		UserId:  user.ID.Hex(),
 		Token:   token.GenerateToken(token.TokenStringLength),
 		WsToken: token.GenerateToken(token.WsTokenStringLength),
+		WsPair:  token.GenerateToken(token.WsPairLength),
 	}
 	//add session to db
 	//marshal session to json
@@ -99,6 +100,7 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 		Owner:      user.Owner,
 		Time:       newSession.Time,
 		WsToken:    newSession.WsToken,
+		WsPair:     newSession.WsPair,
 	}
 	//return session as json
 	c.JSON(200, logInResponse)
@@ -494,8 +496,9 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		ID:      id.GenerateId(),
 		Time:    now.Now() + 157680000000,
 		UserId:  qr.User,
-		Token:   token.GenerateToken(64),
-		WsToken: token.GenerateToken(66),
+		Token:   token.GenerateToken(token.TokenStringLength),
+		WsToken: token.GenerateToken(token.TokenStringLength),
+		WsPair:  token.GenerateToken(token.WsPairLength),
 	}
 	//add session to db
 	sID, err := mongoDB.AddSession(&session, client)
@@ -534,6 +537,7 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		Admin:      user.Admin,
 		Owner:      user.Owner,
 		Time:       session.Time,
+		WsPair:     session.WsPair,
 	}
 	//return login as json
 	c.JSON(200, login)

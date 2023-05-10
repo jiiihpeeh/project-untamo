@@ -10,6 +10,7 @@ type LogInResponse struct {
 	Admin      bool   `json:"admin"`
 	Owner      bool   `json:"owner"`
 	Time       int64  `json:"time"`
+	WsPair     string `json:"wsPair"`
 }
 
 type LogInRequest struct {

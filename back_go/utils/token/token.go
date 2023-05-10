@@ -9,12 +9,11 @@ import (
 )
 
 const (
-	letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+-"
+	letters                    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+-"
+	TokenStringLength   uint16 = 64
+	WsTokenStringLength uint16 = 66
+	WsPairLength        uint16 = 32
 )
-
-// set token Minimum length as const
-const TokenStringLength uint16 = 64
-const WsTokenStringLength uint16 = 66
 
 // generate token
 func GenerateToken(n uint16) string {

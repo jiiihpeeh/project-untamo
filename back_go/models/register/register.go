@@ -2,7 +2,6 @@ package register
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -135,7 +134,7 @@ func (message *RegisterRequest) HandleMessage() RegisterWsResponse {
 	messageResponse := RegisterWsResponse{}
 
 	//convert to registerRequest
-	fmt.Println(message)
+	//fmt.Println(message)
 	registerRequest := RegisterRequest{
 		Email:     message.Email,
 		Password:  message.Password,
