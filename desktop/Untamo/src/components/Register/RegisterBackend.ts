@@ -21,12 +21,6 @@ type RegisterData = {
     setLastName: (lastName:string) => void,
     password: string,
     setPassword: (password:string) => void,
-    score: number,
-    setScore: (score: number) => void,
-    serverMinimum: number,
-    setServerMinimum: (count: number) => void,
-    passwordCheck: boolean,
-    setPasswordCheck:(to:boolean) =>void,
     formCheck: boolean,
     setFormCheck:(to:boolean) =>void,
     registered: boolean,
@@ -68,24 +62,6 @@ const useRegister = create<RegisterData>((set,get) => (
        setPassword: (password) =>set(
         {
             password: password
-        } 
-       ),
-       score: 0,
-       setScore: (score) => set(
-            {
-                score: score
-            }
-        ),      
-        serverMinimum: 0,
-        setServerMinimum: (serverMinimum) => set(
-             {
-                serverMinimum: serverMinimum
-             }
-         ),     
-       passwordCheck: false,
-       setPasswordCheck: (passwordCheck) =>set(
-        {
-            passwordCheck: passwordCheck
         } 
        ),     
        formCheck: false,
@@ -148,7 +124,6 @@ const useRegister = create<RegisterData>((set,get) => (
                 firstName: '',
                 lastName:'',
                 password: '',
-                passwordCheck: false,
                 formCheck: false,
                 registered: false,
                 confirmPassword: '',
@@ -158,22 +133,22 @@ const useRegister = create<RegisterData>((set,get) => (
        }
     }
 ))
-const onRegister = async () => {
+async function onRegister() {
     const server = useServer.getState().address
     const formData = useRegister.getState().formData()
     try {
         const client = await getClient()
         const res = await client.request(
-                                            {  
-                                                url: `${server}/register`, 
-                                                method: "POST", 
-                                                body: Body.json(formData) 
-                                            }
-                                        )
+            {
+                url: `${server}/register`,
+                method: "POST",
+                body: Body.json(formData)
+            }
+        )
 
         notification("Registration", "User was registered")
-        useRegister.setState({registered: true})
-    } catch (err){
+        useRegister.setState({ registered: true })
+    } catch (err) {
         //console.error(err)
         notification("Registration", "Registration failed", Status.Error)
     }

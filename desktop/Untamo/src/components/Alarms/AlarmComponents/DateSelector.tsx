@@ -3,13 +3,13 @@ import { Center, FormLabel , Flex } from "@chakra-ui/react"
 import React from "react";
 import useAlarm from "./alarmStates"
 
-const DateSelector = () => {
-    const date = useAlarm((state)=>state.date)
-    const dateFormat = useAlarm((state)=>state.dateFormat);
-    const setDate = useAlarm((state)=>state.setDate)
-    return(
+function DateSelector() {
+    const date = useAlarm((state) => state.date);
+    const dateFormat = useAlarm((state) => state.dateFormat);
+    const setDate = useAlarm((state) => state.setDate);
+    return (
         <Flex
-            onMouseDown={e=>e.preventDefault()}
+            onMouseDown={e => e.preventDefault()}
         >
             <Center>
                 <FormLabel>
@@ -19,15 +19,12 @@ const DateSelector = () => {
                     name="date-input"
                     date={date}
                     onDateChange={setDate}
-                    configs={
-                        {
-                            dateFormat: `${dateFormat}`,
-                        }
-                    }
-                />        
+                    configs={{
+                        dateFormat: `${dateFormat}`,
+                    }} />
             </Center>
         </Flex>
-        
-    )
+
+    );
 }
 export default DateSelector

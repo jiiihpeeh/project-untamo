@@ -20,28 +20,28 @@ type UseAudio = {
     setPlayingAlarm: (alarm: string)=>void
 }
 
-const play = async (track: string, loop: boolean) => {
+async function play(track: string, loop: boolean) {
     let track_path = await (getAudioPath(track) as Promise<string>)
 
-    const command = Command.sidecar('bins/untamo_audio_play', 
-                [
-                    track_path, 
-                    `${loop}`,
-                    `${useSettings.getState().volume}`
-                ]
+    const command = Command.sidecar('bins/untamo_audio_play',
+        [
+            track_path,
+            `${loop}`,
+            `${useSettings.getState().volume}`
+        ]
     )
     command.on('close', data => {
-                                    //console.log(`command finished with code ${data.code} and signal ${data.signal}`)
-                                    useAudio.setState({plays: false })
-                                    stop()
-                                }
-            )
+        //console.log(`command finished with code ${data.code} and signal ${data.signal}`)
+        useAudio.setState({ plays: false })
+        stop()
+    }
+    )
     command.on('error', error => {
-                                    //console.error(`command error: "${error}"`)
-                                    useAudio.setState({plays: false })
-                                    stop()
-                                }
-            )
+        //console.error(`command error: "${error}"`)
+        useAudio.setState({ plays: false })
+        stop()
+    }
+    )
     //command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
     //useAudio.setState({plays: true})
     let out = await command.spawn()
@@ -49,18 +49,18 @@ const play = async (track: string, loop: boolean) => {
     return out
 }
 
-const stop = () => {
-    let children : Array<Child>= []
-    if(useAudio.getState().plays){
-        useAudio.getState().audioProcess?.map(c => {c.kill(); children.push(c) })
+function stop() {
+    let children: Array<Child> = []
+    if (useAudio.getState().plays) {
+        useAudio.getState().audioProcess?.map(c => { c.kill(); children.push(c) })
     }
     return children
 }
 
-const reloadTracks = async(track: string) => {
+async function reloadTracks(track: string) {
     let tracks = await keysAudio()
-    let newTrack = (tracks).includes(track)?track:"rooster"
-    useAudio.setState({tracks: tracks, track: newTrack})
+    let newTrack = (tracks).includes(track) ? track : "rooster"
+    useAudio.setState({ tracks: tracks, track: newTrack })
 }
 
 const useAudio = create<UseAudio>((set, get) => (

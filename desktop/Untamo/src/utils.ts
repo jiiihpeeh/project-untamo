@@ -1,6 +1,5 @@
 import { Path } from './type'
 import { invoke } from '@tauri-apps/api';
-import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 
 export async function sleep(ms: number) {
     return await  invoke("sleep", {millis: ms}) as boolean;
@@ -25,8 +24,8 @@ export function isEqual(obj1 :any, obj2 : any) {
     }
     return false
 }
-export const capitalize = (s:string)=>{
-    return s.charAt(0).toUpperCase() + s.slice(1)
+export function capitalize(s: string) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export const urlEnds = (path: Path) => {
@@ -42,18 +41,18 @@ export const timePadding = (number:number, numbers = 2) => {
     return numberStr
 }
 
-export const h24ToH12 = (n:number) => {
-    const m = n % 12
-    return (m === 0)?12:m
+export function h24ToH12(n: number) {
+    const m = n % 12;
+    return (m === 0) ? 12 : m;
 }
 
-export const time24hToTime12h = (time: string) => {
-    let timeSplit = time.split(':')
-    let hours = parseInt(timeSplit[0])
-    return { 
-                time: `${timePadding(h24ToH12(hours))}:${timeSplit[1]}`, 
-                '12h': (hours >11 && hours <= 23)?"PM":"AM" 
-           }
+export function time24hToTime12h(time: string) {
+    let timeSplit = time.split(':');
+    let hours = parseInt(timeSplit[0]);
+    return {
+        time: `${timePadding(h24ToH12(hours))}:${timeSplit[1]}`,
+        '12h': (hours > 11 && hours <= 23) ? "PM" : "AM"
+    };
 }
 interface HttpResponse {
     status: number
