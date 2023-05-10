@@ -1,22 +1,21 @@
 # project-Untamo
-This is an attempt to create a synchronized alarm clock. 
+This is an attempt to create a synchronized alarm clock.
 
-Currently the web interface and the backend seem to work.
+Currently the web interface + desktop and the backend seems to work.
 
-Mobile app is WIP and needs to converted from expo to React Native CLI in the end.
+Mobile app is WIP and needs to converted from expo to React Native CLI in the end or Tauri  if it progresses enough.
 
 
 
 ### TODO
-
- Offline use for the alarms and possibly for the  devices. This  should be fairly straightforward as it should only  mean modifying the state manager and therefore means close to 100 % code share between the mobile and the web interface.
-
-
+Mobile
 
 ### Project
 
-Backend: NodeJs
+Backend: Functional version using Go Gin, was NodeJs (incompatible API), some beginnings of Rust actix
 
 Web: TypeScript + React
 
-Mobile: TypeScript + React Native (currently uses expo)
+Mobile: TODO. Possibly Tauri. Not compatible with API anymore.  TypeScript + React Native (currently uses expo)
+
+Desktop: Modified version of Web frontend using Tauri. NOTE:  While it has a quite similar code base it has significant changes.
