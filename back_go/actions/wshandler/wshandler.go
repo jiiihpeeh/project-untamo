@@ -3,12 +3,14 @@ package wshandler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/db/mongoDB"
 	"untamo_server.zzz/models/register"
@@ -19,6 +21,8 @@ type WsServer struct {
 	tokenConnection map[string]*websocket.Conn
 	userTokens      map[string][]string
 	clients         map[*websocket.Conn]bool
+	tokenReady      map[string]bool
+
 	//handleMessage   func(message []byte) // New message handler
 }
 
@@ -32,11 +36,12 @@ var WsServing = WsServer{
 	tokenConnection: make(map[string]*websocket.Conn),
 	userTokens:      make(map[string][]string),
 	clients:         make(map[*websocket.Conn]bool),
+	tokenReady:      make(map[string]bool),
 }
 
 var hashMapMutex = &sync.Mutex{}
 
-func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token string, userID string) {
+func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token string, userID string, wsPair string) {
 	connection, _ := upgrader.Upgrade(w, r, nil)
 	hashMapMutex.Lock()
 	if server.tokenConnection[token] != nil {
@@ -44,12 +49,13 @@ func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token strin
 	}
 
 	server.tokenConnection[token] = connection
-	server.userTokens[userID] = unique(append(server.userTokens[userID], token))
+	server.userTokens[userID] = funk.UniqString(append(server.userTokens[userID], token))
+	server.tokenReady[token] = false
 	server.clients[connection] = true // Save the connection using it as a key
-	//fmt.Println(server.userTokens[userID])
+	//log.Println(server.userTokens[userID])
 	hashMapMutex.Unlock()
 	for {
-		mt, _, err := connection.ReadMessage()
+		mt, msg, err := connection.ReadMessage()
 
 		if err != nil || mt == websocket.CloseMessage {
 			break // Exit the loop if the client tries to close the connection or the connection is interrupted
@@ -59,25 +65,28 @@ func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token strin
 			connection.WriteMessage(websocket.PongMessage, []byte{})
 			hashMapMutex.Unlock()
 		}
-	}
-}
-
-// uniques items in array
-func unique(items []string) []string {
-	encountered := map[string]bool{}
-	result := []string{}
-	for v := range items {
-		if encountered[items[v]] == true {
-			// Do not add duplicate item
-		} else {
-			// Record this element as an encountered element.
-			encountered[items[v]] = true
-			// Append to result slice.
-			result = append(result, items[v])
+		if mt == websocket.TextMessage {
+			hashMapMutex.Lock()
+			if string(msg) == wsPair {
+				server.tokenReady[token] = true
+			}
+			hashMapMutex.Unlock()
 		}
 	}
-	// Return the new slice.
-	return result
+	hashMapMutex.Lock()
+	delete(server.clients, connection)
+	delete(server.tokenConnection, token)
+	//remove token from userTokens
+	tokens := server.userTokens[userID]
+	//remove token from tokens
+	tokens = funk.FilterString(tokens, func(tokenM string) bool {
+		return token != tokenM
+	})
+	//set user tokens
+	server.userTokens[userID] = tokens
+	//remove tokenScrambler
+	delete(server.tokenReady, token)
+	hashMapMutex.Unlock()
 }
 
 func (server *WsServer) ServeMessage(userId string, token string, message []byte) {
@@ -85,16 +94,16 @@ func (server *WsServer) ServeMessage(userId string, token string, message []byte
 	hashMapMutex.Lock()
 	tokens := WsServing.userTokens[userId]
 	//unique tokens
-	tokens = unique(tokens)
+	tokens = funk.UniqString(tokens)
 	//set user tokens
 	server.userTokens[userId] = tokens
 
 	for _, tokenM := range tokens {
 		//fmt.Println("loop token: ", tokenM)
-		if tokenM != token {
+		if tokenM != token && server.tokenReady[tokenM] {
 			conn := server.tokenConnection[tokenM]
 			if conn == nil {
-				fmt.Println("conn is nil")
+				log.Println("conn is nil")
 				continue
 			}
 			conn.WriteMessage(websocket.TextMessage, message)
@@ -128,7 +137,7 @@ func Action(c *gin.Context, client *mongo.Client) {
 		//	fmt.Println("user not found")
 		return
 	}
-	WsServing.echo(c.Writer, c.Request, wsToken, user.ID.Hex())
+	WsServing.echo(c.Writer, c.Request, wsToken, user.ID.Hex(), session.WsPair)
 
 }
 

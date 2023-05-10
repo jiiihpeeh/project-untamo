@@ -10,4 +10,5 @@ type Session struct {
 	Token   string             `bson:"token,omitempty"`
 	WsToken string             `bson:"ws_token,omitempty"`
 	Time    int64              `bson:"time,omitempty"`
+	WsPair  string             `json:"wsPair"`
 }
