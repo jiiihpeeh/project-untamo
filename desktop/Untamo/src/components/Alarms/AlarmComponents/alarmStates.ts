@@ -128,10 +128,10 @@ type AlarmStates = {
     alarmToEditDialog: (alarm: Alarm) => void,
 }
 
-const initialDevice = () => {
+function initialDevice() {
     let currentDevice = useDevices.getState().currentDevice
-    if(currentDevice){
-        return [ currentDevice] as Array<string>
+    if (currentDevice) {
+        return [currentDevice] as Array<string>
     }
     return [] as Array<string>
 }

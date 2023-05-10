@@ -32,44 +32,6 @@ func main() {
 		AllowFiles:             true,
 	}
 
-	// corsConfig.AllowOrigins = []string{"https://example.com"}
-	// // To be able to send tokens to the server.
-	// corsConfig.AllowCredentials = true
-
-	// // OPTIONS method for ReactJS
-	// corsConfig.AddAllowMethods("OPTIONS")
-	// corsConfig.AddAllowMethods("GET")
-	// corsConfig.AddAllowMethods("POST")
-	// corsConfig.AddAllowMethods("PUT")
-	// corsConfig.AddAllowMethods("DELETE")
-	// //corsConfig.AllowAllOrigins = true
-	// corsConfig.AllowBrowserExtensions = true
-	// corsConfig.AllowWebSockets = true
-	// corsConfig.AllowFiles = true
-	// corsConfig.AllowWildcard = true
-	// corsConfig.AddAllowHeaders("Authorization")
-	// corsConfig.AddAllowHeaders("Content-Type")
-	// corsConfig.AddAllowHeaders("Content-Length")
-	// corsConfig.AddAllowHeaders("Accept-Encoding")
-	// corsConfig.AddAllowHeaders("X-CSRF-Token")
-	// corsConfig.AddAllowHeaders("Authorization")
-	// corsConfig.AddAllowHeaders("accept")
-	// corsConfig.AddAllowHeaders("origin")
-	// corsConfig.AddAllowHeaders("Cache-Control")
-	// corsConfig.AddAllowHeaders("X-Requested-With")
-	// corsConfig.AddAllowHeaders("Access-Control-Allow-Origin")
-	// corsConfig.AddAllowHeaders("Access-Control-Allow-Headers")
-	// corsConfig.AddAllowHeaders("Access-Control-Allow-Methods")
-	// corsConfig.AddAllowHeaders("Access-Control-Allow-Credentials")
-	// corsConfig.AddAllowHeaders("Access-Control-Max-Age")
-	// corsConfig.AddAllowHeaders("Access-Control-Request-Headers")
-	// corsConfig.AddAllowHeaders("Access-Control-Request-Method")
-	// corsConfig.AddAllowHeaders("Connection")
-	// corsConfig.AddAllowHeaders("Host")
-	// corsConfig.AddAllowHeaders("User-Agent")
-	// corsConfig.AddAllowHeaders("Referer")
-	// corsConfig.AddAllowHeaders("Accept-Encoding")
-
 	// Register the middleware
 	router.Use(cors.New(corsConfig))
 
@@ -150,9 +112,13 @@ func main() {
 	router.GET("/audio-resources/:filename", func(c *gin.Context) {
 		rest.AudioResource(c, client)
 	})
+	router.GET("/register-check", func(c *gin.Context) {
+		wshandler.Register(c, client)
+	})
 	router.GET("/action/:token", func(c *gin.Context) {
 		wshandler.Action(c, client)
 	})
+
 	router.Run(PORT) // listen and serve on
 }
 

@@ -192,20 +192,17 @@ func AddAlarm(alarm *alarm.Alarm, client *mongo.Client) (primitive.ObjectID, err
 
 func EditAlarm(alarm *alarm.Alarm, client *mongo.Client) bool {
 	collection := client.Database(DB_NAME).Collection(ALARMCOLL)
-	//delete alarm by alarm id and user id
-	//get alarm and delete it
-	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": alarm.ID, "user": alarm.User})
-	if err != nil {
-		return false
-	}
-	//insert alarm and get id
-	_, err = collection.InsertOne(context.Background(), alarm)
+	//replace alarm by alarm id and user id
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": alarm.ID, "user": alarm.User}, alarm)
+
 	return err == nil
 }
 
 func EditDevice(device *device.Device, client *mongo.Client) bool {
 	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
-	_, err := collection.UpdateOne(context.Background(), bson.M{"_id": device.ID, "user": device.User}, bson.M{"$set": device})
+	//_, err := collection.UpdateOne(context.Background(), bson.M{"_id": device.ID, "user": device.User}, bson.M{"$set": device})
+	//replace device
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": device.ID, "user": device.User}, device)
 	return err == nil
 }
 
@@ -371,7 +368,9 @@ func GetUsers(client *mongo.Client) []*user.User {
 
 func UpdateUser(user *user.User, client *mongo.Client) bool {
 	collection := client.Database(DB_NAME).Collection(USERCOLL)
-	_, err := collection.UpdateOne(context.Background(), bson.M{"_id": user.ID}, bson.M{"$set": user})
+	// replace user
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": user.ID}, user)
+	//_, err := collection.UpdateOne(context.Background(), bson.M{"_id": user.ID}, bson.M{"$set": user})
 	return err == nil
 }
 
@@ -389,7 +388,7 @@ func RemoveUser(userID primitive.ObjectID, client *mongo.Client) bool {
 
 func UpdateSession(session *session.Session, client *mongo.Client) bool {
 	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
-	_, err := collection.UpdateOne(context.Background(), bson.M{"token": session.Token}, bson.M{"$set": session})
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"token": session.Token}, session)
 	return err == nil
 }
 

@@ -19,16 +19,16 @@ function AddAlarm() {
     const alarmFromDialog = useAlarm((state)=> state.alarmFromDialog) 
     const isMobile = usePopups((state)=> state.isMobile)
 
-    const onAdd = async (event:any) => {
+    async function onAdd(event: any) {
         event.currentTarget.disabled = true
         let alarm = alarmFromDialog()
-        if(alarm){
+        if (alarm) {
             addNewAlarm(alarm)
         }
         setShowAddAlarm(false)
         setShowToast(true)
     }
-    const onDrawerClose = () => {
+    function onDrawerClose() {
         setShowToast(true)
         setShowAddAlarm(false)
     }

@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/trustelem/zxcvbn"
 	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/actions/wshandler"
 	"untamo_server.zzz/db/mongoDB"
@@ -69,14 +68,14 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 	}
 	//create session using type LogInResponse struct
 	//generate id for mongodb
-	//add 5 yers in ms to now
+	//add 5 years in ms to now
 	expires := now.Now() + 157680000000
 	newSession := session.Session{
 		ID:      id.GenerateId(),
 		Time:    expires,
 		UserId:  user.ID.Hex(),
-		Token:   token.GenerateToken(64),
-		WsToken: token.GenerateToken(66),
+		Token:   token.GenerateToken(token.TokenStringLength),
+		WsToken: token.GenerateToken(token.WsTokenStringLength),
 	}
 	//add session to db
 	//marshal session to json
@@ -177,8 +176,7 @@ func EditDevice(c *gin.Context, client *mongo.Client) {
 	}
 	//get device id from url
 	deviceId := c.Param("id")
-	//check if device exists
-	//get device from json
+
 	deviceIn := device.DeviceOut{}
 	if err := c.ShouldBindJSON(&deviceIn); err != nil {
 		c.JSON(400, gin.H{
@@ -300,9 +298,6 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 	newAlarm := alarmIn.ToNewAlarm(userSession.UserId)
 	//empty ID field
 
-	//marshal newAlarm to json
-	// j := newAlarm.ToAlarmOut()
-	// fmt.Println("newAlarm: ", j)
 	alarmId, err := mongoDB.AddAlarm(&newAlarm, client)
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -311,8 +306,6 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	newAlarm.ID = alarmId
-	//send message to websocket
-	//marshal out to json
 
 	added := newAlarm.ToAlarmOut()
 	wsOut := wsOut.WsOut{Type: "alarmAdd", Data: added}
@@ -330,10 +323,8 @@ func EditAlarm(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	//get alarm id from url
 	alarmId := c.Param("id")
-	//check if alarm exists
-	//get alarm from json
+
 	alarmIn := alarm.AlarmOut{}
 	if err := c.ShouldBindJSON(&alarmIn); err != nil {
 		c.JSON(400, gin.H{
@@ -349,7 +340,6 @@ func EditAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 
-	//edit alarm in db
 	editedAlarm := alarmIn.ToAlarm(userSession.UserId)
 	editedAlarm.Modified = now.Now()
 	if !mongoDB.EditAlarm(&editedAlarm, client) {
@@ -375,9 +365,7 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	//get alarm id from url
 	alarmId := c.Param("id")
-	//remove alarm from db
 	uID, _ := id.IdFromString(alarmId)
 	if !mongoDB.DeleteAlarm(uID, session.UserId, client) {
 		c.JSON(500, gin.H{
@@ -385,9 +373,7 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	//return alarm as json
 	msg := wsOut.WsOut{Type: "alarmDelete", Data: alarmId}
-	//marshal msg to json
 	msgJson, _ := json.Marshal(msg)
 	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(msgJson))
 	c.JSON(200, gin.H{
@@ -396,20 +382,13 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 }
 
 func IsSessionValid(c *gin.Context, client *mongo.Client) {
-	//fmt.Println("IsSessionValid")
-	//add allow header
-	//c.Header("Access-Control-Allow-Origin", "*")
-	// check if user is logged in by getting a session from db
 	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
-	//fmt.Print("Session: ", session)
-	//fmt.Println("Session: ", session, "User: ", user)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
 		return
 	}
-	//fmt.Println("Session: ", session)
 	c.JSON(200, gin.H{
 		"message": "Session is valid",
 	})
@@ -437,7 +416,6 @@ func GetAudioResources(c *gin.Context, client *mongo.Client) {
 	for _, audioResourceInfo := range audioResourcesInfo {
 		filename := audioResourceInfo.Name()
 		//remove file extension
-		// check if filename has extension [".opus",  ".flac", ".wav"]
 		if !strings.HasSuffix(filename, ".opus") && !strings.HasSuffix(filename, ".flac") && !strings.HasSuffix(filename, ".wav") {
 			continue
 		}
@@ -723,14 +701,8 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 	//check if password is strong enough using zxcvbn
 	passwordHash := userInSession.Password
 	if editUser.Password != "" {
-		estimate := zxcvbn.PasswordStrength(editUser.Password, nil)
-		if estimate.Score < 3 {
-			c.JSON(400, gin.H{
-				"message": "Password is not strong enough",
-			})
-			return
-		}
-		if estimate.Guesses < hash.MinimumGuesses {
+		estimate := register.Estimate(editUser.Password)
+		if estimate.Guesses < register.MinimumGuesses {
 			c.JSON(400, gin.H{
 				"message": "Password is not strong enough",
 			})
@@ -979,15 +951,14 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 	}
 
 	//check if password is strong enough using zxcvbn
-	estimate := zxcvbn.PasswordStrength(registerRequest.Password, nil)
+	estimate := register.Estimate(registerRequest.Password)
 	if estimate.Score < 3 {
-
 		c.JSON(400, gin.H{
 			"message": "Password is not strong enough",
 		})
 		return
 	}
-	if estimate.Guesses < hash.MinimumGuesses {
+	if estimate.Guesses < register.MinimumGuesses {
 		c.JSON(400, gin.H{
 			"message": "Password is not strong enough",
 		})

@@ -11,10 +11,10 @@ type UseFetchQR = {
     setQrUrl: (svg: string) => void 
 }
 
-const fetchQRKey = async() =>{
-    const {server, token} = getCommunicationInfo()
-    try{
-        const client = await getClient();
+async function fetchQRKey() {
+    const { server, token } = getCommunicationInfo()
+    try {
+        const client = await getClient()
         let res = await client.request(
             {
                 url: `${server}/api/qr-token`,
@@ -29,11 +29,11 @@ const fetchQRKey = async() =>{
         interface QRKey {
             qrToken: string
         }
-        let keyJson =  res.data as QRKey 
+        let keyJson = res.data as QRKey
         //console.log(keyJson.qrToken)                      
-        useFetchQR.setState({qrKey: keyJson.qrToken})
+        useFetchQR.setState({ qrKey: keyJson.qrToken })
 
-    }catch(err:any){
+    } catch (err: any) {
         //console.log(err)
     }
 }

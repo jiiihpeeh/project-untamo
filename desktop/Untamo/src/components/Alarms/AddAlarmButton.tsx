@@ -15,17 +15,17 @@ function AddAlarmButton(props: Props) {
     const navHeight = useSettings((state)=> state.height)
     const isLight = useSettings((state)=> state.isLight)
 
-    const updatePosition = async() =>{
-        if(mounting.current){
+    async function updatePosition() {
+        if (mounting.current) {
             const rect = mounting.current.getBoundingClientRect()
-            let add = (windowSize.width-rect.right < 65)?-21:0
+            let add = (windowSize.width - rect.right < 65) ? -21 : 0
             setButtonPosition(
-                                {
-                                    bottom: (navBarTop)?windowSize.height *0.05:windowSize.height *0.05 +  navHeight,
-                                    left: rect.right + add,								
-                                    position: "fixed"
-                                }
-                            )			
+                {
+                    bottom: (navBarTop) ? windowSize.height * 0.05 : windowSize.height * 0.05 + navHeight,
+                    left: rect.right + add,
+                    position: "fixed"
+                }
+            )
         }
     }
 

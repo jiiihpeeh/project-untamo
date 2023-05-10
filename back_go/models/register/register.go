@@ -1,17 +1,25 @@
 package register
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
+	"github.com/trustelem/zxcvbn"
 )
 
 var EmailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 const (
 	MaxPasswordSimilarity = 0.8
+)
+
+const (
+	MinimumGuesses = 1e9
 )
 
 type RegisterRequest struct {
@@ -21,11 +29,23 @@ type RegisterRequest struct {
 	LastName  string `json:"lastName"`
 }
 
+type RegisterWsResponse struct {
+	FormPass      bool     `json:"formPass"`
+	ServerMinimum float64  `json:"serverMinimum"`
+	Guesses       float64  `json:"guesses"`
+	Score         int      `json:"score"`
+	FeedBack      []string `json:"feedBack"`
+}
+
+type ZXVBN struct {
+	Guesses       float64 `json:"guesses"`
+	Score         int     `json:"score"`
+	ServerMinimum float64 `json:"serverMinimum"`
+}
+
 func (r *RegisterRequest) FormScreenName() string {
 	if r.FirstName == "" && r.LastName == "" {
-		// split email at @
 		split := r.Email[:strings.Index(r.Email, "@")]
-		//take the first part
 		return split
 	}
 	return r.FirstName + " " + r.LastName
@@ -87,4 +107,64 @@ func (r *RegisterRequest) CheckPassword() bool {
 		}
 	}
 	return true
+}
+
+//func demarshal RegisterWsRequest
+
+func Estimate(password string) ZXVBN {
+	estimate := zxcvbn.PasswordStrength(password, nil)
+	zxvbn := ZXVBN{
+		Guesses:       estimate.Guesses,
+		Score:         estimate.Score,
+		ServerMinimum: MinimumGuesses,
+	}
+	return zxvbn
+}
+func FromJsonWs(msg []byte) RegisterRequest {
+	var r RegisterRequest
+	err := json.Unmarshal([]byte(msg), &r)
+	if err != nil {
+		log.Println(err)
+	}
+	return r
+}
+
+func (message *RegisterRequest) HandleMessage() RegisterWsResponse {
+
+	//fmt.Println("HandleMessage: ", message)
+	messageResponse := RegisterWsResponse{}
+
+	//convert to registerRequest
+	fmt.Println(message)
+	registerRequest := RegisterRequest{
+		Email:     message.Email,
+		Password:  message.Password,
+		FirstName: message.FirstName,
+		LastName:  message.LastName,
+	}
+	//check password using CheckPassword
+	passwordCheck := registerRequest.CheckPassword()
+	//form RegisterWsFormResponse
+	messageResponse.FormPass = passwordCheck
+
+	//zxcvbn password strength from Password field
+	estimate := Estimate(message.Password)
+	//form RegisterWsPasswordResponse
+	messageResponse.Guesses = estimate.Guesses
+	messageResponse.Score = estimate.Score
+	messageResponse.ServerMinimum = estimate.ServerMinimum
+	if len(message.Password) < 6 {
+		messageResponse.FeedBack = append(messageResponse.FeedBack, "Password must be at least 6 characters long")
+		messageResponse.FormPass = false
+	}
+	if messageResponse.Guesses < messageResponse.ServerMinimum {
+		messageResponse.FeedBack = append(messageResponse.FeedBack, "Password is too weak")
+		messageResponse.FormPass = false
+	}
+	if messageResponse.Score < 3 {
+		messageResponse.FeedBack = append(messageResponse.FeedBack, "Password is too weak")
+		messageResponse.FormPass = false
+	}
+
+	return messageResponse
 }

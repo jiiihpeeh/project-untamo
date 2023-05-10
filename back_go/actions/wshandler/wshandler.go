@@ -1,6 +1,7 @@
 package wshandler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -10,13 +11,9 @@ import (
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/models/register"
+	"untamo_server.zzz/utils/token"
 )
-
-// var upgrader = websocket.Upgrader{
-// 	CheckOrigin: func(r *http.Request) bool {
-// 		return true // Accepting all requests
-// 	},
-// }
 
 type WsServer struct {
 	tokenConnection map[string]*websocket.Conn
@@ -35,17 +32,13 @@ var WsServing = WsServer{
 	tokenConnection: make(map[string]*websocket.Conn),
 	userTokens:      make(map[string][]string),
 	clients:         make(map[*websocket.Conn]bool),
-	//handleMessage: messageHandler,
 }
 
 var hashMapMutex = &sync.Mutex{}
 
 func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token string, userID string) {
-
 	connection, _ := upgrader.Upgrade(w, r, nil)
-	//mutex.Lock()
 	hashMapMutex.Lock()
-	//close  token connection
 	if server.tokenConnection[token] != nil {
 		server.tokenConnection[token].Close()
 	}
@@ -66,16 +59,13 @@ func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token strin
 			connection.WriteMessage(websocket.PongMessage, []byte{})
 			hashMapMutex.Unlock()
 		}
-
 	}
-
 }
 
 // uniques items in array
 func unique(items []string) []string {
 	encountered := map[string]bool{}
 	result := []string{}
-
 	for v := range items {
 		if encountered[items[v]] == true {
 			// Do not add duplicate item
@@ -113,11 +103,6 @@ func (server *WsServer) ServeMessage(userId string, token string, message []byte
 	hashMapMutex.Unlock()
 }
 
-// func messageHandler(message []byte) {
-// 	fmt.Println(string(message))
-// 	//WsServing.WriteMessage(message)
-// }
-
 func Action(c *gin.Context, client *mongo.Client) {
 	//fmt.Println("websocket handler CALLED")
 	//sleep 15 milliseconds
@@ -126,7 +111,10 @@ func Action(c *gin.Context, client *mongo.Client) {
 
 	//fmt.Println("websocket handler")
 	wsToken := c.Param("token")
-
+	//check that token is long enough
+	if len(wsToken) < int(token.WsTokenStringLength) {
+		return
+	}
 	//fmt.Println("wsToken: ", wsToken)
 	//get session from db
 	session, user := mongoDB.GetUserAndSessionFromWsToken(wsToken, client)
@@ -136,11 +124,52 @@ func Action(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//fmt.Println("session found")
-
 	if user == nil {
 		//	fmt.Println("user not found")
 		return
 	}
 	WsServing.echo(c.Writer, c.Request, wsToken, user.ID.Hex())
 
+}
+
+func Register(c *gin.Context, client *mongo.Client) {
+	fmt.Println("websocket handler CALLED")
+	//sleep 15 milliseconds
+	time.Sleep(15 * time.Millisecond)
+
+	connection, _ := upgrader.Upgrade(c.Writer, c.Request, nil)
+	for {
+		//fmt.Println("loop")
+		mt, msg, err := connection.ReadMessage()
+
+		if err != nil || mt == websocket.CloseMessage {
+			break // Exit the loop if the client tries to close the connection or the connection is interrupted
+		}
+		if mt == websocket.PingMessage {
+			connection.WriteMessage(websocket.PongMessage, []byte{})
+		}
+		if mt == websocket.TextMessage {
+			//fmt.Println("message: ", string(msg))
+			registerRequest := register.FromJsonWs(msg)
+			//check email using CheckEmail
+			registerMsg := registerRequest.HandleMessage()
+			emailRegEx := registerRequest.CheckEmail()
+			if !emailRegEx {
+				registerMsg.FormPass = false
+				registerMsg.FeedBack = append(registerMsg.FeedBack, "Email is not valid")
+			}
+			if registerMsg.FormPass {
+				if mongoDB.CheckEmail(registerRequest.Email, client) {
+					registerMsg.FormPass = false
+					registerMsg.FeedBack = append(registerMsg.FeedBack, "Email is already in use")
+				}
+			}
+			msgOut, _ := json.Marshal(registerMsg)
+			//check if email is already in use
+
+			//send registerMsg to client
+			//fmt.Println("registerMsg: ", string(registerMsg))
+			connection.WriteMessage(websocket.TextMessage, msgOut)
+		}
+	}
 }

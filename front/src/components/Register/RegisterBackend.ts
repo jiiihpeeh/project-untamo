@@ -21,12 +21,6 @@ type RegisterData = {
     setLastName: (lastName:string) => void,
     password: string,
     setPassword: (password:string) => void,
-    score: number,
-    setScore: (score: number) => void,
-    serverMinimum: number,
-    setServerMinimum: (count: number) => void,
-    passwordCheck: boolean,
-    setPasswordCheck:(to:boolean) =>void,
     formCheck: boolean,
     setFormCheck:(to:boolean) =>void,
     registered: boolean,
@@ -69,25 +63,7 @@ const useRegister = create<RegisterData>((set,get) => (
         {
             password: password
         } 
-       ),
-       score: 0,
-       setScore: (score) => set(
-            {
-                score: score
-            }
-        ),      
-        serverMinimum: 0,
-        setServerMinimum: (serverMinimum) => set(
-             {
-                serverMinimum: serverMinimum
-             }
-         ),     
-       passwordCheck: false,
-       setPasswordCheck: (passwordCheck) =>set(
-        {
-            passwordCheck: passwordCheck
-        } 
-       ),     
+       ),    
        formCheck: false,
        setFormCheck: (formCheck) =>set(
         {
@@ -148,7 +124,6 @@ const useRegister = create<RegisterData>((set,get) => (
                 firstName: '',
                 lastName:'',
                 password: '',
-                passwordCheck: false,
                 formCheck: false,
                 registered: false,
                 confirmPassword: '',
