@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "ADMINCOLL",
+        "adrg",
         "ALARMCOLL",
         "bson",
         "DEVICECOLL",
@@ -8,11 +9,13 @@
         "QRCOLL",
         "SESSIONCOLL",
         "strutil",
+        "trustelem",
         "untamo",
         "Upgrader",
         "USERCOLL",
         "wshandler",
         "wsupgrader",
-        "zxcvbn"
+        "zxcvbn",
+        "ZXVBN"
     ]
 }

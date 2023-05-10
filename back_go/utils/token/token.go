@@ -12,8 +12,12 @@ const (
 	letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+-"
 )
 
+// set token Minimum length as const
+const TokenStringLength uint16 = 64
+const WsTokenStringLength uint16 = 66
+
 // generate token
-func GenerateToken(n int16) string {
+func GenerateToken(n uint16) string {
 	b := make([]byte, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]

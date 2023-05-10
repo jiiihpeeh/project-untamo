@@ -16,10 +16,6 @@ var (
 	ErrIncompatibleVersion = errors.New("incompatible version of argon2")
 )
 
-const (
-	MinimumGuesses = 1e9
-)
-
 type params struct {
 	memory      uint32
 	iterations  uint32
