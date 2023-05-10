@@ -168,7 +168,7 @@ function Register() {
                     m="5px"
                     onClick={() => register()}
                     //colorScheme={(colorMode === ColorMode.Dark)?"blue":"blueGray"}
-                    color={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
+                    color={(colorMode === ColorMode.Dark) ? "blue" : "black.800"}
                     isDisabled={!( formCheck && password === confirmPassword )}
                 >
                     Register

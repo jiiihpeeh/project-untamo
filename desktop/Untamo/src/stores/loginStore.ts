@@ -25,6 +25,7 @@ type UseLogIn = {
     expire: number,
     tokenTime: number,
     tunes: Array<string>,
+    wsPair: string,
     fingerprint: string,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
@@ -308,6 +309,7 @@ async function logIn(email: string, password: string) {
             time: number
             owner: boolean
             wsToken: string
+            wsPair: string
         }
         isSuccess(res)
         let resp: Resp = res.data as Resp
@@ -328,7 +330,8 @@ async function logIn(email: string, password: string) {
                 wsToken: resp.wsToken,
                 expire: resp.time,
                 signedIn: now,
-                tokenTime: now
+                tokenTime: now,
+                wsPair: resp.wsPair
             }
         )
         fetchAudioFiles()
@@ -410,6 +413,7 @@ const useLogIn = create<UseLogIn>()(
             expire: -1,
             tokenTime: -1,
             tunes: [],
+            wsPair:"",
             fingerprint: [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             setToken: (s) => set(
                   { 
@@ -487,7 +491,8 @@ const useLogIn = create<UseLogIn>()(
                 signedIn: state.signedIn,
                 user: state.user,
                 expire: state.expire,
-                tokenTime: state.tokenTime
+                tokenTime: state.tokenTime,
+                wsPair: state.wsPair,
               }
           ),
       }

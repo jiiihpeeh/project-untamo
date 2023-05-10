@@ -211,13 +211,13 @@ async function onOpenRoutine(ws: WebSocket) {
   if (!checkIfConnected){
     return
   }
-  await sleep(2000)
+  await sleep(1000)
   //check if ws is still open
   if (ws.readyState !== 1) {
     return
   }
-  ws.send(".")
 
+  ws.send(useLogIn.getState().wsPair)
   useLogIn.getState().updateState()
 }
 
