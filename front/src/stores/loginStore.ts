@@ -20,6 +20,7 @@ type UseLogIn = {
     tokenTime: number,
     tunes: Array<string>,
     fingerprint: string,
+    navigateTo: Path|null,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
     setSessionValid: (s: SessionStatus) => void,
@@ -33,7 +34,6 @@ type UseLogIn = {
     getWsToken: () => string,
     fetchWsToken: () => Promise<string | null>,
     updateState: () => void,
-    navigateTo: Path|null,
     setNavigateTo: (path: Path|null) => void,
 }
 

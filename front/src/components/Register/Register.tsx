@@ -8,211 +8,170 @@ import useRegister from './RegisterBackend'
 import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons'
 import { Path, ColorMode } from '../../type'
 import '../../App.css'
-import { Content, Query } from '../../stores/serverStore'
 
-const Register = () => {
-    const registered = useRegister((state)=>state.registered)
-    const register = useRegister((state)=> state.register)
-    const firstName = useRegister((state)=> state.firstName)
-    const setFirstName = useRegister((state)=> state.setFirstName)
-    const lastName = useRegister((state)=> state.lastName)
-    const setLastName = useRegister((state)=> state.setLastName)
-    const email = useRegister((state)=> state.email)
-    const setEmail = useRegister((state)=> state.setEmail)
-    const password = useRegister((state)=> state.password)
-    const setPassword = useRegister((state)=> state.setPassword)
-    const setScore = useRegister((state)=> state.setScore)
-    const setServerMinimum = useRegister((state)=> state.setServerMinimum)
-    const setPasswordCheck = useRegister((state)=> state.setPasswordCheck)
-    const passwordCheck = useRegister((state)=> state.passwordCheck)
-    const formCheck = useRegister((state)=> state.formCheck)
-    const confirmPassword = useRegister((state)=> state.confirmPassword)
-    const setConfirmPassword = useRegister((state)=> state.setConfirmPassword)
-    const clearForm = useRegister((state)=> state.clear)
-    const getFormData = useRegister((state)=>state.formData)
-    const setFormTimeout = useRegister((state)=>state.setFormTimeOut)
-    const clearFormTimeout = useRegister((state)=>state.clearFormTimeout)
-    const setPasswordTimeout = useRegister((state)=>state.setFormTimeOut)
-    const clearPasswordTimeout = useRegister((state)=>state.clearFormTimeout)
-    const setFormCheck = useRegister((state)=>state.setFormCheck)
+function Register() {
+    const registered = useRegister((state) => state.registered)
+    const register = useRegister((state) => state.register)
+    const firstName = useRegister((state) => state.firstName)
+    const setFirstName = useRegister((state) => state.setFirstName)
+    const lastName = useRegister((state) => state.lastName)
+    const setLastName = useRegister((state) => state.setLastName)
+    const email = useRegister((state) => state.email)
+    const setEmail = useRegister((state) => state.setEmail)
+    const password = useRegister((state) => state.password)
+    const setPassword = useRegister((state) => state.setPassword)
+    const formCheck = useRegister((state) => state.formCheck)
+    const confirmPassword = useRegister((state) => state.confirmPassword)
+    const setConfirmPassword = useRegister((state) => state.setConfirmPassword)
+    const clearForm = useRegister((state) => state.clear)
+    const getFormData = useRegister((state) => state.formData)
+    const setFormTimeout = useRegister((state) => state.setFormTimeOut)
+    const clearFormTimeout = useRegister((state) => state.clearFormTimeout)
+    const setFormCheck = useRegister((state) => state.setFormCheck)
     const isMobile = usePopups((state) => state.isMobile)
-    const windowSize = usePopups((state)=>state.windowSize)
+    const windowSize = usePopups((state) => state.windowSize)
     const colorMode = useSettings((state) => state.colorMode)
-    const wsRegisterMessage = useServer((state)=>state.wsRegisterMessage)
-    const wsDisconnect = useServer((state)=>state.wsRegisterDisconnect)
-    const sendMessage = useServer((state)=>state.wsRegisterSendMessage)
+    const wsRegisterMessage = useServer((state) => state.wsRegisterMessage)
+    const wsDisconnect = useServer((state) => state.wsRegisterDisconnect)
+    const sendMessage = useServer((state) => state.wsRegisterSendMessage)
     const navigate = useNavigate()
 
-    
-    
-    const PasswordMatch = () => {
-        let checkmark = (password.length >5 && password === confirmPassword) ? <CheckCircleIcon/>: <NotAllowedIcon/>;
+    function PasswordMatch() {
+        let checkmark = (password.length > 5 && password === confirmPassword) ? <CheckCircleIcon /> : <NotAllowedIcon />
         return (
-                <Text>
-                    {checkmark}
-                </Text>
-            )
+            <Text>
+                {checkmark}
+            </Text>
+        )
     }
-    const PasswordCheck = () => {
-        let checkmark = (password.length >5 && passwordCheck) ? <CheckCircleIcon/>: <WarningTwoIcon/>;
+    function PasswordCheck() {
+        let checkmark = (password.length > 5 && formCheck) ? <CheckCircleIcon /> : <WarningTwoIcon />
         return (
-                <Text>
-                    {checkmark}
-                </Text>
-            )
+            <Text>
+                {checkmark}
+            </Text>
+        )
     }
 
-    useEffect(()=>{
-        if(registered){
+    useEffect(() => {
+        if (registered) {
             clearForm()
             navigate(extend(Path.LogIn))
             wsDisconnect()
         }
-    },[registered])
+    }, [registered])
 
-    useEffect(()=>{
+    useEffect(() => {
         clearFormTimeout()
-        let query = setTimeout(() =>{ 
-                                        if(password.length> 4 && email.length > 3){
-                                            sendMessage(JSON.stringify({...getFormData(), query: Query.Form}))
-                                        }
-                                    },200)
+        let query = setTimeout(() => {
+            if (password.length > 4 && email.length > 3) {
+                sendMessage(JSON.stringify({ ...getFormData() }))
+            }
+        }, 200)
         setFormTimeout(query)
-    },[firstName, lastName, email])
+    }, [firstName, lastName, email, password])
 
-    useEffect(()=>{
-        clearPasswordTimeout()
-        let query = setTimeout(() =>{   
-                                        if(password.length > 4){
-                                            //console.log("Sending...")
-                                            sendMessage(JSON.stringify({password: password, query: Query.ZXCVBN}))
-                                            sendMessage(JSON.stringify({...getFormData(), query: Query.Form}))
-                                        }
-                                    },200)
-        setPasswordTimeout(query)
-    },[password])
 
-    useEffect(()=>{
+
+    useEffect(() => {
         console.log("wsRegisterMessage", wsRegisterMessage)
-        if(!wsRegisterMessage){
+        if (!wsRegisterMessage) {
             return
         }
-        console.log(wsRegisterMessage)
-        switch(wsRegisterMessage.type){
-            case Query.ZXCVBN:
+        setFormCheck(wsRegisterMessage.formPass)
 
-                let content = wsRegisterMessage.content as Content
-                let passwordCheck = content.guesses > content.serverMinimum
-                setPasswordCheck(passwordCheck)
-                setScore(content.score)
-                setServerMinimum(content.serverMinimum)    
-                break
-            case Query.Form:
-                setFormCheck(wsRegisterMessage.content as boolean)
-                break
-            default:
-                break
-        }
-    },[wsRegisterMessage])
- 
+    }, [wsRegisterMessage])
+
     return (
-        <Box 
+        <Box
             //bg='lightgray' 
-            width={(isMobile)?windowSize.width*0.90:Math.min(500, windowSize.width*0.90)}
+            width={(isMobile) ? windowSize.width * 0.90 : Math.min(500, windowSize.width * 0.90)}
             mt={"30%"}
-            className={(colorMode === ColorMode.Light)?'UserForm':"UserFormDark"}
+            className={(colorMode === ColorMode.Light) ? 'UserForm' : "UserFormDark"}
         >
-            <FormControl 
-                width="95%" 
+            <FormControl
+                width="95%"
                 margin="0 auto"
-                //className={(colorMode === ColorMode.Light)?'UserForm':"UserFormDark"}
             >
-                <FormLabel 
+                <FormLabel
                     htmlFor="firstName"
                 >
                     First name (Optional)
                 </FormLabel>
-                <Input 
+                <Input
                     type="text"
                     name="firstName"
                     id="firstName"
-                    onChange={(e)=>setFirstName(e.target.value)}
+                    onChange={(e) => setFirstName(e.target.value)}
                     value={firstName}
-                    bgColor="GhostWhite"
-                />
-                <FormLabel 
+                    bgColor="GhostWhite" />
+                <FormLabel
                     htmlFor="lastName"
                 >
                     Last name (Optional)
                 </FormLabel>
-                <Input 
+                <Input
                     type="text"
                     name="lastName"
                     id="lastName"
-                    onChange={(e)=>setLastName(e.target.value)}
+                    onChange={(e) => setLastName(e.target.value)}
                     value={lastName}
-                    bgColor="GhostWhite"
-                />
-                <FormLabel 
+                    bgColor="GhostWhite" />
+                <FormLabel
                     htmlFor="email"
                 >
                     Email (Required)
                 </FormLabel>
-                <Input 
+                <Input
                     type="email"
                     name="email"
                     id="email"
-                    onChange={(e)=>setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     value={email}
-                    bgColor="GhostWhite"
-                />
-                <FormLabel 
+                    bgColor="GhostWhite" />
+                <FormLabel
                     htmlFor='password'
                 >
                     Password
                 </FormLabel>
                 <InputGroup>
-                    <Input 
+                    <Input
                         type="password"
                         name="password"
                         id="password"
-                        onChange= {(e) => setPassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value)}
                         value={password}
-                        bgColor="GhostWhite"
-                    />
-                    <InputRightAddon 
-                        children={<PasswordCheck/>}
-                    />
+                        bgColor="GhostWhite" />
+                    <InputRightAddon
+                        children={<PasswordCheck />} />
                 </InputGroup>
-                
-                <FormLabel 
+
+                <FormLabel
                     htmlFor='confirm_password'
                 >
                     Confirm Password
                 </FormLabel>
                 <InputGroup>
-                    <Input 
+                    <Input
                         type="password"
                         name="confirmPassword"
                         id="confirmPassword"
-                        onChange= {(e)=> setConfirmPassword(e.target.value)}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                         value={confirmPassword}
-                        bgColor="GhostWhite"
-                    />
-                    <InputRightAddon 
-                        children={<PasswordMatch/>}
-                    />
+                        bgColor="GhostWhite" />
+                    <InputRightAddon
+                        children={<PasswordMatch />} />
                 </InputGroup>
                 <Button
                     m="5px"
-                    onClick={()=>register()}
+                    onClick={() => register()}
                     //colorScheme={(colorMode === ColorMode.Dark)?"blue":"blueGray"}
-                    color={(colorMode === ColorMode.Dark)?"blue":"gray"}
-                    isDisabled={!(passwordCheck && formCheck && password === confirmPassword && password.length > 5)}
+                    color={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
+                    isDisabled={!( formCheck && password === confirmPassword )}
                 >
                     Register
                 </Button>
-            </FormControl> 
+            </FormControl>
         </Box>
     )
 }

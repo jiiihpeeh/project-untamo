@@ -20,18 +20,14 @@ enum WsMessage {
   DeviceEdit = "deviceEdit",
   UserEdit = "userEdit"
 }
-export interface Content {
+
+type wsRegisterMsg = {
+  formPass : boolean,
+  password: string,
   guesses: number,
   score: number,
-  serverMinimum: number
-}
-export enum Query {
-  ZXCVBN = "zxcvbn",
-  Form = "form"
-}
-type wsRegisterMsg = {
-  content: Content | boolean,
-  type: Query
+  serverMinimum: number,
+  feedBack: Array<string>
 }
 
 type UseServer = {
@@ -71,13 +67,15 @@ function websocketAddress(server: string) {
   }
   return "ws://" + base[1]
 }
-function filterUniqueIds(array: Array<any>) {
+
+function filterUniqueIds<T extends Device|Alarm>(array: Array<T>):Array<T> {
   return array.filter((array, index, self) =>
     index === self.findIndex((t) => (
       t.id === array.id
     ))
   )
 }
+
 function alarmAdd(alarm: Alarm) {
   let alarms = useAlarms.getState().alarms
   alarms.push(alarm)
@@ -173,38 +171,6 @@ function wsActionListener(data: any) {
   }
 }
 
-
-function wsRegisterListener(msg: any) {
-  switch (msg.type) {
-    case Query.ZXCVBN:
-      if (msg.content) {
-        let content = msg.content as Content
-        if (content.hasOwnProperty('guesses') && content.hasOwnProperty('score') && content.hasOwnProperty('serverMinimum')) {
-          let parsed_msg: wsRegisterMsg = {
-            type: Query.ZXCVBN,
-            content: content
-          }
-          useServer.getState().setWSRegisterMessage(parsed_msg)
-        }
-      }
-      break
-    case Query.Form:
-      if (msg.content) {
-        let content = msg.content as boolean
-        if (content === true || content === false) {
-          let parsed_msg: wsRegisterMsg = {
-            type: Query.Form,
-            content: content
-          }
-          useServer.getState().setWSRegisterMessage(parsed_msg)
-        }
-
-      }
-      break
-    default:
-      break
-  }
-}
 async function registerConnecting() {
   if (!urlEnds(Path.Register)) {
     useServer.getState().wsActionConnection?.close()
@@ -214,9 +180,8 @@ async function registerConnecting() {
   if (!useServer.getState().wsRegisterConnection) {
     let ws = new WebSocket(useServer.getState().wsRegister)
     ws.onmessage = (event: MessageEvent) => {
-      console.log(event.data)
       try {
-        wsRegisterListener(JSON.parse(event.data))
+        useServer.getState().setWSRegisterMessage(JSON.parse(event.data))
       } catch (e) {
       }
     }
@@ -255,46 +220,26 @@ function actionConnecting() {
   let socketAddress = `${useServer.getState().wsAction}/${wsToken}`
   let ws = new WebSocket(socketAddress)
   ws.onopen = (event: Event) => {
-    //ws.send(JSON.stringify({mode: 'client', token: useLogIn.getState().token}))
     onOpenRoutine(ws)
   }
   ws.onmessage = (event: MessageEvent) => {
-   // console.log(event.data)
     try {
-     // console.log(event.data)
       wsActionListener(JSON.parse(event.data))
     } catch (e) {
 
-      //console.log(e)  
     }
     try {
-      //send pong
       ws.send(".")
     } catch (e) { }
   }
   ws.onerror = (event: Event) => {
-    // try {
-    //   useServer.getState().wsActionConnection?.close()
-    //   useServer.getState().setWsActionConnection(null)
-    // } catch (e) {
-    //   //console.log(e)
-    // }
+
   }
   ws.onclose = (event: CloseEvent) => {
     ws.removeEventListener("message", wsActionListener)
-    // sleep(5000).then(() => {
-    //   useServer.getState().wsActionReconnect() 
-    // })
-    //check if session is still valid
-    //reconnectRoutine()
-    //useServer.getState().setWsActionConnection(null)
   }
   return ws
 }
-
-
-
-
 
 
 async function checkIfConnected() {
@@ -352,7 +297,7 @@ const useServer = create<UseServer>()(
         ),
         setWSActionMessage: (message) => set({ wsActionMessage: message }),
         wsActionConnect:  () => {
-          console.log( "Reconnecting, bitches")
+          console.log( "Reconnecting")
           let wsAction = get().wsActionConnection
           let continueConnecting = true
           if (wsAction) {
@@ -406,7 +351,7 @@ async function actionChecker(){
     await sleep(15000)
     let conn = useServer.getState().wsActionConnection
     if (conn){
-      if ((conn.readyState !== 1) && (conn.readyState !== 0)){
+      if (![0,1].includes(conn.readyState)){
         useServer.getState().wsActionConnect()
       }
     } else {
