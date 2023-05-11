@@ -201,7 +201,6 @@ export function nextAlarmWeekly(timeString: string, weekdays: Array<WeekDay>) {
 }
 
 export function timeForNextAlarm(alarm: Alarm) {
-
     switch (alarm.occurrence) {
         case AlarmCases.Once:
             return nextAlarmOnce(alarm.time, alarm.date)

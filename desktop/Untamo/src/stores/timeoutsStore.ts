@@ -25,10 +25,10 @@ import { invoke } from '@tauri-apps/api';
 // intervalCheck()
 
 
-const compareTime = async() =>{
+async function compareTime() {
     await sleep(225)
-    const currentTime = Date.now()    
-    if(currentTime - useTimeouts.getState().systemTime > 6000){
+    const currentTime = Date.now()
+    if (currentTime - useTimeouts.getState().systemTime > 6000) {
         //console.log("timeout")
         useTimeouts.getState().clear()
         useAlarms.getState().setReloadAlarmList()
@@ -69,77 +69,77 @@ type UseTimeout = {
     clear: () => void
 }
 
-const clearAlarmTimeout = () => {
+function clearAlarmTimeout() {
     let delTimeOut = useTimeouts.getState().id
-        if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut)
-            }catch(err){
-               // console.log(err)
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            // console.log(err)
         }
     }
 }
 
-const clearAdminTimeout = () => {
+function clearAdminTimeout() {
     let delTimeOut = useTimeouts.getState().adminID
-        if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut)
-            }catch(err){
-                //console.log(err)
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            //console.log(err)
         }
     }
 }
 
-const clearQrTimeout = () => {
+function clearQrTimeout() {
     let delTimeOut = useTimeouts.getState().qrID
-        if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut)
-            }catch(err){
-               // console.log(err)
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            // console.log(err)
         }
     }
 } 
 
-const clearRunAlarmID = () => {
+function clearRunAlarmID() {
     let delTimeOut = useTimeouts.getState().runAlarmID
-        if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut)
-            }catch(err){
-               // console.log(err)
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            // console.log(err)
         }
     }
 } 
-const clearAlarmCounter = () => {
+function clearAlarmCounter() {
     let delTimeOut = useTimeouts.getState().alarmCounter
-        if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut)
-            }catch(err){
-                //console.log(err)
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            //console.log(err)
         }
     }
 } 
-const  clearWsId = () => {
+function clearWsId() {
     let delTimeOut = useTimeouts.getState().wsID
-    if(delTimeOut){
-            try {   
-                clearTimeout(delTimeOut)
-            }catch(err){
-                //console.log(err)
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            //console.log(err)
         }
     }
 }
 
-const clearAlarmOutId = () => {
+function clearAlarmOutId() {
     let delTimeOut = useTimeouts.getState().alarmOut
-    if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut)
-            }catch(err){
-                //console.log(err)
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            //console.log(err)
         }
     }
 }

@@ -28,17 +28,17 @@ export function capitalize(s: string) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export const urlEnds = (path: Path) => {
-    const urlParts = window.location.pathname.split("/").filter(u => u !== "")
-    return urlParts[urlParts.length -1] === path
+export function urlEnds(path: Path) {
+    const urlParts = window.location.pathname.split("/").filter(u => u !== "");
+    return urlParts[urlParts.length - 1] === path;
 }
 
-export const timePadding = (number:number, numbers = 2) => {
-    let numberStr = `${number}`
-    while(numberStr.length < numbers){
-        numberStr = `0${numberStr}`
+export function timePadding(number: number, numbers = 2) {
+    let numberStr = `${number}`;
+    while (numberStr.length < numbers) {
+        numberStr = `0${numberStr}`;
     }
-    return numberStr
+    return numberStr;
 }
 
 export function h24ToH12(n: number) {

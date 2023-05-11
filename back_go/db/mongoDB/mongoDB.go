@@ -273,7 +273,7 @@ func GetQrData(token string, client *mongo.Client) *qr.QR {
 	}
 	//check if qr is expired
 	if qr.Time < time.Now().UnixMilli() {
-		DeleteQr(token, client)
+		go DeleteQr(token, client)
 		return nil
 	}
 	return qr
@@ -317,11 +317,11 @@ func GetAdminSession(token string, user_admin user.User, client *mongo.Client) *
 	}
 	//check if admin session is expired
 	if admin.Time < time.Now().UnixMilli() {
-		DeleteAdminSession(token, client)
+		go DeleteAdminSession(token, client)
 		return nil
 	}
 	if !user_admin.Active || !user_admin.Admin {
-		DeleteAdminSession(token, client)
+		go DeleteAdminSession(token, client)
 		return nil
 	}
 	return admin

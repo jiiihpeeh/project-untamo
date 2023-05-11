@@ -7,7 +7,7 @@ export enum Status {
     Info = "info"
 }
 
-export const notification = (title: string, description: string, info: Status = Status.Success, duration=2500, isClosable=true ) => {
+export function notification(title: string, description: string, info: Status = Status.Success, duration = 2500, isClosable = true) {
     const { toast } = createStandaloneToast()
     const navBarTop = useSettings.getState().navBarTop
     toast({
@@ -16,6 +16,6 @@ export const notification = (title: string, description: string, info: Status = 
         status: info,
         duration: duration,
         isClosable: isClosable,
-        position: (navBarTop)?"bottom":"top",
+        position: (navBarTop) ? "bottom" : "top",
     })
 }

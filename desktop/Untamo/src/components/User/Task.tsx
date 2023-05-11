@@ -89,20 +89,20 @@ function Task() {
         }
 
     },[solved, showTask])
-    const snoozePressFunction = (time: number) =>{
-        if((pressTime > 0) && (time - pressTime > snoozePressTime)){
-            setLaunchMode(LaunchMode.Snooze)
-            setShowTask(false)
-            setPressTime(0)
+    function snoozePressFunction(time: number) {
+        if ((pressTime > 0) && (time - pressTime > snoozePressTime)) {
+            setLaunchMode(LaunchMode.Snooze);
+            setShowTask(false);
+            setPressTime(0);
         }
     }
-    const userPressStart = (e:any)=>{
-        e.preventDefault()
-        setPressTime(Date.now())
+    function userPressStart(e: any) {
+        e.preventDefault();
+        setPressTime(Date.now());
     }
-    const userPressStop = (e:any)=>{
-        e.preventDefault()
-        snoozePressFunction(Date.now())
+    function userPressStop(e: any) {
+        e.preventDefault();
+        snoozePressFunction(Date.now());
     }
     return (
             <Modal

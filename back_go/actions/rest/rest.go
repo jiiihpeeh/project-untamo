@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -160,10 +161,12 @@ func AddDevice(c *gin.Context, client *mongo.Client) {
 
 	//return device as json
 	deviceOut := newDevice.ToDeviceOut()
-	out := wsOut.WsOut{Type: "deviceAdd", Data: deviceOut}
-	//marshal out to json
-	outJson, _ := json.Marshal(out)
-	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
+	go func() {
+		out := wsOut.WsOut{Type: "deviceAdd", Data: deviceOut}
+		//marshal out to json
+		outJson, _ := json.Marshal(out)
+		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
+	}()
 	c.JSON(200, deviceOut)
 }
 
@@ -209,10 +212,12 @@ func EditDevice(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	deviceOut := editedDevice.ToDeviceOut()
-	out := wsOut.WsOut{Type: "deviceEdit", Data: deviceOut}
-	//marshal out to json
-	outJson, _ := json.Marshal(out)
-	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
+	go func() {
+		out := wsOut.WsOut{Type: "deviceEdit", Data: deviceOut}
+		//marshal out to json
+		outJson, _ := json.Marshal(out)
+		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
+	}()
 	//return device as json
 	c.JSON(200, deviceOut)
 }
@@ -242,10 +247,12 @@ func DeleteDevice(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//return device as json
-	out := wsOut.WsOut{Type: "deviceDelete", Data: deviceId}
-	//marshal out to json
-	outJson, _ := json.Marshal(out)
-	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
+	go func() {
+		out := wsOut.WsOut{Type: "deviceDelete", Data: deviceId}
+		//marshal out to json
+		outJson, _ := json.Marshal(out)
+		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
+	}()
 	c.JSON(200, gin.H{
 		"message": "Device deleted",
 	})
@@ -310,9 +317,11 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 	newAlarm.ID = alarmId
 
 	added := newAlarm.ToAlarmOut()
-	wsOut := wsOut.WsOut{Type: "alarmAdd", Data: added}
-	wsOutJson, _ := json.Marshal(wsOut)
-	go wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
+	go func() {
+		wsOut := wsOut.WsOut{Type: "alarmAdd", Data: added}
+		wsOutJson, _ := json.Marshal(wsOut)
+		wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
+	}()
 	c.JSON(200, added)
 }
 
@@ -351,9 +360,11 @@ func EditAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	edited := editedAlarm.ToAlarmOut()
-	wsOut := wsOut.WsOut{Type: "alarmEdit", Data: edited}
-	wsOutJson, _ := json.Marshal(wsOut)
-	go wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
+	go func() {
+		wsOut := wsOut.WsOut{Type: "alarmEdit", Data: edited}
+		wsOutJson, _ := json.Marshal(wsOut)
+		wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
+	}()
 	//return alarm as json
 	c.JSON(200, edited)
 }
@@ -375,9 +386,11 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	msg := wsOut.WsOut{Type: "alarmDelete", Data: alarmId}
-	msgJson, _ := json.Marshal(msg)
-	go wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(msgJson))
+	go func() {
+		msg := wsOut.WsOut{Type: "alarmDelete", Data: alarmId}
+		msgJson, _ := json.Marshal(msg)
+		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(msgJson))
+	}()
 	c.JSON(200, gin.H{
 		"message": "Alarm deleted",
 	})
@@ -567,7 +580,12 @@ func GetQRToken(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	//return qr token as string
+	go func() {
+		//delete qr from db after 25 seconds
+		time.Sleep(26 * time.Second)
+		mongoDB.DeleteQr(qrToken, client)
+		//return qr token as string
+	}()
 	c.JSON(200, gin.H{
 		"qrToken": qrToken,
 	})
@@ -624,6 +642,11 @@ func AdminLogIn(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	go func() {
+		//delete admin from db after 10 minutes
+		time.Sleep(601 * time.Second)
+		mongoDB.DeleteAdminSession(adminSession.Token, client)
+	}()
 	adminCreds := admin.AdminData{
 		AdminToken: adminSession.Token,
 		Time:       adminSession.Time,
@@ -739,11 +762,14 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	out := user.ToUserOut()
-	//marshal out to json
-	userOut := wsOut.WsOut{Type: "userEdit", Data: out}
-	outJson, _ := json.Marshal(userOut)
-	go wshandler.WsServing.ServeMessage(user.ID.Hex(), session.WsToken, []byte(outJson))
+	go func() {
+		out := user.ToUserOut()
+		//marshal out to json
+		userOut := wsOut.WsOut{Type: "userEdit", Data: out}
+		outJson, _ := json.Marshal(userOut)
+		wshandler.WsServing.ServeMessage(user.ID.Hex(), session.WsToken, []byte(outJson))
+	}()
+
 	//return message success
 	c.JSON(200, gin.H{
 		"message": "User updated",
@@ -805,6 +831,15 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+
+	//marshal out to json
+	go func() {
+		outUser := userEdit.ToUserOut()
+		userOut := wsOut.WsOut{Type: "userEdit", Data: outUser}
+		outJson, _ := json.Marshal(userOut)
+		wshandler.WsServing.ServeMessage(userEdit.ID.Hex(), string("all"), []byte(outJson))
+	}()
+
 	//if edited user is remove all sessions from db
 	if !adminRequest.Active {
 		if !mongoDB.DeleteUserSessions(userEdit.ID, client) {

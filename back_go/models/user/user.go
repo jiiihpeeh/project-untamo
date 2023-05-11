@@ -11,14 +11,14 @@ import (
 
 type User struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	Email      string             `bson:"email,omitempty"`
+	Email      string             `bson:"email"`
 	FirstName  string             `bson:"first_name,omitempty"`
 	LastName   string             `bson:"last_name,omitempty"`
-	ScreenName string             `bson:"screen_name,omitempty"`
-	Admin      bool               `bson:"admin,omitempty"`
-	Owner      bool               `bson:"owner,omitempty"`
-	Active     bool               `bson:"active,omitempty"`
-	Password   string             `bson:"password,omitempty"`
+	ScreenName string             `bson:"screen_name"`
+	Admin      bool               `bson:"admin"`
+	Owner      bool               `bson:"owner"`
+	Active     bool               `bson:"active"`
+	Password   string             `bson:"password"`
 }
 
 type UserOut struct {

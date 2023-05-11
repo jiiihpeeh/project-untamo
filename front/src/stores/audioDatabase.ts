@@ -7,10 +7,10 @@ import localForage from 'localforage'
 import { useLogIn, useServer, useAudio } from '../stores'
 import { SessionStatus } from '../type'
 
-const getLocals = () => {
+function getLocals() {
     const token = useLogIn.getState().token
     const server = useServer.getState().address
-    return { token: token, server: server}
+    return { token: token, server: server }
 }
 
 localForage.config({

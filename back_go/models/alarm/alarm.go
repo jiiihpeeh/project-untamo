@@ -22,14 +22,14 @@ type Alarm struct {
 	Weekdays    []string           `bson:"weekdays,omitempty"`
 	Date        string             `bson:"date,omitempty"`
 	Label       string             `bson:"label,omitempty"`
-	Devices     []string           `bson:"devices,omitempty"`
-	Snooze      []int64            `bson:"snooze,omitempty"`
+	Devices     []string           `bson:"devices"`
+	Snooze      []int64            `bson:"snooze"`
 	Tune        string             `bson:"tune,omitempty"`
-	Active      bool               `bson:"active,omitempty"`
-	User        string             `bson:"user,omitempty"`
+	Active      bool               `bson:"active"`
+	User        string             `bson:"user"`
 	Modified    int64              `bson:"modified,omitempty"`
 	Fingerprint string             `bson:"fingerprint,omitempty"`
-	CloseTask   bool               `bson:"close_task,omitempty"`
+	CloseTask   bool               `bson:"close_task"`
 }
 
 // allow only enum values in Weekdays
@@ -43,14 +43,12 @@ func (a *Alarm) SetWeekdays(weekdays []string) {
 	for key := range set {
 		a.Weekdays = append(a.Weekdays, key)
 	}
-
 	for _, weekday := range weekdays {
 		switch weekday {
 		case Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday:
 			a.Weekdays = append(a.Weekdays, weekday)
 		}
 	}
-
 }
 
 // make unique by converting  array to set to array

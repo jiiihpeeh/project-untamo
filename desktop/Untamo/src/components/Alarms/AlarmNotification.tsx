@@ -36,7 +36,7 @@ function AlarmNotification() {
         </VisuallyHidden>)
     }
     useEffect(() => {
-        const updateToast = async () => {
+        async function updateToast() {
             if (alarm) {
                 let duration = timeToNextAlarm(alarm)
                 let description = timeForNextAlarm(alarm)
@@ -55,7 +55,7 @@ function AlarmNotification() {
     }, [alarm, toast])
 
     useEffect(() => {
-        const alarmSet = async () => {
+        async function alarmSet() {
             if (runAlarm) {
                 let alarmItem = alarms.filter(alarm => alarm.id === runAlarm.id)[0]
                 if (alarmItem) {
@@ -73,7 +73,7 @@ function AlarmNotification() {
 
     }, [runAlarm, alarms, currentDevice, showToast])
     useEffect(() => {
-        const closeToast = () => {
+        function closeToast() {
             toast.close('alarm-notification')
         }
         if ((sessionStatus !== SessionStatus.Valid) || !alarm || !currentDevice || !showToast) {

@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useLogIn, usePopups } from '../../stores'
 import { FormData } from '../../type'
 import '../../App.css'
+import console from 'console'
 
 // Option for Profile picture? (not necessary)
 
@@ -181,11 +182,12 @@ function EditProfile() {
                 />
                 <Accordion 
                     allowToggle={true} 
-                    onChange={() => {setChangePassword(!changePassword)}}
                 >
                     <AccordionItem>
                         <h2>
-                        <AccordionButton>
+                        <AccordionButton
+                            onClick={() => {setChangePassword(!changePassword)}}
+                        >
                             <Box 
                                 flex='1' 
                                 textAlign='left'
@@ -193,8 +195,9 @@ function EditProfile() {
                                 Change Password
                             </Box>
                             <Checkbox 
-                                isChecked={changePassword}  
+                                isChecked={changePassword}
                                 colorScheme='green'
+                                isDisabled={true}
                             />
                         </AccordionButton>
                         </h2>

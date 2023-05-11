@@ -91,10 +91,10 @@ function stop() {
     }
 }
 
-const reloadTracks = async(track: string) => {
+async function reloadTracks(track: string) {
     let tracks = await keysAudio()
-    let newTrack = (tracks).includes(track)?track:"rooster"
-    useAudio.setState({tracks: tracks, track: newTrack})
+    let newTrack = (tracks).includes(track) ? track : "rooster"
+    useAudio.setState({ tracks: tracks, track: newTrack })
 }
 
 const useAudio = create<UseAudio>((set, get) => (

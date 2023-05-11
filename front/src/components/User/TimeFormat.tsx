@@ -4,7 +4,7 @@ import React from 'react'
 import { useSettings } from '../../stores'
 import { dialogSizes as sizes } from '../../stores/settingsStore'
 
-const TimeFormat = () =>{
+function TimeFormat() {
     const clock24 = useSettings((state) => state.clock24)
     const setClock24 = useSettings((state) => state.setClock24)
     const size = useSettings((state) => state.dialogSize)
@@ -15,15 +15,15 @@ const TimeFormat = () =>{
                 size={sizes.get(size)}
             >
                 <HStack>
-                    <Radio 
-                        isChecked={clock24} 
-                        onChange={()=>setClock24(!clock24)}
+                    <Radio
+                        isChecked={clock24}
+                        onChange={() => setClock24(!clock24)}
                     >
                         24 h
                     </Radio>
-                    <Radio 
-                        isChecked={!clock24} 
-                        onChange={()=>setClock24(!clock24)}
+                    <Radio
+                        isChecked={!clock24}
+                        onChange={() => setClock24(!clock24)}
                     >
                         12 h
                     </Radio>

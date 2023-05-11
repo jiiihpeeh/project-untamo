@@ -107,17 +107,17 @@ function PlayAlarm() {
         }
     }, [snoozeIt])
 
-    const snoozePressFunction = (time: number) => {
+    function snoozePressFunction(time: number) {
         if ((pressTime > 0) && (time - pressTime > snoozePressTime)) {
             setSnoozeIt(true)
             setPressTime(0)
         }
     }
-    const userPressStart = (e: any) => {
+    function userPressStart(e: any) {
         e.preventDefault()
         setPressTime(Date.now())
     }
-    const userPressStop = (e: any) => {
+    function userPressStop(e: any) {
         e.preventDefault()
         snoozePressFunction(Date.now())
     }

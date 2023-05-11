@@ -12,7 +12,7 @@ interface Props{
 }
 
 function DeviceIcons(props: Props) {
-  const iconic = (device: DeviceType) => {
+  function iconic(device: DeviceType) {
     switch (device) {
       case DeviceType.Browser:
         return Browser
