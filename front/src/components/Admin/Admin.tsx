@@ -7,128 +7,126 @@ import AdminConfirm from "./AdminConfirm"
 import { usePopups, useLogIn, useAdmin, extend } from "../../stores"
 import { AdminAction, Path } from '../../type'
 
-const Admin = () => {
+function Admin() {
     const navigate = useNavigate()
-    const userInfo = useLogIn((state)=> state.user)
+    const userInfo = useLogIn((state) => state.user)
     const sessionStatus = useLogIn((state) => state.sessionValid)
-    const adminTime = useAdmin((state)=> state.time)
-    const usersData = useAdmin((state)=> state.usersData)
-    const getUsersData = useAdmin((state)=> state.getUsersData)
-    const setConfirmOpen = usePopups((state)=>state.setShowAdminConfirm)
+    const adminTime = useAdmin((state) => state.time)
+    const usersData = useAdmin((state) => state.usersData)
+    const getUsersData = useAdmin((state) => state.getUsersData)
+    const setConfirmOpen = usePopups((state) => state.setShowAdminConfirm)
 
-    const userActive = (id: string, active:boolean, owner: boolean, currentUser: boolean, key:number) =>{
-        return(
-            <Switch 
+    function userActive(id: string, active: boolean, owner: boolean, currentUser: boolean, key: number) {
+        return (
+            <Switch
                 key={key}
-                isChecked={active} 
+                isChecked={active}
                 onChange={() => initChangeActivity(id)}
-                isDisabled={owner || currentUser}
-            />
+                isDisabled={owner || currentUser} />
         )
     }
-    const userAdmin = (id: string, admin: boolean, owner: boolean, currentUser: boolean,key:number) =>{
-        return(
-            <Switch 
+    function userAdmin(id: string, admin: boolean, owner: boolean, currentUser: boolean, key: number) {
+        return (
+            <Switch
                 key={key}
-                isChecked={admin} 
+                isChecked={admin}
                 onChange={() => initChangeAdminState(id)}
-                isDisabled={owner || currentUser}
-            />
+                isDisabled={owner || currentUser} />
         )
-    }    
-    const userDelete = (id: string, owner: boolean, currentUser: boolean, key:number) =>{
-        return(
+    }
+    function userDelete(id: string, owner: boolean, currentUser: boolean, key: number) {
+        return (
             <IconButton
                 key={key}
                 onClick={() => initDelete(id)}
                 isDisabled={owner || currentUser}
                 backgroundColor={"red"}
                 icon={<DeleteIcon />}
-                aria-label=""
-            />
+                aria-label="" />
         )
     }
-    const initDelete = (id: string) => {
-        useAdmin.setState({command:{id:id, action: AdminAction.Delete}})
+    function initDelete(id: string) {
+        useAdmin.setState({ command: { id: id, action: AdminAction.Delete } })
         setConfirmOpen(true)
     }
-    const initChangeActivity = (id: string) => {
-        useAdmin.setState({command:{id:id, action: AdminAction.Activity}})
+    function initChangeActivity(id: string) {
+        useAdmin.setState({ command: { id: id, action: AdminAction.Activity } })
         setConfirmOpen(true)
     }
     const initChangeAdminState = (id: string) => {
-        useAdmin.setState({command:{id:id, action: AdminAction.Admin}})
+        useAdmin.setState({ command: { id: id, action: AdminAction.Admin } })
         setConfirmOpen(true)
     }
 
     const renderUsers = () => {
-        if(!usersData){
+        if (!usersData) {
             return ([] as Array<JSX.Element>)
         }
-        return usersData.map(({ active, admin, owner, email, user },key) => {
+        return usersData.map(({ active, admin, owner, email, user }, key) => {
             return (
-                    <Tr 
-                        key={`user-${key}`}
-                    >
-                        <Td>
-                            {user}
-                        </Td>
-                        <Td>
-                            {email}
-                        </Td>
-                        <Td>
-                            {userActive(user, active, owner, userInfo.email === email, key)}
-                        </Td>
-                        <Td>
-                            {userAdmin(user, admin, owner, userInfo.email === email, key)}
-                        </Td>
-                        <Td>
-                            {userDelete(user, owner, userInfo.email === email, key)}
-                        </Td>
-                    </Tr>
-            )})
+                <Tr
+                    key={`user-${key}`}
+                >
+                    <Td>
+                        {user}
+                    </Td>
+                    <Td>
+                        {email}
+                    </Td>
+                    <Td>
+                        {userActive(user, active, owner, userInfo.email === email, key)}
+                    </Td>
+                    <Td>
+                        {userAdmin(user, admin, owner, userInfo.email === email, key)}
+                    </Td>
+                    <Td>
+                        {userDelete(user, owner, userInfo.email === email, key)}
+                    </Td>
+                </Tr>
+            )
+        })
     }
 
     useEffect(() => {
-        if(!sessionStatus || (adminTime < Date.now())){
+        if (!sessionStatus || (adminTime < Date.now())) {
             navigate(extend(Path.Alarms))
         }
-    },[adminTime, sessionStatus])
+    }, [adminTime, sessionStatus])
     useEffect(() => {
-        const getInfo = async () =>{
-           getUsersData()
+        const getInfo = async () => {
+            getUsersData()
         }
         getInfo()
-    },[])
+    }, [])
     useEffect(() => {
         renderUsers()
-    },[usersData, renderUsers])
-    return(<Box>
-            <VStack>
-                <Button 
-                    onClick={getUsersData}  
-                    mt="30px"
-                    key="userDataGet"
+    }, [usersData, renderUsers])
+    return (<Box>
+        <VStack>
+            <Button
+                onClick={getUsersData}
+                mt="30px"
+                key="userDataGet"
+            >
+                Update User List
+            </Button>
+        </VStack>
+        <TableContainer
+            key="TableContainer"
+            width={"100%"}
+            style={{ left: 0, position: "absolute" }}
+        >
+            <Table
+                variant='striped'
+                key="userTable"
+                id="Admin-Table"
+                alignContent={"center"}
+                alignItems={"center"}
+            >
+                <Thead
+                    key="table-Header"
                 >
-                    Update User List
-                </Button>
-            </VStack>
-                <TableContainer
-                    key="TableContainer"
-                    width={"100%"}
-                    style={{left:0, position:"absolute"}}
-                >
-                <Table 
-                    variant='striped'
-                    key="userTable"
-                    id="Admin-Table"
-                    alignContent={"center"}
-                    alignItems={"center"}
-                >
-                    <Thead
-                        key="table-Header"
-                    >
-                    <Tr 
+                    <Tr
                         key="header-Rows"
                     >
                         <Th
@@ -155,19 +153,19 @@ const Admin = () => {
                             Delete
                         </Th>
                     </Tr>
-                    </Thead>
-                    <Tbody
-                        key="TableContent"
-                    >
-                        {renderUsers()}
-                    </Tbody>
+                </Thead>
+                <Tbody
+                    key="TableContent"
+                >
+                    {renderUsers()}
+                </Tbody>
 
-                </Table>
-                </TableContainer>
-                <AdminConfirm/>
+            </Table>
+        </TableContainer>
+        <AdminConfirm />
 
-           </Box>
-        )
+    </Box>
+    )
 }
 
 export default Admin

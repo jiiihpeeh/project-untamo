@@ -44,27 +44,27 @@ type UseLogIn = {
     setNavigateTo: (path: Path | null) => void,
 }
 
-const userInfoFetch = async () =>{
-    const {server, token} = getCommunicationInfo()
-    if(token.length < 3){
+async function userInfoFetch() {
+    const { server, token } = getCommunicationInfo()
+    if (token.length < 3) {
         return
     }
     try {
         const client = await getClient()
         const res = await client.request(
-                                            {
-                                                url: `${server}/api/user`,
-                                                method: 'GET',
-                                                headers: {
-                                                    token: token
-                                                },
-                                                responseType: ResponseType.JSON
-                                            }
-                                        )  
+            {
+                url: `${server}/api/user`,
+                method: 'GET',
+                headers: {
+                    token: token
+                },
+                responseType: ResponseType.JSON
+            }
+        )
         isSuccess(res)
         let userData = res.data as UserInfo
-        useLogIn.setState({ user: userData})
-    }catch(err){
+        useLogIn.setState({ user: userData })
+    } catch (err) {
     }
 }
 
@@ -100,53 +100,51 @@ async function fetchWsToken() {
     }
 }
 
-
-
-const refreshToken = async () =>{
+async function refreshToken() {
     const { server, token } = getCommunicationInfo()
     const sessionStatus = useLogIn.getState().sessionValid
     const tokenTime = useLogIn.getState().tokenTime
-    if((Date.now() - tokenTime) < 7200000){
-        const randomTime = Math.ceil(Math.random()*10000000)
+    if ((Date.now() - tokenTime) < 7200000) {
+        const randomTime = Math.ceil(Math.random() * 10000000)
         //setTimeout(refreshToken,tokenTime + randomTime)
         return
     }
-    if( sessionStatus !== SessionStatus.Valid){
+    if (sessionStatus !== SessionStatus.Valid) {
         return
     }
     try {
         const client = await getClient()
         const res = await client.request(
-                                            {
-                                                url: `${server}/api/refresh-token`,
-                                                method: 'POST', 
-                                                headers: {
-                                                    token: token
-                                                },
-                                                responseType: ResponseType.JSON,
-                                                body: Body.json({
-                                                    token: token
-                                                })
-                                            }   
-                                        )
-        
-        interface Resp{
-            token: string,
+            {
+                url: `${server}/api/refresh-token`,
+                method: 'POST',
+                headers: {
+                    token: token
+                },
+                responseType: ResponseType.JSON,
+                body: Body.json({
+                    token: token
+                })
+            }
+        )
+
+        interface Resp {
+            token: string
             time: number
         }
         isSuccess(res)
         let resp: Resp = res.data as Resp
-        useLogIn.setState  (
-                                { 
-                                    token: resp.token, 
-                                    expire: resp.time,
-                                    tokenTime: Date.now()
-                                }
-                            )
-        const randomTime = Math.ceil(Math.random()*7200000)
+        useLogIn.setState(
+            {
+                token: resp.token,
+                expire: resp.time,
+                tokenTime: Date.now()
+            }
+        )
+        const randomTime = Math.ceil(Math.random() * 7200000)
         //setTimeout(refreshToken,2*24*60*60*1000 + randomTime)
-    }catch(err){
-        (validSession())?notification("Session", "Failed to update token.", Status.Error):{}
+    } catch (err) {
+        (validSession()) ? notification("Session", "Failed to update token.", Status.Error) : {}
     }
 }
 
@@ -169,9 +167,6 @@ async function checkSession() {
             )
             isSuccess(res)
             if (res && res.status === 200) {
-                // useAlarms.getState().fetchAlarms()
-                // useLogIn.getState().getUserInfo()
-                // useDevices.getState().fetchDevices()
                 useLogIn.getState().updateState()
                 notification("Session", "Continuing session.", Status.Info)
                 //setTimeout(refreshToken, 30000)
@@ -194,43 +189,43 @@ async function checkSession() {
     await sleep(1)
     return status
 } 
-const editUserInfo = async(formData: FormData, changePassword: boolean) =>{
+async function editUserInfo(formData: FormData, changePassword: boolean) {
     const user = useLogIn.getState().user
     const { server, token } = getCommunicationInfo()
-    let reqFormData : Partial<FormData> = Object.assign({}, formData)
+    let reqFormData: Partial<FormData> = Object.assign({}, formData)
     delete reqFormData.confirm_password
-    if(!changePassword){
+    if (!changePassword) {
         delete reqFormData.change_password
     }
     try {
         const client = await getClient()
         const res = await client.request(
-                                            {
-                                                url: `${server}/api/edit-user/`+formData.email,
-                                                method: 'PUT',
-                                                headers: {
-                                                    token: token
-                                                },
-                                                responseType: ResponseType.JSON,
-                                                body: Body.json(reqFormData)
-                                            }
-                                        )
+            {
+                url: `${server}/api/edit-user/` + formData.email,
+                method: 'PUT',
+                headers: {
+                    token: token
+                },
+                responseType: ResponseType.JSON,
+                body: Body.json(reqFormData)
+            }
+        )
         isSuccess(res)
         //console.log(res.data)
         notification("Edit Profile", "User information modified")
         useLogIn.setState(
             {
                 user: {
-                        email: formData.email,
-                        screenName: formData.screenName,
-                        firstName: formData.firstName,
-                        lastName: formData.lastName,
-                        admin: user.admin,
-                        owner: user.owner
-                      }
+                    email: formData.email,
+                    screenName: formData.screenName,
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    admin: user.admin,
+                    owner: user.owner
+                }
             }
         )
-    } catch (err:any){
+    } catch (err: any) {
         //console.error(err.response.data.message)
         notification("Edit Profile", `Profile save failed: ${err.response.data.message}`, Status.Error)
     }
@@ -348,25 +343,25 @@ async function logIn(email: string, password: string) {
         //console.error(err)
     }
 }
-const logOutProcedure = async () => {
+async function logOutProcedure() {
     const { server, token } = getCommunicationInfo()
     try {
         const client = await getClient()
         let res = await client.request(
-                                            {
-                                                url: `${server}/logout`,
-                                                method: 'POST',
-                                                responseType: ResponseType.JSON,
-                                                headers: {
-                                                    token: token
-                                                },
-                                                body: Body.json({
-                                                    msg: "smell you later"
-                                                })
-                                            }
-                                        )
+            {
+                url: `${server}/logout`,
+                method: 'POST',
+                responseType: ResponseType.JSON,
+                headers: {
+                    token: token
+                },
+                body: Body.json({
+                    msg: "smell you later"
+                })
+            }
+        )
         isSuccess(res)
-    }catch(err:any){
+    } catch (err: any) {
         notification("Logged out", "Failed to clear user info", Status.Error)
         console.error("Clearing userinfo failed")
     }
@@ -379,24 +374,23 @@ const logOutProcedure = async () => {
     await deleteAudioDB()
 
     useLogIn.setState(
-                        {
-                            user: 
-                                {
-                                    email: '',
-                                    screenName: '',
-                                    firstName: '',
-                                    lastName: '',
-                                    admin: false,
-                                    owner: false
-                                },
-                            sessionValid: SessionStatus.NotValid,
-                            signedIn:-1,
-                            expire:-1,
-                            tokenTime:-1,
-                            token: '',
-                            wsToken: ''
-                        }
-                    )
+        {
+            user: {
+                email: '',
+                screenName: '',
+                firstName: '',
+                lastName: '',
+                admin: false,
+                owner: false
+            },
+            sessionValid: SessionStatus.NotValid,
+            signedIn: -1,
+            expire: -1,
+            tokenTime: -1,
+            token: '',
+            wsToken: ''
+        }
+    )
     //localStorage.clear()
     sessionStorage.clear()
 }

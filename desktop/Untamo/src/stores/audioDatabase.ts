@@ -8,10 +8,10 @@ import { join } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/tauri'
 import { isSuccess } from '../utils'
 
-const getLocals = () => {
-    const token = useLogIn.getState().token
-    const server = useServer.getState().address
-    return { token: token, server: server}
+function getLocals() {
+    const token = useLogIn.getState().token;
+    const server = useServer.getState().address;
+    return { token: token, server: server };
 }
 
 export async function getAudioPath(key: string){
@@ -94,8 +94,6 @@ export async function hasOrFetchAudio(audio: string) {
     }
     return true
 }
-
-
 
 export async function fetchAudioFiles() {
     const { token: token, server: server } = getLocals()

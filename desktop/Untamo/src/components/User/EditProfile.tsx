@@ -195,6 +195,7 @@ function EditProfile() {
                             <Checkbox 
                                 isChecked={changePassword}  
                                 colorScheme='green'
+                                isDisabled={true}
                             />
                         </AccordionButton>
                         </h2>

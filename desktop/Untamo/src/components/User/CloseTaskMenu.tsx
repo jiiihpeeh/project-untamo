@@ -11,7 +11,7 @@ function CloseTaskMenu() {
     const size = useSettings((state) => state.dialogSize)
     const taskSubmission = Object.values(CloseTask).filter((item) => item)
 
-    const taskMenu = () => {
+    function taskMenu() {
         return taskSubmission.map(item => {
             return (
                 <MenuItem

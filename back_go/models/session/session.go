@@ -6,9 +6,9 @@ import (
 
 type Session struct {
 	ID      primitive.ObjectID `bson:"_id,omitempty"`
-	UserId  string             `bson:"user_id,omitempty"`
-	Token   string             `bson:"token,omitempty"`
-	WsToken string             `bson:"ws_token,omitempty"`
-	Time    int64              `bson:"time,omitempty"`
-	WsPair  string             `json:"wsPair"`
+	UserId  string             `bson:"user_id,"`
+	Token   string             `bson:"token"`
+	WsToken string             `bson:"ws_token"`
+	Time    int64              `bson:"time"`
+	WsPair  string             `bson:"ws_pair"`
 }

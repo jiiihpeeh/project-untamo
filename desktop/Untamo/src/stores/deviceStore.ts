@@ -31,7 +31,7 @@ const useDevices = create<UseDevices>()(
     persist(
       (set) => (
             {
-                devices: [],
+                devices: [] as Array<Device>,
                 viewableDevices: [],
                 currentDevice: null,
                 toEdit: null,
@@ -114,7 +114,6 @@ async function addDevice(name: string, type: DeviceType) {
         notification("Device", "Name taken or too short", Status.Error)
         return
     }
-
     try {
         const client = await getClient()
         const response = await client.request(

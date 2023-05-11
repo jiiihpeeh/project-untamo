@@ -18,20 +18,20 @@ const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'imag
 const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
-type AlarmSerialized = {
-    occurrence : AlarmCases,
-    time: string,
-    date: string,
-    devices: Array<string>,
-    label: string,
-    weekdays: Array<WeekDay>,
-    active: boolean,
-    snooze: Array<number>,
-    fingerprint: string,
-    modified: number,
-    _id: string,
-    __v: number
-}
+// type AlarmSerialized = {
+//     occurrence : AlarmCases,
+//     time: string,
+//     date: string,
+//     devices: Array<string>,
+//     label: string,
+//     weekdays: Array<WeekDay>,
+//     active: boolean,
+//     snooze: Array<number>,
+//     fingerprint: string,
+//     modified: number,
+//     _id: string,
+//     __v: number
+// }
 
 
 
