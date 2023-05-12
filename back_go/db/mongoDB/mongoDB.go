@@ -16,11 +16,12 @@ import (
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/session"
 	"untamo_server.zzz/models/user"
+	"untamo_server.zzz/utils/appconfig"
 	"untamo_server.zzz/utils/id"
 )
 
 const (
-	MONGODB_URI = "mongodb://root:example@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.5.4"
+	//MONGODB_URI = "mongodb://root:example@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.5.4"
 	DB_NAME     = "Untamo"
 	USERCOLL    = "users"
 	SESSIONCOLL = "sessions"
@@ -41,8 +42,8 @@ const (
 //     };
 // }
 
-func Connect() *mongo.Client {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(MONGODB_URI))
+func Connect(appConfig *appconfig.AppConfig) *mongo.Client {
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(appConfig.GetUrl()))
 	if err != nil {
 		panic(err)
 	}
@@ -290,6 +291,16 @@ func GetUserFromID(userID primitive.ObjectID, client *mongo.Client) *user.User {
 	return user
 }
 
+func GetUserFromActivation(email string, activate string, client *mongo.Client) *user.User {
+	user := &user.User{}
+	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	err := collection.FindOne(context.Background(), bson.M{"email": email, "activate": activate}).Decode(&user)
+	if err != nil {
+		return nil
+	}
+	return user
+}
+
 func RemoveExpiredQr(client *mongo.Client) bool {
 	collection := client.Database(DB_NAME).Collection(QRCOLL)
 	_, err := collection.DeleteMany(context.Background(), bson.M{"time": bson.M{"$lt": time.Now().UnixMilli()}})
@@ -443,4 +454,14 @@ func GetUserAndSessionFromWsToken(wsToken string, client *mongo.Client) (*sessio
 		return nil, nil
 	}
 	return session, user
+}
+
+func GetOwnerID(client *mongo.Client) (string, error) {
+	user := &user.User{}
+	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	err := collection.FindOne(context.Background(), bson.M{"owner": true}).Decode(&user)
+	if err != nil {
+		return "", err
+	}
+	return user.ID.Hex(), nil
 }

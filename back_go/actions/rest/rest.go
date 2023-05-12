@@ -23,6 +23,7 @@ import (
 	"untamo_server.zzz/models/update"
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/models/wsOut"
+	"untamo_server.zzz/utils/appconfig"
 	"untamo_server.zzz/utils/hash"
 	"untamo_server.zzz/utils/id"
 	"untamo_server.zzz/utils/list"
@@ -754,6 +755,9 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 		LastName:   editUser.LastName,
 		Admin:      userInSession.Admin,
 		Owner:      userInSession.Owner,
+		Active:     userInSession.Active,
+		Activate:   userInSession.Activate,
+		Registered: userInSession.Registered,
 	}
 	updated := mongoDB.UpdateUser(&user, client)
 	if !updated {
@@ -1022,6 +1026,11 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		LastName:   registerRequest.LastName,
 		Admin:      ownerAdmin,
 		Owner:      ownerAdmin,
+		Registered: now.Now(),
+		Active:     ownerAdmin,
+	}
+	if !ownerAdmin {
+		user.Activate = token.GenerateToken(16)
 	}
 
 	//add user to db
@@ -1146,4 +1155,75 @@ func GetUpdate(c *gin.Context, client *mongo.Client) {
 
 	//return update as json
 	c.JSON(200, update)
+}
+
+func ActivateAccount(c *gin.Context, client *mongo.Client) {
+	activateToken := c.Query("activate")
+	email := c.Query("email")
+	//check that token and email are not empty
+	if len(activateToken) < 10 || email == "" {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+
+	user := mongoDB.GetUserFromActivation(email, activateToken, client)
+	if user == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//check if registration is expired two weeks after registration and delete user if it is
+	if user.Registered+1209600000 < now.Now() {
+		mongoDB.RemoveUser(user.ID, client)
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//activate user
+	user.Active = true
+	//remove Activate token
+	user.Activate = ""
+	//update user in db
+	if !mongoDB.UpdateUser(user, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to update user status",
+		})
+		return
+	}
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "Account activated",
+	})
+}
+
+func ForgotPassword(c *gin.Context, client *mongo.Client) {
+
+}
+
+func StoreServerConfig(c *gin.Context, client *mongo.Client) {
+	//get original config from appconfig module
+	originalConfig, err := appconfig.GetConfig()
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to get original config",
+		})
+		return
+	}
+	//override original config with new config from json
+	newConfig := appconfig.AppConfig{}
+	if err := c.ShouldBindJSON(&newConfig); err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	newConfig.OwnerID = originalConfig.OwnerID
+	newConfig.PasswordDB = originalConfig.PasswordDB
+	newConfig.UserDB = originalConfig.UserDB
+	//save new config to appconfig module
+
 }

@@ -5,11 +5,16 @@ go 1.20
 require github.com/gin-gonic/gin v1.9.0
 
 require (
+	github.com/adrg/strutil v0.3.0
+	github.com/andreburgaud/crypt2go v1.2.0
+	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gorilla/websocket v1.5.0
+	github.com/thoas/go-funk v0.9.3
 	github.com/trustelem/zxcvbn v1.0.1
 	go.mongodb.org/mongo-driver v1.11.4
 	golang.org/x/crypto v0.8.0
+	golang.org/x/term v0.7.0
 )
 
 require (
@@ -25,7 +30,6 @@ require (
 )
 
 require (
-	github.com/adrg/strutil v0.3.0 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/dlclark/regexp2 v1.9.0 // indirect
@@ -42,10 +46,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/test-go/testify v1.1.4 // indirect
-	github.com/thoas/go-funk v0.9.3 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.9 // indirect
-	github.com/xxtea/xxtea-go v1.0.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect

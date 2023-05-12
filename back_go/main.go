@@ -4,9 +4,11 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/actions/rest"
 	"untamo_server.zzz/actions/wshandler"
 	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/utils/appconfig"
 )
 
 const (
@@ -16,7 +18,29 @@ const (
 func main() {
 
 	// connect to mongodb
-	client := mongoDB.Connect()
+	//read appConfig from appconfig
+	appConfig, err := appconfig.GetConfig()
+	var client *mongo.Client
+	if err != nil {
+		dbUrl := appconfig.AskDBUrl()
+		client = mongoDB.Connect(dbUrl)
+		//get ownerID from mongoDB
+		ownerID, err := mongoDB.GetOwnerID(client)
+		if err != nil {
+			//ownerID = mongoDB.CreateOwner(client)
+			panic(err)
+		}
+		dbUrl.OwnerID = ownerID
+		//log.Println("dbUrl", dbUrl)
+		appconfig.SetConfig(dbUrl)
+	} else {
+		//marshal appConfig to json
+		//appConfigJson, _ := json.Marshal(appConfig)
+		// log.Println("appConfigJson", string(appConfigJson))
+		// log.Println("appConfig", appConfig)
+		// log.Println("appConfig", appConfig.GetUrl())
+		client = mongoDB.Connect(appConfig)
+	}
 
 	//make rest api with gin /login /devices /users post get put delete on port 3001
 	router := gin.Default()
@@ -45,6 +69,15 @@ func main() {
 	})
 	router.POST("/register", func(c *gin.Context) {
 		rest.RegisterUser(c, client)
+	})
+	router.POST("/activate-account/?user=Email&activate=Activate", func(c *gin.Context) {
+		rest.ActivateAccount(c, client)
+	})
+	router.POST("/forgot-password/:email", func(c *gin.Context) {
+		rest.ForgotPassword(c, client)
+	})
+	router.POST("/store-server-config", func(c *gin.Context) {
+		rest.StoreServerConfig(c, client)
 	})
 	router.POST("/qr-login", func(c *gin.Context) {
 		rest.QRLogIn(c, client)
