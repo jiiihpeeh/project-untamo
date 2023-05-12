@@ -19,6 +19,8 @@ type User struct {
 	Owner      bool               `bson:"owner"`
 	Active     bool               `bson:"active"`
 	Password   string             `bson:"password"`
+	Activate   string             `bson:"activate,omitempty"`
+	Registered int64              `bson:"registered,omitempty"`
 }
 
 type UserOut struct {
@@ -30,6 +32,7 @@ type UserOut struct {
 	Active     bool   `json:"active"`
 	Admin      bool   `json:"admin"`
 	Owner      bool   `json:"owner"`
+	Registered int64  `json:"registered"`
 }
 
 func (u *User) ToUserOut() UserOut {
@@ -42,6 +45,7 @@ func (u *User) ToUserOut() UserOut {
 		Active:     u.Active,
 		Admin:      u.Admin,
 		Owner:      u.Owner,
+		Registered: u.Registered,
 	}
 }
 
