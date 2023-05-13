@@ -16,10 +16,12 @@ export enum Path  {
     Register = "register",
     Admin = "admin",
     Clueless="clueless",
-    Base= ""
+    Base= "",
+    Activate = "activate"
 }
 
 export enum SessionStatus {
+    Activate = "activate",
     NotValid = "not-valid",
     Valid = "valid",
     Unknown = "unknown",
@@ -32,7 +34,7 @@ export enum DeviceType {
     Phone = "Phone",
     Tablet = "Tablet",
     Desktop = "Desktop",
-    Other = "Other"
+    Other = "Other",
 }
 
 export type Device = {
@@ -71,7 +73,8 @@ export declare type UserInfo = {
     firstName: string,
     lastName: string,
     admin: boolean,
-    owner: boolean
+    owner: boolean,
+    active: boolean,
 }
 
 export enum AlarmCases {
