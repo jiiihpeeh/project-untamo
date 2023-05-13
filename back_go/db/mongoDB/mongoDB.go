@@ -2,7 +2,6 @@ package mongoDB
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -73,9 +72,31 @@ func GetSessionFromToken(token string, client *mongo.Client) (*session.Session, 
 	}
 	//check if user is active
 	if !userInSession.Active {
-		DeleteSession(token, client)
+		//DeleteSession(token, client)
 		return nil, nil
 	}
+	return session, userInSession
+}
+
+func GetSessionFromTokenActivate(token string, client *mongo.Client) (*session.Session, *user.User) {
+	session := &session.Session{}
+	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	err := collection.FindOne(context.Background(), bson.M{"token": token}).Decode(&session)
+	//fmt.Println("Session check: ", session, token)
+	if err != nil {
+		return nil, nil
+	}
+	uID, err := id.IdFromString(session.UserId)
+	if err != nil {
+		return nil, nil
+	}
+
+	userInSession := GetUserFromID(uID, client)
+	//fmt.Println("User in session: ", userInSession)
+	if userInSession == nil {
+		return nil, nil
+	}
+	//fmt.Println("User in session: ", userInSession)
 	return session, userInSession
 }
 
@@ -121,7 +142,7 @@ func GetSession(token string, client *mongo.Client) (*session.Session, *user.Use
 	}
 	//check if user is active
 	if !user.Active {
-		DeleteSession(token, client)
+		//DeleteSession(token, client)
 		return nil, nil
 	}
 
@@ -185,7 +206,7 @@ func AddAlarm(alarm *alarm.Alarm, client *mongo.Client) (primitive.ObjectID, err
 
 	insert, err := collection.InsertOne(context.Background(), alarm)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID, err
@@ -234,7 +255,7 @@ func AddSession(session *session.Session, client *mongo.Client) (primitive.Objec
 	//insert session and get id
 	insert, err := collection.InsertOne(context.Background(), session)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID, err
@@ -245,7 +266,7 @@ func AddDevice(device *device.Device, client *mongo.Client) (primitive.ObjectID,
 	//insert device and get id
 	insert, err := collection.InsertOne(context.Background(), device)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID, err
@@ -419,7 +440,7 @@ func AddUser(user *user.User, client *mongo.Client) (primitive.ObjectID, error) 
 	//insert user and get id
 	insert, err := collection.InsertOne(context.Background(), user)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID, err

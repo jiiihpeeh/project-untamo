@@ -2,7 +2,6 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/steambap/captcha"
 	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/actions/wshandler"
 	"untamo_server.zzz/db/mongoDB"
@@ -91,6 +91,7 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	newSession.ID = sID
+	//fmt.Println("newSession", newSession)
 
 	logInResponse := login.LogInResponse{
 		Token:      newSession.Token,
@@ -100,6 +101,7 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 		LastName:   user.LastName,
 		Admin:      user.Admin,
 		Owner:      user.Owner,
+		Active:     user.Active,
 		Time:       newSession.Time,
 		WsToken:    newSession.WsToken,
 		WsPair:     newSession.WsPair,
@@ -279,7 +281,7 @@ func GetUserAlarms(c *gin.Context, client *mongo.Client) {
 }
 
 func AddAlarm(c *gin.Context, client *mongo.Client) {
-	fmt.Println("AddAlarm")
+	//fmt.Println("AddAlarm")
 	// check if user is logged in by getting a session from db
 	userSession, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
 	if userSession == nil {
@@ -548,6 +550,7 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		ScreenName: user.ScreenName,
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
+		Active:     user.Active,
 		Admin:      user.Admin,
 		Owner:      user.Owner,
 		Time:       session.Time,
@@ -972,6 +975,7 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//check if email is valid
+
 	if !registerRequest.CheckEmail() {
 		c.JSON(400, gin.H{
 			"message": "Bad email",
@@ -1030,7 +1034,7 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		Active:     ownerAdmin,
 	}
 	if !ownerAdmin {
-		user.Activate = token.GenerateToken(16)
+		user.Activate = token.GenerateToken(10)[1:8]
 	}
 
 	//add user to db
@@ -1158,45 +1162,72 @@ func GetUpdate(c *gin.Context, client *mongo.Client) {
 }
 
 func ActivateAccount(c *gin.Context, client *mongo.Client) {
-	activateToken := c.Query("activate")
-	email := c.Query("email")
-	//check that token and email are not empty
-	if len(activateToken) < 10 || email == "" {
+	//activate?verification=${verification}&captcha=${captchaResp}&accepted=${accepted}
+	//sleep 100 milliseconds
+	time.Sleep(100 * time.Millisecond)
+	activation := register.ActivationRequest{}
+	if err := c.ShouldBindJSON(&activation); err != nil {
 		c.JSON(400, gin.H{
 			"message": "Bad request",
 		})
 		return
 	}
+	if activation.Captcha != "Q7HJ" {
+		c.JSON(400, gin.H{
+			"message": "Bad captcha",
+		})
+		return
+	}
+	if activation.Accepted {
+		c.JSON(400, gin.H{
+			"message": "Bad captcha",
+		})
+		return
+	}
 
-	user := mongoDB.GetUserFromActivation(email, activateToken, client)
-	if user == nil {
+	//fetch session and user from headers
+	token := c.Request.Header.Get("token")
+	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+	if userInSession == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
 		})
 		return
 	}
-	//check if registration is expired two weeks after registration and delete user if it is
-	if user.Registered+1209600000 < now.Now() {
-		mongoDB.RemoveUser(user.ID, client)
-		c.JSON(404, gin.H{
-			"message": "User not found",
+	//check that user is not active
+	if userInSession.Active {
+		c.JSON(400, gin.H{
+			"message": "User is already active",
+		})
+		return
+	}
+
+	//check that user has correct verification
+	if userInSession.Activate != activation.Verification {
+		c.JSON(400, gin.H{
+			"message": "Wrong verification",
 		})
 		return
 	}
 	//activate user
-	user.Active = true
-	//remove Activate token
-	user.Activate = ""
+	userInSession.Active = true
+	//set activate to empty string
+	userInSession.Activate = ""
 	//update user in db
-	if !mongoDB.UpdateUser(user, client) {
+	if !mongoDB.UpdateUser(userInSession, client) {
 		c.JSON(500, gin.H{
-			"message": "Failed to update user status",
+			"message": "Failed to update user",
 		})
 		return
 	}
 	//return message success
 	c.JSON(200, gin.H{
-		"message": "Account activated",
+		"message": "User activated",
 	})
 }
 
@@ -1226,4 +1257,28 @@ func StoreServerConfig(c *gin.Context, client *mongo.Client) {
 	newConfig.UserDB = originalConfig.UserDB
 	//save new config to appconfig module
 
+}
+
+func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
+	time.Sleep(60 * time.Millisecond)
+	token := c.Request.Header.Get("token")
+	//fmt.Println(token)
+	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+	//get session from header
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//generate captcha
+	captchaData, _ := captcha.New(150, 50)
+
+	// write image response
+	captchaData.WriteImage(c.Writer)
 }
