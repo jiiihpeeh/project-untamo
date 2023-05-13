@@ -10,6 +10,7 @@ import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep } from '../utils'
 import { postOfflineAlarms } from './alarmStore'
 
+
 type UseLogIn = {
     wsToken: string,
     token : string,
@@ -22,6 +23,7 @@ type UseLogIn = {
     fingerprint: string,
     navigateTo: Path|null,
     wsPair: string,
+    captcha: HTMLImageElement|null,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
     setSessionValid: (s: SessionStatus) => void,
@@ -36,6 +38,8 @@ type UseLogIn = {
     fetchWsToken: () => Promise<string | null>,
     updateState: () => void,
     setNavigateTo: (path: Path|null) => void,
+    fetchCaptcha: () => void,
+    activate: (verification: string, captcha: string, accepted: boolean ) => void,
 }
 
 async function userInfoFetch() {
@@ -54,6 +58,78 @@ async function userInfoFetch() {
         let userData = res.data as UserInfo
         useLogIn.setState({ user: userData })
     } catch (err) {
+    }
+}
+
+async function activate(verification: string, captcha: string, accepted: boolean ) {
+    const { server, token } = getCommunicationInfo()
+    if (token.length < 3) {
+        return
+    }
+    let captchaResp = captcha
+    if (captchaResp === ""){
+        captchaResp = "Q7HJ"
+    }
+
+    try {
+        let res = await axios.post(`${server}/api/activate-account`,
+            {
+                verification: verification,
+                captcha: captchaResp,
+                accepted: accepted,
+            },
+            {
+                headers: {
+                    token: token
+                }
+            }
+        )
+        let user = useLogIn.getState().user
+        user.active = true
+        useLogIn.setState({ user: user })
+        notification("Activate", "Account activated", Status.Info)
+        //set session valid
+        useLogIn.setState({ sessionValid: SessionStatus.Valid })
+        //fetch update
+        await sleep(20)
+        useLogIn.getState().updateState()
+    } catch (err) {
+        notification("Activate", "Account activation failed", Status.Error)
+    }
+}
+
+async function fetchCaptcha(){
+    await sleep(10)
+    if(useLogIn.getState().sessionValid !== SessionStatus.Activate){
+        return
+    }
+    const { server, token } = getCommunicationInfo()
+
+    //revoke old captcha
+    let imgUrl  =  useLogIn.getState().captcha
+    if(imgUrl){
+        URL.revokeObjectURL(imgUrl.src)
+    } 
+    try {
+        //fetch captcha as png image
+        //use axios to fetch blob
+        let res = await axios.get(`${server}/api/activation-captcha`,
+                                    {
+                                        responseType: 'arraybuffer',
+                                        headers: {
+                                            token: token
+                                        }
+                                    }
+                                )
+                                
+        //resp data as png image
+        let captcha = URL.createObjectURL(new Blob([res.data], {type: 'image/png'}))
+        //convert Blob to Image
+        let image = new Image()
+        image.src = captcha
+        useLogIn.setState({captcha: image})
+    }catch(err){
+
     }
 }
 
@@ -155,7 +231,8 @@ async function editUserInfo(formData: FormData, changePassword: boolean) {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
                     admin: user.admin,
-                    owner: user.owner
+                    owner: user.owner,
+                    active: user.active
                 }
             }
         )
@@ -187,6 +264,7 @@ async function logIn(email: string, password: string) {
             time: number
             owner: boolean
             wsPair: string
+            active: boolean
         }
         let resp: Resp = res.data
         await initAudioDB()
@@ -199,7 +277,8 @@ async function logIn(email: string, password: string) {
                     email: resp.email,
                     screenName: resp.screenName,
                     admin: resp.admin,
-                    owner: resp.owner
+                    owner: resp.owner,
+                    active: resp.active
                 },
                 sessionValid: SessionStatus.Valid,
                 token: resp.token,
@@ -215,9 +294,16 @@ async function logIn(email: string, password: string) {
         //useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random() * 7200000)
         setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
-        useLogIn.getState().updateState()
+        
         notification("Logged In", "Successfully logged in")
+        if (resp.active === false) {
+            useLogIn.setState({ sessionValid: SessionStatus.Activate })
+            useLogIn.getState().setNavigateTo(Path.Activate)
+            return
+        }
+        useLogIn.getState().updateState()
         useLogIn.setState({ sessionValid: SessionStatus.Valid })
+        useLogIn.getState().setNavigateTo(Path.Welcome)
     } catch (err: any) {
         notification("Log In", "Log In Failed", Status.Error)
         useLogIn.setState({ sessionValid: SessionStatus.NotValid })
@@ -227,7 +313,7 @@ async function logIn(email: string, password: string) {
 
 async function updateState(){
     const { server, token } = getCommunicationInfo()
-    if (token.length < 3) {
+    if (token.length < 3 || useLogIn.getState().sessionValid === SessionStatus.Activate) {
         return
     }
     try {
@@ -293,7 +379,8 @@ async function logOutProcedure() {
                 firstName: '',
                 lastName: '',
                 admin: false,
-                owner: false
+                owner: false,
+                active: false
             },
             sessionValid: SessionStatus.NotValid,
             signedIn: -1,
@@ -335,7 +422,7 @@ async function fetchWsToken() {
     }
 }
 
-const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false}
+const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false, active: false}
 const useLogIn = create<UseLogIn>()(
     persist(
       (set,get) => (
@@ -350,6 +437,7 @@ const useLogIn = create<UseLogIn>()(
             tunes: [],
             wsPair:"",
             fingerprint: [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
+            captcha: null,
             setToken: (s) => set(
                   { 
                     token : s
@@ -420,6 +508,13 @@ const useLogIn = create<UseLogIn>()(
                                                     navigateTo: path
                                                 }
                                             )
+            },
+            fetchCaptcha: async () => {
+                await fetchCaptcha()
+            },
+            activate: async (verification, captcha, accepted ) => {
+                await activate(verification, captcha, accepted)
+
             }
         }
       ),
