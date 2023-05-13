@@ -70,8 +70,11 @@ func main() {
 	router.POST("/register", func(c *gin.Context) {
 		rest.RegisterUser(c, client)
 	})
-	router.POST("/activate-account/?user=Email&activate=Activate", func(c *gin.Context) {
+	router.POST("/api/activate-account", func(c *gin.Context) {
 		rest.ActivateAccount(c, client)
+	})
+	router.GET("/api/activation-captcha", func(c *gin.Context) {
+		rest.GetActivationCaptcha(c, client)
 	})
 	router.POST("/forgot-password/:email", func(c *gin.Context) {
 		rest.ForgotPassword(c, client)

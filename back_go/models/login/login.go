@@ -9,6 +9,7 @@ type LogInResponse struct {
 	LastName   string `json:"lastName"`
 	Admin      bool   `json:"admin"`
 	Owner      bool   `json:"owner"`
+	Active     bool   `json:"active"`
 	Time       int64  `json:"time"`
 	WsPair     string `json:"wsPair"`
 }

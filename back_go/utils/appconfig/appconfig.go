@@ -52,7 +52,7 @@ func getAppMachineKey() ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	hash := sha3.Sum384([]byte(AppKey + machine))
+	hash := sha3.Sum256([]byte(AppKey + machine))
 	return hash[:], nil
 }
 
@@ -62,7 +62,7 @@ func getAppOwnerMachineKey(ownerId string) ([]byte, error) {
 	if err != nil {
 		return []byte{}, err
 	}
-	hash := sha3.Sum384([]byte(AppKey + machine + ownerId))
+	hash := sha3.Sum256([]byte(AppKey + machine + ownerId))
 	return hash[:], nil
 }
 
@@ -215,7 +215,8 @@ func AskDBUrl() *AppConfig {
 	var dbConfig AppConfig
 	dbConfig.UseCustomURI = false
 	//Ask if user wants to use custom uri
-	fmt.Println("Do you want to use custom uri? Including user + password (y/n)")
+	fmt.Println("A machine and OS specific encrypted configuration will be created. This configuration can not be decrypted automatically on other machines without access to the original.")
+	fmt.Println("Do you want to use a custom uri? Including user + password (y/n)")
 	var customInput string
 	fmt.Scanln(&customInput)
 	if customInput == "y" || customInput == "Y" || customInput == "yes" || customInput == "Yes" || customInput == "YES" {

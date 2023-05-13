@@ -42,6 +42,12 @@ type ZXVBN struct {
 	ServerMinimum float64 `json:"serverMinimum"`
 }
 
+type ActivationRequest struct {
+	Verification string `json:"verification"`
+	Accepted     bool   `json:"accepted"`
+	Captcha      string `json:"captcha"`
+}
+
 func (r *RegisterRequest) FormScreenName() string {
 	if r.FirstName == "" && r.LastName == "" {
 		split := r.Email[:strings.Index(r.Email, "@")]
