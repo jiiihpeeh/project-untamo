@@ -1,3 +1,5 @@
+import Activate from "./components/User/Activate"
+
 export enum WeekDay {
     Monday = "Monday",
     Tuesday = "Tuesday",
@@ -16,13 +18,15 @@ export enum Path {
     Register = "register",
     Admin = "admin",
     Clueless = "clueless",
-    Base = ""
+    Base = "",
+    Activate = "activate"
 }
 export enum ColorMode {
     Light = "light",
     Dark = "dark"
 }
 export enum SessionStatus {
+    Activate = "activate",
     NotValid = "not-valid",
     Valid = "valid",
     Unknown = "unknown",
@@ -71,7 +75,8 @@ export declare type UserInfo = {
     firstName: string,
     lastName: string,
     admin: boolean,
-    owner: boolean
+    owner: boolean,
+    active: boolean
 }
 
 export enum AlarmCases {

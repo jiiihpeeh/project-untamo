@@ -207,14 +207,17 @@ async function onOpenRoutine(ws: WebSocket) {
   useLogIn.getState().updateState()
 }
 function actionConnecting() {
-  if (useLogIn.getState().token.length < 3) {
+  if (useLogIn.getState().token.length < 10) {
+    return null
+  }
+  if(useLogIn.getState().sessionValid === SessionStatus.Activate){
     return null
   }
   //return null
 
   //console.log("websocket connecting")
   let wsToken =  useLogIn.getState().getWsToken()
-  if (!wsToken || wsToken.length < 3) {
+  if (!wsToken || wsToken.length < 10) {
     //await sleep(200)
     return null
   }

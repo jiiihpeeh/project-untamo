@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { Routes,Route,  Navigate } from 'react-router-dom'
 import Alarms from './components/Alarms/Alarms'
+import Activate from './components/User/Activate'
 import About from './components/About'
 import LogIn from './components/LogIn'
 import Register from './components/Register/Register'
@@ -82,6 +83,7 @@ function App() {
                     <Route path={extend(Path.PlayAlarm)} element={<PlayAlarm/>}/>
                     <Route path={extend(Path.Clueless)} element={<Clueless/>}/>
                     <Route path={extend(Path.Admin)} element={<Admin/>}/>
+                    <Route path={extend(Path.Activate)} element={<Activate/>}/>
                     <Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
                     <Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />
                 </Routes>

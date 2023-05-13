@@ -44,6 +44,9 @@ function LogIn() {
         if (sessionStatus == SessionStatus.Valid) {
             navigate(extend(Path.Alarms))
         }
+        else if (sessionStatus == SessionStatus.Activate) {
+            navigate(extend(Path.Activate))
+        }
     }, [sessionStatus])
 
     useEffect(() => {
@@ -70,6 +73,9 @@ function LogIn() {
                     color='blue.500'
                     size='xl'
                     style={{ width: radius, height: radius, left: windowSize.width / 2 - radius / 2, top: top, position: "absolute" }} />)
+            case SessionStatus.Activate:
+                navigate(extend(Path.Activate))
+                break
             default:
                 return (
                     <form>
