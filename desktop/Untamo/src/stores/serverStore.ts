@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { Alarm, Device, Path, UserInfo } from '../type'
+import { Alarm, Device, Path, SessionStatus, UserInfo } from '../type'
 //import WebSocket from 'tauri-plugin-websocket-api'
 import { sleep, urlEnds } from '../utils'
 import useLogIn from './loginStore'
@@ -222,12 +222,14 @@ async function onOpenRoutine(ws: WebSocket) {
 }
 
 function actionConnecting() {
-  if (useLogIn.getState().token.length < 3) {
+  if (useLogIn.getState().token.length < 10) {
     return null
   }
-  //return null
+  if(useLogIn.getState().sessionValid === SessionStatus.Activate){
+    return null
+  }
   let wsToken =  useLogIn.getState().getWsToken()
-  if (!wsToken || wsToken.length < 3) {
+  if (!wsToken || wsToken.length < 10) {
     return null
   }
   let socketAddress = `${useServer.getState().wsAction}/${wsToken}`

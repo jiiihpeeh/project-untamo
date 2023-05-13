@@ -11,6 +11,7 @@ import GenerateQRPairingKey from './components/QR/GenerateQRPairingKey'
 import PlayAlarm from './components/Alarms/PlayAlarm'
 import AlarmWatcher from './components/Alarms/AlarmWatcher'
 import Admin from './components/Admin/Admin'
+import Activate from './components/User/Activate'
 import DeleteAlarm from './components/Alarms/DeleteAlarm'
 import EditAlarm from './components/Alarms/EditAlarm'
 import { useLogIn, usePopups } from './stores'
@@ -89,6 +90,7 @@ function App() {
                     <Route path={extend(Path.PlayAlarm)} element={<PlayAlarm/>}/>
                     <Route path={extend(Path.Clueless)} element={<Clueless/>}/>
                     <Route path={extend(Path.Admin)} element={<Admin/>}/>
+                    <Route path={extend(Path.Activate)} element={<Activate/>}/>
                     <Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
                     <Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />
                 </Routes>

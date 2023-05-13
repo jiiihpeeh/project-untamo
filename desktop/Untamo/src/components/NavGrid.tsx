@@ -74,8 +74,11 @@ function NavGrid() {
     useEffect(() => {
         async function constructGrid() {
             await sleep(5)
-            if (sessionStatus === SessionStatus.Valid) {
+            if (sessionStatus === SessionStatus.Valid ) {
                 setValidItems(["alarms", "devices", 'user'])
+                await sleep(5)
+            } else if (sessionStatus === SessionStatus.Activate) {
+                setValidItems(["user"])
                 await sleep(5)
             } else {
                 setValidItems(["register", 'server', "about"])

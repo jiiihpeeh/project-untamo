@@ -27,6 +27,7 @@ type UseLogIn = {
     tunes: Array<string>,
     wsPair: string,
     fingerprint: string,
+    captcha: HTMLImageElement|null,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
     setSessionValid: (s: SessionStatus) => void,
@@ -42,6 +43,8 @@ type UseLogIn = {
     updateState: () => void,
     navigateTo: null | Path,
     setNavigateTo: (path: Path | null) => void,
+    fetchCaptcha: () => void,
+    activate: (verification: string, captcha: string, accepted: boolean ) => void,
 }
 
 async function userInfoFetch() {
@@ -67,6 +70,49 @@ async function userInfoFetch() {
     } catch (err) {
     }
 }
+
+async function activate(verification: string, captcha: string, accepted: boolean ) {
+    const { server, token } = getCommunicationInfo()
+    if (token.length < 3) {
+        return
+    }
+    let captchaResp = captcha
+    if (captchaResp === ""){
+        captchaResp = "Q7HJ"
+    }
+
+    try {
+        const client = await getClient()
+        const res = await client.request(
+            {
+                url: `${server}/api/activate-account`,
+                method: 'POST',
+                headers: {
+                    token: token
+                },
+                responseType: ResponseType.JSON,
+                body: Body.json({
+                    verification: verification,
+                    captcha: captchaResp,
+                    accepted: accepted,
+                })
+            }
+        )
+        isSuccess(res)
+        let user = useLogIn.getState().user
+        user.active = true
+        useLogIn.setState({ user: user })
+        notification("Activate", "Account activated", Status.Info)
+        //set session valid
+        useLogIn.setState({ sessionValid: SessionStatus.Valid })
+        //fetch update
+        await sleep(20)
+        useLogIn.getState().updateState()
+    } catch (err) {
+        notification("Activate", "Account activation failed", Status.Error)
+    }
+}
+
 
 async function fetchWsToken() {
     const { server, token } = getCommunicationInfo()
@@ -99,6 +145,48 @@ async function fetchWsToken() {
         return null    
     }
 }
+async function fetchCaptcha(){
+    await sleep(10)
+    if(useLogIn.getState().sessionValid !== SessionStatus.Activate){
+        return
+    }
+    const { server, token } = getCommunicationInfo()
+
+    //revoke old captcha
+    let imgUrl  =  useLogIn.getState().captcha
+    if(imgUrl){
+        URL.revokeObjectURL(imgUrl.src)
+    } 
+    try {
+        //fetch captcha as png image
+		const client = await getClient()
+		
+        //use fetch blob
+        let res = await client.request(
+                                        {
+                                            url: `${server}/api/activation-captcha`,
+                                            method: 'GET',
+                                            headers: {
+                                                token: token
+                                            },
+                                            responseType: ResponseType.Binary
+                                        }
+        )
+        isSuccess(res)
+        //convert res.data uint8array to blob
+        
+        //resp data as png image
+        let arr = new Uint8Array(res.data as Uint8Array)
+        let captcha = URL.createObjectURL(new Blob([arr], {type: 'image/png'}))
+        //convert Blob to Image
+        let image = new Image()
+        image.src = captcha
+        useLogIn.setState({captcha: image})
+    }catch(err){
+
+    }
+}
+
 
 async function refreshToken() {
     const { server, token } = getCommunicationInfo()
@@ -221,7 +309,8 @@ async function editUserInfo(formData: FormData, changePassword: boolean) {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
                     admin: user.admin,
-                    owner: user.owner
+                    owner: user.owner,
+                    active: user.active
                 }
             }
         )
@@ -235,6 +324,11 @@ async function editUserInfo(formData: FormData, changePassword: boolean) {
 async function updateState(){
     const { server, token } = getCommunicationInfo()
     if (token.length < 3) {
+        return
+    }
+    //check if session
+    const sessionStatus = useLogIn.getState().sessionValid
+    if (sessionStatus !== SessionStatus.Activate) {
         return
     }
     try {
@@ -304,7 +398,8 @@ async function logIn(email: string, password: string) {
             time: number
             owner: boolean
             wsToken: string
-            wsPair: string
+            wsPair: string,
+            active: boolean
         }
         isSuccess(res)
         let resp: Resp = res.data as Resp
@@ -318,7 +413,8 @@ async function logIn(email: string, password: string) {
                     email: resp.email,
                     screenName: resp.screenName,
                     admin: resp.admin,
-                    owner: resp.owner
+                    owner: resp.owner,
+                    active: resp.active
                 },
                 sessionValid: SessionStatus.Valid,
                 token: resp.token,
@@ -332,10 +428,18 @@ async function logIn(email: string, password: string) {
         fetchAudioFiles()
         //useDevices.getState().fetchDevices()
         //useAlarms.getState().fetchAlarms()
-        useLogIn.getState().updateState()
         const randomTime = Math.ceil(Math.random() * 7200000)
-        //setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
+        setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
         notification("Logged In", "Successfully logged in")
+        if (resp.active === false) {
+            useLogIn.setState({ sessionValid: SessionStatus.Activate })
+            useLogIn.getState().setNavigateTo(Path.Activate)
+            return
+        }
+        useLogIn.setState({ sessionValid: SessionStatus.Valid })
+        await sleep(20)
+        useLogIn.getState().updateState()
+        useLogIn.getState().setNavigateTo(Path.Welcome)
     } catch (err: any) {
         //console.log(err)
         notification("Log In", "Log In Failed", Status.Error)
@@ -381,7 +485,8 @@ async function logOutProcedure() {
                 firstName: '',
                 lastName: '',
                 admin: false,
-                owner: false
+                owner: false,
+                active: false
             },
             sessionValid: SessionStatus.NotValid,
             signedIn: -1,
@@ -394,7 +499,7 @@ async function logOutProcedure() {
     //localStorage.clear()
     sessionStorage.clear()
 }
-const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false}
+const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false, active: false}
 const useLogIn = create<UseLogIn>()(
     persist(
       (set,get) => (
@@ -409,6 +514,7 @@ const useLogIn = create<UseLogIn>()(
             tunes: [],
             wsPair:"",
             fingerprint: [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
+            captcha: null,
             setToken: (s) => set(
                   { 
                     token : s
@@ -472,6 +578,13 @@ const useLogIn = create<UseLogIn>()(
                                                     navigateTo: path
                                                 }
                                             )
+            },
+            fetchCaptcha: async () => {
+                await fetchCaptcha()
+            },
+            activate: async (verification, captcha, accepted ) => {
+                await activate(verification, captcha, accepted)
+
             }
         }
       ),
