@@ -43,8 +43,7 @@ function LogIn() {
     useEffect(() => {
         if (sessionStatus == SessionStatus.Valid) {
             navigate(extend(Path.Alarms))
-        }
-        else if (sessionStatus == SessionStatus.Activate) {
+        }else if (sessionStatus == SessionStatus.Activate) {
             navigate(extend(Path.Activate))
         }
     }, [sessionStatus])

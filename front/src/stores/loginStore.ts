@@ -92,6 +92,8 @@ async function activate(verification: string, captcha: string, accepted: boolean
         useLogIn.setState({ sessionValid: SessionStatus.Valid })
         //fetch update
         await sleep(20)
+        await initAudioDB()
+        fetchAudioFiles()
         useLogIn.getState().updateState()
     } catch (err) {
         notification("Activate", "Account activation failed", Status.Error)
@@ -267,7 +269,6 @@ async function logIn(email: string, password: string) {
             active: boolean
         }
         let resp: Resp = res.data
-        await initAudioDB()
         let now = Date.now()
         useLogIn.setState(
             {
@@ -289,7 +290,7 @@ async function logIn(email: string, password: string) {
                 wsPair: resp.wsPair
             }
         )
-        fetchAudioFiles()
+
         //useDevices.getState().fetchDevices()
         //useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random() * 7200000)
@@ -301,8 +302,11 @@ async function logIn(email: string, password: string) {
             useLogIn.getState().setNavigateTo(Path.Activate)
             return
         }
+        await sleep(20)
         useLogIn.getState().updateState()
         useLogIn.setState({ sessionValid: SessionStatus.Valid })
+        await initAudioDB()
+        fetchAudioFiles()
         useLogIn.getState().setNavigateTo(Path.Welcome)
     } catch (err: any) {
         notification("Log In", "Log In Failed", Status.Error)

@@ -1,7 +1,8 @@
-import React from "react"
+import React, { useEffect} from "react"
 import { Text, Modal, Button,ModalOverlay, ModalContent,
          ModalHeader,ModalBody,  ModalCloseButton } from '@chakra-ui/react'
 import { useLogIn, usePopups } from "../../stores"
+import { SessionStatus } from "../../type"
 
 function UserMenu() {
     const userInfo = useLogIn((state) => state.user)
@@ -11,7 +12,17 @@ function UserMenu() {
     const setShowAdminLogIn = usePopups((state) => state.setShowAdminLogIn)
     const showUserMenu = usePopups((state) => state.showUserMenu)
     const setShowUserMenu = usePopups((state) => state.setShowUserMenu)
-
+    const sessionStatus = useLogIn((state) => state.sessionValid)
+    const [ isSessionValid, setIsSessionValid ] = React.useState(sessionStatus === SessionStatus.Valid)
+    
+    useEffect(() => {
+        if ( sessionStatus === SessionStatus.Valid){
+            setIsSessionValid(true)
+        }else{
+            setIsSessionValid(false)
+        }
+    }, [sessionStatus])
+    
     return (
         <Modal
             isOpen={showUserMenu}
@@ -32,6 +43,7 @@ function UserMenu() {
                         } }
                         w={"100%"}
                         m={"2%"}
+                        isDisabled={!isSessionValid}
                     >
                         <Text as='b'>
                             Edit Profile
@@ -47,6 +59,7 @@ function UserMenu() {
                             w={"100%"}
                             m={"2%"}
                             bg={"red"}
+                            isDisabled={!isSessionValid}
                         >
                             Admin Log In
                         </Button></>}

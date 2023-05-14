@@ -6,7 +6,8 @@ import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { writeBinaryFile } from '@tauri-apps/api/fs'
 import { join } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/tauri'
-import { isSuccess } from '../utils'
+import { isSuccess, sleep } from '../utils'
+import { SessionStatus } from '../type';
 
 function getLocals() {
     const token = useLogIn.getState().token;
@@ -63,6 +64,9 @@ export async function hasAudio(key: string) {
 
 export async function fetchAudio(audio: string) {
     const { token: token, server: server } = getLocals()
+    if( useLogIn.getState().sessionValid !== SessionStatus.Valid){
+        return
+    }
     if (token.length > 0 && audio.length > 0) {
         try {
             const client = await getClient();
@@ -96,7 +100,14 @@ export async function hasOrFetchAudio(audio: string) {
 }
 
 export async function fetchAudioFiles() {
-    const { token: token, server: server } = getLocals()
+    const { token, server } = getLocals()
+    //check session status
+    await sleep(3)
+    let status = useLogIn.getState().sessionValid
+    //console.log(status)
+    if( status !== SessionStatus.Valid){
+        return
+    }
     if (token) {
         try {
             const client = await getClient();
