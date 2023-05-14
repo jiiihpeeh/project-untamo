@@ -470,15 +470,22 @@ func AudioResource(c *gin.Context, client *mongo.Client) {
 
 func LogOut(c *gin.Context, client *mongo.Client) {
 	//check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	token := c.Request.Header.Get("token")
+	//fmt.Println(token)
+	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
+	}
+	//get session from header
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
 		return
 	}
 	//delete session from db
-	token := c.Request.Header.Get("token")
 	if !mongoDB.DeleteSession(token, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete session from db",

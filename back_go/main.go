@@ -2,6 +2,9 @@ package main
 
 //import models from models/
 import (
+	"fmt"
+
+	"github.com/flashmob/go-guerrilla"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,6 +19,12 @@ const (
 )
 
 func main() {
+	d := guerrilla.Daemon{}
+	err := d.Start()
+
+	if err == nil {
+		fmt.Println("Server Started!")
+	}
 
 	// connect to mongodb
 	//read appConfig from appconfig
