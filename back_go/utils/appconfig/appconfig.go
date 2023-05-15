@@ -1,29 +1,42 @@
 package appconfig
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"sync"
 
-	"github.com/andreburgaud/crypt2go/ecb"
-	"github.com/andreburgaud/crypt2go/padding"
 	"github.com/denisbrodbeck/machineid"
-	"golang.org/x/crypto/blowfish"
+	"github.com/manifoldco/promptui"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/sha3"
-	"golang.org/x/term"
+	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/models/register"
+	"untamo_server.zzz/models/user"
+
+	"untamo_server.zzz/utils/hash"
 )
 
 const AppKey = "Untamo-AlarmClock"
 
+var AppConfiguration *AppConfig
+var AppConfigurationMutex = &sync.Mutex{}
+
 type LaunchConfig struct {
-	OwnerID      string `json:"ownerId"`
-	UserDB       string `json:"userDb"`
-	PasswordDB   string `json:"passwordDb"`
-	UrlDB        string `json:"urlDB"`
-	CustomURI    string `json:"customUri"`
-	UseCustomURI bool   `json:"useCustomUri"`
+	OwnerID       string `json:"ownerId"`
+	UserDB        string `json:"userDb"`
+	PasswordDB    string `json:"passwordDb"`
+	UrlDB         string `json:"urlDB"`
+	CustomURI     string `json:"customUri"`
+	UseCustomURI  bool   `json:"useCustomUri"`
+	ActivateAuto  bool   `json:"activateAuto"`
+	ActivateEmail bool   `json:"activateEmail"`
 }
 
 type OwnerConfig struct {
@@ -34,17 +47,19 @@ type OwnerConfig struct {
 	EmailTLS    bool   `json:"emailTLS"`
 }
 type AppConfig struct {
-	OwnerID      string `json:"ownerId"`
-	UrlDB        string `json:"urlDB"`
-	CustomURI    string `json:"customUri"`
-	UserDB       string `json:"userDb"`
-	UseCustomURI bool   `json:"useCustomUri"`
-	PasswordDB   string `json:"passwordDb"`
-	Email        string `json:"email"`
-	Password     string `json:"password"`
-	EmailPort    string `json:"emailPort"`
-	EmailServer  string `json:"emailServer"`
-	EmailTLS     bool   `json:"emailTLS"`
+	OwnerID       string `json:"ownerId"`
+	UrlDB         string `json:"urlDB"`
+	CustomURI     string `json:"customUri"`
+	UserDB        string `json:"userDb"`
+	UseCustomURI  bool   `json:"useCustomUri"`
+	PasswordDB    string `json:"passwordDb"`
+	Email         string `json:"email"`
+	Password      string `json:"password"`
+	EmailPort     string `json:"emailPort"`
+	EmailServer   string `json:"emailServer"`
+	EmailTLS      bool   `json:"emailTLS"`
+	ActivateAuto  bool   `json:"activateAuto"`
+	ActivateEmail bool   `json:"activateEmail"`
 }
 
 func getAppMachineKey() ([]byte, error) {
@@ -66,40 +81,6 @@ func getAppOwnerMachineKey(ownerId string) ([]byte, error) {
 	return hash[:], nil
 }
 
-// encrypt string using app key and blowfish algorithm
-
-func blowfishEncrypt(pt, key []byte) []byte {
-	block, err := blowfish.NewCipher(key)
-	if err != nil {
-		panic(err.Error())
-	}
-	mode := ecb.NewECBEncrypter(block)
-	padder := padding.NewPkcs5Padding()
-	pt, err = padder.Pad(pt) // pad last block of plaintext if block size less than block cipher size
-	if err != nil {
-		panic(err.Error())
-	}
-	ct := make([]byte, len(pt))
-	mode.CryptBlocks(ct, pt)
-	return ct
-}
-
-func blowfishDecrypt(ct, key []byte) []byte {
-	block, err := blowfish.NewCipher(key)
-	if err != nil {
-		panic(err.Error())
-	}
-	mode := ecb.NewECBDecrypter(block)
-	pt := make([]byte, len(ct))
-	mode.CryptBlocks(pt, ct)
-	padder := padding.NewPkcs5Padding()
-	pt, err = padder.Unpad(pt) // unpad plaintext after decryption
-	if err != nil {
-		panic(err.Error())
-	}
-	return pt
-}
-
 func GetConfig() (*AppConfig, error) {
 	if !FoundConfig() {
 		return &AppConfig{}, errors.New("config file not found")
@@ -117,7 +98,7 @@ func GetConfig() (*AppConfig, error) {
 	if err != nil {
 		return &config, err
 	}
-	content := blowfishDecrypt(contentEnc, appKey)
+	content := aesDecrypt(contentEnc, appKey)
 	//unmarshal config file
 	var appConfig AppConfig
 	err = json.Unmarshal(content, &appConfig)
@@ -133,7 +114,7 @@ func GetConfig() (*AppConfig, error) {
 	if err != nil {
 		return &config, err
 	}
-	ownerConfigDec := blowfishDecrypt(ownerConfigEnc, appOwnerKey)
+	ownerConfigDec := aesDecrypt(ownerConfigEnc, appOwnerKey)
 	err = json.Unmarshal(ownerConfigDec, &config)
 	if err != nil {
 		return &config, err
@@ -157,10 +138,12 @@ func SetConfig(config *AppConfig) bool {
 
 	//read config file to memory
 	appConfig := LaunchConfig{
-		OwnerID:    config.OwnerID,
-		UserDB:     config.UserDB,
-		PasswordDB: config.PasswordDB,
-		UrlDB:      config.UrlDB,
+		OwnerID:       config.OwnerID,
+		UserDB:        config.UserDB,
+		PasswordDB:    config.PasswordDB,
+		UrlDB:         config.UrlDB,
+		ActivateAuto:  config.ActivateAuto,
+		ActivateEmail: config.ActivateEmail,
 	}
 	content, err := json.Marshal(appConfig)
 	if err != nil {
@@ -172,7 +155,7 @@ func SetConfig(config *AppConfig) bool {
 		return false
 	}
 	log.Println(string(content))
-	contentEnc := blowfishEncrypt(content, appKey)
+	contentEnc := aesEncrypt(content, appKey)
 	//unmarshal config file
 
 	appOwnerKey, err := getAppOwnerMachineKey(config.OwnerID)
@@ -183,7 +166,7 @@ func SetConfig(config *AppConfig) bool {
 	if err != nil {
 		return false
 	}
-	ownerConfigEnc := blowfishEncrypt(ownerConfig, appOwnerKey)
+	ownerConfigEnc := aesEncrypt(ownerConfig, appOwnerKey)
 	err = ioutil.WriteFile("app.cfg", contentEnc, 0644)
 	if err != nil {
 		return false
@@ -212,33 +195,225 @@ func (app *AppConfig) GetUrl() string {
 }
 
 func AskDBUrl() *AppConfig {
+
 	var dbConfig AppConfig
-	dbConfig.UseCustomURI = false
 	//Ask if user wants to use custom uri
 	fmt.Println("A machine and OS specific encrypted configuration will be created. This configuration can not be decrypted automatically on other machines without access to the original.")
-	fmt.Println("Do you want to use a custom uri? Including user + password (y/n)")
-	var customInput string
-	fmt.Scanln(&customInput)
-	if customInput == "y" || customInput == "Y" || customInput == "yes" || customInput == "Yes" || customInput == "YES" {
-		dbConfig.UseCustomURI = true
-		fmt.Println("Enter custom uri:")
-		inputURI, err := term.ReadPassword(0)
-		if err != nil {
-			panic(err)
+	items := []bool{
+		true,
+		false,
+	}
+	prompt := promptui.Select{
+		Label: "Do you want to use a custom uri? Including user + password",
+		Items: items,
+	}
+	idx, _, _ := prompt.Run()
+
+	dbConfig.UseCustomURI = items[idx]
+	if dbConfig.UseCustomURI {
+		promptURI := promptui.Prompt{
+			Label:       "Enter custom uri",
+			HideEntered: true,
 		}
-		dbConfig.CustomURI = string(inputURI)
+		result, _ := promptURI.Run()
+		dbConfig.CustomURI = result
 		return &dbConfig
 	}
-	fmt.Println("Enter database url:")
-	fmt.Scanln(&dbConfig.UrlDB)
-	fmt.Println("Enter database user:")
-	fmt.Scanln(&dbConfig.UserDB)
-	fmt.Println("Enter database password:")
-	input, err := term.ReadPassword(0)
+	promptUrl := promptui.Prompt{
+		Label: "Enter database url",
+	}
+	dbConfig.UrlDB, _ = promptUrl.Run()
+	promptUser := promptui.Prompt{
+		Label: "Enter database user",
+	}
+	dbConfig.UserDB, _ = promptUser.Run()
+	promptPassword := promptui.Prompt{
+		Label:       "Enter database password",
+		HideEntered: true,
+	}
+	dbConfig.PasswordDB, _ = promptPassword.Run()
+
+	return &dbConfig
+}
+
+func AskActivation() LaunchConfig {
+	var cfg LaunchConfig
+	promptAutoActivate := promptui.Select{
+		Label: "Activate users automatically?",
+		Items: []string{"Yes", "No"},
+	}
+	_, result, _ := promptAutoActivate.Run()
+	cfg.ActivateAuto = result == "Yes"
+	promptEmailActivate := promptui.Select{
+		Label: "Activate users by email?",
+		Items: []string{"Yes", "No"},
+	}
+	_, result, _ = promptEmailActivate.Run()
+	cfg.ActivateEmail = result == "Yes"
+	return cfg
+}
+
+func OwnerConfigPrompt() *OwnerConfig {
+	//ask if user wants to configure email account
+	var ownerConfig OwnerConfig
+	promptAskEmail := promptui.Select{
+		Label: "Configure an email account?",
+		Items: []string{"Yes", "No"},
+	}
+	_, confEmail, _ := promptAskEmail.Run()
+	if confEmail == "No" {
+		return &OwnerConfig{}
+	}
+	fmt.Println("Configuration for an email account to activate  users and reset passwords.")
+
+	promptEmail := promptui.Prompt{
+		Label: "Enter email",
+	}
+	ownerConfig.Email, _ = promptEmail.Run()
+	promptPassword := promptui.Prompt{
+		Label:       "Enter password",
+		HideEntered: true,
+	}
+	ownerConfig.Password, _ = promptPassword.Run()
+	promptEmailPort := promptui.Prompt{
+		Label: "Enter email port",
+	}
+	ownerConfig.EmailPort, _ = promptEmailPort.Run()
+	promptEmailServer := promptui.Prompt{
+		Label: "Enter email server",
+	}
+	ownerConfig.EmailServer, _ = promptEmailServer.Run()
+	promptEmailTLS := promptui.Select{
+		Label: "Use TLS?",
+		Items: []string{"Yes", "No"},
+	}
+	_, result, _ := promptEmailTLS.Run()
+	ownerConfig.EmailTLS = result == "Yes"
+	return &ownerConfig
+}
+
+func CreateOwnerUserPrompt(client *mongo.Client) string {
+	fmt.Println("Creating an owner account. This  account can manage rights of other users. It can be used as a regular user as well. There can be only one owner.")
+
+	var owner user.User
+	owner.Owner = true
+	owner.Admin = true
+	owner.Active = true
+	promptEmail := promptui.Prompt{
+		Label: "Enter email",
+	}
+	owner.Email, _ = promptEmail.Run()
+	//check if email is valid regex
+	if !register.EmailRegexp.MatchString(owner.Email) {
+		panic("invalid email")
+	}
+	promptPassword := promptui.Prompt{
+		Label:       "Enter password",
+		HideEntered: true,
+	}
+	confirmPromptPassword := promptui.Prompt{
+		Label:       "Confirm password",
+		HideEntered: true,
+	}
+	//check if password and confirm password match
+
+	ownerPassword, _ := promptPassword.Run()
+	ownerConfirmPassword, _ := confirmPromptPassword.Run()
+	if ownerPassword != ownerConfirmPassword {
+		panic("passwords do not match")
+	}
+	// ask first name
+	promptFirstName := promptui.Prompt{
+		Label: "Enter first name",
+	}
+	owner.FirstName, _ = promptFirstName.Run()
+	// ask last name
+	promptLastName := promptui.Prompt{
+		Label: "Enter last name",
+	}
+	owner.LastName, _ = promptLastName.Run()
+	// ask screen name
+	promptScreenName := promptui.Prompt{
+		Label: "Enter screen name",
+	}
+	owner.ScreenName, _ = promptScreenName.Run()
+
+	registerRequest := register.RegisterRequest{
+		Email:     owner.Email,
+		Password:  ownerPassword,
+		FirstName: owner.FirstName,
+		LastName:  owner.LastName,
+		Question:  "",
+	}
+	//check password using CheckPassword
+	passwordCheck := registerRequest.CheckPassword()
+	if !passwordCheck {
+		panic("password not strong enough")
+	}
+	//hash password
+	passHash, err := hash.HashPassword(ownerPassword)
 	if err != nil {
 		panic(err)
 	}
-	dbConfig.PasswordDB = string(input)
+	owner.Password = passHash
+	//compare hashed password
+	hashed := hash.ComparePasswordAndHash(ownerConfirmPassword, owner.Password)
+	if !hashed {
+		panic("passwords do not match")
+	}
+	hashed = hash.ComparePasswordAndHash(ownerPassword, owner.Password)
+	if !hashed {
+		panic("passwords do not match")
+	}
 
-	return &dbConfig
+	ownerID, err := mongoDB.AddUser(&owner, client)
+	if err != nil {
+		panic(err)
+	}
+	owner.ID = ownerID
+
+	return owner.ID.Hex()
+}
+
+func aesEncrypt(text, key []byte) []byte {
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		fmt.Println(err)
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+		fmt.Println(err)
+	}
+
+	return gcm.Seal(nonce, nonce, text, nil)
+}
+
+func aesDecrypt(cipherText, key []byte) []byte {
+
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(cipherText) < nonceSize {
+		fmt.Println(err)
+	}
+
+	nonce, cipherText := cipherText[:nonceSize], cipherText[nonceSize:]
+	plainText, err := gcm.Open(nil, nonce, cipherText, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return plainText
 }
