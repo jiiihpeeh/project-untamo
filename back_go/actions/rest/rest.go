@@ -60,6 +60,7 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 
 	//check if password is correct
 	pass := loginRequest.Password
+
 	//fmt.Println(pass)
 	match := hash.ComparePasswordAndHash(pass, user.Password)
 	if !match {
@@ -974,6 +975,12 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	if registerRequest.Question != "" {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
 	//check if email and password are not empty
 	if registerRequest.Email == "" || registerRequest.Password == "" {
 		c.JSON(400, gin.H{
@@ -1288,4 +1295,67 @@ func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
 
 	// write image response
 	captchaData.WriteImage(c.Writer)
+}
+
+/*
+router.GET("/admin/owner-settings", func(c *gin.Context) {
+	rest.GetOwnerSettings(c, client, appConfig)
+})
+router.POST("/admin/owner-settings", func(c *gin.Context) {
+	rest.SetOwnerSettings(c, client, appConfig)
+}) */
+
+func GetOwnerSettings(c *gin.Context, client *mongo.Client) {
+	//get admin session from header
+	adminSession, _ := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	if adminSession == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+
+	appconfig.AppConfigurationMutex.Lock()
+	config := appconfig.AppConfiguration
+	appconfig.AppConfigurationMutex.Unlock()
+
+	//get owner settings from config
+	//return owner settings as json
+
+	c.JSON(200, config)
+}
+
+func SetOwnerSettings(c *gin.Context, client *mongo.Client) {
+	//get admin session from header
+	adminSession, _ := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	if adminSession == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+	}
+	//get owner settings from json
+	configuration := appconfig.AppConfig{}
+	if err := c.ShouldBindJSON(&configuration); err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	//set owner id in config
+	appconfig.SetConfig(&configuration)
+	app, error := appconfig.GetConfig()
+	if error != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to get config",
+		})
+		return
+	}
+
+	appconfig.AppConfigurationMutex.Lock()
+	appconfig.AppConfiguration = app
+	appconfig.AppConfigurationMutex.Unlock()
+
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "Owner settings updated",
+	})
 }

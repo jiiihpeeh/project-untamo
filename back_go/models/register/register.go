@@ -26,6 +26,7 @@ type RegisterRequest struct {
 	Password  string `json:"password"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
+	Question  string `json:"question"`
 }
 
 type RegisterWsResponse struct {

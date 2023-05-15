@@ -15,7 +15,6 @@ import (
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/session"
 	"untamo_server.zzz/models/user"
-	"untamo_server.zzz/utils/appconfig"
 	"untamo_server.zzz/utils/id"
 )
 
@@ -41,8 +40,8 @@ const (
 //     };
 // }
 
-func Connect(appConfig *appconfig.AppConfig) *mongo.Client {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(appConfig.GetUrl()))
+func Connect(uri string) *mongo.Client {
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
 	}

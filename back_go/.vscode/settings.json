@@ -15,6 +15,7 @@
         "msgb",
         "padder",
         "Pkcs",
+        "promptui",
         "QRCOLL",
         "SESSIONCOLL",
         "strutil",

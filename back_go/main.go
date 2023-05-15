@@ -2,9 +2,9 @@ package main
 
 //import models from models/
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 
-	"github.com/flashmob/go-guerrilla"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,38 +19,55 @@ const (
 )
 
 func main() {
-	d := guerrilla.Daemon{}
-	err := d.Start()
-
-	if err == nil {
-		fmt.Println("Server Started!")
-	}
-
 	// connect to mongodb
 	//read appConfig from appconfig
+	//set Mutex
 	appConfig, err := appconfig.GetConfig()
+	a, _ := json.Marshal(appConfig)
+	log.Println("appConfig", string(a))
+
 	var client *mongo.Client
 	if err != nil {
-		dbUrl := appconfig.AskDBUrl()
-		client = mongoDB.Connect(dbUrl)
+		settings := appconfig.AskDBUrl()
+		uri := settings.GetUrl()
+		client = mongoDB.Connect(uri)
 		//get ownerID from mongoDB
 		ownerID, err := mongoDB.GetOwnerID(client)
+		loadConfig := appconfig.AskActivation()
+		settings.ActivateAuto = loadConfig.ActivateAuto
+		settings.ActivateEmail = loadConfig.ActivateEmail
 		if err != nil {
 			//ownerID = mongoDB.CreateOwner(client)
+			ownerID = appconfig.CreateOwnerUserPrompt(client)
+		}
+		if settings.Email == "" {
+			cfg := appconfig.OwnerConfigPrompt()
+			settings.Email = cfg.Email
+			settings.Password = cfg.Password
+			settings.EmailPort = cfg.EmailPort
+			settings.EmailServer = cfg.EmailServer
+			settings.EmailTLS = cfg.EmailTLS
+		}
+
+		settings.OwnerID = ownerID
+
+		//log.Println("dbUrl", dbUrl)
+		appconfig.SetConfig(settings)
+		appConfig, err = appconfig.GetConfig()
+		if err != nil {
 			panic(err)
 		}
-		dbUrl.OwnerID = ownerID
-		//log.Println("dbUrl", dbUrl)
-		appconfig.SetConfig(dbUrl)
 	} else {
 		//marshal appConfig to json
 		//appConfigJson, _ := json.Marshal(appConfig)
 		// log.Println("appConfigJson", string(appConfigJson))
 		// log.Println("appConfig", appConfig)
 		// log.Println("appConfig", appConfig.GetUrl())
-		client = mongoDB.Connect(appConfig)
+		client = mongoDB.Connect(appConfig.GetUrl())
 	}
-
+	appconfig.AppConfigurationMutex.Lock()
+	appconfig.AppConfiguration = appConfig
+	appconfig.AppConfigurationMutex.Unlock()
 	//make rest api with gin /login /devices /users post get put delete on port 3001
 	router := gin.Default()
 	//corsConfig := cors.DefaultConfig()
@@ -151,6 +168,12 @@ func main() {
 	router.DELETE("/admin/user/:id", func(c *gin.Context) {
 		rest.RemoveUser(c, client)
 	})
+	router.GET("/admin/owner-settings", func(c *gin.Context) {
+		rest.GetOwnerSettings(c, client)
+	})
+	router.POST("/admin/owner-settings", func(c *gin.Context) {
+		rest.SetOwnerSettings(c, client)
+	})
 	router.GET("/audio-resources/resource_list.json", func(c *gin.Context) {
 		rest.GetAudioResources(c, client)
 	})
@@ -166,5 +189,3 @@ func main() {
 
 	router.Run(PORT) // listen and serve on
 }
-
-// move /login here
