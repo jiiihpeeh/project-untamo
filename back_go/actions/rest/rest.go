@@ -1307,11 +1307,17 @@ router.POST("/admin/owner-settings", func(c *gin.Context) {
 
 func GetOwnerSettings(c *gin.Context, client *mongo.Client) {
 	//get admin session from header
-	adminSession, _ := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
 	if adminSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
+	}
+	if !userInSession.Owner {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
 	}
 
 	appconfig.AppConfigurationMutex.Lock()
@@ -1326,12 +1332,20 @@ func GetOwnerSettings(c *gin.Context, client *mongo.Client) {
 
 func SetOwnerSettings(c *gin.Context, client *mongo.Client) {
 	//get admin session from header
-	adminSession, _ := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
 	if adminSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
 	}
+	//check if user is owner
+	if !userInSession.Owner {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+
 	//get owner settings from json
 	configuration := appconfig.AppConfig{}
 	if err := c.ShouldBindJSON(&configuration); err != nil {
