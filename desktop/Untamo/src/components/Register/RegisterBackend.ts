@@ -9,6 +9,7 @@ type FormData = {
     firstName: string,
     lastName: string,
     password: string,
+    question: string,
 }
 
 
@@ -32,6 +33,8 @@ type RegisterData = {
     clearFormTimeout: () => void,
     passwordTimeout: null| NodeJS.Timeout
     setPasswordTimeOut: (timeOut: NodeJS.Timeout) =>void,
+    question : string,
+    setQuestion: (question:string) => void,
     clearPasswordTimeout: () => void,
     formData: () =>FormData,
     register: () => void,
@@ -63,7 +66,7 @@ const useRegister = create<RegisterData>((set,get) => (
         {
             password: password
         } 
-       ),     
+       ),    
        formCheck: false,
        setFormCheck: (formCheck) =>set(
         {
@@ -87,7 +90,8 @@ const useRegister = create<RegisterData>((set,get) => (
                                     firstName: get().firstName,
                                     lastName: get().lastName,
                                     email: get().email,
-                                    password: get().password
+                                    password: get().password,
+                                    question: get().question
                                 }
        },
        register: async() =>{
@@ -117,6 +121,12 @@ const useRegister = create<RegisterData>((set,get) => (
                 clearTimeout(timeOut)
             }
        },
+        question: '',
+        setQuestion: (question) => set(
+                                        {
+                                            question: question
+                                        }
+       ),
        clear: () => {
         set(
             {
@@ -127,12 +137,14 @@ const useRegister = create<RegisterData>((set,get) => (
                 formCheck: false,
                 registered: false,
                 confirmPassword: '',
+                question: ''
             }
 
         )
        }
     }
 ))
+
 async function onRegister() {
     const server = useServer.getState().address
     const formData = useRegister.getState().formData()

@@ -15,6 +15,7 @@ function Admin() {
     const usersData = useAdmin((state) => state.usersData)
     const getUsersData = useAdmin((state) => state.getUsersData)
     const setConfirmOpen = usePopups((state) => state.setShowAdminConfirm)
+    const isOwner = useLogIn((state) => state.user.owner)
 
     function userActive(id: string, active: boolean, owner: boolean, currentUser: boolean, key: number) {
         return (
@@ -102,69 +103,77 @@ function Admin() {
         renderUsers()
     }, [usersData, renderUsers])
     return (<Box>
-        <VStack>
-            <Button
-                onClick={getUsersData}
-                mt="30px"
-                key="userDataGet"
-            >
-                Update User List
-            </Button>
-        </VStack>
-        <TableContainer
-            key="TableContainer"
-            width={"100%"}
-            style={{ left: 0, position: "absolute" }}
-        >
-            <Table
-                variant='striped'
-                key="userTable"
-                id="Admin-Table"
-                alignContent={"center"}
-                alignItems={"center"}
-            >
-                <Thead
-                    key="table-Header"
-                >
-                    <Tr
-                        key="header-Rows"
+                <VStack>
+                    <Button
+                        onClick={getUsersData}
+                        mt="30px"
+                        key="userDataGet"
                     >
-                        <Th
-                            key="header-ID"
-                        >
-                            ID
-                        </Th>
-                        <Th>
-                            User
-                        </Th>
-                        <Th
-                            key="header-active"
-                        >
-                            Active
-                        </Th>
-                        <Th
-                            key="header-admin"
-                        >
-                            Admin
-                        </Th>
-                        <Th
-                            key="header-delete"
-                        >
-                            Delete
-                        </Th>
-                    </Tr>
-                </Thead>
-                <Tbody
-                    key="TableContent"
+                        Update User List
+                    </Button>
+                    <Button
+                        onClick={() => navigate(extend(Path.Owner))}
+                        isDisabled={!isOwner}
+                        m="30px"
+                    >
+                        Server Owner Configuration
+                    </Button>
+                </VStack>
+                <TableContainer
+                    key="TableContainer"
+                    width={"100%"}
+                    style={{ left: 0, position: "absolute" }}
                 >
-                    {renderUsers()}
-                </Tbody>
+                    <Table
+                        variant='striped'
+                        key="userTable"
+                        id="Admin-Table"
+                        alignContent={"center"}
+                        alignItems={"center"}
+                    >
+                        <Thead
+                            key="table-Header"
+                        >
+                            <Tr
+                                key="header-Rows"
+                            >
+                                <Th
+                                    key="header-ID"
+                                >
+                                    ID
+                                </Th>
+                                <Th>
+                                    User
+                                </Th>
+                                <Th
+                                    key="header-active"
+                                >
+                                    Active
+                                </Th>
+                                <Th
+                                    key="header-admin"
+                                >
+                                    Admin
+                                </Th>
+                                <Th
+                                    key="header-delete"
+                                >
+                                    Delete
+                                </Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody
+                            key="TableContent"
+                        >
+                            {renderUsers()}
+                        </Tbody>
 
-            </Table>
-        </TableContainer>
-        <AdminConfirm />
+                    </Table>
+                </TableContainer>
 
-    </Box>
+                <AdminConfirm />
+
+            </Box>
     )
 }
 

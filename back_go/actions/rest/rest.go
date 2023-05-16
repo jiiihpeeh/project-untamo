@@ -1050,7 +1050,13 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 	if !ownerAdmin {
 		user.Activate = token.GenerateToken(10)[1:8]
 	}
-
+	appconfig.AppConfigurationMutex.Lock()
+	config := appconfig.AppConfiguration
+	appconfig.AppConfigurationMutex.Unlock()
+	if config.ActivateAuto {
+		user.Active = true
+		user.Activate = ""
+	}
 	//add user to db
 	uID, err := mongoDB.AddUser(&user, client)
 	if err != nil {
@@ -1059,6 +1065,7 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+
 	user.ID = uID
 
 	c.JSON(200, gin.H{

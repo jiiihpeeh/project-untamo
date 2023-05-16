@@ -8,6 +8,24 @@ type Command = {
     action: AdminAction|null,
     id: string|null,
 }
+
+type OwnerConfig = {
+    ownerId: string,
+    urlDB: string,
+    customUri: string,
+    userDb: string,
+    useCustomUri: boolean,
+    passwordDb: string,
+    email: string,
+    password: string,
+    emailPort: number,
+    emailServer: string,
+    emailTLS: boolean,
+    activateAuto: boolean,
+    activateEmail: boolean,
+}
+
+
 const emptyCommand = {id:null, action:null}
 type UseAdmin = {
     token: string,
@@ -16,12 +34,16 @@ type UseAdmin = {
     usersData: Array<UsersData>
     command : Command
     adminNavigate: boolean,
+    ownerConfig: OwnerConfig|null, 
     setPassword: (password: string) => void,
     setToken: (token: string) => void,
     setTime: (time:number) => void,
     logIn: () => void,
     getUsersData: () => void,
     adminAction: () => void,
+    setOwnerConfig: (config: OwnerConfig) => void,
+    getOwnerConfig: () => void,
+    sendOwnerConfig: () => void,
     clear:()=> void,
 }
 type UsersData = {
@@ -183,7 +205,7 @@ async function runAdminAction() {
     }
     useAdmin.setState({ command: { id: null, action: null } })
 }
-const useAdmin = create<UseAdmin>((set) => (
+const useAdmin = create<UseAdmin>((set, get) => (
     {
         token: '',
         time:-1,
@@ -191,6 +213,7 @@ const useAdmin = create<UseAdmin>((set) => (
         usersData: [],
         command: emptyCommand,
         adminNavigate: false,
+        ownerConfig: null,
         setPassword: (password) => set(
             {
                 password: password
@@ -224,6 +247,59 @@ const useAdmin = create<UseAdmin>((set) => (
         },
         adminAction:() =>{
             runAdminAction()
+        },
+        setOwnerConfig: (config) => set( 
+            {
+                ownerConfig: config
+            }
+        ),
+        getOwnerConfig: async() => {
+            const { server, token } = getCommunicationInfo()
+            const adminToken = useAdmin.getState().token
+            try {
+                let res = await axios.get(`${server}/admin/owner-settings`, {
+                    headers: {
+                        token: token,
+                        adminToken: adminToken
+                    }
+                })
+                let ownerConfig = res.data as OwnerConfig
+                set(
+                    {
+                        ownerConfig: ownerConfig
+                    }
+                )
+            } catch (err) {
+                //console.log(err)
+            }
+        },
+        sendOwnerConfig: async() => {
+            const { server, token } = getCommunicationInfo()
+            const adminToken = useAdmin.getState().token
+            let ownerConfig = get().ownerConfig
+            if(!ownerConfig){
+                return
+            }
+            const conf = ownerConfig as OwnerConfig
+            try {
+                let res = await axios.post(`${server}/admin/owner-settings`, conf, {
+                    headers: {
+                        token: token,
+                        adminToken: adminToken
+                    }
+                })
+                notification("Owner Config", "Owner config was changed")
+
+                let ownerConfig = res.data as OwnerConfig
+                set(
+                    { 
+                        ownerConfig: ownerConfig 
+                    }
+                )
+            } catch (err) {
+                notification("Owner Config", "Owner config change failed", Status.Error)
+                get().getOwnerConfig()
+            }
         },
         clear: () => set
             (

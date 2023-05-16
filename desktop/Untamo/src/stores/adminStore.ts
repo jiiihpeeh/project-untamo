@@ -9,6 +9,24 @@ type Command = {
     action: AdminAction|null,
     id: string|null,
 }
+
+type OwnerConfig = {
+    ownerId: string,
+    urlDB: string,
+    customUri: string,
+    userDb: string,
+    useCustomUri: boolean,
+    passwordDb: string,
+    email: string,
+    password: string,
+    emailPort: number,
+    emailServer: string,
+    emailTLS: boolean,
+    activateAuto: boolean,
+    activateEmail: boolean,
+}
+
+
 const emptyCommand = {id:null, action:null}
 type UseAdmin = {
     token: string,
@@ -17,12 +35,16 @@ type UseAdmin = {
     usersData: Array<UsersData>
     command : Command
     adminNavigate: boolean,
+    ownerConfig: OwnerConfig|null, 
     setPassword: (password: string) => void,
     setToken: (token: string) => void,
     setTime: (time:number) => void,
     logIn: () => void,
     getUsersData: () => void,
     adminAction: () => void,
+    setOwnerConfig: (config: OwnerConfig) => void,
+    getOwnerConfig: () => void,
+    sendOwnerConfig: () => void,
     clear:()=> void,
 }
 type UsersData = {
@@ -32,6 +54,8 @@ type UsersData = {
     admin: boolean,
     owner: boolean
 }
+//ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailTLS":false,"activateAuto":false,"activateEmai
+
 
 interface ResponseData {
     adminToken: string,
@@ -212,7 +236,7 @@ async function runAdminAction() {
     }
     useAdmin.setState({ command: { id: null, action: null } })
 }
-const useAdmin = create<UseAdmin>((set) => (
+const useAdmin = create<UseAdmin>((set,get) => (
     {
         token: '',
         time:-1,
@@ -220,6 +244,7 @@ const useAdmin = create<UseAdmin>((set) => (
         usersData: [],
         command: emptyCommand,
         adminNavigate: false,
+        ownerConfig: null,
         setPassword: (password) => set(
             {
                 password: password
@@ -254,6 +279,73 @@ const useAdmin = create<UseAdmin>((set) => (
         adminAction:() =>{
             runAdminAction()
         },
+        setOwnerConfig: (config) => set( 
+            {
+                ownerConfig: config
+            }
+        ),
+        getOwnerConfig: async() => {
+            const { server, token } = getCommunicationInfo()
+            const adminToken = useAdmin.getState().token
+            try {
+                const client = await getClient()
+                let res = await client.request(
+                    {
+                        url: `${server}/admin/owner-settings`,
+                        method: "GET",
+                        responseType: ResponseType.JSON,
+                        headers: {
+                            token: token,
+                            adminToken: adminToken
+                        }
+                    }
+                )
+                isSuccess(res)
+                let ownerConfig = res.data as OwnerConfig
+
+                set({ ownerConfig: ownerConfig })
+            } catch (err) {
+                //console.log(err)
+            }
+        },
+        sendOwnerConfig: async() => {
+            const { server, token } = getCommunicationInfo()
+            const adminToken = useAdmin.getState().token
+            let conf = get().ownerConfig
+            if (!conf) {
+                return
+            }
+            //conf as OwnerConfig
+            try {
+                const client = await getClient()
+                let res = await client.request(
+                    {
+                        url: `${server}/admin/owner-settings`,
+                        method: "POST",
+                        body: Body.json(conf),
+                        responseType: ResponseType.JSON,
+                        headers: {
+                            token: token,
+                            adminToken: adminToken
+                        }
+                    }
+                )
+                isSuccess(res)
+                notification("Owner Config", "Owner config was changed")
+                let data = res.data as OwnerConfig
+                set(
+                    { 
+                        ownerConfig: data 
+                    }
+                )
+            } catch (err) {
+                //console.log(err)
+                notification("Owner Config", "Owner config change failed", Status.Error)
+                get().getOwnerConfig()
+
+            }
+        },
+
         clear: () => set
             (
                 {
@@ -263,7 +355,8 @@ const useAdmin = create<UseAdmin>((set) => (
                     usersData: [] as Array<UsersData>,
                     command: emptyCommand
                 }
-        )
+        ),
+
     }
 ))
 
