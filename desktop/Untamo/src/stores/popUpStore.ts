@@ -324,7 +324,7 @@ const usePopups = create<Popup>((set, get) => ({
                     showClearSettings: to
                 }
             )
-        }
+        },
     }
 ))
 

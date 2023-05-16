@@ -1,6 +1,6 @@
 import React, {  useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Input, InputGroup,Box,
+import { Input, InputGroup,Box, VisuallyHidden,
          InputRightAddon, FormControl,
          FormLabel, Text, Button } from '@chakra-ui/react'
 import { useServer, extend, usePopups, useSettings } from '../../stores'
@@ -27,8 +27,6 @@ function Register() {
     const getFormData = useRegister((state) => state.formData)
     const setFormTimeout = useRegister((state) => state.setFormTimeOut)
     const clearFormTimeout = useRegister((state) => state.clearFormTimeout)
-    const setPasswordTimeout = useRegister((state) => state.setFormTimeOut)
-    const clearPasswordTimeout = useRegister((state) => state.clearFormTimeout)
     const setFormCheck = useRegister((state) => state.setFormCheck)
     const isMobile = usePopups((state) => state.isMobile)
     const windowSize = usePopups((state) => state.windowSize)
@@ -36,6 +34,8 @@ function Register() {
     const wsRegisterMessage = useServer((state) => state.wsRegisterMessage)
     const wsDisconnect = useServer((state) => state.wsRegisterDisconnect)
     const sendMessage = useServer((state) => state.wsRegisterSendMessage)
+    const question = useRegister((state) => state.question)
+    const setQuestion = useRegister((state) => state.setQuestion)
     const navigate = useNavigate()
 
     function PasswordMatch() {
@@ -164,11 +164,29 @@ function Register() {
                     <InputRightAddon
                         children={<PasswordMatch />} />
                 </InputGroup>
+                <VisuallyHidden>
+                    <FormLabel
+                        htmlFor='question'
+                    >
+                        What is 2+7?
+                    </FormLabel>
+                    <Input
+                        type="text"
+                        name="question"
+                        id="question"
+                        onChange={(e) => setQuestion(e.target.value)}
+                        value={question}
+                        bgColor="GhostWhite"
+                    />
+                    <FormLabel>
+                        Accept Terms and Conditions
+                    </FormLabel>
+                </VisuallyHidden>
                 <Button
                     m="5px"
                     onClick={() => register()}
                     //colorScheme={(colorMode === ColorMode.Dark)?"blue":"blueGray"}
-                    color={(colorMode === ColorMode.Dark) ? "blue" : "black.800"}
+                    color={(colorMode === ColorMode.Dark) ? "blue" : "black"}
                     isDisabled={!( formCheck && password === confirmPassword )}
                 >
                     Register

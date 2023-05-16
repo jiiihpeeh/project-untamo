@@ -17,7 +17,8 @@ export enum Path  {
     Admin = "admin",
     Clueless="clueless",
     Base= "",
-    Activate = "activate"
+    Activate = "activate",
+    Owner = "owner"
 }
 
 export enum SessionStatus {

@@ -63,6 +63,7 @@ type Popup = {
     setShowClearSettings: (to: boolean) => void,
     showChangeColors: boolean,
     setShowChangeColors: (to: boolean) => void,
+
 }
 
 const usePopups = create<Popup>((set, get) => ({
