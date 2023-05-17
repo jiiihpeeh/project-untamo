@@ -1,8 +1,8 @@
-import {  HStack, Spacer,
+import {  HStack, Spacer, Stack, Text,
         Button, Box, VStack, Input, FormLabel,
         Switch,  Checkbox } from '@chakra-ui/react'
 import React, { useEffect, useState, useRef } from 'react'
-import { useAdmin, useLogIn } from '..//../stores' 
+import { extend, useAdmin, useLogIn } from '..//../stores' 
 import { useNavigate } from "react-router-dom"
 import { Path } from '../../type'
 
@@ -13,6 +13,9 @@ function OwnerConfig() {
 
     const [showPasswordDb, setShowPasswordDb] = useState(false)
     const [showPasswordEmail, setShowPasswordEmail] = useState(false)
+    const [showDbURI, setShowDbURI] = useState(false)
+    const [ showOwnerID, setShowOwnerID ] = useState(false)
+
     const ownerConfig = useAdmin((state) => state.ownerConfig)
     const setOwnerConfig = useAdmin((state) => state.setOwnerConfig)
     const getOwnerConfig = useAdmin((state) => state.getOwnerConfig)
@@ -52,7 +55,29 @@ function OwnerConfig() {
                     backgroundColor={"gray.50"}
                     borderRadius={"md"}
                     m={"2%"}
-                >
+                >   
+                    <Box>
+                        
+                        <FormLabel
+                            m="2%"
+                        >
+                            Owner ID
+                        </FormLabel>
+                        <HStack>
+                            <Input
+                                type={showOwnerID?"text":"password"}
+                                value={ownerConfig?.ownerId?ownerConfig.ownerId:""}
+                                onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,ownerId:e.target.value})}
+                                backgroundColor={"ghostwhite"}
+                                w={"95%"}
+                            />
+                            <Button
+                                onClick={() => setShowOwnerID(!showOwnerID)}
+                            >
+                                {showOwnerID?"Hide":"Show"}
+                            </Button>
+                        </HStack>
+                    </Box>
                     <Checkbox
                         isChecked={(ownerConfig)?ownerConfig.useCustomUri:false}
                         onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,useCustomUri:e.target.checked})}
@@ -62,15 +87,23 @@ function OwnerConfig() {
                     {(ownerConfig && ownerConfig.useCustomUri)?<><FormLabel>
                         Custom URI
                     </FormLabel>
-                    <Input
-                        type="text"
-                        value={ownerConfig?.customUri?ownerConfig.customUri:""}
-                        onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,customUri:e.target.value})}
-                        backgroundColor={"ghostwhite"}
-                        w={"95%"}
-                    /></>:<></>}
-                    {(ownerConfig && !ownerConfig.useCustomUri)? <>
                     <HStack>
+                        <Input
+                            type={showDbURI?"text":"password"}
+                            value={ownerConfig?.customUri?ownerConfig.customUri:""}
+                            onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,customUri:e.target.value})}
+                            backgroundColor={"ghostwhite"}
+                            w={"95%"}
+                        />
+                        <Button
+                            onClick={() => setShowDbURI(!showDbURI)}
+                        >
+                            {showDbURI?"Hide":"Show"}
+                        </Button>
+                    </HStack>
+                    </>:<></>}
+                    {(ownerConfig && !ownerConfig.useCustomUri)? <>
+                    <Box>
                         <FormLabel
                             m="2%"
                         >
@@ -83,8 +116,8 @@ function OwnerConfig() {
                             backgroundColor={"ghostwhite"}
                             width={"95%"}
                         />
-                    </HStack>
-                    <HStack>
+                    </Box>
+                    <Box>
                         <FormLabel
                             m="2%"
                         >                            
@@ -96,25 +129,27 @@ function OwnerConfig() {
                             onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,userDb:e.target.value})}
                             backgroundColor={"ghostwhite"}
                         />
-                    </HStack>
-                    <HStack>
+                    </Box>
+                    <Box>
                         <FormLabel
                             m="2%"
                         >
                             Password
                         </FormLabel>
-                        <Input
-                            type={showPasswordDb?"text":"password"}
-                            value={ownerConfig?.passwordDb?ownerConfig.passwordDb:""}
-                            onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,passwordDb:e.target.value})}
-                            backgroundColor={"ghostwhite"}
-                        />
-                        <Button
-                            onClick={() => setShowPasswordDb(!showPasswordDb)}
-                        >
-                            {showPasswordDb?"Hide":"Show"}
-                        </Button>
-                    </HStack>
+                        <HStack>
+                            <Input
+                                type={showPasswordDb?"text":"password"}
+                                value={ownerConfig?.passwordDb?ownerConfig.passwordDb:""}
+                                onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,passwordDb:e.target.value})}
+                                backgroundColor={"ghostwhite"}
+                            />
+                            <Button
+                                onClick={() => setShowPasswordDb(!showPasswordDb)}
+                            >
+                                {showPasswordDb?"Hide":"Show"}
+                            </Button>
+                        </HStack>
+                    </Box>
                     </>:<></>}
                 </Box>
                 <Box
@@ -122,7 +157,7 @@ function OwnerConfig() {
                     borderRadius={"md"}
                     m={"2%"}
                 >
-                    <HStack>
+                    <Box>
                         <FormLabel
                             m="2%"
                         >
@@ -133,29 +168,29 @@ function OwnerConfig() {
                             value={ownerConfig?.email?ownerConfig.email:""}
                             onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,email:e.target.value})}
                             backgroundColor={"ghostwhite"}
-                            w={"95%"}
                         />
-                    </HStack>
-                    <HStack>
+                    </Box>
+                    <Box>
                     <FormLabel
                         m="2%"
                     >
                         Email Password
                     </FormLabel>
-                    <Input
-                        type={showPasswordEmail?"text":"password"}
-                        value={ownerConfig?.password?ownerConfig.password:""}
-                        onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,password:e.target.value})}
-                        backgroundColor={"ghostwhite"}
-                        w={"95%"}
-                    />
-                    <Button
-                        onClick={() => setShowPasswordEmail(!showPasswordEmail)}
-                    >
-                        {showPasswordEmail?"Hide":"Show"}
-                    </Button>
-                    </HStack>
                     <HStack>
+                        <Input
+                            type={showPasswordEmail?"text":"password"}
+                            value={ownerConfig?.password?ownerConfig.password:""}
+                            onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,password:e.target.value})}
+                            backgroundColor={"ghostwhite"}
+                        />
+                        <Button
+                            onClick={() => setShowPasswordEmail(!showPasswordEmail)}
+                        >
+                            {showPasswordEmail?"Hide":"Show"}
+                        </Button>
+                    </HStack>
+                    </Box>
+                    <Box>
                         <FormLabel
                             m="2%"
                         >
@@ -167,8 +202,9 @@ function OwnerConfig() {
                             onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,emailPort:parseInt(e.target.value)})}
                             backgroundColor={"ghostwhite"}
                         />
-                    </HStack>
-                    <HStack
+                    </Box>
+                    <HStack 
+                        m="2%"
                     >
                         <Spacer/>
                         <VStack> 
@@ -205,15 +241,24 @@ function OwnerConfig() {
                         </VStack>
                         <Spacer/>
                     </HStack>
+                    <Text>
+                        SMTP configuration
+                    </Text>
                 </Box>
                 <Button
                     onClick={() => {
                         sendConfiguration()
-                        navigate(Path.Admin)
+                        navigate(extend(Path.Admin))
                         }
                     }
                 >
                     Apply
+                </Button>
+                <Button
+                    onClick={() => navigate(extend(Path.Admin))}
+                    m="2%"
+                >
+                    Cancel
                 </Button>
             </>
         )

@@ -116,7 +116,7 @@ function Admin() {
                 isDisabled={!isOwner}
                 m="30px"
             >
-                Server Owner Configuration
+                Server Configuration (Owner Only)
             </Button>
         </VStack>
         <TableContainer

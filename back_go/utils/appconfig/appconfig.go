@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"sync"
 
 	"github.com/denisbrodbeck/machineid"
@@ -120,15 +119,17 @@ func GetConfig() (*AppConfig, error) {
 		return &config, err
 	}
 	config = AppConfig{
-		OwnerID:     appConfig.OwnerID,
-		UserDB:      appConfig.UserDB,
-		UrlDB:       appConfig.UrlDB,
-		PasswordDB:  appConfig.PasswordDB,
-		Email:       config.Email,
-		Password:    config.Password,
-		EmailPort:   config.EmailPort,
-		EmailServer: config.EmailServer,
-		EmailTLS:    config.EmailTLS,
+		OwnerID:       appConfig.OwnerID,
+		UserDB:        appConfig.UserDB,
+		UrlDB:         appConfig.UrlDB,
+		PasswordDB:    appConfig.PasswordDB,
+		Email:         config.Email,
+		Password:      config.Password,
+		EmailPort:     config.EmailPort,
+		EmailServer:   config.EmailServer,
+		EmailTLS:      config.EmailTLS,
+		ActivateAuto:  appConfig.ActivateAuto,
+		ActivateEmail: appConfig.ActivateEmail,
 	}
 	return &config, err
 }
@@ -154,7 +155,7 @@ func SetConfig(config *AppConfig) bool {
 	if err != nil {
 		return false
 	}
-	log.Println(string(content))
+	//log.Println("Content :", string(content))
 	contentEnc := aesEncrypt(content, appKey)
 	//unmarshal config file
 
@@ -162,11 +163,18 @@ func SetConfig(config *AppConfig) bool {
 	if err != nil {
 		return false
 	}
-	ownerConfig, err := json.Marshal(config)
-	if err != nil {
-		return false
+
+	ownerConf := OwnerConfig{
+		Email:       config.Email,
+		Password:    config.Password,
+		EmailPort:   config.EmailPort,
+		EmailServer: config.EmailServer,
+		EmailTLS:    config.EmailTLS,
 	}
-	ownerConfigEnc := aesEncrypt(ownerConfig, appOwnerKey)
+	ownerConfJson, _ := json.Marshal(ownerConf)
+	//log.Println("Owner config :", string(ownerConfJson))
+
+	ownerConfigEnc := aesEncrypt(ownerConfJson, appOwnerKey)
 	err = ioutil.WriteFile("app.cfg", contentEnc, 0644)
 	if err != nil {
 		return false

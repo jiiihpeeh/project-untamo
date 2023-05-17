@@ -1375,8 +1375,7 @@ func SetOwnerSettings(c *gin.Context, client *mongo.Client) {
 	appconfig.AppConfiguration = app
 	appconfig.AppConfigurationMutex.Unlock()
 
-	//return message success
-	c.JSON(200, gin.H{
-		"message": "Owner settings updated",
-	})
+	//return appconfig as json
+	c.JSON(200, app)
+
 }
