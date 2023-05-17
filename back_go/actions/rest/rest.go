@@ -24,6 +24,7 @@ import (
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/models/wsOut"
 	"untamo_server.zzz/utils/appconfig"
+	"untamo_server.zzz/utils/email"
 	"untamo_server.zzz/utils/hash"
 	"untamo_server.zzz/utils/id"
 	"untamo_server.zzz/utils/list"
@@ -1056,7 +1057,13 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 	if config.ActivateAuto {
 		user.Active = true
 		user.Activate = ""
+	} else {
+		go func() {
+			to := []string{user.Email}
+			email.SendEmail("Activate your account", "Your activation code for Untamo is: "+user.Activate, to)
+		}()
 	}
+
 	//add user to db
 	uID, err := mongoDB.AddUser(&user, client)
 	if err != nil {
@@ -1253,7 +1260,127 @@ func ActivateAccount(c *gin.Context, client *mongo.Client) {
 }
 
 func ForgotPassword(c *gin.Context, client *mongo.Client) {
+	//get get email from params
+	emailAddress := c.Param("email")
+	//get user from email from db
+	user := mongoDB.GetUserFromEmail(emailAddress, client)
+	if user == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//generate reset token
+	resetToken := token.GenerateToken(32)
+	//set reset token in user
+	user.PasswordResetToken = resetToken
+	user.PasswordResetRequestTime = now.Now()
+	//update user in db
+	if !mongoDB.UpdateUser(user, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to update user",
+		})
+		return
+	}
+	//send email to user with reset token
+	go func() {
+		to := []string{user.Email}
+		email.SendEmail("Reset your password", "You have 10 minutes left to change your password. Your password reset code for Untamo is: "+user.PasswordResetToken, to)
+	}()
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "Reset token sent",
+	})
+}
 
+func ResetPassword(c *gin.Context, client *mongo.Client) {
+	//get reset token and email from json
+	reset := user.ResetPasswordRequest{}
+	if err := c.ShouldBindJSON(&reset); err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	//get user from email from db
+	userToEdit := mongoDB.GetUserFromEmail(reset.Email, client)
+	if userToEdit == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//check if reset token matches user reset token
+	if userToEdit.PasswordResetToken != reset.PasswordResetToken {
+		c.JSON(400, gin.H{
+			"message": "Wrong reset token",
+		})
+		return
+	}
+	//check if password and confirm password match
+	if reset.Password != reset.ConfirmPassword {
+		c.JSON(400, gin.H{
+			"message": "Passwords don't match",
+		})
+		return
+	}
+	//check if reset token is expired ( 10 minutes  and 5 seconds)
+	if userToEdit.PasswordResetRequestTime+605000 < now.Now() {
+		c.JSON(400, gin.H{
+			"message": "Reset token expired",
+		})
+		return
+	}
+	userToEdit.PasswordResetToken = ""
+	userToEdit.PasswordResetRequestTime = 0
+
+	editUser := user.EditUser{}
+	editUser.Password = reset.Password
+	editUser.Email = reset.Email
+	editUser.ConfirmPassword = reset.ConfirmPassword
+	editUser.FirstName = userToEdit.FirstName
+	editUser.LastName = userToEdit.LastName
+	editUser.ScreenName = userToEdit.ScreenName
+	if !editUser.CheckPassword() {
+		c.JSON(400, gin.H{
+			"message": "Redundant password",
+		})
+		return
+	}
+	//check if password is strong enough using zxcvbn
+	estimate := register.Estimate(editUser.Password)
+	if estimate.Score < 3 {
+		c.JSON(400, gin.H{
+			"message": "Password is not strong enough",
+		})
+		return
+	}
+	if estimate.Guesses < register.MinimumGuesses {
+		c.JSON(400, gin.H{
+			"message": "Password is not strong enough",
+		})
+		return
+	}
+	//hash password
+	passwordHashed, err := hash.HashPassword(editUser.Password)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to hash password",
+		})
+		return
+	}
+	userToEdit.Password = passwordHashed
+	//update user in db
+	if !mongoDB.UpdateUser(userToEdit, client) {
+		c.JSON(500, gin.H{
+			"message": "Failed to update user",
+		})
+		return
+	}
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "Password reset, Log in with your new password",
+	})
 }
 
 func StoreServerConfig(c *gin.Context, client *mongo.Client) {
@@ -1303,14 +1430,6 @@ func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
 	// write image response
 	captchaData.WriteImage(c.Writer)
 }
-
-/*
-router.GET("/admin/owner-settings", func(c *gin.Context) {
-	rest.GetOwnerSettings(c, client, appConfig)
-})
-router.POST("/admin/owner-settings", func(c *gin.Context) {
-	rest.SetOwnerSettings(c, client, appConfig)
-}) */
 
 func GetOwnerSettings(c *gin.Context, client *mongo.Client) {
 	//get admin session from header

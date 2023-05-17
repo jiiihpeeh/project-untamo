@@ -1,6 +1,8 @@
 import {  HStack, Spacer, Stack, Text,
     Button, Box, VStack, Input, FormLabel,
-    Switch,  Checkbox } from '@chakra-ui/react'
+    Switch,  Checkbox,   NumberInput, Center,
+    NumberInputField, NumberInputStepper,
+    NumberIncrementStepper,  NumberDecrementStepper, } from '@chakra-ui/react'
 import React, { useEffect, useState, useRef } from 'react'
 import { extend, useAdmin, useLogIn } from '..//../stores' 
 import { useNavigate } from "react-router-dom"
@@ -11,11 +13,13 @@ import { Path } from '../../type'
 function OwnerConfig() {
 const navigate = useNavigate()
 
-const [showPasswordDb, setShowPasswordDb] = useState(false)
-const [showPasswordEmail, setShowPasswordEmail] = useState(false)
-const [showDbURI, setShowDbURI] = useState(false)
-const [ showOwnerID, setShowOwnerID ] = useState(false)
-
+const inputHideShow = {
+    passwordDb: false,
+    passwordEmail: false,
+    dbURI: false,
+    ownerID : false       
+}
+const [ inputs , setInputs ] = useState(inputHideShow)
 const ownerConfig = useAdmin((state) => state.ownerConfig)
 const setOwnerConfig = useAdmin((state) => state.setOwnerConfig)
 const getOwnerConfig = useAdmin((state) => state.getOwnerConfig)
@@ -30,7 +34,7 @@ const defaultOwnerConfig = {
     passwordDb:"",
     email:"",
     password:"",
-    emailPort:-5,
+    emailPort:0,
     emailServer:"",
     emailTLS:false,
     activateAuto:false,
@@ -41,13 +45,9 @@ useEffect(() => {
 }, [])
 useEffect(() => {
     if (!isOwner) {
-        navigate(Path.Admin)
+        navigate(extend(Path.Admin))
     }
 }, [])
-
-useEffect(() => {
-    console.log(ownerConfig)
-}, [ownerConfig])
 
 return (
         <>
@@ -65,16 +65,16 @@ return (
                     </FormLabel>
                     <HStack>
                         <Input
-                            type={showOwnerID?"text":"password"}
+                            type={inputs.ownerID?"text":"password"}
                             value={ownerConfig?.ownerId?ownerConfig.ownerId:""}
                             onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,ownerId:e.target.value})}
                             backgroundColor={"ghostwhite"}
                             w={"95%"}
                         />
                         <Button
-                            onClick={() => setShowOwnerID(!showOwnerID)}
+                            onClick={() => {setInputs({...inputs,ownerID:!inputs.ownerID})}}
                         >
-                            {showOwnerID?"Hide":"Show"}
+                            {inputs.ownerID?"Hide":"Show"}
                         </Button>
                     </HStack>
                 </Box>
@@ -89,16 +89,16 @@ return (
                 </FormLabel>
                 <HStack>
                     <Input
-                        type={showDbURI?"text":"password"}
+                        type={inputs.dbURI?"text":"password"}
                         value={ownerConfig?.customUri?ownerConfig.customUri:""}
                         onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,customUri:e.target.value})}
                         backgroundColor={"ghostwhite"}
                         w={"95%"}
                     />
                     <Button
-                        onClick={() => setShowDbURI(!showDbURI)}
+                        onClick={() => {setInputs({...inputs,dbURI:!inputs.dbURI})}}
                     >
-                        {showDbURI?"Hide":"Show"}
+                        {inputs.dbURI ?"Hide":"Show"}
                     </Button>
                 </HStack>
                 </>:<></>}
@@ -138,30 +138,29 @@ return (
                     </FormLabel>
                     <HStack>
                         <Input
-                            type={showPasswordDb?"text":"password"}
+                            type={inputs.passwordDb?"text":"password"}
                             value={ownerConfig?.passwordDb?ownerConfig.passwordDb:""}
                             onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,passwordDb:e.target.value})}
                             backgroundColor={"ghostwhite"}
                         />
                         <Button
-                            onClick={() => setShowPasswordDb(!showPasswordDb)}
+                            onClick={() => {setInputs({...inputs,passwordDb:!inputs.passwordDb})}}
                         >
-                            {showPasswordDb?"Hide":"Show"}
+                            {inputs.passwordDb?"Hide":"Show"}
                         </Button>
                     </HStack>
                 </Box>
                 </>:<></>}
+                <Text>DB configuration</Text>
             </Box>
             <Box
                 backgroundColor={"red.50"}
                 borderRadius={"md"}
-                m={"2%"}
             >
                 <Box>
                     <FormLabel
-                        m="2%"
                     >
-                        Email
+                        Email Address
                     </FormLabel>
                     <Input
                         type="text"
@@ -171,6 +170,46 @@ return (
                     />
                 </Box>
                 <Box>
+                    <HStack
+                        mt="2%"
+                    >
+                        <VStack>
+                        <FormLabel
+                        >
+                            Server
+                        </FormLabel>
+                        <Input
+                            type="text"
+                            value={ownerConfig?.emailServer?ownerConfig.emailServer:""}
+                            onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,emailServer:e.target.value})}
+                            backgroundColor={"ghostwhite"}
+                            width={"350px"}
+                        />
+                        </VStack>
+                        <VStack>
+                            <FormLabel
+                            >
+                                Port
+                            </FormLabel>
+                            <NumberInput
+                                width={"100px"}
+                                min={0} 
+                                max={9000}
+                                value=  {ownerConfig?.emailPort?ownerConfig.emailPort:0}
+                                onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,emailPort:parseInt(e)})}
+                            >
+                                <NumberInputField
+                                    backgroundColor={"ghostwhite"}
+                                />
+                                <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                </NumberInputStepper>
+                            </NumberInput>
+                        </VStack>
+                    </HStack>
+                </Box>
+                <Box>
                 <FormLabel
                     m="2%"
                 >
@@ -178,30 +217,17 @@ return (
                 </FormLabel>
                 <HStack>
                     <Input
-                        type={showPasswordEmail?"text":"password"}
+                        type={inputs.passwordEmail?"text":"password"}
                         value={ownerConfig?.password?ownerConfig.password:""}
                         onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,password:e.target.value})}
                         backgroundColor={"ghostwhite"}
                     />
                     <Button
-                        onClick={() => setShowPasswordEmail(!showPasswordEmail)}
+                        onClick={() => {setInputs({...inputs,passwordEmail:!inputs.passwordEmail})}}
                     >
-                        {showPasswordEmail?"Hide":"Show"}
+                        {inputs.passwordEmail?"Hide":"Show"}
                     </Button>
                 </HStack>
-                </Box>
-                <Box>
-                    <FormLabel
-                        m="2%"
-                    >
-                        Email Port
-                    </FormLabel>
-                    <Input
-                        type="number"
-                        value={ownerConfig?.emailPort?ownerConfig.emailPort:""}
-                        onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,emailPort:parseInt(e.target.value)})}
-                        backgroundColor={"ghostwhite"}
-                    />
                 </Box>
                 <HStack 
                     m="2%"
