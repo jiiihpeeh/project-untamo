@@ -1,4 +1,3 @@
-import Activate from "./components/User/Activate"
 
 export enum WeekDay {
     Monday = "Monday",
