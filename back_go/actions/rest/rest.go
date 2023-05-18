@@ -865,6 +865,8 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 			return
 		}
 	}
+
+	//get us
 	//return message success
 	c.JSON(200, gin.H{
 		"message": "User updated",
@@ -930,9 +932,15 @@ func RemoveUser(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//return message success
-	c.JSON(200, gin.H{
-		"message": "User deleted",
-	})
+	users := mongoDB.GetUsers(client)
+	//convert users to []UserOut
+	usersOut := []user.UserOut{}
+	for _, user := range users {
+		userOut := user.ToUserOut()
+		usersOut = append(usersOut, userOut)
+	}
+	//return usersOut as json
+	c.JSON(200, usersOut)
 }
 
 func RefreshToken(c *gin.Context, client *mongo.Client) {
@@ -1049,7 +1057,7 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		Active:     ownerAdmin,
 	}
 	if !ownerAdmin {
-		user.Activate = token.GenerateToken(10)[1:8]
+		user.Activate = token.GenerateToken(16)[0:16]
 	}
 	appconfig.AppConfigurationMutex.Lock()
 	config := appconfig.AppConfiguration
@@ -1057,7 +1065,7 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 	if config.ActivateAuto {
 		user.Active = true
 		user.Activate = ""
-	} else {
+	} else if config.ActivateEmail {
 		go func() {
 			to := []string{user.Email}
 			email.SendEmail("Activate your account", "Your activation code for Untamo is: "+user.Activate, to)

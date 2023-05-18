@@ -8,7 +8,7 @@ import { extend, useAdmin, useLogIn } from '..//../stores'
 import { useNavigate } from "react-router-dom"
 import { Path } from '../../type'
 
-//ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailTLS":false,"activateAuto":false,"activateEmai
+//ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailPlainAuth":false,"activateAuto":false,"activateEmai
 
 function OwnerConfig() {
 const navigate = useNavigate()
@@ -34,9 +34,10 @@ const defaultOwnerConfig = {
     passwordDb:"",
     email:"",
     password:"",
+    emailIdentity:"",
     emailPort:0,
     emailServer:"",
-    emailTLS:false,
+    emailPlainAuth:false,
     activateAuto:false,
     activateEmail:false
 }
@@ -170,6 +171,18 @@ return (
                     />
                 </Box>
                 <Box>
+                    <FormLabel
+                    >
+                        Identity
+                    </FormLabel>
+                    <Input
+                        type="text"
+                        value={ownerConfig?.emailIdentity?ownerConfig.emailIdentity:""}
+                        onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,emailIdentity:e.target.value})}
+                        backgroundColor={"ghostwhite"}
+                    />
+                </Box>
+                <Box>
                     <HStack
                         mt="2%"
                     >
@@ -235,11 +248,11 @@ return (
                     <Spacer/>
                     <VStack> 
                         <FormLabel>
-                            Email TLS
+                            PlainAuth
                         </FormLabel>
                         <Switch
-                            isChecked={ownerConfig?.emailTLS?ownerConfig.emailTLS:false}
-                            onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,emailTLS:e.target.checked})}
+                            isChecked={ownerConfig?.emailPlainAuth?ownerConfig.emailPlainAuth:false}   
+                            onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,emailPlainAuth:e.target.checked})}
                             backgroundColor={"ghostwhite"}
                         />
                     </VStack>
@@ -263,6 +276,7 @@ return (
                             isChecked={ownerConfig?.activateEmail?ownerConfig.activateEmail:false}
                             onChange={(e) => setOwnerConfig({...ownerConfig?ownerConfig:defaultOwnerConfig,activateEmail:e.target.checked})}
                             backgroundColor={"ghostwhite"}
+                            isDisabled={ownerConfig?.activateAuto}
                         />
                     </VStack>
                     <Spacer/>

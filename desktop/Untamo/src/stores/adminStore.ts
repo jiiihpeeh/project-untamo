@@ -18,13 +18,15 @@ type OwnerConfig = {
     useCustomUri: boolean,
     passwordDb: string,
     email: string,
+    emailIdentity: string,
     password: string,
     emailPort: number,
     emailServer: string,
-    emailTLS: boolean,
+    emailPlainAuth: boolean,
     activateAuto: boolean,
     activateEmail: boolean,
 }
+
 
 
 const emptyCommand = {id:null, action:null}

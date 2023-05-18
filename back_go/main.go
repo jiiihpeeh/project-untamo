@@ -2,9 +2,6 @@ package main
 
 //import models from models/
 import (
-	"encoding/json"
-	"log"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,8 +20,8 @@ func main() {
 	//read appConfig from appconfig
 	//set Mutex
 	appConfig, err := appconfig.GetConfig()
-	a, _ := json.Marshal(appConfig)
-	log.Println("appConfig", string(a))
+	// a, _ := json.Marshal(appConfig)
+	// log.Println("appConfig", string(a))
 
 	var client *mongo.Client
 	if err != nil {
@@ -46,7 +43,7 @@ func main() {
 			settings.Password = cfg.Password
 			settings.EmailPort = cfg.EmailPort
 			settings.EmailServer = cfg.EmailServer
-			settings.EmailTLS = cfg.EmailTLS
+			settings.EmailPlainAuth = cfg.EmailPlainAuth
 		}
 
 		settings.OwnerID = ownerID
