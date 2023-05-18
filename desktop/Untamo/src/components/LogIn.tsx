@@ -16,6 +16,7 @@ function LogIn() {
     const navBarTop = useSettings((state) => state.navBarTop)
     const navBarHeight = useSettings((state) => state.height)
     const colorMode = useSettings((state) => state.colorMode)
+    const setShowPasswordForgot = usePopups((state) => state.setShowPasswordForgot)
 
     const [formData, setFormData] = useState({
         email: "",
@@ -77,64 +78,74 @@ function LogIn() {
                 break
             default:
                 return (
-                    <form>
-                        <Box
-                            className={(colorMode === ColorMode.Light) ? 'UserForm' : "UserFormDark"}
-                            width={(isMobile) ? windowSize.width * 0.90 : Math.min(500, windowSize.width * 0.90)}
-                            mt="35%"
-                        >
-                            <FormControl
-                                onSubmit={onSubmit}
-                                width="95%"
-                                margin="0 auto"
-                                mt="15%"
+                    <Box>
+                        <form>
+                            <Box
+                                className={(colorMode === ColorMode.Light) ? 'UserForm' : "UserFormDark"}
+                                width={(isMobile) ? windowSize.width * 0.90 : Math.min(500, windowSize.width * 0.90)}
+                                mt="35%"
                             >
-                                <FormLabel
-                                    htmlFor="email"
-                                    className="FormLabel"
-                                    mt="1%"
-                                    mb="1%"
+                                <FormControl
+                                    onSubmit={onSubmit}
+                                    width="95%"
+                                    margin="0 auto"
+                                    mt="15%"
                                 >
-                                    Email
-                                </FormLabel>
-                                <Input
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    onChange={(e) => onChange(e)}
-                                    value={formData.email}
-                                    bgColor="GhostWhite"
-                                    className="Register" />
-                                <FormLabel
-                                    htmlFor='password'
-                                    className="FormLabel"
-                                >
-                                    Password
-                                </FormLabel>
-                                <Input
-                                    type="password"
-                                    name="password"
-                                    id="password"
-                                    onChange={(e) => onChange(e)}
-                                    value={formData.password}
-                                    bgColor="GhostWhite"
-                                    className="Register" />
-                                <Divider />
-                                <Button
-                                    type="submit"
-                                    id="submit"
-                                    onClick={() => onSubmit()}
-                                    mt="1%"
-                                    mb="1%"
-                                    colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
-                                    isDisabled={!canSubmit}
-                                >
-                                    Log In
-                                </Button>
-                            </FormControl>
-                        </Box>
-                    </form>
-                )
+                                    <FormLabel
+                                        htmlFor="email"
+                                        className="FormLabel"
+                                        mt="1%"
+                                        mb="1%"
+                                    >
+                                        Email
+                                    </FormLabel>
+                                    <Input
+                                        type="email"
+                                        name="email"
+                                        id="email"
+                                        onChange={(e) => onChange(e)}
+                                        value={formData.email}
+                                        bgColor="GhostWhite"
+                                        className="Register" />
+                                    <FormLabel
+                                        htmlFor='password'
+                                        className="FormLabel"
+                                    >
+                                        Password
+                                    </FormLabel>
+                                    <Input
+                                        type="password"
+                                        name="password"
+                                        id="password"
+                                        onChange={(e) => onChange(e)}
+                                        value={formData.password}
+                                        bgColor="GhostWhite"
+                                        className="Register" />
+                                    <Divider />
+                                    <Button
+                                        type="submit"
+                                        id="submit"
+                                        onClick={() => onSubmit()}
+                                        mt="1%"
+                                        mb="1%"
+                                        colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
+                                        isDisabled={!canSubmit}
+                                    >
+                                        Log In
+                                    </Button>
+                                </FormControl>
+                            </Box>
+                        </form>
+                    <Button
+                        mt={"50px"}
+                        size="xs"
+                        colorScheme={"blackAlpha"}
+                        onClick={() => setShowPasswordForgot(true)}
+                    >
+                        Forgot Password?
+                    </Button>
+                </Box>
+            )
         }
     }
     return (<>

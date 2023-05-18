@@ -3,12 +3,13 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
-import { SessionStatus, FormData, UserInfo, Device, Alarm, Path } from '../type'
+import { SessionStatus, FormData, UserInfo, Device, Alarm, Path, PasswordReset } from '../type'
 import { useServer, useDevices, useAdmin, useTimeouts,
          useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep } from '../utils'
 import { postOfflineAlarms } from './alarmStore'
+
 
 
 type UseLogIn = {
@@ -40,6 +41,8 @@ type UseLogIn = {
     setNavigateTo: (path: Path|null) => void,
     fetchCaptcha: () => void,
     activate: (verification: string, captcha: string, accepted: boolean ) => void,
+    forgotPassword: (email: string) => void,
+    resetPassword: (reset: PasswordReset) => void,
 }
 
 async function userInfoFetch() {
@@ -426,6 +429,34 @@ async function fetchWsToken() {
     }
 }
 
+async function forgotPassword(email: string) {
+    const { server, token } = getCommunicationInfo()
+    try {
+        let res = await axios.put(`${server}/forgot-password/${email}`)
+        notification("Reset Password", "Reset code for password was sent to email address")
+    } catch (err) {
+        notification("Reset Password", "Password reset failed", Status.Error)
+    }
+}
+
+async function resetPassword(reset: PasswordReset) {
+    const { server, token } = getCommunicationInfo()
+    try {
+        let res = await axios.post(`${server}/reset-password`,
+            reset
+        )
+        notification("Reset Password", "Password reset successful")
+        useLogIn.getState().setNavigateTo(Path.LogIn)
+    }catch (err : any) {
+        if (err.response && err.response.data) {
+          let msg = err.response.data;
+          notification("Reset Password", `Password reset failed: ${msg.message}`, Status.Error);
+        } else {
+          notification("Reset Password", "Password reset failed", Status.Error);
+        }
+    }
+}
+
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false, active: false}
 const useLogIn = create<UseLogIn>()(
     persist(
@@ -519,6 +550,12 @@ const useLogIn = create<UseLogIn>()(
             activate: async (verification, captcha, accepted ) => {
                 await activate(verification, captcha, accepted)
 
+            },
+            forgotPassword: async (email) => {
+                await forgotPassword(email)
+            },
+            resetPassword: async (reset) => {
+                await resetPassword(reset)
             }
         }
       ),

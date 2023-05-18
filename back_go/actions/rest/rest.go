@@ -1279,9 +1279,9 @@ func ForgotPassword(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//generate reset token
-	resetToken := token.GenerateToken(32)
+	resetToken := token.GenerateToken(18)
 	//set reset token in user
-	user.PasswordResetToken = resetToken
+	user.PasswordResetToken = resetToken[0:18]
 	user.PasswordResetRequestTime = now.Now()
 	//update user in db
 	if !mongoDB.UpdateUser(user, client) {
@@ -1504,5 +1504,4 @@ func SetOwnerSettings(c *gin.Context, client *mongo.Client) {
 
 	//return appconfig as json
 	c.JSON(200, app)
-
 }

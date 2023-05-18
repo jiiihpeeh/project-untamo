@@ -65,6 +65,8 @@ type Popup = {
     setShowCloseApp: (to: boolean) => void
     showChangeColors: boolean,
     setShowChangeColors: (to: boolean) => void,
+    showPasswordForgot: boolean,
+    setShowPasswordForgot: (to: boolean) => void
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -322,6 +324,14 @@ const usePopups = create<Popup>((set, get) => ({
             set(
                 {
                     showClearSettings: to
+                }
+            )
+        },
+        showPasswordForgot: false,
+        setShowPasswordForgot: (to: boolean) => {
+            set(
+                {
+                    showPasswordForgot: to
                 }
             )
         },
