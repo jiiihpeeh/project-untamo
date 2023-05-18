@@ -107,8 +107,6 @@ function ResetPassword(){
                             className="Register" />
                         <Divider />
                         <Button
-                            type="submit"
-                            id="submit"
                             onClick={() => resetPassword(formData)}
                             mt="1%"
                             mb="1%"
