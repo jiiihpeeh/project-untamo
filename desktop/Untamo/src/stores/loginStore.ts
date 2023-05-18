@@ -14,8 +14,7 @@ import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, isSuccess } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { postOfflineAlarms } from "./alarmStore"
-import { Alarm, Device, Path } from "../type"
-import { C } from '@tauri-apps/api/event-2a9960e7'
+import { Alarm, Device, Path, PasswordReset } from "../type"
 
 type UseLogIn = {
     wsToken: string
@@ -46,6 +45,8 @@ type UseLogIn = {
     setNavigateTo: (path: Path | null) => void,
     fetchCaptcha: () => void,
     activate: (verification: string, captcha: string, accepted: boolean ) => void,
+    forgotPassword: (email: string) => void,
+    resetPassword: (reset: PasswordReset) => void,
 }
 
 async function userInfoFetch() {
@@ -508,6 +509,50 @@ async function logOutProcedure() {
     //localStorage.clear()
     sessionStorage.clear()
 }
+
+async function forgotPassword(email: string) {
+    const { server, token } = getCommunicationInfo()
+    try {
+        const client = await getClient()
+        const res = await client.request(
+            {
+                url: `${server}/forgot-password/${email}`,
+                method: 'PUT',
+                responseType: ResponseType.JSON,
+            }
+        )
+        isSuccess(res)
+        notification("Reset Password", "Reset code for password was sent to email address")
+    } catch (err) {
+        notification("Reset Password", "Password reset failed", Status.Error)
+    }
+}
+
+async function resetPassword(reset: PasswordReset) {
+    const { server, token } = getCommunicationInfo()
+    try {
+        const client = await getClient()
+        const res = await client.request(
+            {
+                url: `${server}/reset-password`,
+                method: 'POST',
+                responseType: ResponseType.JSON,
+                body: Body.json(reset)
+            }
+        )
+        isSuccess(res)
+        notification("Reset Password", "Password reset was successful")
+        useLogIn.getState().setNavigateTo(Path.LogIn)
+    } catch (err : any) {
+        if (err.response && err.response.data) {
+          let msg = err.response.data;
+          notification("Reset Password", `Password reset failed: ${msg.message}`, Status.Error);
+        } else {
+          notification("Reset Password", "Password reset failed", Status.Error);
+        }
+    }
+}
+
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false, active: false}
 const useLogIn = create<UseLogIn>()(
     persist(
@@ -593,8 +638,13 @@ const useLogIn = create<UseLogIn>()(
             },
             activate: async (verification, captcha, accepted ) => {
                 await activate(verification, captcha, accepted)
-
-            }
+            },
+            forgotPassword: async (email) => {
+                await forgotPassword(email)
+            },
+            resetPassword: async (reset) => {
+                await resetPassword(reset)
+            },
         }
       ),
       {

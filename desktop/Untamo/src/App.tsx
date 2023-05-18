@@ -30,6 +30,7 @@ import ServerLocation from './components/ServerLocation'
 import UserMenu from './components/User/UserMenu'
 import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
+import PasswordForgot from './PasswordForgot'
 import { extend, useSettings } from './stores'
 import { isMobile } from 'react-device-detect';
 import { sleep } from './utils'
@@ -42,6 +43,7 @@ import Task from './components/User/Task'
 import ClearSettings from './components/User/ClearSettings'
 import CloseAction from './components/User/TauriWindow'
 import ChangeAlarmColors from './components/User/ChangeColors'
+import ResetPassword from './ResetPassword'
 import './App.css'
 
   // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
@@ -93,6 +95,7 @@ function App() {
                     <Route path={extend(Path.Admin)} element={<Admin/>}/>
                     <Route path={extend(Path.Activate)} element={<Activate/>}/>
                     <Route path={extend(Path.Owner)} element={<OwnerConfig/>}/>
+                    <Route path={extend(Path.ResetPassword)} element={<ResetPassword/>}/>
                     <Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
                     <Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />
                 </Routes>
@@ -123,6 +126,7 @@ function App() {
         <ClearSettings/>
         <CloseAction/>
         <ChangeAlarmColors/>
+        <PasswordForgot/>
     </Container>
     )
 }

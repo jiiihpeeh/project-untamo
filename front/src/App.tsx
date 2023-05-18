@@ -31,6 +31,7 @@ import UserMenu from './components/User/UserMenu'
 import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
 import OwnerConfig from './components/Admin/OwnerConfig'
+import PasswordForgot from './components/PasswordForgot'
 import { extend, useSettings } from './stores'
 import { isMobile } from 'react-device-detect';
 import  { sleep }  from './utils'
@@ -42,6 +43,7 @@ import Color from './components/User/Colors'
 import Task from './components/User/Task'
 import ClearSettings from './components/User/ClearSettings'
 import ChangeAlarmColors from './components/User/ChangeColors'
+import ResetPassword from './components/ResetPassword'
 import './App.css'
 
 function App() {
@@ -86,6 +88,7 @@ function App() {
                     <Route path={extend(Path.Admin)} element={<Admin/>}/>
                     <Route path={extend(Path.Activate)} element={<Activate/>}/>
                     <Route path={extend(Path.Owner)} element={<OwnerConfig/>}/>
+                    <Route path={extend(Path.ResetPassword)} element={<ResetPassword/>}/>
                     <Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
                     <Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />
                 </Routes>
@@ -115,6 +118,7 @@ function App() {
         <Settings/>
         <ClearSettings/>
         <ChangeAlarmColors/>
+        <PasswordForgot/>
     </Container>
     )
 }

@@ -18,7 +18,8 @@ export enum Path  {
     Clueless="clueless",
     Base= "",
     Activate = "activate",
-    Owner = "owner"
+    Owner = "owner",
+    ResetPassword = "reset-password"
 }
 
 export enum SessionStatus {
@@ -106,4 +107,11 @@ export enum CloseTask {
     Obey = "obey",
     Ignore = "ignore",
     Force = "force"
+}
+
+export type PasswordReset = {
+    email: string,
+    password: string,
+    confirmPassword:  string,
+    passwordResetToken: string,
 }

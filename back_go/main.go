@@ -99,7 +99,7 @@ func main() {
 	router.GET("/api/activation-captcha", func(c *gin.Context) {
 		rest.GetActivationCaptcha(c, client)
 	})
-	router.POST("/forgot-password/:email", func(c *gin.Context) {
+	router.PUT("/forgot-password/:email", func(c *gin.Context) {
 		rest.ForgotPassword(c, client)
 	})
 	router.POST("/reset-password", func(c *gin.Context) {
