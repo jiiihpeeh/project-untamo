@@ -105,6 +105,9 @@ func main() {
 	router.POST("/forgot-password/:email", func(c *gin.Context) {
 		rest.ForgotPassword(c, client)
 	})
+	router.POST("/reset-password", func(c *gin.Context) {
+		rest.ResetPassword(c, client)
+	})
 	router.POST("/store-server-config", func(c *gin.Context) {
 		rest.StoreServerConfig(c, client)
 	})

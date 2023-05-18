@@ -10,17 +10,19 @@ import (
 )
 
 type User struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	Email      string             `bson:"email"`
-	FirstName  string             `bson:"first_name,omitempty"`
-	LastName   string             `bson:"last_name,omitempty"`
-	ScreenName string             `bson:"screen_name"`
-	Admin      bool               `bson:"admin"`
-	Owner      bool               `bson:"owner"`
-	Active     bool               `bson:"active"`
-	Password   string             `bson:"password"`
-	Activate   string             `bson:"activate,omitempty"`
-	Registered int64              `bson:"registered,omitempty"`
+	ID                       primitive.ObjectID `bson:"_id,omitempty"`
+	Email                    string             `bson:"email"`
+	FirstName                string             `bson:"first_name,omitempty"`
+	LastName                 string             `bson:"last_name,omitempty"`
+	ScreenName               string             `bson:"screen_name"`
+	Admin                    bool               `bson:"admin"`
+	Owner                    bool               `bson:"owner"`
+	Active                   bool               `bson:"active"`
+	Password                 string             `bson:"password"`
+	Activate                 string             `bson:"activate,omitempty"`
+	Registered               int64              `bson:"registered,omitempty"`
+	PasswordResetRequestTime int64              `bson:"password_reset_request_time,omitempty"`
+	PasswordResetToken       string             `bson:"password_reset_token,omitempty"`
 }
 
 type UserOut struct {
@@ -56,6 +58,13 @@ type EditUser struct {
 	ScreenName      string `json:"screenName"`
 	Password        string `json:"password:omitempty"`
 	ConfirmPassword string `json:"confirmPassword"`
+}
+
+type ResetPasswordRequest struct {
+	PasswordResetToken string `json:"passwordResetToken"`
+	Email              string `json:"email"`
+	Password           string `json:"password"`
+	ConfirmPassword    string `json:"confirmPassword"`
 }
 
 // email is valid

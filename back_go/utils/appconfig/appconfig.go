@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strconv"
 	"sync"
 
 	"github.com/denisbrodbeck/machineid"
@@ -41,7 +42,7 @@ type LaunchConfig struct {
 type OwnerConfig struct {
 	Email       string `json:"email"`
 	Password    string `json:"password"`
-	EmailPort   string `json:"emailPort"`
+	EmailPort   uint16 `json:"emailPort"`
 	EmailServer string `json:"emailServer"`
 	EmailTLS    bool   `json:"emailTLS"`
 }
@@ -54,7 +55,7 @@ type AppConfig struct {
 	PasswordDB    string `json:"passwordDb"`
 	Email         string `json:"email"`
 	Password      string `json:"password"`
-	EmailPort     string `json:"emailPort"`
+	EmailPort     uint16 `json:"emailPort"`
 	EmailServer   string `json:"emailServer"`
 	EmailTLS      bool   `json:"emailTLS"`
 	ActivateAuto  bool   `json:"activateAuto"`
@@ -283,10 +284,32 @@ func OwnerConfigPrompt() *OwnerConfig {
 		HideEntered: true,
 	}
 	ownerConfig.Password, _ = promptPassword.Run()
-	promptEmailPort := promptui.Prompt{
-		Label: "Enter email port",
+	//validate as uint16
+	validatePort := func(input string) error {
+		port, err := strconv.ParseUint(input, 10, 16)
+		if err != nil {
+			return fmt.Errorf("invalid port number")
+		}
+
+		if port < 1 || port > 65535 {
+			return fmt.Errorf("port number out of range")
+		}
+
+		return nil
 	}
-	ownerConfig.EmailPort, _ = promptEmailPort.Run()
+	promptEmailPort := promptui.Prompt{
+		Label:    "Enter email port",
+		Validate: validatePort,
+	}
+	portString, err := promptEmailPort.Run()
+	if err != nil {
+		panic(err)
+	}
+	portUint, err := strconv.ParseUint(portString, 10, 16)
+	if err != nil {
+		panic(err)
+	}
+	ownerConfig.EmailPort = uint16(portUint)
 	promptEmailServer := promptui.Prompt{
 		Label: "Enter email server",
 	}
