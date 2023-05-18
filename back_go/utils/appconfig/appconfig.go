@@ -40,26 +40,28 @@ type LaunchConfig struct {
 }
 
 type OwnerConfig struct {
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	EmailPort   uint16 `json:"emailPort"`
-	EmailServer string `json:"emailServer"`
-	EmailTLS    bool   `json:"emailTLS"`
+	Email          string `json:"email"`
+	EmailIdentity  string `json:"emailIdentity"`
+	Password       string `json:"password"`
+	EmailPort      uint16 `json:"emailPort"`
+	EmailServer    string `json:"emailServer"`
+	EmailPlainAuth bool   `json:"emailPlainAuth"`
 }
 type AppConfig struct {
-	OwnerID       string `json:"ownerId"`
-	UrlDB         string `json:"urlDB"`
-	CustomURI     string `json:"customUri"`
-	UserDB        string `json:"userDb"`
-	UseCustomURI  bool   `json:"useCustomUri"`
-	PasswordDB    string `json:"passwordDb"`
-	Email         string `json:"email"`
-	Password      string `json:"password"`
-	EmailPort     uint16 `json:"emailPort"`
-	EmailServer   string `json:"emailServer"`
-	EmailTLS      bool   `json:"emailTLS"`
-	ActivateAuto  bool   `json:"activateAuto"`
-	ActivateEmail bool   `json:"activateEmail"`
+	OwnerID        string `json:"ownerId"`
+	UrlDB          string `json:"urlDB"`
+	CustomURI      string `json:"customUri"`
+	UserDB         string `json:"userDb"`
+	UseCustomURI   bool   `json:"useCustomUri"`
+	PasswordDB     string `json:"passwordDb"`
+	EmailIdentity  string `json:"emailIdentity"`
+	Email          string `json:"email"`
+	Password       string `json:"password"`
+	EmailPort      uint16 `json:"emailPort"`
+	EmailServer    string `json:"emailServer"`
+	EmailPlainAuth bool   `json:"emailPlainAuth"`
+	ActivateAuto   bool   `json:"activateAuto"`
+	ActivateEmail  bool   `json:"activateEmail"`
 }
 
 func getAppMachineKey() ([]byte, error) {
@@ -120,18 +122,21 @@ func GetConfig() (*AppConfig, error) {
 		return &config, err
 	}
 	config = AppConfig{
-		OwnerID:       appConfig.OwnerID,
-		UserDB:        appConfig.UserDB,
-		UrlDB:         appConfig.UrlDB,
-		PasswordDB:    appConfig.PasswordDB,
-		Email:         config.Email,
-		Password:      config.Password,
-		EmailPort:     config.EmailPort,
-		EmailServer:   config.EmailServer,
-		EmailTLS:      config.EmailTLS,
-		ActivateAuto:  appConfig.ActivateAuto,
-		ActivateEmail: appConfig.ActivateEmail,
+		OwnerID:        appConfig.OwnerID,
+		UserDB:         appConfig.UserDB,
+		UrlDB:          appConfig.UrlDB,
+		PasswordDB:     appConfig.PasswordDB,
+		Email:          config.Email,
+		EmailIdentity:  config.EmailIdentity,
+		Password:       config.Password,
+		EmailPort:      config.EmailPort,
+		EmailServer:    config.EmailServer,
+		EmailPlainAuth: config.EmailPlainAuth,
+		ActivateAuto:   appConfig.ActivateAuto,
+		ActivateEmail:  appConfig.ActivateEmail,
 	}
+	//j, _ := json.Marshal(config)
+	//fmt.Println("config", string(j))
 	return &config, err
 }
 
@@ -166,11 +171,12 @@ func SetConfig(config *AppConfig) bool {
 	}
 
 	ownerConf := OwnerConfig{
-		Email:       config.Email,
-		Password:    config.Password,
-		EmailPort:   config.EmailPort,
-		EmailServer: config.EmailServer,
-		EmailTLS:    config.EmailTLS,
+		Email:          config.Email,
+		EmailIdentity:  config.EmailIdentity,
+		Password:       config.Password,
+		EmailPort:      config.EmailPort,
+		EmailServer:    config.EmailServer,
+		EmailPlainAuth: config.EmailPlainAuth,
 	}
 	ownerConfJson, _ := json.Marshal(ownerConf)
 	//log.Println("Owner config :", string(ownerConfJson))
@@ -279,6 +285,10 @@ func OwnerConfigPrompt() *OwnerConfig {
 		Label: "Enter email",
 	}
 	ownerConfig.Email, _ = promptEmail.Run()
+	promptIdentity := promptui.Prompt{
+		Label: "Enter identity",
+	}
+	ownerConfig.EmailIdentity, _ = promptIdentity.Run()
 	promptPassword := promptui.Prompt{
 		Label:       "Enter password",
 		HideEntered: true,
@@ -314,12 +324,12 @@ func OwnerConfigPrompt() *OwnerConfig {
 		Label: "Enter email server",
 	}
 	ownerConfig.EmailServer, _ = promptEmailServer.Run()
-	promptEmailTLS := promptui.Select{
-		Label: "Use TLS?",
+	promptEmailPlainAuth := promptui.Select{
+		Label: "Use PlainAuth?",
 		Items: []string{"Yes", "No"},
 	}
-	_, result, _ := promptEmailTLS.Run()
-	ownerConfig.EmailTLS = result == "Yes"
+	_, result, _ := promptEmailPlainAuth.Run()
+	ownerConfig.EmailPlainAuth = result == "Yes"
 	return &ownerConfig
 }
 

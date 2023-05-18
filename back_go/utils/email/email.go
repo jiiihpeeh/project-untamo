@@ -42,12 +42,17 @@ func SendEmail(subject string, body string, to []string) {
 	mut.Lock()
 	config := appconfig.AppConfiguration
 	mut.Unlock()
-	auth := LoginAuth(config.Email, config.Password)
+	var auth smtp.Auth
+	if config.EmailPlainAuth {
+		auth = smtp.PlainAuth(config.EmailIdentity, config.Email, config.Password, config.EmailServer)
+	} else {
+		auth = LoginAuth(config.Email, config.Password)
+	}
 	address := config.EmailServer + ":" + fmt.Sprint(config.EmailPort)
 	// Here we do it all: connect to our server, set up a message and send it
-	msg := []byte(body)
+	msg := []byte("Subject:" + subject + "\n" + body)
 	err := smtp.SendMail(address, auth, config.EmailServer, to, msg)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }

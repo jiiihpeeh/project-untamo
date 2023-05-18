@@ -60,7 +60,7 @@ function Admin() {
     }
 
     const renderUsers = () => {
-        if (!usersData) {
+        if (!usersData || usersData.length === 0) {
             return ([] as Array<JSX.Element>)
         }
         return usersData.map(({ active, admin, owner, email, user }, key) => {
