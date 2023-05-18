@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
-import { Input , FormControl,FormLabel,
+import { Input , FormControl,FormLabel, Center, HStack, Spacer,
         Button, Box,Divider, Spinner } from '@chakra-ui/react'
 import { useLogIn, extend,usePopups, useSettings } from "../stores"
 import { SessionStatus, Path, ColorMode } from "../type"
@@ -136,14 +136,29 @@ function LogIn() {
                                 </FormControl>
                             </Box>
                         </form>
-                    <Button
-                        mt={"50px"}
-                        size="xs"
-                        colorScheme={"blackAlpha"}
-                        onClick={() => setShowPasswordForgot(true)}
-                    >
-                        Forgot Password?
-                    </Button>
+                        <Center>
+                            <HStack
+                                mt="50px"
+                            >
+                            
+                                <Button
+                                    size="xs"
+                                    colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
+                                    onClick={() => setShowPasswordForgot(true)}
+                                >
+                                    Forgot Password?
+                                </Button>
+                                <Spacer/>
+                                <Button
+                                    ml="10px"
+                                    size="xs"
+                                    colorScheme={"orange"}
+                                    onClick={() => navigate(extend(Path.ResetPassword))}
+                                >
+                                    Reset Password
+                                </Button>
+                            </HStack>
+                        </Center>
                 </Box>
             )
         }
