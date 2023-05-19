@@ -2,6 +2,9 @@ package main
 
 //import models from models/
 import (
+	"flag"
+	"fmt"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,13 +18,24 @@ const (
 	PORT = ":3001"
 )
 
+var (
+	debugMode  bool
+	enableCORS bool
+)
+
 func main() {
-	// connect to mongodb
-	//read appConfig from appconfig
-	//set Mutex
+	flag.BoolVar(&debugMode, "debug", false, "Enable debug mode")
+	flag.BoolVar(&enableCORS, "cors", false, "Enable CORS")
+
+	flag.Parse()
+	if debugMode {
+		fmt.Println("Debug mode enabled")
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	appConfig, err := appconfig.GetConfig()
-	// a, _ := json.Marshal(appConfig)
-	// log.Println("appConfig", string(a))
 
 	var client *mongo.Client
 	if err != nil {
@@ -55,34 +69,32 @@ func main() {
 			panic(err)
 		}
 	} else {
-		//marshal appConfig to json
-		//appConfigJson, _ := json.Marshal(appConfig)
-		// log.Println("appConfigJson", string(appConfigJson))
-		// log.Println("appConfig", appConfig)
-		// log.Println("appConfig", appConfig.GetUrl())
 		client = mongoDB.Connect(appConfig.GetUrl())
 	}
 	appconfig.AppConfigurationMutex.Lock()
 	appconfig.AppConfiguration = appConfig
 	appconfig.AppConfigurationMutex.Unlock()
 	//make rest api with gin /login /devices /users post get put delete on port 3001
+
 	router := gin.Default()
 	//corsConfig := cors.DefaultConfig()
-	corsConfig := cors.Config{
-		AllowOrigins:           []string{"*"},
-		AllowMethods:           []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:           []string{"AllowCrossOriginRequests", "adminToken", "Access-Control-Allow-Header", "Origin", "Content-Type, Date", "Content-Length", "accept", "origin", "Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Credentials", "Access-Control-Max-Age", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Host", "User-Agent", "token", "Upgrade", "Sec-WebSocket-Version", "Sec-WebSocket-Key", "Sec-WebSocket-Extensions", "Pragma", "Cache-Control", "Upgrade", "Sec-WebSocket-Version", "Sec-WebSocket-Key", "Sec-WebSocket-Extensions", "Pragma", "Cache-Control"},
-		AllowCredentials:       true,
-		AllowWildcard:          true,
-		AllowBrowserExtensions: true,
-		AllowWebSockets:        true,
-		AllowFiles:             true,
-	}
 
 	// Register the middleware
-	router.Use(cors.New(corsConfig))
+	if enableCORS {
+		fmt.Println("CORS enabled")
+		corsConfig := cors.Config{
+			AllowOrigins:           []string{"*"},
+			AllowMethods:           []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowHeaders:           []string{"AllowCrossOriginRequests", "adminToken", "Access-Control-Allow-Header", "Origin", "Content-Type, Date", "Content-Length", "accept", "origin", "Cache-Control", "X-Requested-With", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Credentials", "Access-Control-Max-Age", "Access-Control-Request-Headers", "Access-Control-Request-Method", "Connection", "Host", "User-Agent", "token", "Upgrade", "Sec-WebSocket-Version", "Sec-WebSocket-Key", "Sec-WebSocket-Extensions", "Pragma", "Cache-Control", "Upgrade", "Sec-WebSocket-Version", "Sec-WebSocket-Key", "Sec-WebSocket-Extensions", "Pragma", "Cache-Control"},
+			AllowCredentials:       true,
+			AllowWildcard:          true,
+			AllowBrowserExtensions: true,
+			AllowWebSockets:        true,
+			AllowFiles:             true,
+		}
+		router.Use(cors.New(corsConfig))
+	}
 
-	//router.Run()
 	//log in with gin and mongodb client
 	router.POST("/login", func(c *gin.Context) {
 		rest.LogIn(c, client)
