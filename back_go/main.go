@@ -36,6 +36,8 @@ func main() {
 	}
 
 	appConfig, err := appconfig.GetConfig()
+	//cstr, err := json.Marshal(appConfig)
+	//fmt.Println(string(string(cstr)))
 
 	var client *mongo.Client
 	if err != nil {
@@ -199,5 +201,7 @@ func main() {
 		wshandler.Action(c, client)
 	})
 
+	//run PingPong
+	go wshandler.Ping()
 	router.Run(PORT) // listen and serve on
 }

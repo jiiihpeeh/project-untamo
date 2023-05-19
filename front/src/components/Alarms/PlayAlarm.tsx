@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
-import {  useAlarms, useTimeouts, useAudio, extend, usePopups, useTask, useSettings } from '../../stores'
+import {  useAlarms, useTimeouts, useAudio, extend, usePopups, useTask, useSettings, useLogIn } from '../../stores'
 import { CloseTask, Path } from '../../type'
 import { urlEnds, sleep } from '../../utils'
 import '../../App.css'
@@ -31,13 +30,13 @@ function PlayAlarm() {
     const turnOffValue = useAlarms((state) => state.turnOff)
     const setTurnOffValue = useAlarms((state) => state.setTurnOff)
     const clearAlarmOutId = useTimeouts((state) => state.clearAlarmOutId)
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const [pressTime, setPressTime] = useState(0)
 
     useEffect(() => {
         setClockSize(Math.min(windowSize.width, windowSize.height) * 0.35)
     }, [windowSize])
 
-    const navigate = useNavigate()
 
     function removeAlarmObject() {
         try {
@@ -47,7 +46,7 @@ function PlayAlarm() {
     }
     async function closeSequence(ms: number, clear: boolean = false) {
         await sleep(ms)
-        navigate(extend(Path.Alarms))
+        setNavigateTo(Path.Alarms)
         stopAudio()
         if (clear) {
             clearAlarmOutId()

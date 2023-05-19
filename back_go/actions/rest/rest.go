@@ -839,7 +839,7 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	userEdit.Admin = adminRequest.Admin
-	userEdit.Owner = adminRequest.Active
+	userEdit.Active = adminRequest.Active
 	updated := mongoDB.UpdateUser(userEdit, client)
 	if !updated {
 		c.JSON(500, gin.H{
@@ -865,12 +865,16 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 			return
 		}
 	}
-
-	//get us
-	//return message success
-	c.JSON(200, gin.H{
-		"message": "User updated",
-	})
+	//return list of users
+	users := mongoDB.GetUsers(client)
+	//convert users to []UserOut
+	usersOut := []user.UserOut{}
+	for _, user := range users {
+		userOut := user.ToUserOut()
+		usersOut = append(usersOut, userOut)
+	}
+	//return usersOut as json
+	c.JSON(200, usersOut)
 }
 
 func RemoveUser(c *gin.Context, client *mongo.Client) {

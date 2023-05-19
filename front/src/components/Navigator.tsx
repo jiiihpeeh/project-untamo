@@ -1,31 +1,29 @@
-import { useNavigate } from "react-router-dom"
 import React, { useEffect } from "react"
 import { useDevices, useLogIn, useAdmin, extend, useAlarms } from "../stores"
 import { SessionStatus, Path } from "../type"
-
+import { useNavigate } from "react-router-dom"
 function Navigator() {
     const currentDevice = useDevices((state) => state.currentDevice)
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const adminNavigate = useAdmin((state) => state.adminNavigate)
     const navigateTo = useLogIn((state) => state.navigateTo)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
-
     const navigate = useNavigate()
 
     useEffect(() => {
         //console.log(sessionStatus, currentDevice,adminNavigate)        
         if (sessionStatus !== SessionStatus.Valid) {
-            navigate(extend(Path.LogIn))
+            setNavigateTo(Path.LogIn)
         } else if (sessionStatus === SessionStatus.Valid && !currentDevice) {
-            navigate(extend(Path.Welcome))
+            setNavigateTo(Path.Welcome)
         } else if (sessionStatus === SessionStatus.Valid && currentDevice) {
-            navigate(extend(Path.Alarms))
+            setNavigateTo(Path.Alarms)
         }
 
     }, [sessionStatus, currentDevice])
     useEffect(() => {
         if (sessionStatus === SessionStatus.Valid && adminNavigate) {
-            navigate(extend(Path.Admin))
+            setNavigateTo(Path.Admin)
             useAdmin.setState({ adminNavigate: false })
         }
     }, [adminNavigate])

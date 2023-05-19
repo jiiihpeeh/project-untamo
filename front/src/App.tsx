@@ -30,7 +30,7 @@ import ServerLocation from './components/ServerLocation'
 import UserMenu from './components/User/UserMenu'
 import DeviceMenu from './components/Device/DeviceMenu'
 import AddAlarm from './components/Alarms/AddAlarm'
-import OwnerConfig from './components/Admin/OwnerConfig'
+import Owner from './components/Admin/Owner'
 import PasswordForgot from './components/PasswordForgot'
 import { extend, useSettings } from './stores'
 import { isMobile } from 'react-device-detect';
@@ -87,7 +87,7 @@ function App() {
                     <Route path={extend(Path.Clueless)} element={<Clueless/>}/>
                     <Route path={extend(Path.Admin)} element={<Admin/>}/>
                     <Route path={extend(Path.Activate)} element={<Activate/>}/>
-                    <Route path={extend(Path.Owner)} element={<OwnerConfig/>}/>
+                    <Route path={extend(Path.Owner)} element={<Owner/>}/>
                     <Route path={extend(Path.ResetPassword)} element={<ResetPassword/>}/>
                     <Route path={extend(Path.Base)} element={<Navigate to={extend(Path.LogIn)} /> } />
                     <Route path="*" element={<Navigate to={extend(Path.LogIn)} /> } />

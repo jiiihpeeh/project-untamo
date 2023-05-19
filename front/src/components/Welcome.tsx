@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react"
-import { useNavigate } from "react-router-dom"
 import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList, Box, Divider,
           MenuItem , Spacer, VStack, Center, Heading, Table, Tr, Td, Tbody  } from '@chakra-ui/react'
 import { useLogIn, useDevices, extend } from "../stores"
@@ -16,7 +15,7 @@ function Welcome() {
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const setShowAddDevice = usePopups(state => state.setShowAddDevice)
     const menuRef = useRef<HTMLButtonElement>(null)
-    const navigate = useNavigate()
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
 
     function TimeFormatSelect() {
         return (
@@ -131,7 +130,7 @@ function Welcome() {
     }
     useEffect(() => {
         if (sessionStatus === SessionStatus.NotValid) {
-            navigate(extend(Path.LogIn))
+            setNavigateTo(Path.LogIn)
         }
     }, [sessionStatus])
 
