@@ -1,5 +1,4 @@
 import React, { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
 import { Button, Table, Thead, Tbody, Tr,Th,Td, TableContainer,
          Switch, IconButton, Box, VStack } from "@chakra-ui/react"
 import { DeleteIcon } from '@chakra-ui/icons'
@@ -8,13 +7,14 @@ import { usePopups, useLogIn, useAdmin, extend } from "../../stores"
 import { AdminAction, Path } from '../../type'
 
 function Admin() {
-    const navigate = useNavigate()
     const userInfo = useLogIn((state) => state.user)
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const adminTime = useAdmin((state) => state.time)
     const usersData = useAdmin((state) => state.usersData)
     const getUsersData = useAdmin((state) => state.getUsersData)
     const setConfirmOpen = usePopups((state) => state.setShowAdminConfirm)
+    //const navigateTo = useLogIn((state) => state.navigateTo)
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const isOwner = useLogIn((state) => state.user.owner)
 
     function userActive(id: string, active: boolean, owner: boolean, currentUser: boolean, key: number) {
@@ -90,7 +90,7 @@ function Admin() {
 
     useEffect(() => {
         if (!sessionStatus || (adminTime < Date.now())) {
-            navigate(extend(Path.Alarms))
+            setNavigateTo(Path.Alarms)
         }
     }, [adminTime, sessionStatus])
     useEffect(() => {
@@ -112,7 +112,7 @@ function Admin() {
                         Update User List
                     </Button>
                     <Button
-                        onClick={() => navigate(extend(Path.Owner))}
+                        onClick={() => setNavigateTo(Path.Owner)}
                         isDisabled={!isOwner}
                         m="30px"
                     >

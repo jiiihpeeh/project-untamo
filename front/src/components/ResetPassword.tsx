@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react'
 import { useLogIn, usePopups, useSettings, extend } from '../stores'
 import { ColorMode, PasswordReset, Path } from '../type'
 import { Box, FormControl, FormLabel, Input, Button, Divider } from '@chakra-ui/react'
-import { useNavigate } from 'react-router-dom'
 function ResetPassword(){
     const [formData, setFormData] = useState<PasswordReset>({
         email: "",
@@ -17,8 +16,8 @@ function ResetPassword(){
     const resetPassword = useLogIn((state) => state.resetPassword)
     const [canSubmit, setCanSubmit] = useState(false)
     const emailPattern = new RegExp(".+@.+..+")
-    const navigate = useNavigate()
-
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
+    
     function onChange(event: React.ChangeEvent<HTMLInputElement>) {
         setFormData((formData) => {
             return {
@@ -118,7 +117,7 @@ function ResetPassword(){
                         <Box>
                             <Button
                                 colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
-                                onClick={() => navigate(extend(Path.LogIn))}
+                                onClick={() => setNavigateTo(Path.LogIn)}
                                 mb="1%"
                             >
                                 Back to LogIn

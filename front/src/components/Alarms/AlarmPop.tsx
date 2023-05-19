@@ -1,7 +1,6 @@
 import {  Popover,  Button, Portal, PopoverContent, HStack,
           PopoverHeader, PopoverArrow, PopoverBody, PopoverAnchor, 
           PopoverFooter, Text, VStack, Box, Center } from '@chakra-ui/react'
-import { useNavigate } from 'react-router-dom'
 import { useAudio,  useDevices, useAlarms, usePopups, useLogIn, useSettings } from '../../stores'
 import { shallow } from 'zustand/shallow'
 import { timePadding, time24hToTime12h } from '../../utils'
@@ -26,7 +25,6 @@ function AlarmPop() {
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
     const [posStyle, setPosStyle] = useState<React.CSSProperties>({})
 
-    const navigate = useNavigate()
 
     function footerText() {
         let addBtn = (
@@ -34,7 +32,6 @@ function AlarmPop() {
                 onClick={() => setShowAddAlarm(true)}
                 width="100%"
                 backgroundColor={(colorMode === ColorMode.Light) ? "gray.400" : "#303f9f"}
-
             >
                 Add an Alarm
             </Button>
