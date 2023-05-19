@@ -1,9 +1,8 @@
 import React, {  useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Input, InputGroup,Box, VisuallyHidden,
          InputRightAddon, FormControl,
          FormLabel, Text, Button } from '@chakra-ui/react'
-import { useServer, extend, usePopups, useSettings } from '../../stores'
+import { useServer, usePopups, useSettings, useLogIn } from '../../stores'
 import useRegister from './RegisterBackend'
 import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons'
 import { Path, ColorMode } from '../../type'
@@ -36,7 +35,8 @@ function Register() {
     const sendMessage = useServer((state) => state.wsRegisterSendMessage)
     const question = useRegister((state) => state.question)
     const setQuestion = useRegister((state) => state.setQuestion)
-    const navigate = useNavigate()
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
+
 
     function PasswordMatch() {
         let checkmark = (password.length > 5 && password === confirmPassword) ? <CheckCircleIcon /> : <NotAllowedIcon />
@@ -58,7 +58,7 @@ function Register() {
     useEffect(() => {
         if (registered) {
             clearForm()
-            navigate(extend(Path.LogIn))
+            setNavigateTo(Path.LogIn)
             wsDisconnect()
         }
     }, [registered])

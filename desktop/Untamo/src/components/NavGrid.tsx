@@ -1,7 +1,6 @@
 import { Link as ReachLink } from 'react-router-dom'
 import { Text, Link, Spacer, HStack, Avatar, Flex, Image, Icon  } from '@chakra-ui/react'
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react"
-import { useNavigate } from 'react-router-dom'
 import { useSettings, useLogIn, useAdmin, useTimeouts,
          usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
 import { SessionStatus, Path } from '../type'
@@ -39,6 +38,7 @@ function NavGrid() {
     const showSettings = usePopups((state) => state.showSettings)
     const navBarTop = useSettings((state) => state.navBarTop)
     const navHeight = useSettings((state) => state.height)
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const [validItems, setValidItems] = useState(["login", "register", "about"])
     const [showAdmin, setShowAdmin] = useState(false)
     const [pointing, setPointing] = useState<typeof Down>(Down)
@@ -46,7 +46,6 @@ function NavGrid() {
     const [logoAnimate, setLogoAnimate] = useState<string | undefined>(undefined)
 
 
-    const navigate = useNavigate()
     useLayoutEffect(() => {
         function updateSize() {
             setWindowSize(window.innerWidth, window.innerHeight, [-90, 90].includes(window.orientation))
@@ -107,7 +106,7 @@ function NavGrid() {
             await sleep(5)
             setNavigationTriggered()
             if (urlEnds(Path.Admin)) {
-                navigate(extend(Path.Alarms))
+                setNavigateTo(Path.Alarms)
             }
         }
         try {

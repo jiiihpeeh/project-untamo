@@ -4,51 +4,50 @@ import {  HStack, Spacer, Stack, Text,
     NumberInputField, NumberInputStepper,
     NumberIncrementStepper,  NumberDecrementStepper, } from '@chakra-ui/react'
 import React, { useEffect, useState, useRef } from 'react'
-import { extend, useAdmin, useLogIn } from '..//../stores' 
-import { useNavigate } from "react-router-dom"
+import { extend, useAdmin, useLogIn } from '../../stores' 
 import { Path } from '../../type'
 
 //ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailPlainAuth":false,"activateAuto":false,"activateEmai
 
-function OwnerConfig() {
-const navigate = useNavigate()
-
-const inputHideShow = {
-    passwordDb: false,
-    passwordEmail: false,
-    dbURI: false,
-    ownerID : false       
-}
-const [ inputs , setInputs ] = useState(inputHideShow)
-const ownerConfig = useAdmin((state) => state.ownerConfig)
-const setOwnerConfig = useAdmin((state) => state.setOwnerConfig)
-const getOwnerConfig = useAdmin((state) => state.getOwnerConfig)
-const sendConfiguration = useAdmin((state) => state.sendOwnerConfig)
-const isOwner = useLogIn((state) => state.user.owner)
-const defaultOwnerConfig = {
-    ownerId:"",
-    urlDB:"",
-    customUri:"",
-    userDb:"",
-    useCustomUri:false,
-    passwordDb:"",
-    email:"",
-    password:"",
-    emailIdentity:"",
-    emailPort:0,
-    emailServer:"",
-    emailPlainAuth:false,
-    activateAuto:false,
-    activateEmail:false
-}
-useEffect(() => {
-    getOwnerConfig()
-}, [])
-useEffect(() => {
-    if (!isOwner) {
-        navigate(extend(Path.Admin))
+function Owner() {
+    const inputHideShow = {
+        passwordDb: false,
+        passwordEmail: false,
+        dbURI: false,
+        ownerID : false       
     }
-}, [])
+    const [ inputs , setInputs ] = useState(inputHideShow)
+    const ownerConfig = useAdmin((state) => state.ownerConfig)
+    const setOwnerConfig = useAdmin((state) => state.setOwnerConfig)
+    const getOwnerConfig = useAdmin((state) => state.getOwnerConfig)
+    const sendConfiguration = useAdmin((state) => state.sendOwnerConfig)
+    const isOwner = useLogIn((state) => state.user.owner)
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
+
+    const defaultOwnerConfig = {
+        ownerId:"",
+        urlDB:"",
+        customUri:"",
+        userDb:"",
+        useCustomUri:false,
+        passwordDb:"",
+        email:"",
+        password:"",
+        emailIdentity:"",
+        emailPort:0,
+        emailServer:"",
+        emailPlainAuth:false,
+        activateAuto:false,
+        activateEmail:false
+    }
+    useEffect(() => {
+        getOwnerConfig()
+    }, [])
+    useEffect(() => {
+        if (!isOwner) {
+            setNavigateTo(Path.Admin)
+        }
+    }, [])
 
 return (
         <>
@@ -288,14 +287,14 @@ return (
             <Button
                 onClick={() => {
                     sendConfiguration()
-                    navigate(extend(Path.Admin))
+                    setNavigateTo(Path.Admin)
                     }
                 }
             >
                 Apply
             </Button>
             <Button
-                onClick={() => navigate(extend(Path.Admin))}
+                onClick={() => setNavigateTo(Path.Admin)}
                 m="2%"
             >
                 Cancel
@@ -303,4 +302,4 @@ return (
         </>
     )
 }
-export default OwnerConfig
+export default Owner

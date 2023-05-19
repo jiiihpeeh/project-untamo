@@ -1,7 +1,6 @@
 import {  Popover, Button, Portal, PopoverContent, PopoverHeader,
           PopoverArrow, PopoverBody, Center, PopoverAnchor, Box } from '@chakra-ui/react'
-import { useNavigate } from 'react-router-dom'
-import { useAdmin, usePopups, useSettings } from '../../stores'
+import { useAdmin, useLogIn, usePopups, useSettings } from '../../stores'
 import React, { useState, useEffect } from 'react'
 
 function AdminPop() {
@@ -15,8 +14,6 @@ function AdminPop() {
 
     const navigationTriggered = usePopups((state) => state.navigationTriggered)
     const [posStyle, setPosStyle] = useState<React.CSSProperties>({})
-
-    const navigate = useNavigate()
 
     useEffect(() => {
         let elem = document.getElementById("link-admin")

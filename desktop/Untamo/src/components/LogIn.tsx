@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import { useNavigate } from 'react-router-dom'
 import { Input , FormControl,FormLabel, Center, HStack, Spacer,
         Button, Box,Divider, Spinner } from '@chakra-ui/react'
 import { useLogIn, extend,usePopups, useSettings } from "../stores"
@@ -16,6 +15,7 @@ function LogIn() {
     const navBarTop = useSettings((state) => state.navBarTop)
     const navBarHeight = useSettings((state) => state.height)
     const colorMode = useSettings((state) => state.colorMode)
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const setShowPasswordForgot = usePopups((state) => state.setShowPasswordForgot)
 
     const [formData, setFormData] = useState({
@@ -35,17 +35,15 @@ function LogIn() {
 
     function onSubmit() {
         logIn(formData.email, formData.password)
-        navigate(extend(Path.Welcome))
+        setNavigateTo(Path.Welcome)
     }
 
 
-    const navigate = useNavigate()
-
     useEffect(() => {
         if (sessionStatus == SessionStatus.Valid) {
-            navigate(extend(Path.Alarms))
+            setNavigateTo(Path.Alarms)
         }else if (sessionStatus == SessionStatus.Activate) {
-            navigate(extend(Path.Activate))
+            setNavigateTo(Path.Activate)
         }
     }, [sessionStatus])
 
@@ -74,7 +72,7 @@ function LogIn() {
                     size='xl'
                     style={{ width: radius, height: radius, left: windowSize.width / 2 - radius / 2, top: top, position: "absolute" }} />)
             case SessionStatus.Activate:
-                navigate(extend(Path.Activate))
+                setNavigateTo(Path.Activate)
                 break
             default:
                 return (
@@ -153,7 +151,7 @@ function LogIn() {
                                     ml="10px"
                                     size="xs"
                                     colorScheme={"orange"}
-                                    onClick={() => navigate(extend(Path.ResetPassword))}
+                                    onClick={() => setNavigateTo(Path.ResetPassword)}
                                 >
                                     Reset Password
                                 </Button>

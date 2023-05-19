@@ -15,17 +15,17 @@ function Navigator() {
     useEffect(() => {
         //console.log(sessionStatus, currentDevice,adminNavigate)        
         if (sessionStatus !== SessionStatus.Valid) {
-            navigate(extend(Path.LogIn))
+            setNavigateTo(Path.LogIn)
         } else if (sessionStatus === SessionStatus.Valid && !currentDevice) {
-            navigate(extend(Path.Welcome))
+            setNavigateTo(Path.Welcome)
         } else if (sessionStatus === SessionStatus.Valid && currentDevice) {
-            navigate(extend(Path.Alarms))
+            setNavigateTo(Path.Alarms)
         }
 
     }, [sessionStatus, currentDevice])
     useEffect(() => {
         if (sessionStatus === SessionStatus.Valid && adminNavigate) {
-            navigate(extend(Path.Admin))
+            setNavigateTo(Path.Admin)
             useAdmin.setState({ adminNavigate: false })
         }
     }, [adminNavigate])
