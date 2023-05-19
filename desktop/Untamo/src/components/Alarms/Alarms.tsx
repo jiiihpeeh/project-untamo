@@ -2,7 +2,7 @@ import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Tex
 import React, { useState, useRef, useEffect } from "react"
 import {  Container, Heading, Switch, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
-import {  useDevices, useAlarms, usePopups, useSettings, extend } from "../../stores"
+import {  useDevices, useAlarms, usePopups, useSettings, useLogIn } from "../../stores"
 import { Path, WeekDay } from "../../type"
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases } from "../../type"
@@ -13,7 +13,6 @@ import { timePadding, time24hToTime12h, capitalize, sleep } from '../../utils'
 import { shallow } from 'zustand/shallow'
 import { SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
-import { useNavigate } from "react-router-dom"
 
 
 function Alarms() {
@@ -30,7 +29,8 @@ function Alarms() {
     const timeIntervalID = useRef<string | null>(null)
     const counterLaunched = useRef<boolean>(false)
     const [showTimeout, setShowTimeout] = useState<NodeJS.Timeout | null>(null)
-    const navigate = useNavigate()
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
+
 
     async function timeCounter() {
         (showTimeout) ? clearTimeout(showTimeout) : {}
@@ -349,7 +349,7 @@ function Alarms() {
     }
     useEffect(() => {
         if (!currentDevice) {
-            navigate(extend(Path.Welcome))
+            setNavigateTo(Path.Welcome)
         }
     }, [currentDevice])
 

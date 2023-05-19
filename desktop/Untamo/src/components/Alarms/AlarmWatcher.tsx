@@ -1,7 +1,6 @@
 import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
-import { useNavigate } from "react-router-dom"
-import { useDevices, useTimeouts, useAlarms, useAudio, extend } from "../../stores"
+import { useDevices, useTimeouts, useAlarms, useAudio, useLogIn } from "../../stores"
 import { urlEnds } from "../../utils"
 import { Path } from "../../type"
 
@@ -15,7 +14,7 @@ function AlarmWatcher() {
     const setTimeForNextLaunch = useAlarms((state) => state.setTimeForNextLaunch)
     const reloadAlarmList = useAlarms((state) => state.reloadAlarmList)
     const setTrack = useAudio((state) => state.setTrack)
-    const navigate = useNavigate()
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
 
     useEffect(() => {
         function filterAlarms() {
@@ -41,7 +40,7 @@ function AlarmWatcher() {
                     let timed = timeToNextAlarm(alarms.filter(alarm => alarm.id === runThis)[0])
                     if (runThis && (timed > 100)) {
                         setRunAlarm(runThis)
-                        let timeOutID = setTimeout(() => { navigate(extend(Path.PlayAlarm)) }, timed)
+                        let timeOutID = setTimeout(() => { setNavigateTo(Path.PlayAlarm) }, timed)
                         setTimeoutId(timeOutID)
                         //let alarmDate =   new Date(timed + Date.now())
                         //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)

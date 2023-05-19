@@ -5,6 +5,7 @@ import { AdminAction } from '../type'
 import useLogIn from './loginStore'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { isSuccess } from '../utils'
+
 type Command = {
     action: AdminAction|null,
     id: string|null,

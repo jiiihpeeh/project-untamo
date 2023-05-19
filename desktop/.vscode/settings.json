@@ -2,8 +2,10 @@
     "cSpell.words": [
         "chakra",
         "flac",
+        "tauri",
         "unlisten",
-        "unminimize"
+        "unminimize",
+        "zustand"
     ],
     "python.analysis.typeCheckingMode": "basic"
 }
