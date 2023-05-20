@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Input , FormControl,FormLabel, Center, HStack, Spacer,
-        Button, Box,Divider, Spinner } from '@chakra-ui/react'
+        Button, Box,Divider, Spinner, VStack } from '@chakra-ui/react'
 import { useLogIn, extend,usePopups, useSettings } from "../stores"
 import { SessionStatus, Path, ColorMode } from "../type"
 
@@ -17,7 +17,7 @@ function LogIn() {
     const colorMode = useSettings((state) => state.colorMode)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const setShowPasswordForgot = usePopups((state) => state.setShowPasswordForgot)
-
+    const setShowResendActivation = usePopups((state) => state.setShowResendActivation)
     const [formData, setFormData] = useState({
         email: "",
         password: ""
@@ -135,6 +135,7 @@ function LogIn() {
                             </Box>
                         </form>
                         <Center>
+                            <VStack>
                             <HStack
                                 mt="50px"
                             >
@@ -156,6 +157,14 @@ function LogIn() {
                                     Reset Password
                                 </Button>
                             </HStack>
+                            <Button
+                                size="xs"
+                                colorScheme= "green"
+                                onClick={() => setShowResendActivation(true)}
+                            >
+                                Didn't receive an activation email?
+                            </Button>
+                            </VStack>
                         </Center>
                 </Box>
             )

@@ -43,6 +43,7 @@ type UseLogIn = {
     activate: (verification: string, captcha: string, accepted: boolean ) => void,
     forgotPassword: (email: string) => void,
     resetPassword: (reset: PasswordReset) => void,
+    resendActivation: (email: string) => void,
 }
 
 async function userInfoFetch() {
@@ -457,7 +458,15 @@ async function resetPassword(reset: PasswordReset) {
     }
 }
 
-
+async function resendActivation(email: string){
+    const { server, token } = getCommunicationInfo()
+    try {
+        let res = await axios.put(`${server}/resend-activation/${email}`)
+        notification("Resend Activation", "Activation code was sent to email address")
+    } catch (err) {
+        notification("Resend Activation", "Activation resend failed", Status.Error)
+    }
+}
 
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false, active: false}
 const useLogIn = create<UseLogIn>()(
@@ -558,7 +567,10 @@ const useLogIn = create<UseLogIn>()(
             },
             resetPassword: async (reset) => {
                 await resetPassword(reset)
-            }
+            },
+            resendActivation: async (email: string) => {
+                await resendActivation(email)
+            },
         }
       ),
       {

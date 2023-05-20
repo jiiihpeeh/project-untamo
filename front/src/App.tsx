@@ -44,6 +44,7 @@ import Task from './components/User/Task'
 import ClearSettings from './components/User/ClearSettings'
 import ChangeAlarmColors from './components/User/ChangeColors'
 import ResetPassword from './components/ResetPassword'
+import ResendActivation from './components/ResendActivation'
 import './App.css'
 
 function App() {
@@ -119,6 +120,7 @@ function App() {
         <ClearSettings/>
         <ChangeAlarmColors/>
         <PasswordForgot/>
+        <ResendActivation/>
     </Container>
     )
 }

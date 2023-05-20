@@ -1524,3 +1524,46 @@ func SetOwnerSettings(c *gin.Context, client *mongo.Client) {
 	//return appconfig as json
 	c.JSON(200, app)
 }
+
+func ResendActivation(c *gin.Context, client *mongo.Client) {
+	emailActivate := c.Param("email")
+	//check that user is not active
+	user := mongoDB.GetUserFromEmail(emailActivate, client)
+	if user == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	if user.Active {
+		c.JSON(400, gin.H{
+			"message": "User is already active",
+		})
+		return
+	}
+	//check if user has activate token
+	if user.Activate == "" {
+		c.JSON(400, gin.H{
+			"message": "User is account is probably suspended",
+		})
+		return
+	}
+	//send email to user with activate token
+	go func() {
+		emailMsg := email.Email{
+			Subject: "Activate your account",
+			Body:    "Your activation code for Untamo is: " + user.Activate,
+			User:    user.Email,
+			Time:    now.Now(),
+		}
+		sent := emailer.SendEmail(&emailMsg)
+		if !sent {
+			emailMsg.Success = false
+			mongoDB.StoreEmail(emailMsg, client)
+		}
+	}()
+	//return message success
+	c.JSON(200, gin.H{
+		"message": "Activation code sent",
+	})
+}
