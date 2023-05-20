@@ -1,4 +1,6 @@
 import { Path } from './type'
+
+
 export async function sleep (ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -51,3 +53,18 @@ export function time24hToTime12h(time: string) {
         '12h': (hours > 11 && hours <= 23) ? "PM" : "AM"
     }
 }
+//generate cryptographically secure random string
+export function generateRandomString(length: number): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const charactersLength = characters.length
+    const randomValues = new Uint32Array(length)
+    // Generate random values using crypto.getRandomValues()
+    crypto.getRandomValues(randomValues)
+    let result = ''
+    for (let i = 0; i < length; i++) {
+      // Map the random values to the character set
+      result += characters.charAt(randomValues[i] % charactersLength)
+    }
+    return result
+}
+  

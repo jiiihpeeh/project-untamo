@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
+	"untamo_server.zzz/actions/checkers"
 	"untamo_server.zzz/actions/rest"
 	"untamo_server.zzz/actions/wshandler"
 	"untamo_server.zzz/db/mongoDB"
@@ -203,5 +204,6 @@ func main() {
 
 	//run PingPong
 	go wshandler.Ping()
+	go checkers.SendUnsentEmails(client)
 	router.Run(PORT) // listen and serve on
 }

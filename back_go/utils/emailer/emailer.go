@@ -1,11 +1,11 @@
-package email
+package emailer
 
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/smtp"
 
+	"untamo_server.zzz/models/email"
 	"untamo_server.zzz/utils/appconfig"
 )
 
@@ -35,7 +35,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 	return nil, nil
 }
 
-func SendEmail(subject string, body string, to []string) {
+func SendEmail(email *email.Email) bool {
 	// Choose auth method and set it up
 	//get appConfigMutex
 	mut := appconfig.AppConfigurationMutex
@@ -50,9 +50,7 @@ func SendEmail(subject string, body string, to []string) {
 	}
 	address := config.EmailServer + ":" + fmt.Sprint(config.EmailPort)
 	// Here we do it all: connect to our server, set up a message and send it
-	msg := []byte("Subject:" + subject + "\n" + body)
-	err := smtp.SendMail(address, auth, config.EmailServer, to, msg)
-	if err != nil {
-		log.Println(err)
-	}
+	msg := []byte("Subject:" + email.Subject + "\n" + email.Body)
+	err := smtp.SendMail(address, auth, config.EmailServer, []string{email.User}, msg)
+	return err == nil
 }

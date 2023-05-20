@@ -16,6 +16,7 @@ import (
 	"untamo_server.zzz/models/admin"
 	"untamo_server.zzz/models/alarm"
 	"untamo_server.zzz/models/device"
+	"untamo_server.zzz/models/email"
 	"untamo_server.zzz/models/login"
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/register"
@@ -24,7 +25,7 @@ import (
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/models/wsOut"
 	"untamo_server.zzz/utils/appconfig"
-	"untamo_server.zzz/utils/email"
+	"untamo_server.zzz/utils/emailer"
 	"untamo_server.zzz/utils/hash"
 	"untamo_server.zzz/utils/id"
 	"untamo_server.zzz/utils/list"
@@ -1071,8 +1072,17 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		user.Activate = ""
 	} else if config.ActivateEmail {
 		go func() {
-			to := []string{user.Email}
-			email.SendEmail("Activate your account", "Your activation code for Untamo is: "+user.Activate, to)
+			emailMsg := email.Email{
+				Subject: "Activate your account",
+				Body:    "Your activation code for Untamo is: " + user.Activate,
+				User:    user.Email,
+				Time:    now.Now(),
+			}
+			sent := emailer.SendEmail(&emailMsg)
+			if !sent {
+				emailMsg.Success = false
+				mongoDB.StoreEmail(emailMsg, client)
+			}
 		}()
 	}
 
@@ -1296,8 +1306,13 @@ func ForgotPassword(c *gin.Context, client *mongo.Client) {
 	}
 	//send email to user with reset token
 	go func() {
-		to := []string{user.Email}
-		email.SendEmail("Reset your password", "You have 10 minutes left to change your password. Your password reset code for Untamo is: "+user.PasswordResetToken, to)
+		mail := email.Email{
+			Subject: "Reset your password",
+			Body:    "You have 10 minutes left to change your password. Your password reset code for Untamo is: " + user.PasswordResetToken,
+			User:    user.Email,
+			Time:    now.Now(),
+		}
+		emailer.SendEmail(&mail)
 	}()
 	//return message success
 	c.JSON(200, gin.H{
