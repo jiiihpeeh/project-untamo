@@ -65,6 +65,8 @@ type Popup = {
     setShowChangeColors: (to: boolean) => void,
     showPasswordForgot: boolean,
     setShowPasswordForgot: (to: boolean) => void,
+    showResendActivation: boolean,
+    setShowResendActivation: (b: boolean) => void,
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -324,7 +326,15 @@ const usePopups = create<Popup>((set, get) => ({
                     showPasswordForgot: to
                 }
             )
-        }
+        },
+        showResendActivation: false,
+        setShowResendActivation: (b) => {
+            set(
+                {
+                    showResendActivation: b
+                }
+            )
+        },
     }
 ))
 

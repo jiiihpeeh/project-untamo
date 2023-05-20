@@ -44,6 +44,7 @@ import ClearSettings from './components/User/ClearSettings'
 import CloseAction from './components/User/TauriWindow'
 import ChangeAlarmColors from './components/User/ChangeColors'
 import ResetPassword from './ResetPassword'
+import ResendActivation from './components/ResendActivation'
 import './App.css'
 
   // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
@@ -127,6 +128,7 @@ function App() {
         <CloseAction/>
         <ChangeAlarmColors/>
         <PasswordForgot/>
+        <ResendActivation/>
     </Container>
     )
 }

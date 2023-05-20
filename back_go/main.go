@@ -111,6 +111,9 @@ func main() {
 	router.POST("/api/activate-account", func(c *gin.Context) {
 		rest.ActivateAccount(c, client)
 	})
+	router.PUT("/resend-activation/:email", func(c *gin.Context) {
+		rest.ResendActivation(c, client)
+	})
 	router.GET("/api/activation-captcha", func(c *gin.Context) {
 		rest.GetActivationCaptcha(c, client)
 	})

@@ -17,6 +17,7 @@ function LogIn() {
     const colorMode = useSettings((state) => state.colorMode)
     const setShowPasswordForgot = usePopups((state) => state.setShowPasswordForgot)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
+    const setShowResendActivation = usePopups((state) => state.setShowResendActivation)
 
     const [formData, setFormData] = useState({
         email: "",
@@ -135,9 +136,11 @@ function LogIn() {
 
                         </form>
                         <Center>
+                            <VStack>
                             <HStack
                                 mt="50px"
                             >
+                            
                                 <Button
                                     size="xs"
                                     colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
@@ -155,6 +158,14 @@ function LogIn() {
                                     Reset Password
                                 </Button>
                             </HStack>
+                            <Button
+                                size="xs"
+                                colorScheme= "green"
+                                onClick={() => setShowResendActivation(true)}
+                            >
+                                Didn't receive an activation email?
+                            </Button>
+                            </VStack>
                         </Center>
                     </Box>
                 )
