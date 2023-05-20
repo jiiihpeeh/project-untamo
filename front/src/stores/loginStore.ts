@@ -7,7 +7,7 @@ import { SessionStatus, FormData, UserInfo, Device, Alarm, Path, PasswordReset }
 import { useServer, useDevices, useAdmin, useTimeouts,
          useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
-import { sleep } from '../utils'
+import { sleep, generateRandomString } from '../utils'
 import { postOfflineAlarms } from './alarmStore'
 
 
@@ -457,6 +457,8 @@ async function resetPassword(reset: PasswordReset) {
     }
 }
 
+
+
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false, active: false}
 const useLogIn = create<UseLogIn>()(
     persist(
@@ -471,7 +473,7 @@ const useLogIn = create<UseLogIn>()(
             tokenTime: -1,
             tunes: [],
             wsPair:"",
-            fingerprint: [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
+            fingerprint: generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             captcha: null,
             setToken: (s) => set(
                   { 

@@ -11,7 +11,7 @@ import useTimeouts from './timeoutsStore'
 import useFetchQR from './QRStore'
 import useAlarms from './alarmStore'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
-import { sleep, isSuccess } from '../utils'
+import { sleep, isSuccess, generateRandomString } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { postOfflineAlarms } from "./alarmStore"
 import { Alarm, Device, Path, PasswordReset } from "../type"
@@ -567,7 +567,7 @@ const useLogIn = create<UseLogIn>()(
             tokenTime: -1,
             tunes: [],
             wsPair:"",
-            fingerprint: [...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
+            fingerprint:  generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             captcha: null,
             setToken: (s) => set(
                   { 

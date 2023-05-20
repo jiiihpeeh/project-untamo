@@ -62,3 +62,16 @@ export function isSuccess(response: HttpResponse) {
         throw new Error(`Request failed with status code ${response.status}`)
     }
 }
+export function generateRandomString(length: number): string {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const charactersLength = characters.length
+    const randomValues = new Uint32Array(length)
+    // Generate random values using crypto.getRandomValues()
+    crypto.getRandomValues(randomValues)
+    let result = ''
+    for (let i = 0; i < length; i++) {
+      // Map the random values to the character set
+      result += characters.charAt(randomValues[i] % charactersLength)
+    }
+    return result
+}

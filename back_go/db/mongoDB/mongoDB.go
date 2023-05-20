@@ -12,6 +12,7 @@ import (
 	"untamo_server.zzz/models/admin"
 	"untamo_server.zzz/models/alarm"
 	"untamo_server.zzz/models/device"
+	"untamo_server.zzz/models/email"
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/session"
 	"untamo_server.zzz/models/user"
@@ -27,24 +28,61 @@ const (
 	ALARMCOLL   = "alarms"
 	DEVICECOLL  = "devices"
 	ADMINCOLL   = "admins"
+	EMAILCOLL   = "emails"
 )
 
-// async fn get_session_from_header(req: &HttpRequest, client: &web::Data<Client>) -> Option<Session> {
-//     let token = match get_token_from_header(&req) {
-//         Some(token) => token,
-//         None => return None,
-//     };
-//     match get_session_from_token(&token, &client).await{
-//         Some(session) => return Some(session),
-//         None => return None,
-//     };
-// }
+// generate indexes for collections
+func GenerateIndexes(client *mongo.Client) {
+	//generate indexes for users
+	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	//generate index for email
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"email": 1, "_id": 1},
+		Options: options.Index().SetUnique(true),
+	})
+
+	//switch to sessions
+	collection = client.Database(DB_NAME).Collection(SESSIONCOLL)
+	//generate index for token
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"token": 1},
+		Options: options.Index().SetUnique(true),
+	})
+	//generate index for ws_token
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"ws_token": 1},
+		Options: options.Index().SetUnique(true),
+	})
+	//switch to alarms
+	collection = client.Database(DB_NAME).Collection(ALARMCOLL)
+	//generate index for user and id
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"user": 1},
+		Options: options.Index().SetUnique(false),
+	})
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"_id": 1},
+		Options: options.Index().SetUnique(true),
+	})
+	//switch to devices
+	collection = client.Database(DB_NAME).Collection(DEVICECOLL)
+	//generate index for user and id
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"user": 1},
+		Options: options.Index().SetUnique(false),
+	})
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"_id": 1},
+		Options: options.Index().SetUnique(true),
+	})
+}
 
 func Connect(uri string) *mongo.Client {
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
 	}
+	go GenerateIndexes(client)
 	return client
 }
 func GetTokenFromHeader(req *http.Request) string {
@@ -484,4 +522,34 @@ func GetOwnerID(client *mongo.Client) (string, error) {
 		return "", err
 	}
 	return user.ID.Hex(), nil
+}
+
+func StoreEmail(mail email.Email, client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(EMAILCOLL)
+	_, err := collection.InsertOne(context.Background(), mail)
+	return err == nil
+}
+
+func DeleteEmail(id primitive.ObjectID, client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(EMAILCOLL)
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": id})
+	return err == nil
+}
+
+func GetEmails(client *mongo.Client) []*email.Email {
+	emails := []*email.Email{}
+	collection := client.Database(DB_NAME).Collection(EMAILCOLL)
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil
+	}
+	for cursor.Next(context.Background()) {
+		email := &email.Email{}
+		err := cursor.Decode(&email)
+		if err != nil {
+			return nil
+		}
+		emails = append(emails, email)
+	}
+	return emails
 }
