@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
 	"github.com/steambap/captcha"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -1566,4 +1567,70 @@ func ResendActivation(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, gin.H{
 		"message": "Activation code sent",
 	})
+}
+
+func Index(c *gin.Context) {
+
+	content, err := ioutil.ReadFile("./dist/index.html")
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to read index.html",
+		})
+		return
+	}
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(content)))
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to read index.html",
+		})
+		return
+	}
+
+	uri := c.Request.Header.Get("X-Forwarded-Uri")
+
+	if uri != "" {
+		doc.Find("link").Each(func(i int, s *goquery.Selection) {
+			href, _ := s.Attr("href")
+			s.SetAttr("href", uri+href)
+		})
+		doc.Find("script").Each(func(i int, s *goquery.Selection) {
+			src, _ := s.Attr("src")
+			s.SetAttr("src", uri+src)
+		})
+		doc.Find("meta").Each(func(i int, s *goquery.Selection) {
+			property, _ := s.Attr("property")
+			if property == "url" {
+				s.SetAttr("extend", uri)
+			}
+		})
+	}
+	host := c.Request.Header.Get("X-Forwarded-Host")
+
+	proto := c.Request.Header.Get("X-Forwarded-Proto")
+	if proto != "" && host != "" {
+		doc.Find("meta").Each(func(i int, s *goquery.Selection) {
+			property, _ := s.Attr("property")
+			if property == "server" {
+				s.SetAttr("address", proto+"://"+host+uri)
+			}
+		})
+	}
+	//convert doc to string
+	byteContent, err := doc.Html()
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to read index.html",
+		})
+		return
+	}
+	//fmt.Println(byteContent)
+	c.Data(200, "text/html; charset=utf-8", []byte(byteContent))
+}
+
+func Assets(c *gin.Context) {
+	//serve dist/assets
+	fileName := c.Param("file")
+	filePath := "./dist/assets/" + fileName
+	//fmt.Println(filePath)
+	c.File(filePath)
 }

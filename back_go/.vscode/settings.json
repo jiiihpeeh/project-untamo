@@ -14,6 +14,7 @@
         "EMAILCOLL",
         "Encrypter",
         "gonic",
+        "goquery",
         "machineid",
         "manifoldco",
         "mongosh",

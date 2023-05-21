@@ -97,14 +97,47 @@ func main() {
 		}
 		router.Use(cors.New(corsConfig))
 	}
-
-	//log in with gin and mongodb client
+	//react vite part begins
+	router.GET("/", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/assets/:file", func(c *gin.Context) {
+		rest.Assets(c)
+	})
+	router.GET("/login", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/alarms", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/admin", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/owner", func(c *gin.Context) {
+		rest.Index(c)
+	})
 	router.POST("/login", func(c *gin.Context) {
 		rest.LogIn(c, client)
 	})
-	router.POST("/logout", func(c *gin.Context) {
+	router.GET("/reset-password", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/activate", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/register", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/welcome", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/clueless", func(c *gin.Context) {
+		rest.Index(c)
+	})
+	router.GET("/play-alarm", func(c *gin.Context) {
 		rest.LogOut(c, client)
 	})
+	//react vite part ends
 	router.POST("/register", func(c *gin.Context) {
 		rest.RegisterUser(c, client)
 	})
