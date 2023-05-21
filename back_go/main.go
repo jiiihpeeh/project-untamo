@@ -116,9 +116,6 @@ func main() {
 	router.GET("/owner", func(c *gin.Context) {
 		rest.Index(c)
 	})
-	router.POST("/login", func(c *gin.Context) {
-		rest.LogIn(c, client)
-	})
 	router.GET("/reset-password", func(c *gin.Context) {
 		rest.Index(c)
 	})
@@ -135,9 +132,15 @@ func main() {
 		rest.Index(c)
 	})
 	router.GET("/play-alarm", func(c *gin.Context) {
-		rest.LogOut(c, client)
+		rest.Index(c)
 	})
 	//react vite part ends
+	router.POST("/login", func(c *gin.Context) {
+		rest.LogIn(c, client)
+	})
+	router.POST("/logout", func(c *gin.Context) {
+		rest.LogOut(c, client)
+	})
 	router.POST("/register", func(c *gin.Context) {
 		rest.RegisterUser(c, client)
 	})
