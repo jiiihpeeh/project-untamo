@@ -19,7 +19,9 @@ require (
 require (
 	fyne.io/fyne/v2 v2.3.4 // indirect
 	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/PuerkitoBio/goquery v1.8.1 // indirect
 	github.com/akavel/rsrc v0.10.2 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/fyne-io/image v0.0.0-20220602074514-4956b0afb3d2 // indirect
