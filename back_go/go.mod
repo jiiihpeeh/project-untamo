@@ -21,6 +21,7 @@ require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
 	github.com/PuerkitoBio/goquery v1.8.1 // indirect
 	github.com/akavel/rsrc v0.10.2 // indirect
+	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
@@ -52,6 +53,7 @@ require (
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/dlclark/regexp2 v1.9.0 // indirect
+	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

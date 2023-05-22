@@ -30,6 +30,7 @@ type Alarm struct {
 	Modified    int64              `bson:"modified,omitempty"`
 	Fingerprint string             `bson:"fingerprint,omitempty"`
 	CloseTask   bool               `bson:"close_task"`
+	Offline     bool               `bson:"offline,omitempty"`
 }
 
 // allow only enum values in Weekdays

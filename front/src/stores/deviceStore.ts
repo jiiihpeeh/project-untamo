@@ -103,6 +103,18 @@ const useDevices = create<UseDevices>()(
         }
     )
 )
+
+//only unique devices
+export function uniqueDevices(devices: Array<Device>) {
+    let uniqueDevices = [] as Array<Device>
+    devices.forEach(device => {
+        if (!uniqueDevices.some(uniqueDevice => uniqueDevice.id === device.id)) {
+            uniqueDevices.push(device)
+        }
+    })
+    return uniqueDevices
+}
+
 async function addDevice(name: string, type: DeviceType) {
     const { server, token } = getCommunicationInfo()
     const devices = useDevices.getState().devices
@@ -144,7 +156,8 @@ async function addDevice(name: string, type: DeviceType) {
             useDevices.setState({ currentDevice: newDevice.id })
         }
         //console.log([...devices, newDevice])
-        useDevices.setState({ devices: [...devices, newDevice] })
+
+        useDevices.setState({ devices: uniqueDevices([...devices, newDevice]) })
         let viewableDevices = useDevices.getState().viewableDevices
         viewableDevices = [...viewableDevices, newDevice.id]
         useDevices.setState({ viewableDevices: viewableDevices })
@@ -234,7 +247,7 @@ async function deviceEdit(id: string, name: string, type: DeviceType) {
 
             useDevices.setState(
                 {
-                    devices: [...devicesFiltered, editDevice],
+                    devices:  uniqueDevices([...devicesFiltered, editDevice]),
                     toEdit: null
                 }
             )
@@ -284,7 +297,7 @@ async function deleteDevice(id: string) {
 
         useDevices.setState(
             {
-                devices: devices.filter(device => device.id !== deleteDevice.id),
+                devices: uniqueDevices(devices.filter(device => device.id !== deleteDevice.id)),
                 toDelete: null
             }
         )

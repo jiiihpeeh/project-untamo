@@ -18,21 +18,14 @@ const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'imag
 const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
-// type AlarmSerialized = {
-//     occurrence : AlarmCases,
-//     time: string,
-//     date: string,
-//     devices: Array<string>,
-//     label: string,
-//     weekdays: Array<WeekDay>,
-//     active: boolean,
-//     snooze: Array<number>,
-//     fingerprint: string,
-//     modified: number,
-//     _id: string,
-//     __v: number
-// }
-
+export function uniqueAlarms(alarms: Array<Alarm>) {
+  let unique = alarms.filter((alarm, index, self) =>
+    index === self.findIndex((t) => (
+      t.id === alarm.id
+    ))
+  )
+  return unique
+}
 
 
 async function fetchAlarms() {
@@ -81,7 +74,7 @@ async function fetchAlarms() {
       }
     }
     if (change) {
-      useAlarms.setState({ alarms: [...alarms] })
+      useAlarms.setState({ alarms: uniqueAlarms([...alarms]) })
     }
   } catch (err) {
     //console.log("Cannot fetch alarms")
