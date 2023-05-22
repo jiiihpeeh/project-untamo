@@ -21,14 +21,16 @@ const (
 )
 
 var (
-	debugMode  bool
-	enableCORS bool
-	PORT       string
+	debugMode   bool
+	enableCORS  bool
+	PORT        string
+	DisableGZIP bool
 )
 
 func main() {
 	flag.BoolVar(&debugMode, "debug", false, "Enable debug mode")
 	flag.BoolVar(&enableCORS, "cors", false, "Enable CORS")
+	flag.BoolVar(&DisableGZIP, "disable-gzip", false, "Disable GZIP")
 	//parse PORT from command line use default if not provided
 	var port uint
 	flag.UintVar(&port, "port", PORTDEFAULT, "Port to listen on")
@@ -102,7 +104,12 @@ func main() {
 		}
 		router.Use(cors.New(corsConfig))
 	}
-	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPathsRegexs([]string{"/action/*"})))
+	if !DisableGZIP {
+		router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPathsRegexs([]string{"/action/*"})))
+	} else {
+		fmt.Println("GZIP disabled")
+	}
+
 	//react vite part begins
 	router.GET("/", func(c *gin.Context) {
 		rest.Index(c)
