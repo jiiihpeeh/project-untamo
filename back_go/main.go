@@ -17,18 +17,22 @@ import (
 )
 
 const (
-	PORT = ":3001"
+	PORTDEFAULT = uint(3001)
 )
 
 var (
 	debugMode  bool
 	enableCORS bool
+	PORT       string
 )
 
 func main() {
 	flag.BoolVar(&debugMode, "debug", false, "Enable debug mode")
 	flag.BoolVar(&enableCORS, "cors", false, "Enable CORS")
-
+	//parse PORT from command line use default if not provided
+	var port uint
+	flag.UintVar(&port, "port", PORTDEFAULT, "Port to listen on")
+	PORT = fmt.Sprintf(":%d", port)
 	flag.Parse()
 	if debugMode {
 		fmt.Println("Debug mode enabled")

@@ -22,6 +22,7 @@
         "msgb",
         "padder",
         "Pkcs",
+        "PORTDEFAULT",
         "promptui",
         "QRCOLL",
         "Regexs",
