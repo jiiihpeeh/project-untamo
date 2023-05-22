@@ -5,11 +5,11 @@ import { notification, Status } from '../components/notification'
 import { SessionStatus, FormData, UserInfo } from '../type'
 import {  validSession } from '../stores'
 import useServer from './serverStore'
-import useDevices from './deviceStore'
+import useDevices, { uniqueDevices } from './deviceStore'
 import useAdmin from './adminStore'
 import useTimeouts from './timeoutsStore'
 import useFetchQR from './QRStore'
-import useAlarms from './alarmStore'
+import useAlarms, { uniqueAlarms } from './alarmStore'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, isSuccess, generateRandomString } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
@@ -265,15 +265,15 @@ async function checkSession() {
                 //setTimeout(refreshToken, 30000)
                 status = SessionStatus.Valid
             } else {
-                status = SessionStatus.NotValid
+                status = SessionStatus.Unknown
             }
         } catch (err: any) {
-            if (err.response.status === 403) {
+            if (err.response.status === 401) {
                 notification("Session", "Session invalid.", Status.Error)
                 status = SessionStatus.NotValid
             } else {
                 notification("Session", "Can not contact server.", Status.Warning)
-                status = SessionStatus.NotValid
+                status = SessionStatus.Unknown
             }
         }
     } else {
@@ -358,9 +358,9 @@ async function updateState(){
         }
         let userData = res.data as Update
         useLogIn.setState({ user: userData.user })
-        useAlarms.setState({ alarms: [...userData.alarms] })
+        useAlarms.setState({ alarms: uniqueAlarms([...userData.alarms]) })
         let deviceOld = useDevices.getState().devices
-        useDevices.setState({ devices: [...userData.devices] })
+        useDevices.setState({ devices: uniqueDevices([...userData.devices]) })
         //set all device viewable if deviceOld is empty
         if (deviceOld.length === 0) {
             //get userData.devices ids
@@ -571,6 +571,18 @@ async function resendActivation(email: string){
         notification("Resend Activation", "Activation resend failed", Status.Error)
     }
 }
+
+async function checkSessionStatus(){
+    while ( true ){
+        const sessionStatus = useLogIn.getState().sessionValid
+        if(sessionStatus === SessionStatus.Unknown){
+            useLogIn.getState().validateSession()
+        }
+        await sleep(30000)
+    } 
+}
+
+checkSessionStatus()
 
 const emptyUser = {email: '', screenName:'', firstName:'', lastName:'', admin: false, owner: false, active: false}
 const useLogIn = create<UseLogIn>()(

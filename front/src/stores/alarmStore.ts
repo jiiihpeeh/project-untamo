@@ -12,44 +12,17 @@ import { isEqual, sleep } from '../utils'
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
 
-//import { isEqual } from 'lodash'
 const maxAlarmTime = 60*60*1000
 const fingerprint = () => useLogIn.getState().fingerprint
 
-// type AlarmSerialized = {
-//     occurrence : AlarmCases,
-//     time: string,
-//     date: string,
-//     devices: Array<string>,
-//     label: string,
-//     weekdays: Array<WeekDay>,
-//     active: boolean,
-//     snooze: Array<number>,
-//     fingerprint: string,
-//     modified: number,
-//     _id: string,
-//     __v: number
-// }
-
-
-// interface AlarmSerializedEdit extends AlarmSerialized {
-//   id: string 
-//   offline: boolean
-// }
-// const alarmSerializedToAlarm = (alarms: Array<AlarmSerialized>): Array<Alarm> =>{
-  
-//   return alarms.map(alarm => { 
-//     let newAlarm : Partial<AlarmSerializedEdit> = alarm 
-//     newAlarm.id = newAlarm._id
-//     delete newAlarm._id
-//     delete newAlarm.__v
-//     newAlarm.weekdays = [...new Set(newAlarm.weekdays)]
-//     newAlarm.devices = [...new Set(newAlarm.devices)]
-//     newAlarm.offline = false
-//     return newAlarm as Alarm
-//   })
-// }
-
+export function uniqueAlarms(alarms: Array<Alarm>) {
+  let unique = alarms.filter((alarm, index, self) =>
+    index === self.findIndex((t) => (
+      t.id === alarm.id
+    ))
+  )
+  return unique
+}
 
 async function fetchAlarms() {
   let fetchedAlarms: Array<Alarm> = []
@@ -94,7 +67,7 @@ async function fetchAlarms() {
       }
     }
     if (change) {
-      useAlarms.setState({ alarms: [...alarms] })
+      useAlarms.setState({ alarms: uniqueAlarms([...alarms]) })
     }
   } catch (err) {
     //console.log("Cannot fetch alarms")

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/actions/checkers"
@@ -97,6 +98,7 @@ func main() {
 		}
 		router.Use(cors.New(corsConfig))
 	}
+	router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPathsRegexs([]string{"/action/*"})))
 	//react vite part begins
 	router.GET("/", func(c *gin.Context) {
 		rest.Index(c)

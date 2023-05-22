@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { Input , FormControl,FormLabel, Spacer, VStack, HStack,
        Center, Button, Box,Divider, Spinner } from '@chakra-ui/react'
-import { useLogIn, extend,usePopups, useSettings } from "../stores"
+import { useLogIn,  usePopups, useSettings } from "../stores"
 import { SessionStatus, Path, ColorMode } from "../type"
 
 import QrScanner from 'qr-scanner'

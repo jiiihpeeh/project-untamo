@@ -45,7 +45,7 @@ function ResendActivation() {
                             sendActivation(email)
                         }}
                     >
-                        Reset
+                        Send
                     </Button>
                 </ModalFooter>
             </ModalContent>

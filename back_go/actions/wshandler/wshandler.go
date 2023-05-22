@@ -127,6 +127,31 @@ func (server *WsServer) ServeMessage(userId string, token string, message []byte
 	hashMapMutex.Unlock()
 }
 
+func (server *WsServer) Disconnect(token string) {
+	hashMapMutex.Lock()
+	conn := server.tokenConnection[token]
+	if conn != nil {
+		conn.Close()
+	}
+	//get userID from token from userTokens by iterating over userTokens
+	for userID, tokens := range server.userTokens {
+		for _, tokenM := range tokens {
+			if tokenM == token {
+				//remove token from userTokens
+				tokens = funk.FilterString(tokens, func(tokenM string) bool {
+					return token != tokenM
+				})
+				//set user tokens
+				server.userTokens[userID] = tokens
+				break
+			}
+		}
+	}
+
+	delete(server.tokenConnection, token)
+	hashMapMutex.Unlock()
+}
+
 func Action(c *gin.Context, client *mongo.Client) {
 	//log.Println("websocket handler CALLED")
 	//sleep 15 milliseconds

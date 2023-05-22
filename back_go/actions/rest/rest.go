@@ -496,7 +496,8 @@ func LogOut(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-
+	//delete token from ws handler
+	go wshandler.WsServing.Disconnect(token)
 	c.JSON(200, gin.H{
 		"message": "Logged out",
 	})
