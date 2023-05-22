@@ -12,6 +12,7 @@ function Welcome() {
     const userInfo = useLogIn((state) => state.user)
     const devices = useDevices((state) => state.devices)
     const setCurrentDevice = useDevices((state) => state.setCurrentDevice)
+    const currentDevice = useDevices((state) => state.currentDevice)
     const sessionStatus = useLogIn((state) => state.sessionValid)
     const setShowAddDevice = usePopups(state => state.setShowAddDevice)
     const menuRef = useRef<HTMLButtonElement>(null)
@@ -133,6 +134,13 @@ function Welcome() {
             setNavigateTo(Path.LogIn)
         }
     }, [sessionStatus])
+    useEffect(() =>{
+        //setNavigateTo(Path.Alarms) if a current device is set
+        if(currentDevice){
+            setNavigateTo(Path.Alarms)
+        }
+    },[])
+
 
     return (
         <>{(userInfo.screenName.length > 0) ?
