@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import React, { useEffect } from "react"
-import { useDevices, useLogIn, useAdmin, extend, useAlarms } from "../stores"
+import { useDevices, useLogIn, useAdmin, extend } from "../stores"
 import { SessionStatus, Path } from "../type"
 
 function Navigator() {

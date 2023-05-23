@@ -5,6 +5,7 @@ go 1.20
 require github.com/gin-gonic/gin v1.9.0
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/adrg/strutil v0.3.0
 	github.com/alexedwards/argon2id v0.0.0-20230305115115-4b3c3280a736
 	github.com/denisbrodbeck/machineid v1.0.1
@@ -17,39 +18,22 @@ require (
 )
 
 require (
-	fyne.io/fyne/v2 v2.3.4 // indirect
-	github.com/BurntSushi/toml v1.1.0 // indirect
-	github.com/PuerkitoBio/goquery v1.8.1 // indirect
-	github.com/akavel/rsrc v0.10.2 // indirect
-	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
-	github.com/fyne-io/image v0.0.0-20220602074514-4956b0afb3d2 // indirect
-	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/jackmordaunt/icns/v2 v2.2.1 // indirect
-	github.com/josephspurrier/goversioninfo v1.4.0 // indirect
-	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
-	github.com/lucor/goinfo v0.0.0-20210802170112-c078a2b0f08b // indirect
-	github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/urfave/cli/v2 v2.4.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
-	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
 
 require (
-	github.com/alecthomas/kong v0.7.1
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/dlclark/regexp2 v1.9.0 // indirect

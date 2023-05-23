@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
-import { useDevices, useTimeouts, useAlarms, useAudio, extend, useLogIn } from "../../stores"
+import { useDevices, useTimeouts, useAlarms, useAudio,   useLogIn } from "../../stores"
 import { Path } from "../../type"
 
 function AlarmWatcher() {

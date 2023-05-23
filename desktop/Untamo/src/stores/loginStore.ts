@@ -11,7 +11,7 @@ import useTimeouts from './timeoutsStore'
 import useFetchQR from './QRStore'
 import useAlarms, { uniqueAlarms } from './alarmStore'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
-import { sleep, isSuccess, generateRandomString } from '../utils'
+import { sleep, isSuccess, generateRandomString, calculateSHA512 } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { postOfflineAlarms } from "./alarmStore"
 import { Alarm, Device, Path, PasswordReset } from "../type"
@@ -28,6 +28,7 @@ type UseLogIn = {
     wsPair: string,
     fingerprint: string,
     captcha: HTMLImageElement|null,
+    captchaSum: string,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
     setSessionValid: (s: SessionStatus) => void,
@@ -81,9 +82,14 @@ async function activate(verification: string, captcha: string, accepted: boolean
     }
     let captchaResp = captcha
     if (captchaResp === ""){
-        captchaResp = "Q7HJ"
+        //captchaResp = "Q7HJ"
+        let captchaElement = useLogIn.getState().captcha
+        if(captchaElement){
+            let captchaSum = useLogIn.getState().captchaSum
+            //take 4 chars from captcha
+            captchaResp = captchaSum.substring(5,9)
+        }
     }
-
     try {
         const client = await getClient()
         const res = await client.request(
@@ -97,7 +103,7 @@ async function activate(verification: string, captcha: string, accepted: boolean
                 body: Body.json({
                     verification: verification,
                     captcha: captchaResp,
-                    accepted: accepted,
+                    accepted: !accepted,
                 })
             }
         )
@@ -182,7 +188,11 @@ async function fetchCaptcha(){
         
         //resp data as png image
         let arr = new Uint8Array(res.data as Uint8Array)
-        let captcha = URL.createObjectURL(new Blob([arr], {type: 'image/png'}))
+        let captchaBlob = new Blob([arr], {type: 'image/png'})
+        
+        let captchaSum = await calculateSHA512(captchaBlob)
+        useLogIn.setState({captchaSum: captchaSum})
+        let captcha = URL.createObjectURL(captchaBlob)
         //convert Blob to Image
         let image = new Image()
         image.src = captcha
@@ -600,6 +610,7 @@ const useLogIn = create<UseLogIn>()(
             wsPair:"",
             fingerprint:  generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             captcha: null,
+            captchaSum: "",
             setToken: (s) => set(
                   { 
                     token : s

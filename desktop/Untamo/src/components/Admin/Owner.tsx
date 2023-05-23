@@ -3,8 +3,8 @@ import {  HStack, Spacer, Stack, Text,
     Switch,  Checkbox,   NumberInput, Center,
     NumberInputField, NumberInputStepper,
     NumberIncrementStepper,  NumberDecrementStepper, } from '@chakra-ui/react'
-import React, { useEffect, useState, useRef } from 'react'
-import { extend, useAdmin, useLogIn } from '../../stores' 
+import React, { useEffect, useState   } from 'react'
+import {   useAdmin, useLogIn } from '../../stores' 
 import { Path } from '../../type'
 
 //ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailPlainAuth":false,"activateAuto":false,"activateEmai

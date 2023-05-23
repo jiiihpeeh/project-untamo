@@ -2,7 +2,7 @@ import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Tex
 import React, { useState, useRef, useEffect } from "react"
 import {  Container, Heading, Switch, IconButton } from '@chakra-ui/react'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
-import {  useDevices, useAlarms, usePopups, useSettings, extend, useLogIn } from "../../stores"
+import {  useDevices, useAlarms, usePopups, useSettings,  useLogIn } from "../../stores"
 import { Path, WeekDay } from "../../type"
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases } from "../../type"

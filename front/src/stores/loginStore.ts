@@ -7,9 +7,10 @@ import { SessionStatus, FormData, UserInfo, Device, Alarm, Path, PasswordReset }
 import { useServer, useDevices, useAdmin, useTimeouts,
          useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
-import { sleep, generateRandomString } from '../utils'
+import { sleep, generateRandomString, calculateSHA512 } from '../utils'
 import { postOfflineAlarms, uniqueAlarms } from './alarmStore'
 import { uniqueDevices } from './deviceStore'
+import { ca } from 'date-fns/locale'
 
 
 
@@ -26,6 +27,7 @@ type UseLogIn = {
     navigateTo: Path|null,
     wsPair: string,
     captcha: HTMLImageElement|null,
+    captchaSum: string,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
     setSessionValid: (s: SessionStatus) => void,
@@ -73,7 +75,13 @@ async function activate(verification: string, captcha: string, accepted: boolean
     }
     let captchaResp = captcha
     if (captchaResp === ""){
-        captchaResp = "Q7HJ"
+        //captchaResp = "Q7HJ"
+        let captchaElement = useLogIn.getState().captcha
+        if(captchaElement){
+            let captchaSum = useLogIn.getState().captchaSum
+            //take 4 chars from captcha
+            captchaResp = captchaSum.substring(5,9)
+        }
     }
 
     try {
@@ -81,7 +89,7 @@ async function activate(verification: string, captcha: string, accepted: boolean
             {
                 verification: verification,
                 captcha: captchaResp,
-                accepted: accepted,
+                accepted: !accepted,
             },
             {
                 headers: {
@@ -130,7 +138,10 @@ async function fetchCaptcha(){
                                 )
                                 
         //resp data as png image
-        let captcha = URL.createObjectURL(new Blob([res.data], {type: 'image/png'}))
+        let responseBlob = new Blob([res.data], {type: 'image/png'})
+        let captchaSum = await calculateSHA512(responseBlob)
+        useLogIn.setState({captchaSum: captchaSum})
+        let captcha = URL.createObjectURL(responseBlob)
         //convert Blob to Image
         let image = new Image()
         image.src = captcha
@@ -139,6 +150,7 @@ async function fetchCaptcha(){
 
     }
 }
+
 
 async function refreshToken() {
     const { server, token } = getCommunicationInfo()
@@ -498,6 +510,7 @@ const useLogIn = create<UseLogIn>()(
             wsPair:"",
             fingerprint: generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             captcha: null,
+            captchaSum: "",
             setToken: (s) => set(
                   { 
                     token : s
