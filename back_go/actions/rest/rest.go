@@ -1,11 +1,15 @@
 package rest
 
 import (
+	"bytes"
+	"crypto/sha512"
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -33,6 +37,12 @@ import (
 	"untamo_server.zzz/utils/now"
 	"untamo_server.zzz/utils/token"
 )
+
+// hashmap for token and captcha
+var tokenCaptchaMap = make(map[string]string)
+
+// mutex for hashmap
+var tokenCaptchaMapMutex = &sync.Mutex{}
 
 func LogIn(c *gin.Context, client *mongo.Client) {
 	loginRequest := login.LogInRequest{}
@@ -1224,13 +1234,8 @@ func ActivateAccount(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	if activation.Captcha != "Q7HJ" {
-		c.JSON(400, gin.H{
-			"message": "Bad captcha",
-		})
-		return
-	}
-	if activation.Accepted {
+
+	if !activation.Accepted {
 		c.JSON(400, gin.H{
 			"message": "Bad captcha",
 		})
@@ -1239,6 +1244,16 @@ func ActivateAccount(c *gin.Context, client *mongo.Client) {
 
 	//fetch session and user from headers
 	token := c.Request.Header.Get("token")
+	tokenCaptchaMapMutex.Lock()
+	captcha := tokenCaptchaMap[token]
+	delete(tokenCaptchaMap, token)
+	tokenCaptchaMapMutex.Unlock()
+	if activation.Captcha != captcha {
+		c.JSON(400, gin.H{
+			"message": "Bad captcha",
+		})
+		return
+	}
 	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
 	if session == nil {
 		c.JSON(401, gin.H{
@@ -1437,8 +1452,20 @@ func StoreServerConfig(c *gin.Context, client *mongo.Client) {
 }
 
 func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
-	time.Sleep(60 * time.Millisecond)
+	time.Sleep(250 * time.Millisecond)
 	token := c.Request.Header.Get("token")
+	//check if token is in tokenCaptchaMap
+	tokenCaptchaMapMutex.Lock()
+	_, ok := tokenCaptchaMap[token]
+	tokenCaptchaMapMutex.Unlock()
+	// return 400 if token is  in tokenCaptchaMap
+	if ok {
+		c.JSON(400, gin.H{
+			"message": "Captcha already requested",
+		})
+		return
+	}
+
 	//fmt.Println(token)
 	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
 	if session == nil {
@@ -1456,8 +1483,21 @@ func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
 	//generate captcha
 	captchaData, _ := captcha.New(150, 50)
 
-	// write image response
-	captchaData.WriteImage(c.Writer)
+	imageBuffer := bytes.NewBuffer([]byte{})
+	//write captcha image to io.writer
+	captchaData.WriteImage(imageBuffer)
+	//calculate sha512 hash from imageBuffer
+	imageBytes := imageBuffer.Bytes()
+	hash := sha512.New()
+	hash.Write(imageBytes)
+	//convert hash to string
+	hashString := hex.EncodeToString(hash.Sum(nil))[5:9]
+
+	tokenCaptchaMapMutex.Lock()
+	tokenCaptchaMap[token] = hashString
+	tokenCaptchaMapMutex.Unlock()
+	//return imageBytes as image
+	c.Data(200, "image/png", imageBytes)
 }
 
 func GetOwnerSettings(c *gin.Context, client *mongo.Client) {

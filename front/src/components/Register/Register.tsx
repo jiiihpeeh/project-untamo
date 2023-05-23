@@ -2,7 +2,7 @@ import React, {  useEffect } from 'react'
 import { Input, InputGroup,Box, VisuallyHidden,
          InputRightAddon, FormControl,
          FormLabel, Text, Button } from '@chakra-ui/react'
-import { useServer, extend, usePopups, useSettings, useLogIn } from '../../stores'
+import { useServer,  usePopups, useSettings, useLogIn } from '../../stores'
 import useRegister from './RegisterBackend'
 import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons'
 import { Path, ColorMode } from '../../type'

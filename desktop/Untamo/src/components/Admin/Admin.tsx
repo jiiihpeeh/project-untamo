@@ -3,7 +3,7 @@ import { Button, Table, Thead, Tbody, Tr,Th,Td, TableContainer,
          Switch, IconButton, Box, VStack } from "@chakra-ui/react"
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
-import { usePopups, useLogIn, useAdmin, extend } from "../../stores"
+import { usePopups, useLogIn, useAdmin } from "../../stores"
 import { AdminAction, Path } from '../../type'
 
 function Admin() {

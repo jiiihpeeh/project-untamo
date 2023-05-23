@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react'
-import { useLogIn, usePopups, useSettings, extend } from './stores'
+import { useLogIn, usePopups, useSettings } from './stores'
 import { ColorMode, PasswordReset, Path } from './type'
 import { Box, FormControl, FormLabel, Input, Button, Divider } from '@chakra-ui/react'
 function ResetPassword(){

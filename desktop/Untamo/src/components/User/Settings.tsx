@@ -213,6 +213,30 @@ function Settings() {
                             </Tr>
                             <Tr>
                                 <Td>
+                                    Alarm volume
+                                </Td>
+                                <Td>
+                                    <Slider
+                                        defaultValue={volume}
+                                        min={0}
+                                        max={1}
+                                        step={0.01}
+                                        onChange={(e) => setVolume(e)}
+                                    >
+                                        <SliderTrack>
+                                            <Box
+                                                position='relative'
+                                                right={10} />
+                                            <SliderFilledTrack />
+                                        </SliderTrack>
+                                        <SliderThumb
+                                            boxSize={5}
+                                            backgroundColor={"blue.700"} />
+                                    </Slider>
+                                </Td>
+                            </Tr>
+                            <Tr>
+                                <Td>
                                     Close Task
                                 </Td>
                                 <Td>
@@ -264,30 +288,6 @@ function Settings() {
                                             </HStack>
                                         </RadioGroup>
                                     </Center>
-                                </Td>
-                            </Tr>
-                            <Tr>
-                                <Td>
-                                    Alarm volume
-                                </Td>
-                                <Td>
-                                    <Slider
-                                        defaultValue={volume}
-                                        min={0}
-                                        max={1}
-                                        step={0.01}
-                                        onChange={(e) => setVolume(e)}
-                                    >
-                                        <SliderTrack>
-                                            <Box
-                                                position='relative'
-                                                right={10} />
-                                            <SliderFilledTrack />
-                                        </SliderTrack>
-                                        <SliderThumb
-                                            boxSize={5}
-                                            backgroundColor={"blue.700"} />
-                                    </Slider>
                                 </Td>
                             </Tr>
                         </Tbody>

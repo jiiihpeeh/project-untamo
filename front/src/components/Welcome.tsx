@@ -65,8 +65,7 @@ function Welcome() {
                     </Table>
                 </MenuItem>
             )
-        }
-        )
+        })
     }
 
     function DeviceLayout() {
@@ -92,7 +91,6 @@ function Welcome() {
                 <Grid
                     key="Welcome-Grid-Devices"
                     m={"20px"}
-
                 >
                     <GridItem>
                         <Menu matchWidth={true} isLazy={true}>

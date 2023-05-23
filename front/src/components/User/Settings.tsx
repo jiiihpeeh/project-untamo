@@ -208,28 +208,6 @@ function Settings() {
                             </Tr>
                             <Tr>
                                 <Td>
-                                    Close Task
-                                </Td>
-                                <Td>
-                                    <CloseTaskMenu />
-                                </Td>
-                            </Tr>
-                            <Tr>
-                                <Td>
-                                    Clear Settings (Log Out)
-                                </Td>
-                                <Td>
-                                    <Button
-                                        onClick={() => setShowClearSettings(true)}
-                                        size={sizes.get(size)}
-                                        width="100%"
-                                    >
-                                        Clear Settings
-                                    </Button>
-                                </Td>
-                            </Tr>
-                            <Tr>
-                                <Td>
                                     Alarm volume
                                 </Td>
                                 <Td>
@@ -250,6 +228,28 @@ function Settings() {
                                             boxSize={5}
                                             backgroundColor={"blue.700"} />
                                     </Slider>
+                                </Td>
+                            </Tr>
+                            <Tr>
+                                <Td>
+                                    Close Task
+                                </Td>
+                                <Td>
+                                    <CloseTaskMenu />
+                                </Td>
+                            </Tr>
+                            <Tr>
+                                <Td>
+                                    Clear Settings (Log Out)
+                                </Td>
+                                <Td>
+                                    <Button
+                                        onClick={() => setShowClearSettings(true)}
+                                        size={sizes.get(size)}
+                                        width="100%"
+                                    >
+                                        Clear Settings
+                                    </Button>
                                 </Td>
                             </Tr>
                         </Tbody>
