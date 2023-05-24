@@ -49,6 +49,12 @@ function Alarms() {
         }
     }, [showButtons])
 
+    useEffect(() => {
+        if( !currentDevice){
+            setNavigateTo(Path.Welcome)
+        }
+    },[currentDevice])
+
     function renderCards() {
         let viewableAlarmsSet = new Set<Alarm>()
         let timeAlarmMap = new Map<number, Set<string>>()
@@ -186,11 +192,8 @@ function Alarms() {
                                 setShowAlarmPop(false)
                                 setShowAdminPop(false)
                             }
-                        }, 250
-                        )
-
-
-                    } }
+                        }, 250)
+                    }}
                     mb={"5px"}
                     id={`alarmCardContainer-${key}`}
                     size={"sm"}
