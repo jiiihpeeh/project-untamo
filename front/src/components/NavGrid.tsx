@@ -1,6 +1,6 @@
 import { Link as ReachLink } from 'react-router-dom'
 import { Text, Link, Spacer, HStack, Avatar, Flex, Image, Icon  } from '@chakra-ui/react'
-import React, { useState, useEffect, useLayoutEffect, useRef } from "react"
+import React, { useState, useEffect, useLayoutEffect } from "react"
 import { useSettings, useLogIn, useAdmin, useTimeouts,
          usePopups, extend, useAlarms, useAudio, useDevices } from '../stores'
 import { SessionStatus, Path } from '../type'
@@ -9,8 +9,6 @@ import { BsFillPlayFill as PlayIcon } from 'react-icons/bs'
 import { ChevronDownIcon as Down, ChevronUpIcon as Up} from  '@chakra-ui/icons'
 import { urlEnds, sleep, timePadding } from '../utils'
 import './../App.css'
-
-
 
 function NavGrid() {
     const logo = useAlarms((state) => state.logo)
@@ -61,7 +59,13 @@ function NavGrid() {
         seconds: number
     }
     function timeOutput({ minutes, seconds, }: TimeOutput) {
-        return (<Text color={"red"} as="b"> ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds(Path.Admin)) ? <Icon as={pointing} /> : ""}</Text>)
+        return (<Text
+                    color={"red"}
+                    as="b"
+                >
+            ({timePadding(minutes)}:{timePadding(seconds)}) {(urlEnds(Path.Admin)) ? <Icon as={pointing} /> : ""}
+        </Text>
+        )
     }
 
     useEffect(() => {
@@ -146,7 +150,14 @@ function NavGrid() {
             zIndex={500}
             alignContent={"left"}
             background="radial-gradient(circle, rgba(52,124,228,0.57044825) 50%, rgba(157,182,225,0) 100%)"
-            style={{ width: windowSize.width, left: 0, right: windowSize.width, bottom: 0, top: (navBarTop) ? 0 : windowSize.height - navHeight, height: navHeight }}
+            style={{ 
+                width: windowSize.width, 
+                left: 0, 
+                right: windowSize.width, 
+                bottom: 0, 
+                top: (navBarTop) ? 0 : windowSize.height - navHeight, 
+                height: navHeight 
+            }}
         >
             <HStack
                 ml="1%"
@@ -155,28 +166,23 @@ function NavGrid() {
                     setLogoAnimate("LogoClock")
                     setTimeout(() => {
                         setLogoAnimate(undefined)
-                    }, 2000
-
-                    )
-                } }
+                    }, 2000)
+                }}
                 cursor={"pointer"}
                 onMouseOver={() => {
                     setLogoAnimate("LogoClock")
-                } }
+                }}
                 onMouseLeave={() => {
                     setTimeout(() => {
                         setLogoAnimate(undefined)
-                    }, 2000
-
-                    )
-                } }
+                    }, 2000)
+                }}
                 onTouchStart={() => {
                     setLogoAnimate("LogoClock")
                     setTimeout(() => {
                         setLogoAnimate(undefined)
-                    }, 2000
-                    )
-                } }
+                    }, 2000)
+                }}
             >
                 <Image
                     ml={"2px"}
@@ -184,10 +190,12 @@ function NavGrid() {
                     height={navHeight * 0.98}
                     className={logoAnimate}
                     draggable="false"
-                    pointerEvents={"none"} />
-                {((isMobile && windowSize.landscape) || !isMobile) && <Text>
-                    Untamo
-                </Text>}
+                    pointerEvents={"none"} 
+                />
+                    {((isMobile && windowSize.landscape) || !isMobile) && 
+                    <Text>
+                        Untamo
+                    </Text>}
             </HStack>
             {validItems.includes('login') && <>
                 <Spacer />
@@ -195,7 +203,9 @@ function NavGrid() {
                     as={ReachLink}
                     to={extend(Path.LogIn)}
                     id={`link-login`}
-                    onClick={() => setValidItems([...validItems, 'register'].filter(l => l !== 'login'))}
+                    onClick={() => 
+                        setValidItems([...validItems, 'register'].filter(l => l !== 'login'))
+                    }
                 >
                     <Text
                         as='b'
@@ -210,7 +220,9 @@ function NavGrid() {
                     as={ReachLink}
                     to={extend(Path.Register)}
                     id={`link-register`}
-                    onClick={() => setValidItems([...validItems, 'login'].filter(l => l !== 'register'))}
+                    onClick={() => 
+                        setValidItems([...validItems, 'login'].filter(l => l !== 'register'))
+                    }
                 >
                     <Text
                         as='b'
@@ -226,10 +238,13 @@ function NavGrid() {
                     as={ReachLink}
                     to={(!urlEnds(Path.PlayAlarm) && currentDevice) ? extend(Path.Alarms) : (!currentDevice) ? extend(Path.Welcome) : extend(Path.PlayAlarm)}
                     id={`link-alarm`}
-                    onClick={() => (urlEnds(Path.Alarms)) ? setShowAlarmPop(!showAlarmPop) : {}}
+                    onClick={() => 
+                        (urlEnds(Path.Alarms)) ? setShowAlarmPop(!showAlarmPop) : {}
+                    }
                 >
                     <Text as="b">
-                        Alarms {(plays) ? <Icon as={PlayIcon} /> : ""}{(urlEnds(Path.Alarms)) ? <Icon as={pointing} /> : ""}
+                        Alarms {(plays) ? 
+                            <Icon as={PlayIcon} /> : ""}{(urlEnds(Path.Alarms)) ? <Icon as={pointing} /> : ""}
                     </Text>
                 </Link>
             </>}
@@ -262,7 +277,9 @@ function NavGrid() {
                 <Spacer />
                 <Link
                     mr={"4%"}
-                    onClick={() => setShowAbout(true)}
+                    onClick={() => 
+                        setShowAbout(true)
+                    }
                 >
                     <Text as='b'>
                         About
@@ -275,9 +292,14 @@ function NavGrid() {
                     as={ReachLink}
                     to={extend(Path.Admin)}
                     id={`link-admin`}
-                    onClick={() => (urlEnds(Path.Admin)) ? setShowAdminPop(!showAdminPop) : {}}
+                    onClick={() => 
+                        (urlEnds(Path.Admin)) ? setShowAdminPop(!showAdminPop) : {}
+                    }
                 >
-                    <Text as="b" color={"red"}>
+                    <Text 
+                        as="b" 
+                        color={"red"}
+                    >
                         Admin
                     </Text>
                     <Countdown
@@ -293,7 +315,8 @@ function NavGrid() {
                     id="avatar-button"
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     cursor="pointer"
-                    m={"3%"} />
+                    m={"3%"} 
+                />
             </>}
         </Flex>
     )

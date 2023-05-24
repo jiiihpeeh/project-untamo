@@ -25,7 +25,6 @@ function AlarmPop() {
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
     const [posStyle, setPosStyle] = useState<React.CSSProperties>({})
 
-
     function footerText() {
         let addBtn = (
             <Button

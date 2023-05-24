@@ -8,9 +8,8 @@ import useLogIn from './loginStore'
 import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import alarmClockString from './logo.svg?raw'
-import { isEqual, sleep } from '../utils'
+import { isEqual, sleep, isSuccess  } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
-import { isSuccess } from '../utils'
 
 const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
 
