@@ -23,19 +23,8 @@ function GenerateQRPairingKey() {
   useEffect(() => {
     async function renderQrKey() {
       if (qrKey && qrKey !== '') {
-        let ensure = ''
-        for (let i = 0; i < 24; i++) {
-          ensure = `${Math.round(Math.random() * 16).toString(16)}${ensure}`
-        }
-        let qrKeyMod = qrKey.split('').reverse().join('')
-        qrKeyMod = qrKeyMod.slice(0, 29) + ensure.slice(16, 23) + qrKeyMod.slice(29, 36) + qrKeyMod.slice(36).split('').reverse().join('')
-        let qrObject = JSON.stringify(
-          {
-            token: ensure.slice(11, 15) + qrKeyMod + ensure.slice(0, 10),
-            server: server,
-          }
-        )
-        let qrString = await (invoke('get_qr_svg', { qrString: qrObject }) as Promise<string>)
+        let qrCode = { token: qrKey, server: server}
+        let qrString = await (invoke('get_qr_svg', { qrString: JSON.stringify(qrCode) }) as Promise<string>)
         setQrUrl(qrString)
       }
     }
@@ -54,7 +43,6 @@ function GenerateQRPairingKey() {
     }
   }, [fetchQR])
   return (<></>)
-
 }
 
 export default GenerateQRPairingKey
