@@ -320,8 +320,7 @@ function Alarms() {
                     </CardBody>
                 </Card>
             )
-        }
-        )
+        })
     }
 
     function mapDeviceIDsToNames(deviceIDs: Array<string>) {

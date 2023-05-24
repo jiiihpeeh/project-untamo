@@ -1,8 +1,8 @@
 import React, { useEffect } from "react"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { useDevices, useTimeouts, useAlarms, useAudio, useLogIn } from "../../stores"
-import { urlEnds } from "../../utils"
-import { Path } from "../../type"
+import { sleep, urlEnds } from "../../utils"
+import { Alarm, Path } from "../../type"
 
 function AlarmWatcher() {
     const setTimeoutId = useTimeouts((state) => state.setId)
@@ -17,12 +17,23 @@ function AlarmWatcher() {
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
 
     useEffect(() => {
-        function filterAlarms() {
+        async function filterAlarms() {
             setTimeForNextLaunch(-1)
             if (runAlarm) {
-                if ((runAlarm.active === false) || alarms.filter(a => a.id == runAlarm.id).length === 0 || (currentDevice && (!runAlarm.devices.includes(currentDevice)))) {
-                    setRunAlarm(undefined)
+                //get alarm with same id as runAlarm
+                let runners = alarms.filter(alarm => alarm.id === runAlarm.id)
+                let runner : Alarm
+                if (runners.length == 1) {
+                    runner = runners[0]
+                }else{
+                    runner = runAlarm
                 }
+                if ((runner.active === false) || alarms.filter(a => a.id == runner.id).length === 0 || (currentDevice && (!runner.devices.includes(currentDevice)))) {
+                    setRunAlarm(undefined)
+                    clearAlarmTimeout()
+                    await sleep(10)
+                    //console.log('clearing runAlarm')
+                }                  
             }
             if (alarms && currentDevice && alarms.length > 0) {
                 let filteredAlarms = useAlarms.getState().alarms.filter(alarm => alarm.devices.includes(currentDevice) && alarm.active)
