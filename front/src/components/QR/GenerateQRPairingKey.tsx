@@ -25,24 +25,17 @@ function GenerateQRPairingKey() {
         let qrCanvas = document.getElementById('qrPairCanvas')
 
         if (qrCanvas) {
-          let ensure = ''
-          for (let i = 0; i < 24; i++) {
-            ensure = `${Math.round(Math.random() * 16).toString(16)}${ensure}`
-          }
-          let qrKeyMod = qrKey.split('').reverse().join('')
-          qrKeyMod = qrKeyMod.slice(0, 29) + ensure.slice(16, 23) + qrKeyMod.slice(29, 36) + qrKeyMod.slice(36).split('').reverse().join('')
           let qrObject = JSON.stringify(
             {
-              token: ensure.slice(11, 15) + qrKeyMod + ensure.slice(0, 10),
+              token: qrKey,
               server: server,
             }
           )
           //console.log(qrObject)                            
           QRCode.toCanvas(qrCanvas, qrObject, function (error) {
             if (error) {
-              console.error('qr', error)
+              //console.error('qr', error)
             }
-            //console.log('qr: success!')
           }
           )
         }

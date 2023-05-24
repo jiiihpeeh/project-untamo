@@ -1,10 +1,9 @@
 import React from 'react'
-import {
-  Modal, ModalOverlay,
-  ModalContent, ModalHeader,
-  ModalBody, ModalCloseButton,
-  Link, Center , Image
-} from '@chakra-ui/react'
+import {  Modal, ModalOverlay,
+          ModalContent, ModalHeader,
+          ModalBody, ModalCloseButton,
+          Link, Center , Image
+        } from '@chakra-ui/react'
 import { usePopups, useFetchQR } from '../../stores'
 
 function QRPairingDialog() {
@@ -19,6 +18,7 @@ function QRPairingDialog() {
         isOpen={showQRDialog}
         onClose={() => setShowQRDialog(false)}
         size="sm"
+        isCentered
       >
         <ModalOverlay />
         <ModalContent>
