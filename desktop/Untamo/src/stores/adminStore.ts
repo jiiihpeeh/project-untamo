@@ -26,6 +26,7 @@ type OwnerConfig = {
     emailPlainAuth: boolean,
     activateAuto: boolean,
     activateEmail: boolean,
+    sessionLength: number,
 }
 
 

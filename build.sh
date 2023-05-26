@@ -32,6 +32,12 @@ cd $BACK || exit
 if command -v go >/dev/null && GOOS=linux GOARCH=amd64 go version >/dev/null 2>&1; then
     env GOOS=linux GOARCH=amd64 go build -o "$BUILD/$AMD64LINUX/$AMD64LINUX"
     strip "$BUILD/$AMD64LINUX/$AMD64LINUX"
+    #check if upx is installed
+    if command -v upx >/dev/null; then
+        upx -9 "$BUILD/$AMD64LINUX/$AMD64LINUX"
+    else
+        echo "Skipping compression. Please ensure the 'upx' command is installed."
+    fi
     mkdir -p "$BUILD/$AMD64LINUX/audio-resources"
     echo $AUDIODIR
     cp -r $AUDIODIR/* "$BUILD/$AMD64LINUX/audio-resources"
@@ -45,6 +51,12 @@ fi
 if command -v go >/dev/null && GOOS=linux GOARCH=arm64 go version >/dev/null 2>&1; then
     env GOOS=linux GOARCH=arm64 go build -o "$BUILD/$ARM64LINUX/$ARM64LINUX"
     /usr/aarch64-linux-gnu/bin/strip "$BUILD/$ARM64LINUX/$ARM64LINUX"
+    #check if upx is installed
+    if command -v upx >/dev/null; then
+        upx -9 "$BUILD/$ARM64LINUX/$ARM64LINUX"
+    else
+        echo "Skipping compression. Please ensure the 'upx' command is installed."
+    fi
     mkdir -p "$BUILD/$ARM64LINUX/audio-resources"
     cp -r $AUDIODIR/* "$BUILD/$ARM64LINUX/audio-resources"
     mkdir -p "$BUILD/$ARM64LINUX/dist"
@@ -57,6 +69,13 @@ fi
 if command -v go >/dev/null && GOOS=windows GOARCH=amd64 go version >/dev/null 2>&1; then
     env GOOS=windows GOARCH=amd64 go build -o "$BUILD/$AMD64WINDOWS/$AMD64WINDOWS"
     /usr/x86_64-w64-mingw32/bin/strip "$BUILD/$AMD64WINDOWS/$AMD64WINDOWS"
+    #upx "$BUILD/$AMD64WINDOWS/$AMD64WINDOWS"
+    #check if upx is installed
+    if command -v upx >/dev/null; then
+        upx -9 "$BUILD/$AMD64WINDOWS/$AMD64WINDOWS"
+    else
+        echo "Skipping compression. Please ensure the 'upx' command is installed."
+    fi
     mkdir -p "$BUILD/$AMD64WINDOWS/audio-resources"
     cp -r $AUDIODIR/* "$BUILD/$AMD64WINDOWS/audio-resources"
     mkdir -p "$BUILD/$AMD64WINDOWS/dist"

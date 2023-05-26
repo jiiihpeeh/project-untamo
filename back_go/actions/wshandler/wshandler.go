@@ -83,21 +83,25 @@ func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token strin
 	hashMapMutex.Unlock()
 }
 
+func sendPing(conn *websocket.Conn) {
+	hashMapMutex.Lock()
+	defer hashMapMutex.Unlock()
+	if conn == nil {
+		return
+	}
+	conn.WriteMessage(websocket.PingMessage, []byte{})
+}
+
 // send ping to all clients every 8 seconds
 func Ping() {
 	for {
 		hashMapMutex.Lock()
-		//get all tokens
-
+		//get all connections
 		for _, conn := range WsServing.tokenConnection {
-			go func() {
-				hashMapMutex.Lock()
-				conn.WriteMessage(websocket.PingMessage, []byte{})
-				hashMapMutex.Unlock()
-			}()
+			go sendPing(conn)
 		}
 		hashMapMutex.Unlock()
-		time.Sleep(8 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
 

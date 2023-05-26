@@ -85,7 +85,16 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 	//create session using type LogInResponse struct
 	//generate id for mongodb
 	//add 5 years in ms to now
-	expires := now.Now() + 157680000000
+	//get SessionLength from appconfig
+	//get appconfig mutex
+	appconfig.AppConfigurationMutex.Lock()
+	sessionLength := appconfig.AppConfiguration.SessionLength
+	appconfig.AppConfigurationMutex.Unlock()
+	expires := now.Now() + int64(sessionLength)
+	if sessionLength == 0 {
+		//add 10 minutes to end time
+		expires = now.Now() + 600000
+	}
 	newSession := session.Session{
 		ID:      id.GenerateId(),
 		Time:    expires,
@@ -529,10 +538,19 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	appconfig.AppConfigurationMutex.Lock()
+	sessionLength := appconfig.AppConfiguration.SessionLength
+	appconfig.AppConfigurationMutex.Unlock()
+
+	endTime := int64(sessionLength) + now.Now()
+	if sessionLength == 0 {
+		//add 10 minutes to end time
+		endTime = now.Now() + 600000
+	}
 	//set up a new session
 	session := session.Session{
 		ID:      id.GenerateId(),
-		Time:    now.Now() + 157680000000,
+		Time:    endTime,
 		UserId:  qr.User,
 		Token:   token.GenerateToken(token.TokenStringLength),
 		WsToken: token.GenerateToken(token.TokenStringLength),

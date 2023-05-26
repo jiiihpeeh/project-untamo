@@ -12,7 +12,6 @@ function QRPairingDialog() {
   const qrUrl = useFetchQR((state) => state.qrUrl)
 
   return (
-    <>
       <Modal
         closeOnOverlayClick={false}
         isOpen={showQRDialog}
@@ -38,7 +37,6 @@ function QRPairingDialog() {
           </ModalBody>
         </ModalContent>
       </Modal>
-    </>
   )
 }
 
