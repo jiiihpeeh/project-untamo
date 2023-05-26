@@ -35,6 +35,7 @@ if [ ! -f "$AUDIOPLAYWINBUNDLE" ]; then
         cargo build --release --target x86_64-pc-windows-gnu
     fi
     cp $AUDIOPLAYBUILDWIN $EXTBINDIR/untamo_audio_play-$AMD64WIN.exe
+    upx -9 $EXTBINDIR/untamo_audio_play-$AMD64WIN.exe
 fi
 
 
