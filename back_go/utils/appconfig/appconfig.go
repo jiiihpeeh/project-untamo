@@ -37,6 +37,7 @@ type LaunchConfig struct {
 	UseCustomURI  bool   `json:"useCustomUri"`
 	ActivateAuto  bool   `json:"activateAuto"`
 	ActivateEmail bool   `json:"activateEmail"`
+	SessionLength uint64 `json:"sessionLength"`
 }
 
 type OwnerConfig struct {
@@ -62,6 +63,7 @@ type AppConfig struct {
 	EmailPlainAuth bool   `json:"emailPlainAuth"`
 	ActivateAuto   bool   `json:"activateAuto"`
 	ActivateEmail  bool   `json:"activateEmail"`
+	SessionLength  uint64 `json:"sessionLength"`
 }
 
 func getAppMachineKey() ([]byte, error) {
@@ -134,9 +136,9 @@ func GetConfig() (*AppConfig, error) {
 		EmailPlainAuth: config.EmailPlainAuth,
 		ActivateAuto:   appConfig.ActivateAuto,
 		ActivateEmail:  appConfig.ActivateEmail,
+		SessionLength:  appConfig.SessionLength,
 	}
-	//j, _ := json.Marshal(config)
-	//fmt.Println("config", string(j))
+
 	return &config, err
 }
 
@@ -144,6 +146,10 @@ func SetConfig(config *AppConfig) bool {
 	//get encrypted owner id from config file
 
 	//read config file to memory
+	if config.SessionLength == 0 {
+		//set to 1 year in ms
+		config.SessionLength = 31536000000
+	}
 	appConfig := LaunchConfig{
 		OwnerID:       config.OwnerID,
 		UserDB:        config.UserDB,
@@ -151,6 +157,7 @@ func SetConfig(config *AppConfig) bool {
 		UrlDB:         config.UrlDB,
 		ActivateAuto:  config.ActivateAuto,
 		ActivateEmail: config.ActivateEmail,
+		SessionLength: config.SessionLength,
 	}
 	content, err := json.Marshal(appConfig)
 	if err != nil {
@@ -161,9 +168,7 @@ func SetConfig(config *AppConfig) bool {
 	if err != nil {
 		return false
 	}
-	//log.Println("Content :", string(content))
 	contentEnc := aesEncrypt(content, appKey)
-	//unmarshal config file
 
 	appOwnerKey, err := getAppOwnerMachineKey(config.OwnerID)
 	if err != nil {
