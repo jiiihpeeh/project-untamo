@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList, Box, Divider,
           MenuItem , Spacer, VStack, Center, Heading, Table, Tr, Td, Tbody  } from '@chakra-ui/react'
-import { useLogIn, useDevices, extend } from "../stores"
+import { useLogIn, useDevices } from "../stores"
 import usePopups from "../stores/popUpStore"
 import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
 import { SessionStatus, Path } from "../type"

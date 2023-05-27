@@ -4,11 +4,14 @@
 
 SCRIPTDIR="$(dirname "$(readlink -f "$0")")"
 AMD64LINUX="x86_64-unknown-linux-gnu"
-AMD64WIN="x86_64-pc-windows-gnu"
+AMD64WIN="x86_64-pc-windows-msvc"
+AMD64GNUWIN="x86_64-pc-windows-gnu"
+
+
 cd $SCRIPTDIR
 AUDIOPLAYDIR="$SCRIPTDIR/desktop/AudioPlay/untamo_audio_play"
 AUDIOPLAYBUILDLINUX="$AUDIOPLAYDIR/target/$AMD64LINUX/release/untamo_audio_play"
-AUDIOPLAYBUILDWIN="$AUDIOPLAYDIR/target/$AMD64WIN/release/untamo_audio_play.exe"
+AUDIOPLAYBUILDWIN="$AUDIOPLAYDIR/target/$AMD64GNUWIN/release/untamo_audio_play.exe"
 AUDIOPLAYLINUXBUNDLE=$EXTBINDIR/untamo_audio_play-$AMD64LINUX
 AUDIOPLAYWINBUNDLE=$EXTBINDIR/untamo_audio_play-$AMD64WIN.exe
 
@@ -28,6 +31,7 @@ if [ ! -f "$AUDIOPLAYLINUXBUNDLE" ]; then
 fi
 
 if [ ! -f "$AUDIOPLAYWINBUNDLE" ]; then
+    rustup target add x86_64-pc-windows-msvc
     rustup target add x86_64-pc-windows-gnu
     if [ ! -f "$AUDIOPLAYBUILDWIN" ]; then
         echo "File $AUDIOPLAYBUILDWIN does not exist."

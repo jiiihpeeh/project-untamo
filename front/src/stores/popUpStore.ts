@@ -67,6 +67,8 @@ type Popup = {
     setShowPasswordForgot: (to: boolean) => void,
     showResendActivation: boolean,
     setShowResendActivation: (b: boolean) => void,
+    showQrCodeReader: boolean,
+    setShowQrCodeReader: (b: boolean) => void,
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -335,6 +337,14 @@ const usePopups = create<Popup>((set, get) => ({
                 }
             )
         },
+        showQrCodeReader: false,
+        setShowQrCodeReader: (b) => {
+            set(
+                {
+                    showQrCodeReader: b
+                }
+            )
+        }
     }
 ))
 

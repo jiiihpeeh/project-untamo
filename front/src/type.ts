@@ -116,4 +116,8 @@ export type PasswordReset = {
     confirmPassword:  string,
     passwordResetToken: string
 }
-    
+
+export type QrLoginScan = {
+    token: string,
+    server: string,
+}

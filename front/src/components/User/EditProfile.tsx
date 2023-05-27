@@ -52,8 +52,7 @@ function EditProfile() {
                 ...formData,
                 [eventTarget.name]: eventTarget.value
             }
-        }
-        )
+        })
     }
 
     async function onRegister() {
@@ -230,7 +229,6 @@ function EditProfile() {
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
-            
             </FormControl>
             </form>
             <Flex m={"15%"}>
