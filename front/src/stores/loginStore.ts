@@ -3,14 +3,13 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
-import { SessionStatus, FormData, UserInfo, Device, Alarm, Path, PasswordReset } from '../type'
+import { SessionStatus, FormData, UserInfo, Device, Alarm, Path, PasswordReset, QrLoginScan } from '../type'
 import { useServer, useDevices, useAdmin, useTimeouts,
          useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, generateRandomString, calculateSHA512 } from '../utils'
 import { postOfflineAlarms, uniqueAlarms } from './alarmStore'
 import { uniqueDevices } from './deviceStore'
-import { ca } from 'date-fns/locale'
 
 
 
@@ -36,6 +35,7 @@ type UseLogIn = {
     validateSession : () => void,
     getUserInfo: () => void,
     logIn:(user:string, password: string) => void,
+    logInWithQr : (scan: QrLoginScan) => void,
     logOut: () => void,
     refreshToKen:()=>void,
     getWsToken: () => string,
@@ -481,6 +481,76 @@ async function resendActivation(email: string){
     }
 }
 
+async function logInWithQr(scan: QrLoginScan) {
+    let server = scan.server
+    let token = scan.token
+    //set server
+    useServer.getState().setAddress(server)
+    try{
+        let res = await axios.post(`${server}/qr-login`,
+            { qrToken: token }
+        )
+        interface Resp {
+            wsToken: string
+            token: string
+            screenName: string
+            firstName: string
+            lastName: string
+            admin: boolean
+            email: string
+            time: number
+            owner: boolean
+            wsPair: string
+            active: boolean
+        }
+        let resp: Resp = res.data
+        let now = Date.now()
+        useLogIn.setState(
+            {
+                user: {
+                    firstName: resp.firstName,
+                    lastName: resp.lastName,
+                    email: resp.email,
+                    screenName: resp.screenName,
+                    admin: resp.admin,
+                    owner: resp.owner,
+                    active: resp.active
+                },
+                sessionValid: SessionStatus.Valid,
+                token: resp.token,
+                wsToken: resp.wsToken,
+                expire: resp.time,
+                signedIn: now,
+                tokenTime: now,
+                wsPair: resp.wsPair
+            }
+        )
+
+        //useDevices.getState().fetchDevices()
+        //useAlarms.getState().fetchAlarms()
+        const randomTime = Math.ceil(Math.random() * 7200000)
+        setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
+        
+        notification("Logged In", "Successfully logged in")
+        if (resp.active === false) {
+            useLogIn.setState({ sessionValid: SessionStatus.Activate })
+            useLogIn.getState().setNavigateTo(Path.Activate)
+            return
+        }
+        await sleep(20)
+        useLogIn.getState().updateState()
+        useLogIn.setState({ sessionValid: SessionStatus.Valid })
+        await initAudioDB()
+        fetchAudioFiles()
+        useLogIn.getState().setNavigateTo(Path.Welcome)
+    } catch (err: any) {
+        notification("Log In", "Log In Failed", Status.Error)
+        useLogIn.setState({ sessionValid: SessionStatus.NotValid })
+        //console.error(err)
+    }
+}
+
+
 //check session status if session is unknown
 async function checkSessionStatus(){
     while ( true ){
@@ -597,6 +667,9 @@ const useLogIn = create<UseLogIn>()(
             },
             resendActivation: async (email: string) => {
                 await resendActivation(email)
+            },
+            logInWithQr: async (qrCode) => {
+               await logInWithQr(qrCode)
             },
         }
       ),

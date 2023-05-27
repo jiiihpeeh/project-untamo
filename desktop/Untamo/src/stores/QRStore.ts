@@ -1,7 +1,10 @@
 import { create } from 'zustand'
 import { getCommunicationInfo } from '../stores'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
-import { isSuccess } from '../utils'
+import { isSuccess, sleep } from '../utils'
+import QrScanner from 'qr-scanner'
+import { QrLoginScan } from '../type'
+
 type UseFetchQR = {
     fetchQR: boolean,
     qrKey: string,
@@ -63,6 +66,97 @@ const useFetchQR = create<UseFetchQR>((set,get) => (
                 }
             )
         }
+    }
+))
+
+type useQrScanner = {
+    qrScanner: null | QrScanner,
+    cameras: QrScanner.Camera[] | null,
+    startScanner: () => void,
+    stopScanner: () => void,
+    setQrScanner: () => void,
+    getCameras: () => Promise<QrScanner.Camera[]>,
+    setCamera: (index:number) => void,
+    scannedToken: QrLoginScan | null,
+    setScannedToken: (t: QrLoginScan|null) => void,
+}
+
+export const useQrScanner = create<useQrScanner>((set, get) => (
+    {
+        qrScanner: null,
+        startScanner: async () => {
+            get().setQrScanner()
+            let count = 0
+            while(!get().qrScanner){
+                await sleep(50)
+                count++
+                if(count > 30){
+                    break
+                }
+            }
+            await get().qrScanner?.start()
+        },
+        stopScanner: () => {
+            get().qrScanner?.stop()
+            get().qrScanner?.destroy()
+            set({qrScanner: null})
+        },
+        setQrScanner: async () => {
+            get().getCameras()
+            get().stopScanner()
+            let videoElement = document.getElementById('qrScanReader') as HTMLVideoElement | null
+            let count = 0
+            while(!videoElement ){
+                await sleep(50)
+                videoElement = document.getElementById('qrScanReader') as HTMLVideoElement | null
+                count++
+                if(count > 30){
+                    break
+                }
+            }
+            count = 0
+            while (get().cameras == null){
+                await sleep(50)
+                count++
+                if(count > 30){
+                    break
+                }
+            }
+            if(videoElement){
+                set({qrScanner: new QrScanner(
+                    videoElement,
+                    result => {
+                        //console.log('decoded qr code:', result)
+                        set({scannedToken: JSON.parse(result.data) as QrLoginScan})
+                        get().qrScanner?.stop()
+                    },
+                    { /* your options or returnDetailedScanResult: true if you're not specifying any other options */ },
+                )})
+            }
+        },
+        cameras: null,
+        getCameras: async () => {
+            let scan = await QrScanner.hasCamera()
+            if(scan){
+                let cams = await QrScanner.listCameras()
+                set({cameras: cams})
+                return cams
+            }
+            return [] as QrScanner.Camera[]
+        },
+        setCamera: (c) => {
+            let cams = get().cameras
+            get().stopScanner()
+
+            if(cams){
+                get().qrScanner?.setCamera(cams[c].id)
+            }
+            get().startScanner()
+        },
+        scannedToken: null,
+        setScannedToken: (t) => {
+            set({scannedToken: t})
+        },
     }
 ))
 

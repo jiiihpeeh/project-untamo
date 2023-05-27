@@ -531,13 +531,16 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	//fmt.Println(qrToken)
 	qr := mongoDB.GetQrData(qrToken.QrToken, client)
 	if qr == nil {
 		c.JSON(404, gin.H{
 			"message": "QR not found",
 		})
+		//fmt.Println("QR not found")
 		return
 	}
+
 	appconfig.AppConfigurationMutex.Lock()
 	sessionLength := appconfig.AppConfiguration.SessionLength
 	appconfig.AppConfigurationMutex.Unlock()
@@ -618,6 +621,7 @@ func GetQRToken(c *gin.Context, client *mongo.Client) {
 		QrToken: qrToken,
 	}
 	//add qr to db
+	//fmt.Println(qr)
 	if !mongoDB.AddQr(&qr, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to add qr to db",

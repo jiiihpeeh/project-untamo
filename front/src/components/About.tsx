@@ -5,7 +5,7 @@ import { usePopups } from '../stores'
 function About() {
     const setShowAbout = usePopups((state) => state.setShowAbout)
     const showAbout = usePopups((state) => state.showAbout)
-    return (<>
+    return (
         <Modal
             isOpen={showAbout}
             onClose={() => setShowAbout(false)}
@@ -34,7 +34,7 @@ function About() {
                 </ModalFooter>
             </ModalContent>
         </Modal>
-    </>)
+    )
 }
 
 export default About

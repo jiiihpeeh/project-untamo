@@ -311,6 +311,7 @@ func AddDevice(device *device.Device, client *mongo.Client) (primitive.ObjectID,
 
 func AddQr(qr *qr.QR, client *mongo.Client) bool {
 	RemoveExpiredQr(client)
+	//fmt.Println("Adding qr: ", qr)
 	collection := client.Database(DB_NAME).Collection(QRCOLL)
 	//insert qr and expire it after 5 minutes
 	_, err := collection.InsertOne(context.Background(), qr)

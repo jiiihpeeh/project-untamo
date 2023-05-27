@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react"
 import { Input , FormControl,FormLabel, Spacer, VStack, HStack,
-       Center, Button, Box,Divider, Spinner } from '@chakra-ui/react'
+       Center, Button, Box,Divider, Spinner, IconButton, Icon } from '@chakra-ui/react'
 import { useLogIn,  usePopups, useSettings } from "../stores"
 import { SessionStatus, Path, ColorMode } from "../type"
+import { BsQrCodeScan as QrCodeIcon } from 'react-icons/bs'
 
 import QrScanner from 'qr-scanner'
 import '../App.css'
@@ -18,6 +19,8 @@ function LogIn() {
     const setShowPasswordForgot = usePopups((state) => state.setShowPasswordForgot)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const setShowResendActivation = usePopups((state) => state.setShowResendActivation)
+    const setShowQrCodeReader = usePopups((state) => state.setShowQrCodeReader)
+
 
     const [formData, setFormData] = useState({
         email: "",
@@ -166,6 +169,18 @@ function LogIn() {
                                 Didn't receive an activation email?
                             </Button>
                             </VStack>
+                        </Center>
+                        <Center>
+                            <IconButton
+                                aria-label="Scan QR code"
+                                icon={<Icon as={QrCodeIcon} />}
+                                onClick={() => setShowQrCodeReader(true)}
+                                colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
+                                size="lg"
+                                mt="10px"
+                                mb="10px"
+                                scale={5.4}
+                            />
                         </Center>
                     </Box>
                 )

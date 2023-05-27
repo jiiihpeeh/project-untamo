@@ -48,7 +48,6 @@ function LogOut() {
       </AlertDialogOverlay>
     </AlertDialog>
   )
-
 }
 
 export default LogOut
