@@ -11,6 +11,8 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.17",
     "@chakra-ui/react": "^2.4.9",
+    "@emoji-mart/data": "^1.1.2",
+    "@emoji-mart/react": "^1.1.1",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@evellior/react-qr-scanner": "^0.4.0",
@@ -21,6 +23,7 @@
     "chakra-dayzed-datepicker": "^0.2.7",
     "date-fns": "^2.29.3",
     "dayzed": "^3.2.3",
+    "emoji-mart": "^5.5.2",
     "framer-motion": "^9.0.2",
     "i": "^0.3.7",
     "katex-react": "^3.0.0",

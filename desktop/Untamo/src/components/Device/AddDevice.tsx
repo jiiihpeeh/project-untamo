@@ -4,11 +4,13 @@ import { Menu, MenuItem,  MenuList, MenuButton,
   Input, Stack, Modal,
    ModalOverlay, ModalContent,
    ModalHeader,  ModalFooter,
-   ModalBody, ModalCloseButton
+   ModalBody, ModalCloseButton, HStack
  } from '@chakra-ui/react'  
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useDevices, usePopups } from "../../stores"
 import { DeviceType } from "../../type"
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 
 function AddDevice() {
   const btnRef = useRef<any>(null)
@@ -20,6 +22,11 @@ function AddDevice() {
   const inputTime = useRef<number>(Date.now())
   const types = Object.values(DeviceType).filter((item) => item)
 
+  const [ showEmoji, setShowEmoji ]  = useState(false)
+
+  function onEmojiSelect(emoji: { native: string }) {
+    setDeviceName(deviceName+emoji.native)
+  }
   function mouseSelect(e: number) {
     const now = Date.now()
     if (now - inputTime.current < 200) {
@@ -76,11 +83,24 @@ function AddDevice() {
         </ModalHeader>
         <ModalBody>
           <Stack>
-            <Input
-              placeholder='Device name'
-              value={deviceName}
-              onChange={(e) => { e && setDeviceName(e.target.value) } } />
-            <Divider
+            <HStack>
+              <Input
+                placeholder='Device name'
+                value={deviceName}
+                onChange={(e) => { e && setDeviceName(e.target.value) } } 
+              />
+              <Button
+                onClick={()=>setShowEmoji(!showEmoji)}
+              >
+                  🕰️
+              </Button>
+           </HStack>
+           {showEmoji &&
+                    <Picker 
+                        data={data} 
+                        onEmojiSelect={onEmojiSelect} 
+                    />}
+           <Divider
               orientation='vertical' />
             <Menu
               matchWidth={true}
