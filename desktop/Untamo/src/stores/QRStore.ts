@@ -75,12 +75,12 @@ const useFetchQR = create<UseFetchQR>((set,get) => (
 type useQrScanner = {
     qrScanner: null | QrScanner,
     cameras: QrScanner.Camera[] | null,
+    scannedToken: QrLoginScan | null,
     startScanner: () => void,
     stopScanner: () => void,
     setQrScanner: () => void,
     getCameras: () => Promise<QrScanner.Camera[]>,
     setCamera: (index:number) => void,
-    scannedToken: QrLoginScan | null,
     setScannedToken: (t: QrLoginScan|null) => void,
 }
 
@@ -89,7 +89,7 @@ export const useQrScanner = create<useQrScanner>((set, get) => (
         qrScanner: null,
         startScanner: async () => {
             let os = await platform()
-            if (os === "linux"){
+            if (["linux", "freebsd", "dragonfly","netbsd", "openbsd", "solaris", ].includes(os)){
                 //notify user to install zbar-tools
                 notification("Running zbarcam","Please install zbar-tools to use QR code scanner if nothing happens", Status.Info)
                 //run zbarcam
