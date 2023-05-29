@@ -78,6 +78,7 @@
       },
       "shell": {
         "sidecar": true,
+        "execute": true,
         "scope": [
           {
             "name": "bins/untamo_audio_play",
@@ -88,7 +89,18 @@
               { "validator": "\\S+" }
               ]
           }
-        ]
+        ,{
+          "name": "zbarcam",
+          "sidecar": false,
+          "cmd": "zbarcam",
+          "args": ["-1"]
+        }]
+      },
+      "notification": {
+        "all": true
+      },
+      "os": {
+        "all": true
       }
     },
     "bundle": {

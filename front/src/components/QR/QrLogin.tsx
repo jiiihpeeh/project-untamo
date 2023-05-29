@@ -1,7 +1,6 @@
 import { useLogIn, usePopups  } from "../../stores"
 import React, { useEffect } from 'react'
-//use Modal from chakra-ui
-import { Modal, ModalBody, ModalHeader, ModalCloseButton, ModalOverlay, ModalContent } from '@chakra-ui/react'
+import { Modal, ModalBody, ModalHeader, ModalCloseButton, ModalOverlay, ModalContent, Button, ModalFooter } from '@chakra-ui/react'
 import { useQrScanner } from "../../stores/QRStore"
 
 function QrLogin() {
@@ -11,11 +10,6 @@ function QrLogin() {
     const scannedToken = useQrScanner((state) => state.scannedToken)
     const stopScanner = useQrScanner((state) => state.stopScanner)
 
-    useEffect(() => {
-        if (showQrCodeReader) {
-            startScanner()
-        }
-    }, [showQrCodeReader])
 
     useEffect(() => {
         if (scannedToken) {
@@ -48,6 +42,13 @@ function QrLogin() {
                     id="qrScanReader"
                 >   
                 </video>
+                <ModalFooter>
+                    <Button
+                        onClick={() => {startScanner()}}
+                    >
+                        Activate Camera
+                    </Button>
+                </ModalFooter>
             </ModalBody>
             </ModalContent>
         </Modal>

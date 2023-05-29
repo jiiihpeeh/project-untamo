@@ -348,7 +348,7 @@ const usePopups = create<Popup>((set, get) => ({
             )
         },
         showQrCodeReader: false,
-        setShowQrCodeReader: (b) => {
+        setShowQrCodeReader: async (b) => {
             set(
                 {
                     showQrCodeReader: b

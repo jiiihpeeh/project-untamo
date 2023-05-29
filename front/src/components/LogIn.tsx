@@ -5,7 +5,6 @@ import { useLogIn,  usePopups, useSettings } from "../stores"
 import { SessionStatus, Path, ColorMode } from "../type"
 import { BsQrCodeScan as QrCodeIcon } from 'react-icons/bs'
 
-import QrScanner from 'qr-scanner'
 import '../App.css'
 
 function LogIn() {
@@ -68,12 +67,13 @@ function LogIn() {
                 const radius = Math.min(windowSize.width / 2, windowSize.height / 2)
                 const top = navBarTop ? windowSize.height / 2 - radius + navBarHeight : windowSize.height / 2 - radius - navBarHeight
                 return (<Spinner
-                    thickness='8px'
-                    speed='0.65s'
-                    emptyColor='gray.200'
-                    color='blue.500'
-                    size='xl'
-                    style={{ width: radius, height: radius, left: windowSize.width / 2 - radius / 2, top: top, position: "absolute" }} />)
+                            thickness='8px'
+                            speed='0.65s'
+                            emptyColor='gray.200'
+                            color='blue.500'
+                            size='xl'
+                            style={{ width: radius, height: radius, left: windowSize.width / 2 - radius / 2, top: top, position: "absolute" }} 
+                        />)
             case SessionStatus.Activate:
                 setNavigateTo(Path.Activate)
                 break
@@ -136,7 +136,6 @@ function LogIn() {
                                     </Button>
                                 </FormControl>
                             </Box>
-
                         </form>
                         <Center>
                             <VStack>

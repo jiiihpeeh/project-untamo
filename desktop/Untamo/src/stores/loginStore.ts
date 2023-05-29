@@ -3,17 +3,15 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import { SessionStatus, FormData, UserInfo, QrLoginScan } from '../type'
-import {  validSession } from '../stores'
 import useServer from './serverStore'
 import useDevices, { uniqueDevices } from './deviceStore'
 import useAdmin from './adminStore'
 import useTimeouts from './timeoutsStore'
 import useFetchQR from './QRStore'
-import useAlarms, { uniqueAlarms } from './alarmStore'
+import useAlarms, { uniqueAlarms, postOfflineAlarms } from './alarmStore'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, isSuccess, generateRandomString, calculateSHA512 } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
-import { postOfflineAlarms } from "./alarmStore"
 import { Alarm, Device, Path, PasswordReset } from "../type"
 
 type UseLogIn = {
@@ -74,6 +72,10 @@ async function userInfoFetch() {
         useLogIn.setState({ user: userData })
     } catch (err) {
     }
+}
+
+function validSession() {
+    return useLogIn.getState().sessionValid === SessionStatus.Valid
 }
 
 async function activate(verification: string, captcha: string, accepted: boolean ) {
@@ -663,6 +665,7 @@ async function logInWithQr(scan: QrLoginScan) {
 
 async function checkSessionStatus(){
     while ( true ){
+        await sleep(600)
         const sessionStatus = useLogIn.getState().sessionValid
         if(sessionStatus === SessionStatus.Unknown){
             useLogIn.getState().validateSession()

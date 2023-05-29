@@ -4,6 +4,9 @@ import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { isSuccess, sleep } from '../utils'
 import QrScanner from 'qr-scanner'
 import { QrLoginScan } from '../type'
+import { platform } from '@tauri-apps/api/os'
+import { Command } from '@tauri-apps/api/shell'
+import { notification, Status } from '../components/notification'
 
 type UseFetchQR = {
     fetchQR: boolean,
@@ -85,6 +88,24 @@ export const useQrScanner = create<useQrScanner>((set, get) => (
     {
         qrScanner: null,
         startScanner: async () => {
+            let os = await platform()
+            if (os === "linux"){
+                //notify user to install zbar-tools
+                notification("Running zbarcam","Please install zbar-tools to use QR code scanner if nothing happens", Status.Info)
+                //run zbarcam
+                const output = await new Command('zbarcam', ['-1']).execute()
+                try{
+                    //extract qr code by taking off "QR-Code:"
+                    let qrPart = output.stdout.split("QR-Code:")[1]
+                    //console.log(qrPart)
+                    let qrCode = JSON.parse(qrPart) as QrLoginScan
+                    get().setScannedToken(qrCode)
+                    //console.log(qrCode)
+                }catch(err){
+                    console.log(err)
+                }
+                return
+            }
             get().setQrScanner()
             let count = 0
             while(!get().qrScanner){
@@ -102,7 +123,8 @@ export const useQrScanner = create<useQrScanner>((set, get) => (
             set({qrScanner: null})
         },
         setQrScanner: async () => {
-            get().getCameras()
+            //await  navigator.mediaDevices.getUserMedia({ video: true })
+            await get().getCameras()
             get().stopScanner()
             let videoElement = document.getElementById('qrScanReader') as HTMLVideoElement | null
             let count = 0
@@ -124,14 +146,16 @@ export const useQrScanner = create<useQrScanner>((set, get) => (
             }
             if(videoElement){
                 set({qrScanner: new QrScanner(
-                    videoElement,
-                    result => {
-                        //console.log('decoded qr code:', result)
-                        set({scannedToken: JSON.parse(result.data) as QrLoginScan})
-                        get().qrScanner?.stop()
-                    },
-                    { /* your options or returnDetailedScanResult: true if you're not specifying any other options */ },
-                )})
+                                        videoElement,
+                                        result => {
+                                            //console.log('decoded qr code:', result)
+                                            set({scannedToken: JSON.parse(result.data) as QrLoginScan})
+                                            get().qrScanner?.stop()
+                                        },
+                                        { /* your options or returnDetailedScanResult: true if you're not specifying any other options */ },
+                                    )
+                                }
+                    )
             }
         },
         cameras: null,
