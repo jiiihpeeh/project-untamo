@@ -3,14 +3,15 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { getCommunicationInfo } from '../stores'
 import { notification, Status } from '../components/notification'
 import axios from 'axios'
+import useServer from '../stores/serverStore'
+import useDevices, { uniqueDevices } from '../stores/deviceStore'
+import useAlarms,{ postOfflineAlarms, uniqueAlarms }  from '../stores/alarmStore'
+import useTimeouts from '../stores/timeoutsStore'
+import useAdmin from '../stores/adminStore'
+import useFetchQR from '../stores/QRStore'
 import { SessionStatus, FormData, UserInfo, Device, Alarm, Path, PasswordReset, QrLoginScan } from '../type'
-import { useServer, useDevices, useAdmin, useTimeouts,
-         useFetchQR, useAlarms , validSession } from '../stores'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, generateRandomString, calculateSHA512 } from '../utils'
-import { postOfflineAlarms, uniqueAlarms } from './alarmStore'
-import { uniqueDevices } from './deviceStore'
-
 
 
 type UseLogIn = {
@@ -66,6 +67,9 @@ async function userInfoFetch() {
         useLogIn.setState({ user: userData })
     } catch (err) {
     }
+}
+function validSession() {
+    return useLogIn.getState().sessionValid === SessionStatus.Valid
 }
 
 async function activate(verification: string, captcha: string, accepted: boolean ) {
@@ -554,6 +558,7 @@ async function logInWithQr(scan: QrLoginScan) {
 //check session status if session is unknown
 async function checkSessionStatus(){
     while ( true ){
+        await sleep(600)
         const sessionStatus = useLogIn.getState().sessionValid
         if(sessionStatus === SessionStatus.Unknown){
             useLogIn.getState().validateSession()
