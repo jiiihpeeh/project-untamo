@@ -1,24 +1,48 @@
-import { FormLabel , Input, Center, Flex } from "@chakra-ui/react"
-import React from "react"
+import { FormLabel , Input, Center, Flex, HStack, VStack, Button } from "@chakra-ui/react"
+import React, { useState} from "react"
 import useAlarm  from "./alarmStates"
-function Message() {
-    const label = useAlarm((state) => state.label)
-    const setLabel = useAlarm((state) => state.setLabel)
-    return (
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
+
+const Message = () => {
+    const label= useAlarm((state)=> state.label)
+    const setLabel = useAlarm((state)=> state.setLabel)
+    const [ showEmoji, setShowEmoji ]  = useState(false)
+
+    function onEmojiSelect(emoji: { native: string }) {
+        setLabel(label+emoji.native)
+    }
+
+    return(
         <Center>
-            <Flex
+            <Flex 
                 m={"1%"}
             >
                 <FormLabel
-                    onMouseDown={e => e.preventDefault()}
+                    onMouseDown={e=>e.preventDefault()}
                 >
                     Message
                 </FormLabel>
-                <Input
-                    value={label}
-                    onChange={(e) => setLabel(e.target.value)} />
+                <VStack>
+                    <HStack>
+                        <Input 
+                            value={label} 
+                            onChange={(e) => setLabel(e.target.value)} 
+                        />
+                        <Button
+                            onClick={()=>setShowEmoji(!showEmoji)}
+                        >
+                            ⏰
+                        </Button>
+                    </HStack>
+                {showEmoji &&
+                    <Picker 
+                        data={data} 
+                        onEmojiSelect={onEmojiSelect} 
+                    />}
+                </VStack>
             </Flex>
-        </Center>
+        </Center>          
     )
 }
 export default Message

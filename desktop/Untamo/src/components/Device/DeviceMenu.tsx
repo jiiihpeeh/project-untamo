@@ -6,8 +6,6 @@ import { useDevices, usePopups } from '../../stores'
 import { EditIcon, DeleteIcon, ChevronRightIcon} from '@chakra-ui/icons'
 import DeviceIcons from "./DeviceIcons"
 
-
-
 function DeviceMenu() {
     const viewableDevices = useDevices((state) => state.viewableDevices)
     const toggleViewableDevices = useDevices((state) => state.toggleViewableDevices)

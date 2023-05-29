@@ -3,11 +3,13 @@ import { Menu, MenuItem,  MenuList, MenuButton,
          Button, Divider, Input, Stack, Modal,
          ModalOverlay, ModalContent,
          ModalHeader,  ModalFooter,
-         ModalBody, ModalCloseButton} from '@chakra-ui/react'         
+         ModalBody, ModalCloseButton, HStack} from '@chakra-ui/react'         
 import { ChevronDownIcon as Down } from "@chakra-ui/icons"
 import { usePopups , useDevices } from "../../stores"
 import { DeviceType, Device } from "../../type"
 import { isEqual } from "../../utils"
+import data from '@emoji-mart/data'
+import Picker from '@emoji-mart/react'
 
 function DeviceEdit() {
   const [deviceEditInfo, setDeviceEditInfo] = useState<Device>({ id: '', deviceName: '', type: DeviceType.Browser })
@@ -18,6 +20,11 @@ function DeviceEdit() {
   const toEditDevice = useDevices((state) => state.toEdit)
   const inputTime = useRef<number>(Date.now())
   const types = Object.values(DeviceType).filter((item) => item)
+  const [ showEmoji, setShowEmoji ]  = useState(false)
+
+  function onEmojiSelect(emoji: { native: string }) {
+    setDeviceEditInfo({ ...deviceEditInfo, deviceName: deviceEditInfo.deviceName+emoji.native })
+  }
 
   function mouseSelect(e: number) {
     const now = Date.now()
@@ -77,10 +84,23 @@ function DeviceEdit() {
         <ModalCloseButton />
         <ModalBody>
           <Stack>
-            <Input
-              placeholder='Device name'
-              value={deviceEditInfo.deviceName}
-              onChange={(event) => setDeviceEditInfo({ ...deviceEditInfo, deviceName: event.target.value })} />
+            <HStack>
+              <Input
+                placeholder='Device name'
+                value={deviceEditInfo.deviceName}
+                onChange={(event) => setDeviceEditInfo({ ...deviceEditInfo, deviceName: event.target.value })} 
+              />
+              <Button
+                onClick={()=>setShowEmoji(!showEmoji)}
+              >
+                  🕰️
+              </Button>
+            </HStack>
+            {showEmoji &&
+                    <Picker 
+                        data={data} 
+                        onEmojiSelect={onEmojiSelect} 
+                    />}
             <Divider orientation='vertical' />
             <Menu
               matchWidth={true}
