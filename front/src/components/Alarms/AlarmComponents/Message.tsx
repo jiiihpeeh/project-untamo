@@ -1,13 +1,16 @@
 import { FormLabel , Input, Center, Flex, HStack, VStack, Button } from "@chakra-ui/react"
 import React, { useState} from "react"
 import useAlarm  from "./alarmStates"
-import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
+import  useSettings  from "../../../stores/settingsStore"
+import  useEmojiStore  from "../../../stores/emojiStore"
 
 const Message = () => {
     const label= useAlarm((state)=> state.label)
     const setLabel = useAlarm((state)=> state.setLabel)
     const [ showEmoji, setShowEmoji ]  = useState(false)
+    const isLight = useSettings((state)=>state.isLight)
+    const data = useEmojiStore((state)=>state.getEmojiData)()
 
     function onEmojiSelect(emoji: { native: string }) {
         setLabel(label+emoji.native)
@@ -34,12 +37,17 @@ const Message = () => {
                         >
                             ⏰
                         </Button>
-                </HStack>
-                {showEmoji &&
+                    </HStack>
+                    {  showEmoji ?
                     <Picker 
                         data={data} 
-                        onEmojiSelect={onEmojiSelect} 
-                    />}
+                        onEmojiSelect={onEmojiSelect}
+                        theme={isLight ? 'light' : 'dark'}
+                        width={300}
+                    />
+                    :
+                    <></>
+                    }
                 </VStack>
             </Flex>
         </Center>          

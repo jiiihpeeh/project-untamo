@@ -9,8 +9,10 @@ import { Menu, MenuItem,  MenuList, MenuButton,
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useDevices, usePopups } from "../../stores"
 import { DeviceType } from "../../type"
-import data from '@emoji-mart/data'
+import useEmojiStore from "../../stores/emojiStore"
 import Picker from '@emoji-mart/react'
+import  useSettings  from "../../stores/settingsStore"
+
 
 function AddDevice() {
   const btnRef = useRef<any>(null)
@@ -21,6 +23,8 @@ function AddDevice() {
   const setShowAddDevice = usePopups((state) => state.setShowAddDevice)
   const inputTime = useRef<number>(Date.now())
   const types = Object.values(DeviceType).filter((item) => item)
+  const isLight = useSettings((state)=>state.isLight)
+  const data = useEmojiStore((state)=>state.getEmojiData)()
 
   const [ showEmoji, setShowEmoji ]  = useState(false)
 
@@ -51,8 +55,7 @@ function AddDevice() {
           {type}
         </MenuItem>
       )
-    }
-    )
+    })
   }
 
   async function requestDevice(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -95,11 +98,12 @@ function AddDevice() {
                   🕰️
               </Button>
            </HStack>
-           {showEmoji &&
+           {showEmoji?
                     <Picker 
                         data={data} 
                         onEmojiSelect={onEmojiSelect} 
-                    />}
+                        theme={isLight?'light':'dark'}
+                    />:<></>}
            <Divider
               orientation='vertical' />
             <Menu
