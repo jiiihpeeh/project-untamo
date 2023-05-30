@@ -613,7 +613,7 @@ func GetQRToken(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//generate qr token
-	qrToken := token.GenerateToken(96)
+	qrToken := token.GenerateToken(196)
 	qr := qr.QR{
 		ID:      id.GenerateId(),
 		Time:    now.Now() + 25000,
@@ -999,7 +999,11 @@ func RefreshToken(c *gin.Context, client *mongo.Client) {
 
 	newToken := token.GenerateToken(64)
 	session.Token = newToken
-	session.Time = now.Now() + 157680000000
+	//get session length from config
+	appconfig.AppConfigurationMutex.Lock()
+	sessionLength := appconfig.AppConfiguration.SessionLength
+	appconfig.AppConfigurationMutex.Unlock()
+	session.Time = now.Now() + int64(sessionLength)
 	//update session in db
 	if !mongoDB.UpdateSession(session, client) {
 		c.JSON(500, gin.H{

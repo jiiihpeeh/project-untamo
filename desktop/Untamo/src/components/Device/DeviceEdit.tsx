@@ -8,8 +8,10 @@ import { ChevronDownIcon as Down } from "@chakra-ui/icons"
 import { usePopups , useDevices } from "../../stores"
 import { DeviceType, Device } from "../../type"
 import { isEqual } from "../../utils"
-import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
+import  useSettings  from "../../stores/settingsStore"
+import useEmojiStore from "../../stores/emojiStore"
+
 
 function DeviceEdit() {
   const [deviceEditInfo, setDeviceEditInfo] = useState<Device>({ id: '', deviceName: '', type: DeviceType.Browser })
@@ -21,6 +23,8 @@ function DeviceEdit() {
   const inputTime = useRef<number>(Date.now())
   const types = Object.values(DeviceType).filter((item) => item)
   const [ showEmoji, setShowEmoji ]  = useState(false)
+  const isLight = useSettings((state)=>state.isLight)
+  const data = useEmojiStore((state)=>state.getEmojiData)()
 
   function onEmojiSelect(emoji: { native: string }) {
     setDeviceEditInfo({ ...deviceEditInfo, deviceName: deviceEditInfo.deviceName+emoji.native })
@@ -96,11 +100,12 @@ function DeviceEdit() {
                   🕰️
               </Button>
             </HStack>
-            {showEmoji &&
+            {showEmoji?
                     <Picker 
                         data={data} 
-                        onEmojiSelect={onEmojiSelect} 
-                    />}
+                        onEmojiSelect={onEmojiSelect}
+                        theme={isLight?'light':'dark'}
+                    />:<></>}
             <Divider orientation='vertical' />
             <Menu
               matchWidth={true}

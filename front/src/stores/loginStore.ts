@@ -586,6 +586,7 @@ const useLogIn = create<UseLogIn>()(
             fingerprint: generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             captcha: null,
             captchaSum: "",
+            emojiData: null,
             setToken: (s) => set(
                   { 
                     token : s
@@ -690,7 +691,6 @@ const useLogIn = create<UseLogIn>()(
                 expire: state.expire,
                 tokenTime: state.tokenTime,
                 wsPair: state.wsPair,
-
               }
           ),
       }
