@@ -105,7 +105,7 @@ func main() {
 		router.Use(cors.New(corsConfig))
 	}
 	if !DisableGZIP {
-		router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPathsRegexs([]string{"/action/*"})))
+		router.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPathsRegexs([]string{"/action/*", "/api/qr-token", "/qr-login"})))
 	} else {
 		fmt.Println("GZIP disabled")
 	}

@@ -27,6 +27,7 @@ type UseLogIn = {
     fingerprint: string,
     captcha: HTMLImageElement|null,
     captchaSum: string,
+    navigateTo: null | Path,
     setToken : (input:string) => void,
     setSignedIn: (t:number) => void,
     setSessionValid: (s: SessionStatus) => void,
@@ -41,7 +42,6 @@ type UseLogIn = {
     getWsToken: () => string,
     fetchWsToken: () => void,
     updateState: () => void,
-    navigateTo: null | Path,
     setNavigateTo: (path: Path | null) => void,
     fetchCaptcha: () => void,
     activate: (verification: string, captcha: string, accepted: boolean ) => void,
@@ -205,12 +205,11 @@ async function fetchCaptcha(){
     }
 }
 
-
-async function refreshToken() {
+export async function refreshToken(checkTime :boolean = true) {
     const { server, token } = getCommunicationInfo()
     const sessionStatus = useLogIn.getState().sessionValid
     const tokenTime = useLogIn.getState().tokenTime
-    if ((Date.now() - tokenTime) < 7200000) {
+    if (checkTime && (Date.now() - tokenTime) < 7200000) {
         const randomTime = Math.ceil(Math.random() * 10000000)
         //setTimeout(refreshToken,tokenTime + randomTime)
         return
@@ -223,7 +222,7 @@ async function refreshToken() {
         const res = await client.request(
             {
                 url: `${server}/api/refresh-token`,
-                method: 'POST',
+                method: 'GET',
                 headers: {
                     token: token
                 },
@@ -237,6 +236,8 @@ async function refreshToken() {
         interface Resp {
             token: string
             time: number
+            wsToken: string
+            wsPair: string
         }
         isSuccess(res)
         let resp: Resp = res.data as Resp
@@ -244,7 +245,9 @@ async function refreshToken() {
             {
                 token: resp.token,
                 expire: resp.time,
-                tokenTime: Date.now()
+                tokenTime: Date.now(),
+                wsToken: resp.wsToken,
+                wsPair: resp.wsPair
             }
         )
         const randomTime = Math.ceil(Math.random() * 7200000)
@@ -693,6 +696,7 @@ const useLogIn = create<UseLogIn>()(
             fingerprint:  generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             captcha: null,
             captchaSum: "",
+            navigateTo: null,
             setToken: (s) => set(
                   { 
                     token : s
@@ -749,7 +753,6 @@ const useLogIn = create<UseLogIn>()(
                 await postOfflineAlarms()
                 await updateState()
             },
-            navigateTo: null,
             setNavigateTo: (path) => {
                                         set(
                                                 {

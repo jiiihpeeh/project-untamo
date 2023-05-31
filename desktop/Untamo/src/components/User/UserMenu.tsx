@@ -3,6 +3,7 @@ import { Text, Modal, Button,ModalOverlay, ModalContent,
          ModalHeader,ModalBody,  ModalCloseButton } from '@chakra-ui/react'
 import { useLogIn, usePopups } from "../../stores"
 import { SessionStatus } from "../../type"
+import { refreshToken } from "../../stores/loginStore"
 
 function UserMenu() {
     const userInfo = useLogIn((state) => state.user)
@@ -76,6 +77,17 @@ function UserMenu() {
                         <Text as='b'>
                             Log Out
                         </Text>
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            refreshToken(false)
+                            console.log("refreshing session credentials")
+                            setShowUserMenu(!showUserMenu)  
+                        }}
+                        w={"100%"}
+                        m={"2%"}
+                    >
+                        Refresh Session Credentials
                     </Button>
                     <Button
                         onClick={() => {

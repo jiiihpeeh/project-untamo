@@ -615,13 +615,10 @@ func GetQRToken(c *gin.Context, client *mongo.Client) {
 	//generate qr token
 	qrToken := token.GenerateToken(196)
 	qr := qr.QR{
-		ID:      id.GenerateId(),
 		Time:    now.Now() + 25000,
 		User:    session.UserId,
 		QrToken: qrToken,
 	}
-	//add qr to db
-	//fmt.Println(qr)
 	if !mongoDB.AddQr(&qr, client) {
 		c.JSON(500, gin.H{
 			"message": "Failed to add qr to db",
@@ -632,7 +629,6 @@ func GetQRToken(c *gin.Context, client *mongo.Client) {
 		//delete qr from db after 25 seconds
 		time.Sleep(26 * time.Second)
 		mongoDB.DeleteQr(qrToken, client)
-		//return qr token as string
 	}()
 	c.JSON(200, gin.H{
 		"qrToken": qrToken,
@@ -997,8 +993,10 @@ func RefreshToken(c *gin.Context, client *mongo.Client) {
 		return
 	}
 
-	newToken := token.GenerateToken(64)
+	newToken := token.GenerateToken(token.TokenStringLength)
 	session.Token = newToken
+	session.WsPair = token.GenerateToken(token.WsPairLength)
+	session.WsToken = token.GenerateToken(token.WsTokenStringLength)
 	//get session length from config
 	appconfig.AppConfigurationMutex.Lock()
 	sessionLength := appconfig.AppConfiguration.SessionLength
@@ -1012,8 +1010,10 @@ func RefreshToken(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	refresh := login.RefreshToken{
-		Token: session.Token,
-		Time:  session.Time,
+		Token:   session.Token,
+		Time:    session.Time,
+		WsPair:  session.WsPair,
+		WsToKen: session.WsToken,
 	}
 	//return refresh as json
 	c.JSON(200, refresh)

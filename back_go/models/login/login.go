@@ -20,6 +20,8 @@ type LogInRequest struct {
 }
 
 type RefreshToken struct {
-	Token string `json:"token"`
-	Time  int64  `json:"time"`
+	Token   string `json:"token"`
+	Time    int64  `json:"time"`
+	WsToKen string `json:"wsToken"`
+	WsPair  string `json:"wsPair"`
 }

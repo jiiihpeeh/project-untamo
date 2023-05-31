@@ -79,11 +79,9 @@ async function activate(verification: string, captcha: string, accepted: boolean
     }
     let captchaResp = captcha
     if (captchaResp === ""){
-        //captchaResp = "Q7HJ"
         let captchaElement = useLogIn.getState().captcha
         if(captchaElement){
             let captchaSum = useLogIn.getState().captchaSum
-            //take 4 chars from captcha
             captchaResp = captchaSum.substring(5,9)
         }
     }
@@ -156,11 +154,11 @@ async function fetchCaptcha(){
 }
 
 
-async function refreshToken() {
+export async function refreshToken(checkTime :boolean = true) {
     const { server, token } = getCommunicationInfo()
     const sessionStatus = useLogIn.getState().sessionValid
     const tokenTime = useLogIn.getState().tokenTime
-    if ((Date.now() - tokenTime) < 7200000) {
+    if (checkTime && (Date.now() - tokenTime) < 7200000) {
         const randomTime = Math.ceil(Math.random() * 10000000)
         setTimeout(refreshToken, tokenTime + randomTime)
         return
@@ -179,13 +177,17 @@ async function refreshToken() {
         interface Resp {
             token: string
             time: number
+            wsToken: string
+            wsPair: string
         }
         let resp: Resp = res.data
         useLogIn.setState(
             {
                 token: resp.token,
                 expire: resp.time,
-                tokenTime: Date.now()
+                tokenTime: Date.now(),
+                wsToken : resp.wsToken,
+                wsPair: resp.wsPair
             }
         )
         const randomTime = Math.ceil(Math.random() * 7200000)
@@ -438,11 +440,9 @@ async function fetchWsToken() {
             wsToken: string
         }
         let keyJson =  res.data as WSToken 
-        //console.log(keyJson.wsToken)                      
         useLogIn.setState({wsToken: keyJson.wsToken})
         return keyJson.wsToken
     }catch(err:any){
-        //console.log(err)
         return null    
     }
 }
@@ -488,7 +488,6 @@ async function resendActivation(email: string){
 async function logInWithQr(scan: QrLoginScan) {
     let server = scan.server
     let token = scan.token
-    //set server
     useServer.getState().setAddress(server)
     try{
         let res = await axios.post(`${server}/qr-login`,
@@ -529,9 +528,6 @@ async function logInWithQr(scan: QrLoginScan) {
                 wsPair: resp.wsPair
             }
         )
-
-        //useDevices.getState().fetchDevices()
-        //useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random() * 7200000)
         setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
         
@@ -550,7 +546,6 @@ async function logInWithQr(scan: QrLoginScan) {
     } catch (err: any) {
         notification("Log In", "Log In Failed", Status.Error)
         useLogIn.setState({ sessionValid: SessionStatus.NotValid })
-        //console.error(err)
     }
 }
 
@@ -586,7 +581,6 @@ const useLogIn = create<UseLogIn>()(
             fingerprint: generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
             captcha: null,
             captchaSum: "",
-            emojiData: null,
             setToken: (s) => set(
                   { 
                     token : s
@@ -633,7 +627,7 @@ const useLogIn = create<UseLogIn>()(
                 logOutProcedure()
             },
             refreshToKen: async()=>{
-                await refreshToken()
+                await refreshToken(true)
             },
             getWsToken: () => {
                 return get().wsToken

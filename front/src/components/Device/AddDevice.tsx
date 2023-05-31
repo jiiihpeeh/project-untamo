@@ -9,7 +9,7 @@ import { Menu, MenuItem,  MenuList, MenuButton,
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useDevices, usePopups } from "../../stores"
 import { DeviceType } from "../../type"
-import useEmojiStore from "../../stores/emojiStore"
+import useEmojiStore, { Skin } from "../../stores/emojiStore"
 import Picker from '@emoji-mart/react'
 import  useSettings  from "../../stores/settingsStore"
 
@@ -28,7 +28,7 @@ function AddDevice() {
 
   const [ showEmoji, setShowEmoji ]  = useState(false)
 
-  function onEmojiSelect(emoji: { native: string }) {
+  function onEmojiSelect(emoji: Skin) {
     setDeviceName(deviceName+emoji.native)
   }
   function mouseSelect(e: number) {
@@ -95,7 +95,7 @@ function AddDevice() {
               <Button
                 onClick={()=>setShowEmoji(!showEmoji)}
               >
-                  🕰️
+                🕰️
               </Button>
            </HStack>
            {showEmoji?

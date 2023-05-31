@@ -458,7 +458,8 @@ func RemoveUser(userID primitive.ObjectID, client *mongo.Client) bool {
 
 func UpdateSession(session *session.Session, client *mongo.Client) bool {
 	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"token": session.Token}, session)
+	//replace session by session id and user id
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": session.ID, "user_id": session.UserId}, session)
 	return err == nil
 }
 

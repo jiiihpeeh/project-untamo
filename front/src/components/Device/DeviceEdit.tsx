@@ -10,7 +10,7 @@ import { DeviceType, Device } from "../../type"
 import { isEqual } from "../../utils"
 import Picker from '@emoji-mart/react'
 import  useSettings  from "../../stores/settingsStore"
-import useEmojiStore from "../../stores/emojiStore"
+import useEmojiStore, { Skin } from "../../stores/emojiStore"
 
 
 function DeviceEdit() {
@@ -26,7 +26,7 @@ function DeviceEdit() {
   const isLight = useSettings((state)=>state.isLight)
   const data = useEmojiStore((state)=>state.getEmojiData)()
 
-  function onEmojiSelect(emoji: { native: string }) {
+  function onEmojiSelect(emoji: Skin) {
     setDeviceEditInfo({ ...deviceEditInfo, deviceName: deviceEditInfo.deviceName+emoji.native })
   }
 
