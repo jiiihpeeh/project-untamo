@@ -74,3 +74,4 @@ export async function calculateSHA512(blob: Blob): Promise<string> {
     const hash = await crypto.subtle.digest('SHA-512', await blob.arrayBuffer())
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
+

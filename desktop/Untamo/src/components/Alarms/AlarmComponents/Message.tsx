@@ -3,7 +3,7 @@ import React, { useState} from "react"
 import useAlarm  from "./alarmStates"
 import Picker from '@emoji-mart/react'
 import  useSettings  from "../../../stores/settingsStore"
-import  useEmojiStore  from "../../../stores/emojiStore"
+import  useEmojiStore, { Skin }  from "../../../stores/emojiStore"
 
 const Message = () => {
     const label= useAlarm((state)=> state.label)
@@ -12,7 +12,7 @@ const Message = () => {
     const isLight = useSettings((state)=>state.isLight)
     const data = useEmojiStore((state)=>state.getEmojiData)()
 
-    function onEmojiSelect(emoji: { native: string }) {
+    function onEmojiSelect(emoji :Skin) {
         setLabel(label+emoji.native)
     }
 
