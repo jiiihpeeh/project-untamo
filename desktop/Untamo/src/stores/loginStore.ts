@@ -457,7 +457,8 @@ async function logIn(email: string, password: string) {
         //useDevices.getState().fetchDevices()
         //useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random() * 7200000)
-        setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
+        const refreshTimeOutID = setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
+        useTimeouts.getState().setRefreshTokenTimeout(refreshTimeOutID)
         notification("Logged In", "Successfully logged in")
         if (resp.active === false) {
             useLogIn.setState({ sessionValid: SessionStatus.Activate })
@@ -645,11 +646,10 @@ async function logInWithQr(scan: QrLoginScan) {
             }
         )
 
-        //useDevices.getState().fetchDevices()
-        //useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random() * 7200000)
-        setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
-        
+        const refreshTimeOutID = setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
+        useTimeouts.getState().setRefreshTokenTimeout(refreshTimeOutID)
+
         notification("Logged In", "Successfully logged in")
         if (resp.active === false) {
             useLogIn.setState({ sessionValid: SessionStatus.Activate })
