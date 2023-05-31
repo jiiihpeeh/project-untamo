@@ -251,7 +251,11 @@ export async function refreshToken(checkTime :boolean = true) {
             }
         )
         const randomTime = Math.ceil(Math.random() * 7200000)
-        //setTimeout(refreshToken,2*24*60*60*1000 + randomTime)
+        const refreshTimeOutID = setTimeout(refreshToken,2*24*60*60*1000 + randomTime)
+        useTimeouts.getState().setRefreshTokenTimeout(refreshTimeOutID)
+        //check if updated session is valid
+        await sleep(120)
+        await checkSession()
     } catch (err) {
         (validSession()) ? notification("Session", "Failed to update token.", Status.Error) : {}
     }

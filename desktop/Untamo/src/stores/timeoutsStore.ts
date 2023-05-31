@@ -64,8 +64,11 @@ type UseTimeout = {
     setAlarmOut: (to: NodeJS.Timeout) => void,
     clearAlarmOutId: () => void,
     clearWsID: () => void,
+    refreshTokenTimeout: NodeJS.Timeout|undefined,
+    setRefreshTokenTimeout: (to: NodeJS.Timeout) => void,
     systemTime: number,
     setSystemTime: (to: number) => void,
+
     clear: () => void
 }
 
@@ -135,6 +138,17 @@ function clearWsId() {
 
 function clearAlarmOutId() {
     let delTimeOut = useTimeouts.getState().alarmOut
+    if (delTimeOut) {
+        try {
+            clearTimeout(delTimeOut)
+        } catch (err) {
+            //console.log(err)
+        }
+    }
+}
+
+function clearRefreshTokenTimeout() {
+    let delTimeOut = useTimeouts.getState().refreshTokenTimeout
     if (delTimeOut) {
         try {
             clearTimeout(delTimeOut)
@@ -254,6 +268,15 @@ const useTimeouts = create<UseTimeout>((set,get) => ({
             clearAlarmOutId()
             set({alarmOut: null})
 
+        },
+        refreshTokenTimeout: undefined,
+        setRefreshTokenTimeout: (to: NodeJS.Timeout) => {
+            clearRefreshTokenTimeout()
+            set(
+                {
+                    refreshTokenTimeout: to
+                }
+            )
         },
         systemTime: Date.now(),
         setSystemTime: (to: number) => {
