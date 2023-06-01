@@ -4,8 +4,6 @@ import { Input , FormControl,FormLabel, Center, HStack, Spacer,
 import { useLogIn, usePopups, useSettings } from "../stores"
 import { SessionStatus, Path, ColorMode } from "../type"
 import { BsQrCodeScan as QrCodeIcon } from 'react-icons/bs'
-
-import QrScanner from 'qr-scanner'
 import '../App.css'
 
 function LogIn() {

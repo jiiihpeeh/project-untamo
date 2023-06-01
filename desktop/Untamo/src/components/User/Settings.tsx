@@ -292,9 +292,7 @@ function Settings() {
                             </Tr>
                         </Tbody>
                     </Table>
-
                 </ModalBody>
-
             </ModalContent>
         </Modal>
     )

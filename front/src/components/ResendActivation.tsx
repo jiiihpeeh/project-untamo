@@ -9,7 +9,7 @@ function ResendActivation() {
     const showResendActivation = usePopups((state) => state.showResendActivation)
     const sendActivation = useLogIn((state) => state.resendActivation)
     const [email, setEmail] = useState('')
-    return (<>
+    return (
         <Modal
             isOpen={showResendActivation}
             onClose={() => setShowResendActivation(false)}
@@ -50,7 +50,7 @@ function ResendActivation() {
                 </ModalFooter>
             </ModalContent>
         </Modal>
-    </>)
+    )
 }
 
 export default ResendActivation

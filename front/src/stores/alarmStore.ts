@@ -184,7 +184,7 @@ async function addAlarmFromDialog(alarm: Alarm) {
     notification("Add alarm", "No devices set", Status.Error)
     return
   }
-  if ((alarm.occurrence === AlarmCases.Weekly) && (alarm.weekdays.length === 0)) {
+  if ((alarm.occurrence === AlarmCases.Weekly) && (alarm.weekdays === 0)) {
     notification("Add alarm", "No weekdays set", Status.Error)
     return
   }
@@ -208,10 +208,10 @@ async function addAlarmFromDialog(alarm: Alarm) {
       break
     case AlarmCases.Daily:
       newAlarm.date = ''
-      newAlarm.weekdays = []
+      newAlarm.weekdays = 0
       break
     default:
-      newAlarm.weekdays = []
+      newAlarm.weekdays = 0
       break
   }
   try {
@@ -269,10 +269,10 @@ async function editAlarmFromDialog(alarm: Alarm) {
       break
     case AlarmCases.Daily:
       modAlarm.date = ''
-      modAlarm.weekdays = []
+      modAlarm.weekdays = 0
       break
     default:
-      modAlarm.weekdays = []
+      modAlarm.weekdays = 0
       break
   }
   try {

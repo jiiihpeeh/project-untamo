@@ -213,7 +213,6 @@ function EditProfile() {
                                 value={formData.changePassword}
                                 type="password" 
                             />
-
                             <FormLabel 
                                 htmlFor="confirmPassword"
                             >

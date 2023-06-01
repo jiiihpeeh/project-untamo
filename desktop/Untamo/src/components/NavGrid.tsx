@@ -268,7 +268,6 @@ function NavGrid() {
                     >
                         Devices
                     </Text>
-
                 </Link>
             </>}
             {validItems.includes('server') && <>

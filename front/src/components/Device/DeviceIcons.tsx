@@ -1,34 +1,29 @@
-import { GoBrowser as Browser } from 'react-icons/go'
-import { MdComputer as Desktop } from 'react-icons/md'
-import { FiTablet as Tablet } from 'react-icons/fi'
-import { MdDeviceUnknown as Other, MdOutlineDevicesOther as IoT } from 'react-icons/md'
-import { DeviceType } from '../../type'
-import { GoDeviceMobile as Phone} from 'react-icons/go'
+import { IconType } from 'react-icons'
 import { Icon } from '@chakra-ui/react'
+import { GoBrowser as Browser } from 'react-icons/go'
+import { MdComputer as Desktop, MdOutlineDevicesOther as Other, MdDeviceUnknown as IoT } from 'react-icons/md'
+import { FiTablet as Tablet } from 'react-icons/fi'
+import { GoDeviceMobile as Phone } from 'react-icons/go'
 import React from 'react'
+import { DeviceType } from '../../type'
 
-interface Props{
+interface Props {
   device: DeviceType
 }
 
+const deviceIcons: Record<DeviceType, IconType> = {
+  [DeviceType.Browser]: Browser,
+  [DeviceType.IoT]: IoT,
+  [DeviceType.Phone]: Phone,
+  [DeviceType.Tablet]: Tablet,
+  [DeviceType.Desktop]: Desktop,
+  [DeviceType.Other]: Other,
+}
+
 function DeviceIcons(props: Props) {
-  function iconic(device: DeviceType) {
-    switch (device) {
-      case DeviceType.Browser:
-        return Browser
-      case DeviceType.IoT:
-        return IoT
-      case DeviceType.Phone:
-        return Phone
-      case DeviceType.Tablet:
-        return Tablet
-      case DeviceType.Desktop:
-        return Desktop
-      default:
-        return Other
-    }
-  }
-  return (<Icon as={iconic(props.device)} />)
+  const IconComponent = deviceIcons[props.device] || Other
+
+  return <Icon as={IconComponent} />
 }
 
 export default DeviceIcons

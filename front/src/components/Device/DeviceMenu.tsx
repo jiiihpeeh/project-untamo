@@ -157,7 +157,6 @@ function DeviceMenu() {
             </ModalContent>
         </Modal>
     )
-
 }
 
 export default DeviceMenu

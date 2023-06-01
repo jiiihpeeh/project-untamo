@@ -1,5 +1,4 @@
-import { WeekDay } from "../../type"
-import { Alarm, AlarmCases } from "../../type"
+import { WeekDay, Alarm, AlarmCases } from "../../type"
 
 function addDays(date: Date, count: number) {
     let calculated = new Date(date.getTime() + (count * (24 * 60 * 60 * 1000)))
@@ -14,7 +13,6 @@ function addDays(date: Date, count: number) {
 }
     
 export function weekDayToNumber(weekDay: WeekDay): number {
-    //console.log(weekDay)
     switch (weekDay) {
         case WeekDay.Monday:
             return 1
@@ -57,7 +55,6 @@ export function numberToWeekDay(number: number): WeekDay {
 }
 
 export function dayContinuation(dayNumberList: Array<number>) {
-    // console.log(dayNumberList)
     let dayNumbers = dayNumberList
     dayNumbers.sort(function (a, b) { return a - b })
     let continuation: Array<Array<number>> = []
@@ -94,13 +91,15 @@ export function dayContinuation(dayNumberList: Array<number>) {
     return continuation
 }
 
-export function dayContinuationDays(dayList: Array<WeekDay>) {
-    //console.log('InpUT:', dayList)
+export function dayContinuationDays(dayList: number) {
     let dayNumberList: Array<number> = []
-    for (const day of dayList) {
-        let d = weekDayToNumber(day)
-        dayNumberList.push((d === 0) ? 7 : d)
+    //first bit is monday... last bit is sunday
+    for (let i = 0; i < 7; i++) {
+        if ((dayList & (1 << i)) !== 0) {
+            dayNumberList.push(i + 1)
+        }
     }
+  
     let continuationArr = dayContinuation(dayNumberList)
     let dayContinuationArr: Array<Array<WeekDay>> = []
     for (const c of continuationArr) {
@@ -163,14 +162,16 @@ export function nextAlarmDaily(timeString: string) {
     return timeCompare
 }
 
-export function nextAlarmWeekly(timeString: string, weekdays: Array<WeekDay>) {
+export function nextAlarmWeekly(timeString: string, weekdays: number) {
     let timeNow = new Date()
     let timeCompare = initAlarmDate(timeString)
     let dayNumbers: Array<number> = []
-    for (const item of weekdays) {
-        dayNumbers.push(weekDayToNumber(item))
+    //first bit is monday... last bit is sunday
+    for (let i = 0; i < 7; i++) {
+        if ((weekdays & (1 << i)) !== 0) {
+            dayNumbers.push(i + 1)
+        }
     }
-    dayNumbers.sort()
     let dayDifferences: Array<number> = []
     let dayNumberNow = timeNow.getDay()
     for (const dayNumber of dayNumbers) {
@@ -202,7 +203,6 @@ export function nextAlarmWeekly(timeString: string, weekdays: Array<WeekDay>) {
 }
 
 export function timeForNextAlarm(alarm: Alarm) {
-
     switch (alarm.occurrence) {
         case AlarmCases.Once:
             return nextAlarmOnce(alarm.time, alarm.date)
@@ -220,7 +220,7 @@ export function timeToNextAlarm(alarm: Alarm) {
     if (!alarm) {
         return snoozer
     }
-    let snoozed = alarm.snooze
+    let snoozed = alarm.snooze ? alarm.snooze : []
     let timeStamp = Date.now()
     let snoozeMax = Math.min(...snoozed) + (30 * 60 * 1000)
     let snoozeMin = timeStamp - (30 * 60 * 1000)

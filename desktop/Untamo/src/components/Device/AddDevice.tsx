@@ -15,7 +15,7 @@ import  useSettings  from "../../stores/settingsStore"
 
 
 function AddDevice() {
-  const btnRef = useRef<any>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const [deviceName, setDeviceName] = useState('')
   const addDevice = useDevices((state) => state.addDevice)
   const [deviceType, setDeviceType] = useState(DeviceType.Browser)

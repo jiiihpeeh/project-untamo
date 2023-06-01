@@ -32,7 +32,6 @@ function GenerateQRPairingKey() {
   }, [qrKey])
 
   useEffect(() => {
-    //console.log("fetchQR ", fetchQR, timeOut)
     if (fetchQR && !timeOut) {
       fetchKey()
     }

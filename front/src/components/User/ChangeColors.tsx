@@ -24,11 +24,9 @@ function ChangeAlarmColors() {
           >
             Color Mode Change
           </AlertDialogHeader>
-
           <AlertDialogBody>
             Do you want to change the alarm colors?
           </AlertDialogBody>
-
           <AlertDialogFooter>
             <Button
               ref={cancelRef}

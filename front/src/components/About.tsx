@@ -22,7 +22,6 @@ function About() {
                         This project aims to implement a cross device alarm clock with synchronization capabilities.
                     </Text>
                 </ModalBody>
-
                 <ModalFooter>
                     <Button
                         colorScheme='blue'

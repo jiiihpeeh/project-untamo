@@ -23,65 +23,66 @@ function Color() {
         setColor(cardColors[mode])
     }, [mode])
 
-    return (<Modal
-        blockScrollOnMount={false}
-        isOpen={showColor}
-        onClose={() => setShowColor(false)}
-        isCentered
-    >
-        <ModalOverlay />
-        <ModalContent>
-            <ModalHeader>
-                Set Alarm Colors
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-                <HStack>
-                    <HexColorPicker
-                        color={color}
-                        onChange={setColor} />
-                    <VStack>
-                        <Button
-                            background={cardColors.odd}
-                            width={200}
-                            onClick={() => setMode("odd")}
-                        >
-                            Odd
-                        </Button>
-                        <Button
-                            background={cardColors.even}
-                            width={200}
-                            onClick={() => setMode("even")}
-                        >
-                            Even
-                        </Button>
-                        <Button
-                            background={cardColors.inactive}
-                            width={200}
-                            onClick={() => setMode("inactive")}
-                        >
-                            Inactive
-                        </Button>
-                        <Button
-                            background={cardColors.background}
-                            width={200}
-                            onClick={() => setMode("background")}
-                        >
-                            Background
-                        </Button>
-                        <Divider />
-                        <Spacer />
-                        <Button
-                            width={200}
-                            onClick={() => { setDefaultCardColors() } }
-                        >
-                            Default
-                        </Button>
-                    </VStack>
-                </HStack>
-            </ModalBody>
-        </ModalContent>
-    </Modal>
+    return (
+        <Modal
+            blockScrollOnMount={false}
+            isOpen={showColor}
+            onClose={() => setShowColor(false)}
+            isCentered
+        >
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>
+                    Set Alarm Colors
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <HStack>
+                        <HexColorPicker
+                            color={color}
+                            onChange={setColor} />
+                        <VStack>
+                            <Button
+                                background={cardColors.odd}
+                                width={200}
+                                onClick={() => setMode("odd")}
+                            >
+                                Odd
+                            </Button>
+                            <Button
+                                background={cardColors.even}
+                                width={200}
+                                onClick={() => setMode("even")}
+                            >
+                                Even
+                            </Button>
+                            <Button
+                                background={cardColors.inactive}
+                                width={200}
+                                onClick={() => setMode("inactive")}
+                            >
+                                Inactive
+                            </Button>
+                            <Button
+                                background={cardColors.background}
+                                width={200}
+                                onClick={() => setMode("background")}
+                            >
+                                Background
+                            </Button>
+                            <Divider />
+                            <Spacer />
+                            <Button
+                                width={200}
+                                onClick={() => { setDefaultCardColors() } }
+                            >
+                                Default
+                            </Button>
+                        </VStack>
+                    </HStack>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
     )
 }
 

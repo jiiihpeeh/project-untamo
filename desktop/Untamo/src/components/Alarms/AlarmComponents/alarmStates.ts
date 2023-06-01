@@ -15,11 +15,18 @@ function fingerprint() {
     return useLogIn.getState().fingerprint
 }
 
-function toggleWeekdays(d: WeekDay, w: Array<WeekDay>) {
-    if (w.includes(d)) {
-        return w.filter(wd => wd !== d)
-    }
-    return [...w, d]
+// function toggleWeekdays(d: WeekDay, w: Array<WeekDay>) {
+//     if (w.includes(d)) {
+//         return w.filter(wd => wd !== d)
+//     }
+//     return [...w, d]
+// }
+function toggleWeekdays(day:number, weekdays:number) {
+    const bitmask = 1 << day; // Bitmask for the specified weekday
+  
+    // Toggle the specified weekday
+    weekdays ^= bitmask;
+    return weekdays
 }
 function toggleDevices(d: string | undefined, ds: Array<string>) {
     if (d && ds.includes(d)) {
@@ -114,8 +121,8 @@ type AlarmStates = {
     closeTask: boolean,
     setCloseTask: (to:boolean) => void,
     toggleDevices: (deviceID:string) => void,
-    weekdays: Array<WeekDay>,
-    toggleWeekdays: (weekday: WeekDay) => void
+    weekdays: number,
+    toggleWeekdays: (weekday: number) => void
     active: boolean,
     setActive: (active: boolean) => void,
     snoozed: Array<number>,
@@ -159,7 +166,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
             set(
                 {
                     date: day,
-                    weekdays: [numberToWeekDay(day.getDay())]
+                    weekdays: toggleWeekdays(day.getDay(),0)//[numberToWeekDay(day.getDay())]
                 }
             )
         },
@@ -197,8 +204,8 @@ const useAlarm = create<AlarmStates>((set, get) => (
                 }
             )
         ),
-        weekdays: [],
-        toggleWeekdays: (w:WeekDay) => set(
+        weekdays: 0,
+        toggleWeekdays: (w) => set(
             state =>(
                 {
                     weekdays: toggleWeekdays(w, state.weekdays)
@@ -228,7 +235,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
         onAddOpen: () => set (
             {
                 occurrence: AlarmCases.Weekly,
-                weekdays: [ numberToWeekDay(new Date().getDay()) ],
+                weekdays: toggleWeekdays(new Date().getDay(),0),//[ numberToWeekDay(new Date().getDay()) ],
                 label: "Alarm",
                 time: alarmTimeInit(),
                 date: new Date(),
@@ -276,7 +283,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
             if(alarm.occurrence === AlarmCases.Once){
                 set (
                     {
-                        weekdays: [ numberToWeekDay(get().date.getDay()) ]
+                        weekdays: toggleWeekdays(get().date.getDay(),0)//[ numberToWeekDay(get().date.getDay()) ]
                     }
                 )
             }
