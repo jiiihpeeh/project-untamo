@@ -1,17 +1,12 @@
 import { timePadding } from "../../../utils"
 
-export const stringifyDate = (date: Date) => {
-    let dateArr : Array<string> = [] 
-    dateArr.push(timePadding(date.getFullYear(),4))
-    dateArr.push(timePadding(date.getMonth() +1  ))
-    dateArr.push(timePadding(date.getDate()))
-    return dateArr.join('-')	
+export const dateToArr = (date: Date) => {
+    return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
 }
-export const stringToDate = (dateStr: string) => {
-    let dateStrArr = dateStr.split('-')
+export const arrToDate = (dateArr: [number,number,number]) => {
     let date = new Date()
     try{
-        let dateNumber = [ parseInt(dateStrArr[0]),parseInt(dateStrArr[1]) -1,parseInt(dateStrArr[2])]
+        let dateNumber = [ dateArr[0],dateArr[1] -1,dateArr[2]]
         for (const item of dateNumber){
             if(isNaN(item)){
                 return date
@@ -26,16 +21,28 @@ export const stringToDate = (dateStr: string) => {
     return date	
 }
 
-export const parseDate = (dateStr: string) => {
-    let dateArr = dateStr.split('-')
+export const parseDate = (dateArr: [number, number, number]) => {
     if(dateArr.length === 3){
-        let year = parseInt(dateArr[0])
-        let month = parseInt(dateArr[1]) - 1
-        let day = parseInt(dateArr[2])
+        let year = dateArr[0]
+        let month = dateArr[1] - 1
+        let day = dateArr[2]
         let date = new Date()
         date.setFullYear(year)
         date.setMonth(month)
         date.setDate(day)
         return date
     }
+}
+
+
+export function stringifyDate(date: Date){
+    return `${timePadding(date.getFullYear(),4)}-${timePadding(date.getMonth() + 1)}-${timePadding(date.getDate())}`
+}
+
+export function stringifyDateArr(date: [number,number,number]) {
+    return `${timePadding(date[0],4)}-${timePadding(date[1])}-${timePadding(date[2])}`
+}
+
+export function stringifyTime(time: [number,number]) {
+    return `${timePadding(time[0])}:${timePadding(time[1])}`
 }

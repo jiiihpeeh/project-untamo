@@ -4,6 +4,7 @@ import {  Button, AlertDialog,
           AlertDialogOverlay, Box } from '@chakra-ui/react'
 import React, { useRef } from 'react'
 import {  useAlarms, usePopups } from '../../stores'
+import { stringifyTime } from './AlarmComponents/stringifyDate-Time'
 
 
 function DeleteAlarm() {
@@ -28,7 +29,7 @@ function DeleteAlarm() {
                         fontSize='lg' 
                         fontWeight='bold'
                     >
-                        Delete alarm ({alarm.occurrence}, {alarm.time} for {alarm.devices.length} devices)?
+                        Delete alarm ({alarm.occurrence}, {stringifyTime(alarm.time)} for {alarm.devices.length} devices)?
                     </AlertDialogHeader>
                     <AlertDialogBody>
                        Are you sure?

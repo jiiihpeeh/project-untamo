@@ -112,27 +112,25 @@ export function dayContinuationDays(dayList: number) {
     return dayContinuationArr
 }
 
-function initAlarmDate(timeString: string) {
+function initAlarmDate(time: [number,number]) {
     let timeCompare = new Date()
-    let timeArr = timeString.split(':')
-    timeCompare.setHours(parseInt(timeArr[0]))
-    timeCompare.setMinutes(parseInt(timeArr[1]))
+    timeCompare.setHours(time[0])
+    timeCompare.setMinutes(time[1])
     timeCompare.setSeconds(0)
     timeCompare.setMilliseconds(0)
     return timeCompare
 }
 
-function insertDate(dateObj: Date, dateString: string) {
-    let dateArr = dateString.split('-')
-    dateObj.setDate(Number.parseInt(dateArr[2]))
-    dateObj.setMonth(Number.parseInt(dateArr[1]) - 1)
-    dateObj.setFullYear(Number.parseInt(dateArr[0]))
+function insertDate(dateObj: Date, date: [number, number, number]) {
+    dateObj.setDate(date[2])
+    dateObj.setMonth(date[1] - 1)
+    dateObj.setFullYear(date[0])
     return dateObj
 }
 
-export function nextAlarmOnce(timeString: string, date: string) {
+export function nextAlarmOnce(time: [number,number], date: [number, number, number]) {
     let timeNow = new Date()
-    let timeCompare = initAlarmDate(timeString)
+    let timeCompare = initAlarmDate(time)
     timeCompare = insertDate(timeCompare, date)
     if (timeCompare > timeNow) {
         return timeCompare
@@ -140,9 +138,9 @@ export function nextAlarmOnce(timeString: string, date: string) {
     return timeNow
 }
 
-export function nextAlarmYearly(timeString: string, date: string) {
+export function nextAlarmYearly(time: [number,number], date: [number, number, number]) {
     let timeNow = new Date()
-    let timeCompare = initAlarmDate(timeString)
+    let timeCompare = initAlarmDate(time)
     timeCompare = insertDate(timeCompare, date)
     let year = timeNow.getFullYear()
     timeCompare.setFullYear(year)
@@ -153,18 +151,18 @@ export function nextAlarmYearly(timeString: string, date: string) {
     return timeCompare
 }
 
-export function nextAlarmDaily(timeString: string) {
+export function nextAlarmDaily(time: [number,number]) {
     let timeNow = new Date()
-    let timeCompare = initAlarmDate(timeString)
+    let timeCompare = initAlarmDate(time)
     if (timeCompare < timeNow) {
         timeCompare = addDays(timeCompare, 1)
     }
     return timeCompare
 }
 
-export function nextAlarmWeekly(timeString: string, weekdays: number) {
+export function nextAlarmWeekly(time: [number,number], weekdays: number) {
     let timeNow = new Date()
-    let timeCompare = initAlarmDate(timeString)
+    let timeCompare = initAlarmDate(time)
     let dayNumbers: Array<number> = []
     //first bit is monday... last bit is sunday
     for (let i = 0; i < 7; i++) {

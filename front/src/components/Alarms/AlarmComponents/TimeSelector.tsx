@@ -3,13 +3,22 @@ import { Input, FormLabel, Box,Center, Button, Text } from "@chakra-ui/react"
 import useAlarm, { Direction } from "./alarmStates"
 import ClockWindow from './ClockWindow'
 import { usePopups, useSettings } from '../../../stores'
-import { time24hToTime12h } from '../../../utils'
+import { time24hToTime12h, timePadding } from '../../../utils'
+
+const timeToString = (time: [number,number]) => {
+    let timeString = ""
+    for(const i of time){
+        timeString += timePadding(i)
+        timeString += ":"
+    }
+    return `${timePadding(time[0])}:${timePadding(time[1])}`
+}
 
 const TimeSelector = () => {
     const time = useAlarm((state)=> state.time)
     const clock24 = useSettings((state)=> state.clock24)
 
-    const [ clockTime, setClockTime ] = useState(time)
+    const [ clockTime, setClockTime ] = useState(timeToString(time))
     const [ amPm, setAmPm ] = useState(" AM")
     const setTime = useAlarm((state)=> state.setTime)
     const changeTime = useAlarm((state)=> state.changeTime)
@@ -57,11 +66,11 @@ const TimeSelector = () => {
     }
     useEffect(()=>{
         if(clock24){
-            setClockTime(time)
+            setClockTime(timeToString(time))
         }else{
             const time12 = time24hToTime12h(time)
             setAmPm(time12['12h'])
-            setClockTime(time12.time)
+            setClockTime(timeToString(time12.time))
         }
     },[time])
     return (

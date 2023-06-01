@@ -18,9 +18,9 @@ const (
 type Alarm struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Occurrence  string             `bson:"occurrence,omitempty"`
-	Time        string             `bson:"time,omitempty"`
+	Time        [2]uint8           `bson:"time,omitempty"`
 	Weekdays    uint8              `bson:"weekdays,omitempty"`
-	Date        string             `bson:"date,omitempty"`
+	Date        [3]uint16          `bson:"date,omitempty"`
 	Label       string             `bson:"label,omitempty"`
 	Devices     []string           `bson:"devices"`
 	Snooze      []int64            `bson:"snooze"`
@@ -32,25 +32,6 @@ type Alarm struct {
 	CloseTask   bool               `bson:"close_task"`
 	Offline     bool               `bson:"offline,omitempty"`
 }
-
-// allow only enum values in Weekdays
-// func (a *Alarm) SetWeekdays(weekdays []string) {
-// 	// make unique by converting  array to set to array
-// 	set := make(map[string]bool)
-// 	for _, weekday := range a.Weekdays {
-// 		set[weekday] = true
-// 	}
-// 	a.Weekdays = []string{}
-// 	for key := range set {
-// 		a.Weekdays = append(a.Weekdays, key)
-// 	}
-// 	for _, weekday := range weekdays {
-// 		switch weekday {
-// 		case Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday:
-// 			a.Weekdays = append(a.Weekdays, weekday)
-// 		}
-// 	}
-// }
 
 // make unique by converting  array to set to array
 func (a *Alarm) SetDevices(devices []string) {
@@ -64,19 +45,19 @@ func (a *Alarm) SetDevices(devices []string) {
 }
 
 type AlarmOut struct {
-	ID          string   `json:"id"`
-	Occurrence  string   `json:"occurrence"`
-	Time        string   `json:"time"`
-	Weekdays    uint8    `json:"weekdays"`
-	Date        string   `json:"date"`
-	Label       string   `json:"label"`
-	Devices     []string `json:"devices"`
-	Snooze      []int64  `json:"snooze"`
-	Tune        string   `json:"tune"`
-	Active      bool     `json:"active"`
-	Modified    int64    `json:"modified"`
-	Fingerprint string   `json:"fingerprint"`
-	CloseTask   bool     `json:"closeTask"`
+	ID          string    `json:"id"`
+	Occurrence  string    `json:"occurrence"`
+	Time        [2]uint8  `json:"time"`
+	Weekdays    uint8     `json:"weekdays"`
+	Date        [3]uint16 `json:"date"`
+	Label       string    `json:"label"`
+	Devices     []string  `json:"devices"`
+	Snooze      []int64   `json:"snooze"`
+	Tune        string    `json:"tune"`
+	Active      bool      `json:"active"`
+	Modified    int64     `json:"modified"`
+	Fingerprint string    `json:"fingerprint"`
+	CloseTask   bool      `json:"closeTask"`
 }
 
 // convert Alarm to AlarmOutput

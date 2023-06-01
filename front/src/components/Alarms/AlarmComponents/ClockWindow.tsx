@@ -23,15 +23,14 @@ function ClockWindow() {
     const [ parsedTime, setParsedTime ] = useState({hours: 0, minutes: 0})
 
     function acceptTime() {
-        setTime(`${timePadding(Math.floor(parsedTime.hours))}:${timePadding(Math.floor(parsedTime.minutes))}`);
+        setTime([Math.floor(parsedTime.hours), Math.floor(parsedTime.minutes)])
     }    
     useEffect(()=>{
         async function setParsed() {
-            let timeArr = time.split(":");
             setParsedTime(parsedTime => {
                 return {
-                    hours: Math.round(parseInt(timeArr[0])),
-                    minutes: Math.round(parseInt(timeArr[1]))
+                    hours: Math.round(time[0]),
+                    minutes: Math.round(time[1])
                 };
             }
             );
@@ -40,6 +39,7 @@ function ClockWindow() {
             setParsed()
         }
     }, [time, showTimepicker])
+
 
     return (
         <Modal 
@@ -181,6 +181,6 @@ function ClockWindow() {
           </ModalContent>
         </Modal>
     )
-  }
+}
 
 export default ClockWindow

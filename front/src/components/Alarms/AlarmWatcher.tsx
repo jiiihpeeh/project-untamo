@@ -32,10 +32,8 @@ function AlarmWatcher() {
                     setRunAlarm(undefined)
                     clearAlarmTimeout()
                     await sleep(10)
-                    //console.log('clearing runAlarm')
                 }                  
             }
-            //console.log('filtering alarms')
             if (alarms && currentDevice && alarms.length > 0) {
                 let filteredAlarms = useAlarms.getState().alarms.filter(alarm => alarm.devices.includes(currentDevice) && alarm.active)
                 let idTimeOutMap = new Map<number, string>()
@@ -55,8 +53,6 @@ function AlarmWatcher() {
                         setRunAlarm(runThis)
                         let timeOutID = setTimeout(() => { setNavigateTo(Path.PlayAlarm) }, timed)
                         setTimeoutId(timeOutID)
-                        //let alarmDate =   new Date(timed + Date.now())
-                        //console.log('launching in: ', `${Math.ceil(timed/1000)} seconds`, alarmDate)
                         setTimeForNextLaunch(Math.ceil(timed / 1000))
                         setTrack(alarms.filter(alarm => alarm.id === runThis)[0].tune)
                     }

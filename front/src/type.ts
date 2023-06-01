@@ -89,8 +89,8 @@ export enum AlarmCases {
 
 export type Alarm = {
     occurrence: AlarmCases,
-    time: string,
-    date: string,
+    time: [number, number],
+    date: [number, number, number],
     devices: Array<string>,
     label: string,
     weekdays: number,
