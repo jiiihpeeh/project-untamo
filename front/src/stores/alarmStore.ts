@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { WeekDay, Alarm, AlarmCases } from '../type'
 import { notification, Status } from '../components/notification'
 import { getCommunicationInfo, useTimeouts, useLogIn, validSession } from '../stores'
-import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
+//import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
 import axios from 'axios'
 import alarmClockString from './logo.svg?raw'
@@ -204,10 +204,10 @@ async function addAlarmFromDialog(alarm: Alarm) {
   }
   switch (alarm.occurrence) {
     case AlarmCases.Weekly:
-      newAlarm.date = ''
+      newAlarm.date = [0,0,0]
       break
     case AlarmCases.Daily:
-      newAlarm.date = ''
+      newAlarm.date = [0,0,0]
       newAlarm.weekdays = 0
       break
     default:
@@ -242,12 +242,13 @@ async function addAlarmFromDialog(alarm: Alarm) {
 async function editAlarmFromDialog(alarm: Alarm) {
   const { server, token } = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
-  let editDate = ""
+  let editDate = [0,0,0]
 
   try {
     editDate = alarm.date
   } catch (err) {
-    editDate = stringifyDate(new Date())
+    let newDate = new Date()
+    editDate = [ newDate.getFullYear(), newDate.getMonth()+1,newDate.getDate()]
   }
   let modAlarm = {
     active: alarm.active,
@@ -265,10 +266,10 @@ async function editAlarmFromDialog(alarm: Alarm) {
   }
   switch (alarm.occurrence) {
     case AlarmCases.Weekly:
-      modAlarm.date = ''
+      modAlarm.date = [0,0,0]
       break
     case AlarmCases.Daily:
-      modAlarm.date = ''
+      modAlarm.date = [0,0,0]
       modAlarm.weekdays = 0
       break
     default:

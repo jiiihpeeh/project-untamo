@@ -12,7 +12,7 @@ const SelectedWeekdays = () => {
         // Check if the specified weekday is on
         return (days & mask) !== 0
     }
-    const WeekdayButton = (weekday: WeekDay, abbrev: string, count: number) => {
+    function WeekdayButton(weekday: WeekDay, abbrev: string, count: number) {
         return(
             <Button 
                 m="3px" 

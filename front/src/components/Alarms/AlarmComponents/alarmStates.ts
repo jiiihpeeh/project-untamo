@@ -1,9 +1,7 @@
 import { create } from 'zustand'
 import { WeekDay, AlarmCases } from '../../../type'
-import { timePadding } from "../../../utils"
-import { numberToWeekDay } from '../calcAlarmTime'
 import { useDevices, useLogIn } from '../../../stores'
-import { stringifyDate, stringToDate } from './stringifyDate-Time'
+import { dateToArr, arrToDate } from './stringifyDate-Time'
 import { Alarm } from '../../../type'
 
 export const enum Direction {
@@ -18,12 +16,6 @@ function toggleWeekdays(day:number, weekdays:number) {
 
 const fingerprint = () => useLogIn.getState().fingerprint
 
-// function toggleWeekdays(d: WeekDay, w: Array<WeekDay>) {
-//     if (w.includes(d)) {
-//         return w.filter(wd => wd !== d)
-//     }
-//     return [...w, d]
-// }
 function toggleDevices(d: string | undefined, ds: Array<string>) {
     if (d && ds.includes(d)) {
         return ds.filter(dd => dd !== d) as Array<string>
@@ -32,38 +24,36 @@ function toggleDevices(d: string | undefined, ds: Array<string>) {
     }
     return ds
 }
-function timeValue(t: string, oldTime: string) {
-    let timeArr = `${t}`.split(':')
+function timeValue(timeArr: [number,number], oldTime: [number,number]) {
     if (timeArr.length !== 2) {
         return oldTime
     }
     let minutes: number
     let hours: number
     try {
-        minutes = parseInt(timeArr[1])
-        hours = parseInt(timeArr[0])
+        minutes = timeArr[1]
+        hours = timeArr[0]
     } catch (err: any) {
         return oldTime
     }
     if (!isNaN(minutes) && !isNaN(hours) && hours < 24 && hours >= 0 && minutes >= 0 && minutes < 60) {
-        return `${timePadding(hours)}:${timePadding(minutes)}`
+        return [hours, minutes]
     } else {
         return oldTime
     }
 }
 
-function changeTime(oldTime: string, direction: Direction, multiplier: number) {
-    let timeArr = `${oldTime}`.split(':')
+function changeTime(timeArr: [number,number], direction: Direction, multiplier: number) {
     if (timeArr.length !== 2) {
-        return oldTime
+        return timeArr
     }
     let minutes: number
     let hours: number
     try {
-        minutes = parseInt(timeArr[1])
-        hours = parseInt(timeArr[0])
+        minutes = timeArr[1]
+        hours = timeArr[0]
     } catch (err: any) {
-        return oldTime
+        return timeArr
     }
     let date = new Date()
     date.setHours(hours)
@@ -79,7 +69,7 @@ function changeTime(oldTime: string, direction: Direction, multiplier: number) {
             break
     }
     date.setTime(newDate)
-    return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
+    return [date.getHours(), date.getMinutes()]//`${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
 }
 
 
@@ -96,9 +86,8 @@ function occurrenceDateFormat(cases: AlarmCases) {
 
 function alarmTimeInit() {
     let date = new Date(new Date().getTime() + 2 * 60 * 60 * 1000)
-    return `${timePadding(date.getHours())}:${timePadding(date.getMinutes())}`
+    return [date.getHours(), date.getMinutes() ]
 }
-
 
 
 type AlarmStates = {
@@ -107,8 +96,8 @@ type AlarmStates = {
     setOccurrence: (occurrence : AlarmCases) => void,
     label: string,
     setLabel: (label: string) => void,
-    time: string,
-    setTime: (time:string) => void,
+    time: [number, number],
+    setTime: (time: [number,number]) => void,
     changeTime:(direction: Direction, multiplier: number) => void,
     date: Date,
     setDate: (d:Date) => void,
@@ -162,20 +151,20 @@ const useAlarm = create<AlarmStates>((set, get) => (
             set(
                 {
                     date: day,
-                    weekdays:  toggleWeekdays(day.getDay()-1,0)//[numberToWeekDay(day.getDay())]
+                    weekdays:  toggleWeekdays(day.getDay()-1,0)
                 }
             )
         },
-        time: "00:00",
+        time: [0,0] as [number,number],
         setTime: (time) => set(
             {
-                time: timeValue(time, get().time)
+                time: timeValue(time, get().time) as [number,number]
             }
         ),
         changeTime:(direction, multiplier) => {
             set(
                 {
-                    time: changeTime(get().time,direction, multiplier)
+                    time: changeTime(get().time,direction, multiplier) as [number,number]
                 }
             )
         },
@@ -231,9 +220,9 @@ const useAlarm = create<AlarmStates>((set, get) => (
         onAddOpen: () => set (
             {
                 occurrence: AlarmCases.Weekly,
-                weekdays: toggleWeekdays(new Date().getDay()-1,0),//,[ numberToWeekDay(new Date().getDay()) ],
+                weekdays: toggleWeekdays(new Date().getDay()-1,0),
                 label: "Alarm",
-                time: alarmTimeInit(),
+                time: alarmTimeInit() as [number,number],
                 date: new Date(),
                 devices: initialDevice(),
                 snoozed: [0],
@@ -247,7 +236,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                             occurrence : get().occurrence,
                             label : get().label,
                             time : get().time,
-                            date : stringifyDate(get().date),
+                            date : dateToArr(get().date) as [number,number,number],
                             devices : get().devices,
                             weekdays : get().weekdays,
                             active : get().active,
@@ -271,7 +260,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
                     active: alarm.active,
                     label: alarm.label,
                     snoozed: alarm.snooze,
-                    date: stringToDate(alarm.date),
+                    date: arrToDate(alarm.date),
                     tune: alarm.tune,
                     closeTask: alarm.closeTask,
                 }
@@ -279,7 +268,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
             if(alarm.occurrence === AlarmCases.Once){
                 set (
                     {
-                        weekdays: toggleWeekdays(get().date.getDay()-1,0)//[ numberToWeekDay(get().date.getDay()) ]
+                        weekdays: toggleWeekdays(get().date.getDay()-1,0)
                     }
                 )
             }

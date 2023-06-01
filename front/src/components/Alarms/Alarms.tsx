@@ -8,13 +8,11 @@ import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
 import { Alarm, AlarmCases } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
-import { stringToDate} from "./AlarmComponents/stringifyDate-Time"
 import { timePadding, time24hToTime12h, capitalize } from '../../utils'
 import { shallow } from 'zustand/shallow'
 import { SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
-
-
+import { stringifyDateArr } from './AlarmComponents/stringifyDate-Time'
 
 function Alarms() {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -89,7 +87,7 @@ function Alarms() {
             }
         }
 
-        function occurrenceInfo(occurrence: AlarmCases, weekdays: number, date: string) {
+        function occurrenceInfo(occurrence: AlarmCases, weekdays: number, date: [number, number,number]) {
             switch (occurrence) {
                 case AlarmCases.Weekly:
                     return (
@@ -117,7 +115,7 @@ function Alarms() {
                                 Date
                             </Heading>
                             <Text pt='2' fontSize='sm'>
-                                {`${date} ${weekdayDisplay(weekdays, date)}`}
+                                {`${stringifyDateArr(date)} ${weekdayDisplay(weekdays, date)}`}
                             </Text>
                         </Box>
                     )
@@ -151,13 +149,13 @@ function Alarms() {
                                 pt='2'
                                 fontSize='sm'
                             >
-                                {`${date} ${weekdayDisplay(weekdays, date)}`}
+                                {`${stringifyDateArr(date)} ${weekdayDisplay(weekdays, date)}`}
                             </Text>
                         </Box>
                     )
             }
         }
-        function getTime(time: string) {
+        function getTime(time: [number, number]) {
             if (!clock24) {
                 let fmt = time24hToTime12h(time)
                 return (<HStack>
@@ -170,7 +168,8 @@ function Alarms() {
                     </Text>
                 </HStack>)
             }
-            return (<Text>{time}</Text>)
+            let timeString = timePadding(time[0]) +":"+ timePadding(time[1])
+            return (<Text>{timeString}</Text>)
         }
         return sortedView.map(({ id, occurrence, time, weekdays, date, label, devices, active }, key) => {
             return (
@@ -272,7 +271,8 @@ function Alarms() {
                                         onClick={() => {
                                             setToEdit(id)
                                             setShowEdit(true)
-                                        } } />
+                                        } } 
+                                    />
                                 </Box>
                                 <Spacer />
                                 <Box>
@@ -291,7 +291,8 @@ function Alarms() {
                                         onChange={() => {
                                             toggleActivity(id)
                                             setShowEdit(false)
-                                        } } />
+                                        } } 
+                                    />
                                 </Box>
                                 <Spacer />
                                 <Box>
@@ -312,7 +313,8 @@ function Alarms() {
                                             setToDelete(id)
                                             setShowDelete(true)
                                         } }
-                                        key={`delete-${id}-${key}`} />
+                                        key={`delete-${id}-${key}`} 
+                                    />
                                 </Box>
                             </Flex>
                         </Collapse>
@@ -331,7 +333,7 @@ function Alarms() {
         return filteredDeviceNames.join(", ")
     }
 
-    function weekdayDisplay(days: number, date: string) {
+    function weekdayDisplay(days: number, date: [number, number,number]) {
         let dayArr = dayContinuationDays(days)
         let subList: Array<string> = []
         for (const outer of dayArr) {
@@ -340,11 +342,16 @@ function Alarms() {
         let daysFormat = subList.join(', ')
         if (daysFormat.length === 0) {
             if (date.length > 0) {
-                daysFormat = numberToWeekDay(stringToDate(date).getDay())
+                let formedDate = new Date()
+                formedDate.setFullYear(date[0])
+                formedDate.setMonth(date[1]-1)
+                formedDate.setDate(date[2])
+                daysFormat = `${numberToWeekDay(formedDate.getDay())}`
             }
         }
         return daysFormat
     }
+    
     useEffect(() => {
         if (!currentDevice) {
             setNavigateTo(Path.Welcome)

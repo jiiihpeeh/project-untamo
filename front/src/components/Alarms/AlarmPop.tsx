@@ -78,10 +78,10 @@ function AlarmPop() {
 
     function timerInfo() {
         let postFix = ""
-        let timeInfo = runAlarm?.time
+        let timeInfo = runAlarm?.time?timePadding(runAlarm.time[0])+":"+timePadding(runAlarm.time[1]):""
         if (!clock24 && timeInfo) {
-            let convertedTime = time24hToTime12h(timeInfo)
-            timeInfo = convertedTime.time
+            let convertedTime = time24hToTime12h(runAlarm?.time?runAlarm.time:[0,0])
+            timeInfo = timePadding(convertedTime.time[0])+":"+timePadding(convertedTime.time[1])
             postFix = convertedTime['12h']
         }
         return (

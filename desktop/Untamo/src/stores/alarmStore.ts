@@ -217,10 +217,10 @@ async function addAlarmFromDialog(alarm: Alarm) {
   }
   switch (alarm.occurrence) {
     case AlarmCases.Weekly:
-      newAlarm.date = ''
+      newAlarm.date = [0,0,0]
       break
     case AlarmCases.Daily:
-      newAlarm.date = ''
+      newAlarm.date = [0,0,0]
       newAlarm.weekdays = 127
       break
     default:
@@ -265,12 +265,13 @@ async function addAlarmFromDialog(alarm: Alarm) {
 async function editAlarmFromDialog(alarm: Alarm) {
   const { server, token } = getCommunicationInfo()
   const alarms = useAlarms.getState().alarms
-  let editDate = ""
+  let editDate = [0,0,0]
 
   try {
     editDate = alarm.date
   } catch (err) {
-    editDate = stringifyDate(new Date())
+    let newDate = new Date()
+    editDate = [ newDate.getFullYear(), newDate.getMonth()+1,newDate.getDate()]
   }
   let modAlarm = {
     active: alarm.active,
@@ -288,10 +289,10 @@ async function editAlarmFromDialog(alarm: Alarm) {
   }
   switch (alarm.occurrence) {
     case AlarmCases.Weekly:
-      modAlarm.date = ''
+      modAlarm.date =  [0,0,0]
       break
     case AlarmCases.Daily:
-      modAlarm.date = ''
+      modAlarm.date = [0,0,0]
       modAlarm.weekdays = 127
       break
     default:

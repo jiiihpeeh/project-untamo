@@ -45,11 +45,10 @@ export function h24ToH12(n: number) {
     return (m === 0) ? 12 : m
 }
 
-export function time24hToTime12h(time: string) {
-    let timeSplit = time.split(':')
-    let hours = parseInt(timeSplit[0])
+export function time24hToTime12h(time: [number, number]) {
+    let hours = time[0]
     return {
-        time: `${timePadding(h24ToH12(hours))}:${timeSplit[1]}`,
+        time: [h24ToH12(hours),time[1]] as [number,number],
         '12h': (hours > 11 && hours <= 23) ? "PM" : "AM"
     }
 }

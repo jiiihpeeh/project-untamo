@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Text, Image, IconButton, Switch,
          Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
-import {  useAlarms, useTimeouts, useAudio, extend, usePopups, useTask, useSettings, useLogIn } from '../../stores'
+import {  useAlarms, useTimeouts, useAudio,  usePopups, useTask, useSettings, useLogIn } from '../../stores'
 import { CloseTask, Path } from '../../type'
 import { urlEnds, sleep } from '../../utils'
 import '../../App.css'
