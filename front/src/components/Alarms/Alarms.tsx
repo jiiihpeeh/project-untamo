@@ -14,6 +14,8 @@ import { shallow } from 'zustand/shallow'
 import { SlideFade, Collapse } from '@chakra-ui/react'
 import { timeToUnits } from './calcAlarmTime'
 
+
+
 function Alarms() {
     const containerRef = useRef<HTMLDivElement>(null)
     const currentDevice = useDevices((state) => state.currentDevice)
@@ -87,7 +89,7 @@ function Alarms() {
             }
         }
 
-        function occurrenceInfo(occurrence: AlarmCases, weekdays: Array<WeekDay>, date: string) {
+        function occurrenceInfo(occurrence: AlarmCases, weekdays: number, date: string) {
             switch (occurrence) {
                 case AlarmCases.Weekly:
                     return (
@@ -132,7 +134,7 @@ function Alarms() {
                                 pt='2'
                                 fontSize='sm'
                             >
-                                {weekdayDisplay(Object.values(WeekDay).filter((item) => item), date)}
+                                {weekdayDisplay(127, date)}
                             </Text>
                         </Box>
                     )
@@ -329,7 +331,7 @@ function Alarms() {
         return filteredDeviceNames.join(", ")
     }
 
-    function weekdayDisplay(days: Array<WeekDay>, date: string) {
+    function weekdayDisplay(days: number, date: string) {
         let dayArr = dayContinuationDays(days)
         let subList: Array<string> = []
         for (const outer of dayArr) {

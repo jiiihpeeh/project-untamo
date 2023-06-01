@@ -97,7 +97,7 @@ function DeviceEdit() {
               <Button
                 onClick={()=>setShowEmoji(!showEmoji)}
               >
-                  🕰️
+                🕰️
               </Button>
             </HStack>
             {showEmoji?

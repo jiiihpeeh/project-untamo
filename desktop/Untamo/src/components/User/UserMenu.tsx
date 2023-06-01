@@ -87,7 +87,7 @@ function UserMenu() {
                         w={"100%"}
                         m={"2%"}
                     >
-                        Refresh Session Credentials
+                        Check & Refresh Session
                     </Button>
                     <Button
                         onClick={() => {

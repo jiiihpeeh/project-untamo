@@ -454,8 +454,6 @@ async function logIn(email: string, password: string) {
             }
         )
         
-        //useDevices.getState().fetchDevices()
-        //useAlarms.getState().fetchAlarms()
         const randomTime = Math.ceil(Math.random() * 7200000)
         const refreshTimeOutID = setTimeout(refreshToken, 2 * 24 * 60 * 60 * 1000 + randomTime)
         useTimeouts.getState().setRefreshTokenTimeout(refreshTimeOutID)

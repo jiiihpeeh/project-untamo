@@ -9,7 +9,7 @@ function PasswordReset() {
     const showPasswordForgot = usePopups((state) => state.showPasswordForgot)
     const forgotPassword = useLogIn((state) => state.forgotPassword)
     const [email, setEmail] = useState('')
-    return (<>
+    return (
         <Modal
             isOpen={showPasswordForgot}
             onClose={() => setShowPasswordForgot(false)}
@@ -50,7 +50,7 @@ function PasswordReset() {
                 </ModalFooter>
             </ModalContent>
         </Modal>
-    </>)
+    )
 }
 
 export default PasswordReset

@@ -110,6 +110,9 @@ function deviceAdd(device: Device) {
   devices.push(device)
   //only unique devices
   devices = filterUniqueIds(devices)
+  //set as viewable
+  let viewable = useDevices.getState().viewableDevices
+  useDevices.getState().setViewableDevices([...viewable, device.id])
   useDevices.setState({ devices: [...devices] })
 }
 
@@ -117,6 +120,10 @@ function deviceDelete(id: string) {
   let devices = useDevices.getState().devices
   let filtered = devices.filter((device) => device.id !== id)
   useDevices.setState({ devices: [...filtered] })
+  //remove from viewable
+  let viewable = useDevices.getState().viewableDevices
+  let filteredViewable = viewable.filter((view) => view !== id)
+  useDevices.getState().setViewableDevices([...filteredViewable])
 }
 
 function deviceEdit(device: Device) {

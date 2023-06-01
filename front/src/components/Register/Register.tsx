@@ -45,6 +45,7 @@ function Register() {
             </Text>
         )
     }
+    
     function PasswordCheck() {
         let checkmark = (password.length > 5 && formCheck) ? <CheckCircleIcon /> : <WarningTwoIcon />
         return (
@@ -72,15 +73,12 @@ function Register() {
         setFormTimeout(query)
     }, [firstName, lastName, email, password])
 
-
-
     useEffect(() => {
         console.log("wsRegisterMessage", wsRegisterMessage)
         if (!wsRegisterMessage) {
             return
         }
         setFormCheck(wsRegisterMessage.formPass)
-
     }, [wsRegisterMessage])
 
     return (
@@ -177,7 +175,6 @@ function Register() {
                         value={question}
                         bgColor="GhostWhite"
                     />
-
                 </VisuallyHidden>
                 <Button
                     m="5px"

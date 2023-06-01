@@ -212,7 +212,8 @@ func GetUserAlarms(userID string, client *mongo.Client) []*alarm.Alarm {
 		alarm := &alarm.Alarm{}
 		err := cursor.Decode(&alarm)
 		if err != nil {
-			return nil
+			go DeleteAlarm(alarm.ID, userID, client)
+			continue
 		}
 		alarms = append(alarms, alarm)
 	}
@@ -230,7 +231,8 @@ func GetDevices(userID string, client *mongo.Client) []*device.Device {
 		device := &device.Device{}
 		err := cursor.Decode(&device)
 		if err != nil {
-			return nil
+			go DeleteDevice(device.ID, userID, client)
+			continue
 		}
 		devices = append(devices, device)
 	}

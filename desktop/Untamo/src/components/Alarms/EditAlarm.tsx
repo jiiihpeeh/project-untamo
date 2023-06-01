@@ -15,7 +15,7 @@ function EditAlarm() {
    const alarmFromDialog = useAlarm((state) => state.alarmFromDialog)
    const setShowEdit = usePopups((state) => state.setShowEditAlarm)
    const alarmToEditDialog = useAlarm((state) => state.alarmToEditDialog)
-   const btnRef = useRef<any>(null)
+   const btnRef = useRef<HTMLButtonElement>(null)
    const { onOpen, onClose } = useDisclosure()
 
    async function onEdit() {

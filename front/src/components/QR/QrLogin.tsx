@@ -32,7 +32,6 @@ function QrLogin() {
         >
             <ModalOverlay />
             <ModalContent>
-
             <ModalHeader>
                 Scan QR code
             </ModalHeader>

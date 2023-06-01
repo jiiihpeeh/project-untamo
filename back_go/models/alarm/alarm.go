@@ -19,7 +19,7 @@ type Alarm struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Occurrence  string             `bson:"occurrence,omitempty"`
 	Time        string             `bson:"time,omitempty"`
-	Weekdays    []string           `bson:"weekdays,omitempty"`
+	Weekdays    uint8              `bson:"weekdays,omitempty"`
 	Date        string             `bson:"date,omitempty"`
 	Label       string             `bson:"label,omitempty"`
 	Devices     []string           `bson:"devices"`
@@ -34,23 +34,23 @@ type Alarm struct {
 }
 
 // allow only enum values in Weekdays
-func (a *Alarm) SetWeekdays(weekdays []string) {
-	// make unique by converting  array to set to array
-	set := make(map[string]bool)
-	for _, weekday := range a.Weekdays {
-		set[weekday] = true
-	}
-	a.Weekdays = []string{}
-	for key := range set {
-		a.Weekdays = append(a.Weekdays, key)
-	}
-	for _, weekday := range weekdays {
-		switch weekday {
-		case Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday:
-			a.Weekdays = append(a.Weekdays, weekday)
-		}
-	}
-}
+// func (a *Alarm) SetWeekdays(weekdays []string) {
+// 	// make unique by converting  array to set to array
+// 	set := make(map[string]bool)
+// 	for _, weekday := range a.Weekdays {
+// 		set[weekday] = true
+// 	}
+// 	a.Weekdays = []string{}
+// 	for key := range set {
+// 		a.Weekdays = append(a.Weekdays, key)
+// 	}
+// 	for _, weekday := range weekdays {
+// 		switch weekday {
+// 		case Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday:
+// 			a.Weekdays = append(a.Weekdays, weekday)
+// 		}
+// 	}
+// }
 
 // make unique by converting  array to set to array
 func (a *Alarm) SetDevices(devices []string) {
@@ -67,7 +67,7 @@ type AlarmOut struct {
 	ID          string   `json:"id"`
 	Occurrence  string   `json:"occurrence"`
 	Time        string   `json:"time"`
-	Weekdays    []string `json:"weekdays"`
+	Weekdays    uint8    `json:"weekdays"`
 	Date        string   `json:"date"`
 	Label       string   `json:"label"`
 	Devices     []string `json:"devices"`
@@ -90,9 +90,9 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 		a.Devices = []string{}
 	}
 	//a.weekdays
-	if a.Weekdays == nil {
-		a.Weekdays = []string{}
-	}
+	// if a.Weekdays == nil {
+	// 	a.Weekdays = 0
+	// }
 	return AlarmOut{
 		ID:          a.ID.Hex(),
 		Occurrence:  a.Occurrence,

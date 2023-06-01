@@ -93,7 +93,7 @@ export type Alarm = {
     date: string,
     devices: Array<string>,
     label: string,
-    weekdays: Array<WeekDay>,
+    weekdays: number,
     active: boolean,
     snooze: Array<number>,
     id: string,
