@@ -1,28 +1,54 @@
 import { timePadding } from "../../../utils"
 
-export const dateToArr = (date: Date) => {
-    return [date.getFullYear(), date.getMonth() + 1, date.getDate()]
-}
-export const arrToDate = (dateArr: [number,number,number]) => {
-    let date = new Date()
-    try{
-        let dateNumber = [ dateArr[0],dateArr[1] -1,dateArr[2]]
-        for (const item of dateNumber){
-            if(isNaN(item)){
-                return date
-            }
-        }
-        date.setFullYear(dateNumber[0])
-        date.setMonth(dateNumber[1])
-        date.setDate(dateNumber[2])
-    }catch{
-        date = new Date()
+export function dateToArr(date: Date){
+    let year = date.getFullYear()
+    let currentYear = new Date().getFullYear()
+    if(isNaN(year)){
+        year = new Date().getFullYear()
     }
-    return date	
+    if(year < currentYear -1){
+        year = currentYear
+    }
+    let dayNumber = date.getDay()
+    if(isNaN(dayNumber)){
+        dayNumber = new Date().getDay()
+    }
+    if(dayNumber < 1){
+        dayNumber = 1
+    }
+    return [year, date.getMonth() + 1, dayNumber]
 }
 
-export const parseDate = (dateArr: [number, number, number]) => {
-    if(dateArr.length === 3){
+export function arrToDate(dateArr: [number, number, number]) {
+    let year = dateArr[0]
+    let currentYear = new Date().getFullYear()
+    if(isNaN(year)){
+        year = new Date().getFullYear()
+    }
+    if(year < currentYear -1){
+        year = currentYear
+    }
+    let month = dateArr[1] - 1
+    if(isNaN(month) ||  month < 0 || month > 11){
+        month = new Date().getMonth()
+    }
+    let day = dateArr[2]
+    if(isNaN(day) || day < 1 || day > 31){
+        day = 15
+    }
+    let date = new Date()
+    try {
+        date.setFullYear(year)
+        date.setMonth(month)
+        date.setDate(day)
+    } catch {
+        date = new Date()
+    }
+    return date
+}
+
+export function parseDate(dateArr: [number, number, number]) {
+    if (dateArr.length === 3) {
         let year = dateArr[0]
         let month = dateArr[1] - 1
         let day = dateArr[2]
