@@ -22,10 +22,8 @@ function fingerprint() {
 //     return [...w, d]
 // }
 function toggleWeekdays(day:number, weekdays:number) {
-    const bitmask = 1 << day; // Bitmask for the specified weekday
-  
-    // Toggle the specified weekday
-    weekdays ^= bitmask;
+    const bitmask = 1 << day
+    weekdays ^= bitmask
     return weekdays
 }
 function toggleDevices(d: string | undefined, ds: Array<string>) {
@@ -166,7 +164,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
             set(
                 {
                     date: day,
-                    weekdays: toggleWeekdays(day.getDay(),0)//[numberToWeekDay(day.getDay())]
+                    weekdays: toggleWeekdays(day.getDay() -1,0)//[numberToWeekDay(day.getDay())]
                 }
             )
         },
@@ -235,7 +233,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
         onAddOpen: () => set (
             {
                 occurrence: AlarmCases.Weekly,
-                weekdays: toggleWeekdays(new Date().getDay(),0),//[ numberToWeekDay(new Date().getDay()) ],
+                weekdays: toggleWeekdays(new Date().getDay()-1,0),//[ numberToWeekDay(new Date().getDay()) ],
                 label: "Alarm",
                 time: alarmTimeInit(),
                 date: new Date(),
@@ -283,7 +281,7 @@ const useAlarm = create<AlarmStates>((set, get) => (
             if(alarm.occurrence === AlarmCases.Once){
                 set (
                     {
-                        weekdays: toggleWeekdays(get().date.getDay(),0)//[ numberToWeekDay(get().date.getDay()) ]
+                        weekdays: toggleWeekdays(get().date.getDay() -1,0)//[ numberToWeekDay(get().date.getDay()) ]
                     }
                 )
             }
