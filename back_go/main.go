@@ -2,6 +2,7 @@ package main
 
 //import models from models/
 import (
+	"embed"
 	"flag"
 	"fmt"
 
@@ -26,6 +27,12 @@ var (
 	PORT        string
 	DisableGZIP bool
 )
+
+//go:embed all:dist/*
+var resources embed.FS
+
+//go:embed all:audio-resources/*
+var audioFiles embed.FS
 
 func main() {
 	flag.BoolVar(&debugMode, "debug", false, "Enable debug mode")
@@ -112,40 +119,40 @@ func main() {
 
 	//react vite part begins
 	router.GET("/", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/assets/:file", func(c *gin.Context) {
-		rest.Assets(c)
+		rest.Assets(c, resources)
 	})
 	router.GET("/login", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/alarms", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/admin", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/owner", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/reset-password", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/activate", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/register", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/welcome", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/clueless", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	router.GET("/play-alarm", func(c *gin.Context) {
-		rest.Index(c)
+		rest.Index(c, resources)
 	})
 	//react vite part ends
 	router.POST("/login", func(c *gin.Context) {
@@ -242,10 +249,10 @@ func main() {
 		rest.SetOwnerSettings(c, client)
 	})
 	router.GET("/audio-resources/resource_list.json", func(c *gin.Context) {
-		rest.GetAudioResources(c, client)
+		rest.GetAudioResources(c, client, audioFiles)
 	})
 	router.GET("/audio-resources/:filename", func(c *gin.Context) {
-		rest.AudioResource(c, client)
+		rest.AudioResource(c, client, audioFiles)
 	})
 	router.GET("/register-check", func(c *gin.Context) {
 		wshandler.Register(c, client)
@@ -257,5 +264,7 @@ func main() {
 	//run PingPong
 	go wshandler.Ping()
 	go checkers.SendUnsentEmails(client)
+	go checkers.RemoveOldSessions(client)
+	go checkers.RemoveAlarmsWithNoDevices(client)
 	router.Run(PORT) // listen and serve on
 }

@@ -4,7 +4,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/denisbrodbeck/machineid"
+	"github.com/goccy/go-json"
 	"github.com/manifoldco/promptui"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/sha3"

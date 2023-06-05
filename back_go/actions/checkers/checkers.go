@@ -30,3 +30,19 @@ func SendUnsentEmails(client *mongo.Client) {
 		time.Sleep(5 * time.Minute)
 	}
 }
+
+func RemoveOldSessions(client *mongo.Client) {
+	for {
+		time.Sleep(20 * time.Minute)
+		mongoDB.RemoveOldSessions(client)
+		time.Sleep(24 * time.Hour)
+	}
+}
+
+func RemoveAlarmsWithNoDevices(client *mongo.Client) {
+	for {
+		time.Sleep(15 * time.Minute)
+		mongoDB.RemoveAlarmsWithNoDevices(client)
+		time.Sleep(24 * time.Hour)
+	}
+}

@@ -1,13 +1,13 @@
 package register
 
 import (
-	"encoding/json"
 	"log"
 	"regexp"
 	"strings"
 
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
+	"github.com/goccy/go-json"
 	"github.com/trustelem/zxcvbn"
 )
 
@@ -115,8 +115,6 @@ func (r *RegisterRequest) CheckPassword() bool {
 	return true
 }
 
-//func demarshal RegisterWsRequest
-
 func Estimate(password string) ZXVBN {
 	estimate := zxcvbn.PasswordStrength(password, nil)
 	zxvbn := ZXVBN{
@@ -170,6 +168,5 @@ func (message *RegisterRequest) HandleMessage() RegisterWsResponse {
 		messageResponse.FeedBack = append(messageResponse.FeedBack, "Password is too weak")
 		messageResponse.FormPass = false
 	}
-
 	return messageResponse
 }

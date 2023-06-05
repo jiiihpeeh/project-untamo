@@ -3,8 +3,9 @@ package rest
 import (
 	"bytes"
 	"crypto/sha512"
+	"embed"
 	"encoding/hex"
-	"encoding/json"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/steambap/captcha"
 	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/actions/wshandler"
@@ -435,7 +437,7 @@ func IsSessionValid(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func GetAudioResources(c *gin.Context, client *mongo.Client) {
+func GetAudioResources(c *gin.Context, client *mongo.Client, audioResources embed.FS) {
 	//check if user is logged in by getting a session from db
 	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
 	if session == nil {
@@ -447,11 +449,17 @@ func GetAudioResources(c *gin.Context, client *mongo.Client) {
 	//list all audio resources in audio-resources folder
 	audioResourcesInfo, err := ioutil.ReadDir("audio-resources")
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to read audio resources",
-		})
-		return
+		audioResourcesInfo = []fs.FileInfo{}
 	}
+	// if err != nil {
+	// 	c.JSON(500, gin.H{
+	// 		"message": "Failed to read audio resources",
+	// 	})
+	// 	return
+	// }
+	//get embedded audio resources
+
+	//append embedded audio resources to audioResourcesInfo
 	//convert audioResourcesInfo to []Filename
 	audioResourceFiles := []string{}
 	for _, audioResourceInfo := range audioResourcesInfo {
@@ -466,12 +474,28 @@ func GetAudioResources(c *gin.Context, client *mongo.Client) {
 			audioResourceFiles = append(audioResourceFiles, filename)
 		}
 	}
+	audioResourcesInfoEmbed, err := audioResources.ReadDir("audio-resources")
+	if err == nil {
+
+		for _, audioResourceInfo := range audioResourcesInfoEmbed {
+			filename := audioResourceInfo.Name()
+			//remove file extension
+			if !strings.HasSuffix(filename, ".opus") && !strings.HasSuffix(filename, ".flac") && !strings.HasSuffix(filename, ".wav") {
+				continue
+			}
+			filename = filename[:len(filename)-len(filepath.Ext(filename))]
+			// check if filename is already in audioResourceFiles
+			if !list.IsInList(audioResourceFiles, filename) {
+				audioResourceFiles = append(audioResourceFiles, filename)
+			}
+		}
+	}
 	//fmt.Println("resources: ", audioResourceFiles)
 	c.JSON(200, audioResourceFiles)
 }
 
 // serve static files
-func AudioResource(c *gin.Context, client *mongo.Client) {
+func AudioResource(c *gin.Context, client *mongo.Client, audioResources embed.FS) {
 	//check if user is logged in by getting a session from db
 	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
 	if session == nil {
@@ -480,15 +504,41 @@ func AudioResource(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+
+	//read file from audioResources
 	fileName := "audio-resources/" + c.Param("filename")
+	embeddedFile := false
 	//check if file exists
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
-		c.JSON(404, gin.H{
-			"message": "File not found",
-		})
-		return
+		embeddedFile = true
+		//check if file exists in audioResources
+		if _, err := audioResources.Open(fileName); err != nil {
+			c.JSON(404, gin.H{
+				"message": "File not found",
+			})
+			return
+		}
 	}
-	c.File(fileName)
+	var fileContent []byte
+	if embeddedFile {
+		//read file from audioResources
+		fileContent, _ = ioutil.ReadFile(fileName)
+	} else {
+		//read file as bytes into fileContent
+		fileContent, _ = ioutil.ReadFile(fileName)
+	}
+	//send file as response get content type from file extension
+	fileExtension := filepath.Ext(fileName)
+	contentType := ""
+	switch fileExtension {
+	case ".wav":
+		contentType = "audio/wav"
+	case ".flac":
+		contentType = "audio/flac"
+	case ".opus":
+		contentType = "audio/opus"
+	}
+	c.Data(200, contentType, fileContent)
 }
 
 func LogOut(c *gin.Context, client *mongo.Client) {
@@ -1636,16 +1686,17 @@ func ResendActivation(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func Index(c *gin.Context) {
+func Index(c *gin.Context, resources embed.FS) {
+	fileContent, err := resources.ReadFile("dist/index.html")
 
-	content, err := ioutil.ReadFile("./dist/index.html")
+	//content, err := ioutil.ReadFile("./dist/index.html")
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to read index.html",
 		})
 		return
 	}
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(content)))
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(fileContent)))
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to read index.html",
@@ -1694,10 +1745,57 @@ func Index(c *gin.Context) {
 	c.Data(200, "text/html; charset=utf-8", []byte(byteContent))
 }
 
-func Assets(c *gin.Context) {
+func Assets(c *gin.Context, resources embed.FS) {
 	//serve dist/assets
 	fileName := c.Param("file")
-	filePath := "./dist/assets/" + fileName
+	//get file from resources
+	fileContent, err := resources.ReadFile("dist/assets/" + fileName)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to read file",
+		})
+		return
+	}
+	//filePath := "./dist/assets/" + fileName
 	//fmt.Println(filePath)
-	c.File(filePath)
+	//serve fileContent get file infromation from extension
+	extension := filepath.Ext(fileName)
+	switch extension {
+	case ".css":
+		c.Data(200, "text/css; charset=utf-8", fileContent)
+	case ".js":
+		c.Data(200, "application/javascript; charset=utf-8", fileContent)
+	case ".png":
+		c.Data(200, "image/png", fileContent)
+	case ".jpg":
+		c.Data(200, "image/jpg", fileContent)
+	case ".svg":
+		c.Data(200, "image/svg+xml", fileContent)
+	case ".ico":
+		c.Data(200, "image/x-icon", fileContent)
+	case ".json":
+		c.Data(200, "application/json", fileContent)
+	case ".map":
+		c.Data(200, "application/octet-stream", fileContent)
+	case ".txt":
+		c.Data(200, "text/plain; charset=utf-8", fileContent)
+	case ".html":
+		c.Data(200, "text/html; charset=utf-8", fileContent)
+	case ".woff":
+		c.Data(200, "font/woff", fileContent)
+	case ".woff2":
+		c.Data(200, "font/woff2", fileContent)
+	case ".ttf":
+		c.Data(200, "font/ttf", fileContent)
+	case ".eot":
+		c.Data(200, "application/vnd.ms-fontobject", fileContent)
+	case ".otf":
+		c.Data(200, "font/otf", fileContent)
+	default:
+		c.JSON(500, gin.H{
+			"message": "Failed to read file",
+		})
+		return
+
+	}
 }

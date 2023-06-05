@@ -60,6 +60,11 @@ func GenerateIndexes(client *mongo.Client) {
 		Keys:    bson.M{"user": 1},
 		Options: options.Index().SetUnique(false),
 	})
+	//generate index for alarm's devices
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"devices": 1},
+		Options: options.Index().SetUnique(false),
+	})
 	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys:    bson.M{"_id": 1},
 		Options: options.Index().SetUnique(true),
@@ -556,4 +561,33 @@ func GetEmails(client *mongo.Client) []*email.Email {
 		emails = append(emails, email)
 	}
 	return emails
+}
+
+func RemoveOldSessions(client *mongo.Client) bool {
+	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	_, err := collection.DeleteMany(context.Background(), bson.M{"time": bson.M{"$lt": time.Now().UnixMilli()}})
+	return err == nil
+}
+
+func RemoveAlarmsWithNoDevices(client *mongo.Client) bool {
+	//get slice of all deviceIDs
+	deviceIDs := []string{}
+	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return false
+	}
+	for cursor.Next(context.Background()) {
+		device := &device.Device{}
+		err := cursor.Decode(&device)
+		if err != nil {
+			return false
+		}
+		deviceIDs = append(deviceIDs, device.ID.Hex())
+	}
+	//check that alarm has at least one device
+	collection = client.Database(DB_NAME).Collection(ALARMCOLL)
+	_, err = collection.DeleteMany(context.Background(), bson.M{"devices": bson.M{"$nin": deviceIDs}})
+
+	return err == nil
 }

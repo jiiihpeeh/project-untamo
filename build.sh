@@ -15,9 +15,9 @@ ARM64LINUX="untamoserver-arm64_linux"
 echo "Building the project..."
 
 # Create build folders
-mkdir -p "$BUILD/$AMD64LINUX/dist"
-mkdir -p "$BUILD/$AMD64WINDOWS/dist"
-mkdir -p "$BUILD/$ARM64LINUX/dist"
+mkdir -p "$BACK/dist"
+#mkdir -p "$BUILD/$AMD64WINDOWS/dist"
+#mkdir -p "$BUILD/$ARM64LINUX/dist"
 
 # Build web frontend in ./front
 cd $FRONT || exit
@@ -27,6 +27,8 @@ npm run build
 
 # Build backend in ./back_go
 cd $BACK || exit
+#copy frontend dist to backend
+cp -r $FRONT/dist/* $BACK/dist
 
 # Build for AMD64 Linux
 if command -v go >/dev/null && GOOS=linux GOARCH=amd64 go version >/dev/null 2>&1; then
@@ -34,15 +36,15 @@ if command -v go >/dev/null && GOOS=linux GOARCH=amd64 go version >/dev/null 2>&
     strip "$BUILD/$AMD64LINUX/$AMD64LINUX"
     #check if upx is installed
     if command -v upx >/dev/null; then
-        upx -9 "$BUILD/$AMD64LINUX/$AMD64LINUX"
+        upx  "$BUILD/$AMD64LINUX/$AMD64LINUX"
     else
         echo "Skipping compression. Please ensure the 'upx' command is installed."
     fi
-    mkdir -p "$BUILD/$AMD64LINUX/audio-resources"
-    echo $AUDIODIR
-    cp -r $AUDIODIR/* "$BUILD/$AMD64LINUX/audio-resources"
-    mkdir -p "$BUILD/$AMD64LINUX/dist"
-    cp -r $FRONT/dist/* "$BUILD/$AMD64LINUX/dist"
+    #mkdir -p "$BUILD/$AMD64LINUX/audio-resources"
+    #echo $AUDIODIR
+    #cp -r $AUDIODIR/* "$BUILD/$AMD64LINUX/audio-resources"
+   # mkdir -p "$BUILD/$AMD64LINUX/dist"
+    #cp -r $FRONT/dist/* "$BUILD/$AMD64LINUX/dist"
 else
     echo "Skipping AMD64 Linux build. Please ensure Go and the cross-compilation toolchain are properly installed."
 fi
@@ -53,14 +55,14 @@ if command -v go >/dev/null && GOOS=linux GOARCH=arm64 go version >/dev/null 2>&
     /usr/aarch64-linux-gnu/bin/strip "$BUILD/$ARM64LINUX/$ARM64LINUX"
     #check if upx is installed
     if command -v upx >/dev/null; then
-        upx -9 "$BUILD/$ARM64LINUX/$ARM64LINUX"
+        upx  "$BUILD/$ARM64LINUX/$ARM64LINUX"
     else
         echo "Skipping compression. Please ensure the 'upx' command is installed."
     fi
-    mkdir -p "$BUILD/$ARM64LINUX/audio-resources"
-    cp -r $AUDIODIR/* "$BUILD/$ARM64LINUX/audio-resources"
-    mkdir -p "$BUILD/$ARM64LINUX/dist"
-    cp -r $FRONT/dist/* "$BUILD/$ARM64LINUX/dist"
+    #mkdir -p "$BUILD/$ARM64LINUX/audio-resources"
+    #cp -r $AUDIODIR/* "$BUILD/$ARM64LINUX/audio-resources"
+    #mkdir -p "$BUILD/$ARM64LINUX/dist"
+    #cp -r $FRONT/dist/* "$BUILD/$ARM64LINUX/dist"
 else
     echo "Skipping AArch64 Linux build. Please ensure Go and the cross-compilation toolchain are properly installed."
 fi
@@ -76,10 +78,10 @@ if command -v go >/dev/null && GOOS=windows GOARCH=amd64 go version >/dev/null 2
     else
         echo "Skipping compression. Please ensure the 'upx' command is installed."
     fi
-    mkdir -p "$BUILD/$AMD64WINDOWS/audio-resources"
-    cp -r $AUDIODIR/* "$BUILD/$AMD64WINDOWS/audio-resources"
-    mkdir -p "$BUILD/$AMD64WINDOWS/dist"
-    cp -r $FRONT/dist/* "$BUILD/$AMD64WINDOWS/dist"
+    #mkdir -p "$BUILD/$AMD64WINDOWS/audio-resources"
+    #cp -r $AUDIODIR/* "$BUILD/$AMD64WINDOWS/audio-resources"
+    #mkdir -p "$BUILD/$AMD64WINDOWS/dist"
+    #cp -r $FRONT/dist/* "$BUILD/$AMD64WINDOWS/dist"
 else
     echo "Skipping AMD64 Windows build. Please ensure Go and the cross-compilation toolchain are properly installed."
 fi
