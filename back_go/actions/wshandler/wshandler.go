@@ -1,13 +1,13 @@
 package wshandler
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"github.com/gorilla/websocket"
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/mongo"

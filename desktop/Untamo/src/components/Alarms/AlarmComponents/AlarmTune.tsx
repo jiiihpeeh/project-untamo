@@ -89,9 +89,8 @@ function AlarmTune() {
                         </Tbody>
                     </Table>
                 </MenuItem>
-            );
-        }
-        );
+            )
+        })
     }
 
     return (
@@ -119,7 +118,7 @@ function AlarmTune() {
                 aria-label=''
                 onClick={() => { fetchAudioFiles(); } } />
         </Center>
-    );
+    )
 }
 
 export default AlarmTune;
