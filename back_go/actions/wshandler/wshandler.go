@@ -175,7 +175,6 @@ func Action(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	WsServing.echo(c.Writer, c.Request, wsToken, user.ID.Hex(), session.WsPair)
-
 }
 
 func Register(c *gin.Context, client *mongo.Client) {

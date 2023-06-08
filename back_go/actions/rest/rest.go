@@ -46,6 +46,12 @@ var tokenCaptchaMap = make(map[string]string)
 // mutex for hashmap
 var tokenCaptchaMapMutex = &sync.Mutex{}
 
+// create html index map based on headers
+//var indexMap = make(map[string]string)
+
+// mutex for index map
+//var indexMapMutex = &sync.Mutex{}
+
 func LogIn(c *gin.Context, client *mongo.Client) {
 	loginRequest := login.LogInRequest{}
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
@@ -1687,6 +1693,7 @@ func ResendActivation(c *gin.Context, client *mongo.Client) {
 }
 
 func Index(c *gin.Context, resources embed.FS) {
+
 	fileContent, err := resources.ReadFile("dist/index.html")
 
 	//content, err := ioutil.ReadFile("./dist/index.html")
@@ -1758,7 +1765,7 @@ func Assets(c *gin.Context, resources embed.FS) {
 	}
 	//filePath := "./dist/assets/" + fileName
 	//fmt.Println(filePath)
-	//serve fileContent get file infromation from extension
+	//serve fileContent get file information from extension
 	extension := filepath.Ext(fileName)
 	switch extension {
 	case ".css":
