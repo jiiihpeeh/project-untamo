@@ -41,6 +41,7 @@ type UseServer = {
     wsRegisterConnection: WebSocket|null,
     wsRegisterMessage: wsRegisterMsg|null,
     setWsActionConnection: (ws: WebSocket|null) => void,
+    wsActionDisconnect: () => void,
     setWSActionMessage: (message: wsActionMsg|null) => void,
     wsActionConnect: () => void,
     setWsRegisterConnection: (ws: WebSocket|null) => void,
@@ -315,6 +316,14 @@ const useServer = create<UseServer>()(
               set(
                 {
                   wsActionConnection: ws,
+                }
+              )
+            },
+            wsActionDisconnect: () => {
+              get().wsActionConnection?.close()
+              set(
+                {
+                  wsActionConnection: null,
                 }
               )
             },

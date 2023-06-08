@@ -11,6 +11,10 @@ type wsActionMsg = {
   url?: string,
   mode?: string,
 }
+enum Proto {
+  Http = "http",
+  Https = "https"
+}
 enum WsMessage {
   AlarmAdd = "alarmAdd",
   AlarmDelete = "alarmDelete",
@@ -40,7 +44,10 @@ type UseServer = {
   wsActionMessage: wsActionMsg | null,
   wsRegisterConnection: WebSocket | null,
   wsRegisterMessage: wsRegisterMsg | null,
+  proto: Proto,
+  setProto: (s: Proto) => void,
   setWsActionConnection: (ws: WebSocket | null) => void,
+  wsActionDisconnect: () => void,
   setWSActionMessage: (message: wsActionMsg | null) => void,
   wsActionConnect: () => void,
   setWsRegisterConnection: (ws: WebSocket | null) => void,
@@ -57,7 +64,9 @@ function getDefaultAddress() {
   const baseAddress = (metaAddress) ? metaAddress : "http://localhost:3001"
   const metaExtend = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
   const baseExtend = (metaExtend) ? metaExtend : ""
-  return { base: baseAddress, extend: baseExtend }
+  //split by :// and take the first part
+  const proto = baseAddress.split("://")[0] as Proto
+  return { base: baseAddress, extend: baseExtend, proto: proto }
 }
 
 function websocketAddress(server: string) {
@@ -280,6 +289,16 @@ const useServer = create<UseServer>()(
         wsActionMessage: null,
         wsRegisterConnection: null,
         wsRegisterMessage: null,
+        proto: getDefaultAddress().proto,
+        wsActionDisconnect: () => {
+          get().wsActionConnection?.close()
+          set(
+            {
+              wsActionConnection: null,
+            }
+          )
+        },
+        setProto: (s) => set({ proto: s }),
         wsRegisterConnect: async () => {
           let ws = await registerConnecting()
           set(
@@ -331,7 +350,8 @@ const useServer = create<UseServer>()(
             address: s,
             wsAddress: websocketAddress(s),
             wsAction: websocketAddress(s) + '/action',
-            wsRegister: websocketAddress(s) + '/register-check'
+            wsRegister: websocketAddress(s) + '/register-check',
+            proto: s.split("://")[0] as Proto
           }
         ),
         extended: getDefaultAddress().extend,

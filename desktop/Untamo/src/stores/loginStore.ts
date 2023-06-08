@@ -256,6 +256,8 @@ export async function refreshToken(checkTime :boolean = true) {
         //check if updated session is valid
         await sleep(120)
         await checkSession()
+        useServer.getState().wsActionDisconnect()
+        useLogIn.getState().updateState()
     } catch (err) {
         (validSession()) ? notification("Session", "Failed to update token.", Status.Error) : {}
     }
