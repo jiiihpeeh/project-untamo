@@ -1,7 +1,7 @@
 import React, { useEffect} from "react"
 import { Text, Modal, Button,ModalOverlay, ModalContent,
          ModalHeader,ModalBody,  ModalCloseButton } from '@chakra-ui/react'
-import { useLogIn, usePopups } from "../../stores"
+import { useLogIn, usePopups, useServer } from "../../stores"
 import { SessionStatus } from "../../type"
 import { refreshToken } from "../../stores/loginStore"
 
@@ -82,7 +82,7 @@ function UserMenu() {
                         onClick={() => {
                             refreshToken(false)
                             console.log("refreshing session credentials")
-                            setShowUserMenu(!showUserMenu)  
+                            setShowUserMenu(!showUserMenu)
                         }}
                         w={"100%"}
                         m={"2%"}
