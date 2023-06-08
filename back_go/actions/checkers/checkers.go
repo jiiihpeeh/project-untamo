@@ -33,7 +33,7 @@ func SendUnsentEmails(client *mongo.Client) {
 
 func RemoveOldSessions(client *mongo.Client) {
 	for {
-		time.Sleep(20 * time.Minute)
+		time.Sleep(30 * time.Minute)
 		mongoDB.RemoveOldSessions(client)
 		time.Sleep(24 * time.Hour)
 	}

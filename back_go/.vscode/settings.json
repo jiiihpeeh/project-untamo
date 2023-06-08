@@ -15,6 +15,7 @@
         "DEVICECOLL",
         "EMAILCOLL",
         "Encrypter",
+        "fontobject",
         "goccy",
         "gonic",
         "goquery",
