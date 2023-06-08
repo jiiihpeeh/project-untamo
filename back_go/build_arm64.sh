@@ -13,6 +13,7 @@ then
     npm install
     npm run build
     cd $SCRIPT_DIR || exit
+    mkdir -p "$SCRIPT_DIR/dist"
     #remove $BACK/dist/
     rm -r $SCRIPT_DIR/dist/*
     #copy frontend dist to backend
