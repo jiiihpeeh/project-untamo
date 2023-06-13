@@ -3,10 +3,11 @@ package admin
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Admin struct {
-	ID     primitive.ObjectID `bson:"_id,omitempty"`
-	Token  string             `bson:"token,omitempty"`
-	UserId string             `bson:"user_id,omitempty"`
-	Time   int64              `bson:"time,omitempty"`
+	MongoID  primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	SQLiteID string             `json:"id"`
+	Token    string             `bson:"token,omitempty"`
+	UserId   string             `bson:"user_id,omitempty"`
+	Time     int64              `bson:"time,omitempty"`
 }
 
 type AdminLogIn struct {

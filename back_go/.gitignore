@@ -1,3 +1,4 @@
 *.zzz
 *.cfg
 dist/*
+*.db

@@ -5,10 +5,11 @@ import (
 )
 
 type Session struct {
-	ID      primitive.ObjectID `bson:"_id,omitempty"`
-	UserId  string             `bson:"user_id,"`
-	Token   string             `bson:"token"`
-	WsToken string             `bson:"ws_token"`
-	Time    int64              `bson:"time"`
-	WsPair  string             `bson:"ws_pair"`
+	MongoID  primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	SQLiteID int64              `json:"id"`
+	UserId   string             `bson:"user_id" json:"user_id"`
+	Token    string             `bson:"token" json:"token"`
+	WsToken  string             `bson:"ws_token" json:"ws_token"`
+	Time     int64              `bson:"time" json:"time"`
+	WsPair   string             `bson:"ws_pair" json:"ws_pair"`
 }

@@ -9,12 +9,14 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/actions/checkers"
 	"untamo_server.zzz/actions/rest"
 	"untamo_server.zzz/actions/wshandler"
-	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/database"
+	"untamo_server.zzz/database/mongoDB"
+	"untamo_server.zzz/database/sqliteDB"
 	"untamo_server.zzz/utils/appconfig"
+	"untamo_server.zzz/utils/dbConnection"
 )
 
 const (
@@ -35,6 +37,7 @@ var resources embed.FS
 var audioFiles embed.FS
 
 func main() {
+	err := error(nil)
 	flag.BoolVar(&debugMode, "debug", false, "Enable debug mode")
 	flag.BoolVar(&enableCORS, "cors", false, "Enable CORS")
 	flag.BoolVar(&DisableGZIP, "disable-gzip", false, "Disable GZIP")
@@ -49,24 +52,55 @@ func main() {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	//dbType := flag.String("db", "mongo", "database type (mongo or sqlite)")
+	flag.Parse()
 
+	// Create an instance of the chosen database implementation
+
+	var db database.Database
+	// switch *dbType {
+	// case "mongo":
+	// 	db = &mongoDB.MongoDB{}
+	// case "sqlite":
+	// 	db = &sqliteDB.SQLiteDB{}
+
+	// default:
+	// 	fmt.Println("Invalid database type. Using default.")
+	// 	db = &sqliteDB.SQLiteDB{}
+	// }
 	appConfig, err := appconfig.GetConfig()
 	//cstr, err := json.Marshal(appConfig)
 	//fmt.Println(string(string(cstr)))
 
-	var client *mongo.Client
+	//var client *mongo.Client
 	if err != nil {
 		settings := appconfig.AskDBUrl()
+		dbConnection.UseSQLite = settings.DatabaseType == "sqlite"
 		uri := settings.GetUrl()
-		client = mongoDB.Connect(uri)
+		if dbConnection.UseSQLite {
+			uri = settings.DatabasePath
+			dbConnection.UseSQLite = true
+			fmt.Println("Using SQLite")
+			db = &sqliteDB.SQLiteDB{}
+			db.Connect(uri)
+		} else {
+			dbConnection.UseSQLite = false
+			fmt.Println("Using MongoDB")
+			db = &mongoDB.MongoDB{}
+			db.Connect(uri)
+		}
+		//fmt.Println("dbType", *dbType)
+		fmt.Println("uri", uri)
+		//dbConn := db.Connect(uri)
+		//db = dbConn.(database.Database)
 		//get ownerID from mongoDB
-		ownerID, err := mongoDB.GetOwnerID(client)
+		ownerID, err := db.GetOwnerID()
 		loadConfig := appconfig.AskActivation()
 		settings.ActivateAuto = loadConfig.ActivateAuto
 		settings.ActivateEmail = loadConfig.ActivateEmail
 		if err != nil {
 			//ownerID = mongoDB.CreateOwner(client)
-			ownerID = appconfig.CreateOwnerUserPrompt(client)
+			ownerID = appconfig.CreateOwnerUserPrompt(&db)
 		}
 		if settings.Email == "" {
 			cfg := appconfig.OwnerConfigPrompt()
@@ -86,7 +120,17 @@ func main() {
 			panic(err)
 		}
 	} else {
-		client = mongoDB.Connect(appConfig.GetUrl())
+		if appConfig.DatabaseType == "sqlite" {
+			dbConnection.UseSQLite = true
+			fmt.Println("Using SQLite")
+			db = &sqliteDB.SQLiteDB{}
+			db.Connect(appConfig.DatabasePath)
+		} else {
+			dbConnection.UseSQLite = false
+			fmt.Println("Using MongoDB")
+			db = &mongoDB.MongoDB{}
+			db.Connect(appConfig.UrlDB)
+		}
 	}
 	appconfig.AppConfigurationMutex.Lock()
 	appconfig.AppConfiguration = appConfig
@@ -156,115 +200,115 @@ func main() {
 	})
 	//react vite part ends
 	router.POST("/login", func(c *gin.Context) {
-		rest.LogIn(c, client)
+		rest.LogIn(c, &db)
 	})
 	router.POST("/logout", func(c *gin.Context) {
-		rest.LogOut(c, client)
+		rest.LogOut(c, &db)
 	})
 	router.POST("/register", func(c *gin.Context) {
-		rest.RegisterUser(c, client)
+		rest.RegisterUser(c, &db)
 	})
 	router.POST("/api/activate-account", func(c *gin.Context) {
-		rest.ActivateAccount(c, client)
+		rest.ActivateAccount(c, &db)
 	})
 	router.PUT("/resend-activation/:email", func(c *gin.Context) {
-		rest.ResendActivation(c, client)
+		rest.ResendActivation(c, &db)
 	})
 	router.GET("/api/activation-captcha", func(c *gin.Context) {
-		rest.GetActivationCaptcha(c, client)
+		rest.GetActivationCaptcha(c, &db)
 	})
 	router.PUT("/forgot-password/:email", func(c *gin.Context) {
-		rest.ForgotPassword(c, client)
+		rest.ForgotPassword(c, &db)
 	})
 	router.POST("/reset-password", func(c *gin.Context) {
-		rest.ResetPassword(c, client)
+		rest.ResetPassword(c, &db)
 	})
 	router.POST("/store-server-config", func(c *gin.Context) {
-		rest.StoreServerConfig(c, client)
+		rest.StoreServerConfig(c, &db)
 	})
 	router.POST("/qr-login", func(c *gin.Context) {
-		rest.QRLogIn(c, client)
+		rest.QRLogIn(c, &db)
 	})
 	router.GET("/api/qr-token", func(c *gin.Context) {
-		rest.GetQRToken(c, client)
+		rest.GetQRToken(c, &db)
 	})
 	router.GET("/api/devices", func(c *gin.Context) {
-		rest.GetDevices(c, client)
+		rest.GetDevices(c, &db)
 	})
 	router.POST("/api/device", func(c *gin.Context) {
-		rest.AddDevice(c, client)
+		rest.AddDevice(c, &db)
 	})
 	router.PUT("/api/device/:id", func(c *gin.Context) {
-		rest.EditDevice(c, client)
+		rest.EditDevice(c, &db)
 	})
 	router.DELETE("/api/device/:id", func(c *gin.Context) {
-		rest.DeleteDevice(c, client)
+		rest.DeleteDevice(c, &db)
 	})
 	router.GET("/api/alarms", func(c *gin.Context) {
-		rest.GetUserAlarms(c, client)
+		rest.GetUserAlarms(c, &db)
 	})
 	router.POST("/api/alarm", func(c *gin.Context) {
-		rest.AddAlarm(c, client)
+		rest.AddAlarm(c, &db)
 	})
 	router.PUT("/api/alarm/:id", func(c *gin.Context) {
-		rest.EditAlarm(c, client)
+		rest.EditAlarm(c, &db)
 	})
 	router.DELETE("/api/alarm/:id", func(c *gin.Context) {
-		rest.DeleteAlarm(c, client)
+		rest.DeleteAlarm(c, &db)
 	})
 	router.GET("/api/is-session-valid", func(c *gin.Context) {
-		rest.IsSessionValid(c, client)
+		rest.IsSessionValid(c, &db)
 	})
 	router.GET("/api/user", func(c *gin.Context) {
-		rest.GetUser(c, client)
+		rest.GetUser(c, &db)
 	})
 	router.GET("/api/update", func(c *gin.Context) {
-		rest.GetUpdate(c, client)
+		rest.GetUpdate(c, &db)
 	})
 	router.GET("/api/refresh-token", func(c *gin.Context) {
-		rest.RefreshToken(c, client)
+		rest.RefreshToken(c, &db)
 	})
 	router.GET("/api/ws-token", func(c *gin.Context) {
-		rest.UpdateWsToken(c, client)
+		rest.UpdateWsToken(c, &db)
 	})
 	router.POST("/api/admin", func(c *gin.Context) {
-		rest.AdminLogIn(c, client)
+		rest.AdminLogIn(c, &db)
 	})
 	router.PUT("/api/edit-user/:email", func(c *gin.Context) {
-		rest.UserEdit(c, client)
+		rest.UserEdit(c, &db)
 	})
 	router.GET("/admin/users", func(c *gin.Context) {
-		rest.GetUsers(c, client)
+		rest.GetUsers(c, &db)
 	})
 	router.PUT("/admin/user/:id", func(c *gin.Context) {
-		rest.EditUserState(c, client)
+		rest.EditUserState(c, &db)
 	})
 	router.DELETE("/admin/user/:id", func(c *gin.Context) {
-		rest.RemoveUser(c, client)
+		rest.RemoveUser(c, &db)
 	})
 	router.GET("/admin/owner-settings", func(c *gin.Context) {
-		rest.GetOwnerSettings(c, client)
+		rest.GetOwnerSettings(c, &db)
 	})
 	router.POST("/admin/owner-settings", func(c *gin.Context) {
-		rest.SetOwnerSettings(c, client)
+		rest.SetOwnerSettings(c, &db)
 	})
 	router.GET("/audio-resources/resource_list.json", func(c *gin.Context) {
-		rest.GetAudioResources(c, client, audioFiles)
+		rest.GetAudioResources(c, &db, audioFiles)
 	})
 	router.GET("/audio-resources/:filename", func(c *gin.Context) {
-		rest.AudioResource(c, client, audioFiles)
+		rest.AudioResource(c, &db, audioFiles)
 	})
 	router.GET("/register-check", func(c *gin.Context) {
-		wshandler.Register(c, client)
+		wshandler.Register(c, &db)
 	})
 	router.GET("/action/:token", func(c *gin.Context) {
-		wshandler.Action(c, client)
+		wshandler.Action(c, &db)
 	})
 
 	//run PingPong
 	go wshandler.Ping()
-	go checkers.SendUnsentEmails(client)
-	go checkers.RemoveOldSessions(client)
-	go checkers.RemoveAlarmsWithNoDevices(client)
+	go checkers.SendUnsentEmails(&db)
+	go checkers.RemoveOldSessions(&db)
+	go checkers.RemoveAlarmsWithNoDevices(&db)
 	router.Run(PORT) // listen and serve on
 }

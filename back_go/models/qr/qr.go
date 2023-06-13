@@ -5,10 +5,11 @@ import (
 )
 
 type QR struct {
-	ID      primitive.ObjectID `bson:"_id,omitempty"`
-	User    string             `bson:"user,omitempty"`
-	QrToken string             `bson:"qr_token,omitempty"`
-	Time    int64              `bson:"time,omitempty"`
+	MongoID  primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	SQLiteID string             `json:"id"`
+	User     string             `bson:"user,omitempty" json:"user"`
+	QrToken  string             `bson:"qr_token,omitempty" json:"qrToken"`
+	Time     int64              `bson:"time,omitempty" json:"time"`
 }
 
 type QRIn struct {

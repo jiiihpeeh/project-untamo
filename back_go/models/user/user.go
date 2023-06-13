@@ -7,22 +7,25 @@ import (
 	"github.com/adrg/strutil/metrics"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"untamo_server.zzz/models/register"
+	"untamo_server.zzz/utils/dbConnection"
+	"untamo_server.zzz/utils/tools"
 )
 
 type User struct {
-	ID                       primitive.ObjectID `bson:"_id,omitempty"`
-	Email                    string             `bson:"email"`
-	FirstName                string             `bson:"first_name,omitempty"`
-	LastName                 string             `bson:"last_name,omitempty"`
-	ScreenName               string             `bson:"screen_name"`
-	Admin                    bool               `bson:"admin"`
-	Owner                    bool               `bson:"owner"`
-	Active                   bool               `bson:"active"`
-	Password                 string             `bson:"password"`
-	Activate                 string             `bson:"activate,omitempty"`
-	Registered               int64              `bson:"registered,omitempty"`
-	PasswordResetRequestTime int64              `bson:"password_reset_request_time,omitempty"`
-	PasswordResetToken       string             `bson:"password_reset_token,omitempty"`
+	MongoID                  primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	SQLiteID                 int64              `json:"id"`
+	Email                    string             `bson:"email" json:"email"`
+	FirstName                string             `bson:"first_name,omitempty" json:"firstName"`
+	LastName                 string             `bson:"last_name,omitempty" json:"lastName"`
+	ScreenName               string             `bson:"screen_name" json:"screenName"`
+	Admin                    bool               `bson:"admin" json:"admin"`
+	Owner                    bool               `bson:"owner" json:"owner"`
+	Active                   bool               `bson:"active" json:"active"`
+	Password                 string             `bson:"password" json:"password"`
+	Activate                 string             `bson:"activate,omitempty" json:"activate"`
+	Registered               int64              `bson:"registered,omitempty" json:"registered"`
+	PasswordResetRequestTime int64              `bson:"password_reset_request_time,omitempty" json:"passwordResetRequestTime"`
+	PasswordResetToken       string             `bson:"password_reset_token,omitempty" json:"passwordResetToken"`
 }
 
 type UserOut struct {
@@ -38,8 +41,15 @@ type UserOut struct {
 }
 
 func (u *User) ToUserOut() UserOut {
+
+	id := ""
+	if dbConnection.UseSQLite {
+		id = tools.IntToRadix(u.SQLiteID)
+	} else {
+		id = u.MongoID.Hex()
+	}
 	return UserOut{
-		User:       u.ID.Hex(),
+		User:       id,
 		Email:      u.Email,
 		FirstName:  u.FirstName,
 		LastName:   u.LastName,

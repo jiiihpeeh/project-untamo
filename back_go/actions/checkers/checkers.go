@@ -3,46 +3,45 @@ package checkers
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/database"
 	"untamo_server.zzz/models/email"
 	"untamo_server.zzz/utils/emailer"
 )
 
 //send unsent emails to users every 5 minutes
 
-func sendDelete(email *email.Email, client *mongo.Client) {
+func sendDelete(email *email.Email, db *database.Database) {
 	result := emailer.SendEmail(email)
 	//if email sent, remove email from db
 	if result {
-		mongoDB.DeleteEmail(email.ID, client)
+		(*db).DeleteEmail(email.MongoID.Hex())
 	}
 }
 
-func SendUnsentEmails(client *mongo.Client) {
+func SendUnsentEmails(db *database.Database) {
 	//loop every 5 minutes
 	for {
-		emails := mongoDB.GetEmails(client)
+		emails := (*db).GetEmails()
 		//send emails
 		for _, email := range emails {
-			go sendDelete(email, client)
+			go sendDelete(email, db)
 		}
 		time.Sleep(5 * time.Minute)
 	}
 }
 
-func RemoveOldSessions(client *mongo.Client) {
+func RemoveOldSessions(db *database.Database) {
 	for {
 		time.Sleep(30 * time.Minute)
-		mongoDB.RemoveOldSessions(client)
+		(*db).RemoveOldSessions()
 		time.Sleep(24 * time.Hour)
 	}
 }
 
-func RemoveAlarmsWithNoDevices(client *mongo.Client) {
+func RemoveAlarmsWithNoDevices(db *database.Database) {
 	for {
 		time.Sleep(15 * time.Minute)
-		mongoDB.RemoveAlarmsWithNoDevices(client)
+		(*db).RemoveAlarmsWithNoDevices()
 		time.Sleep(24 * time.Hour)
 	}
 }

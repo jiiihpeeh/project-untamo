@@ -10,10 +10,11 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/gorilla/websocket"
 	"github.com/thoas/go-funk"
-	"go.mongodb.org/mongo-driver/mongo"
-	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/database"
 	"untamo_server.zzz/models/register"
+	"untamo_server.zzz/utils/dbConnection"
 	"untamo_server.zzz/utils/token"
+	"untamo_server.zzz/utils/tools"
 )
 
 type WsServer struct {
@@ -156,28 +157,39 @@ func (server *WsServer) Disconnect(token string) {
 	hashMapMutex.Unlock()
 }
 
-func Action(c *gin.Context, client *mongo.Client) {
+func Action(c *gin.Context, db *database.Database) {
 	//log.Println("websocket handler CALLED")
 	//sleep 15 milliseconds
 	time.Sleep(15 * time.Millisecond)
 	wsToken := c.Param("token")
 	//check that token is long enough
 	if len(wsToken) < int(token.WsTokenStringLength) {
+		//log.Println("token is too short")
 		return
 	}
 	//get session from db
-	session, user := mongoDB.GetUserAndSessionFromWsToken(wsToken, client)
+	session, userInSession := (*db).GetUserAndSessionFromWsToken(wsToken)
 	// if action is not found, return
 	if session == nil {
+		//log.Println("session is nil")
 		return
 	}
-	if user == nil {
+	if userInSession == nil {
+		//og.Println("userInSession is nil")
 		return
 	}
-	WsServing.echo(c.Writer, c.Request, wsToken, user.ID.Hex(), session.WsPair)
+	var uID string
+	if dbConnection.UseSQLite {
+
+		uID = tools.IntToRadix(userInSession.SQLiteID)
+	} else {
+		uID = userInSession.MongoID.Hex()
+	}
+	//fmt.Println("uID: ", uID, "wsToken: ", wsToken, "session.WsPair: ", session.WsPair)
+	WsServing.echo(c.Writer, c.Request, wsToken, uID, session.WsPair)
 }
 
-func Register(c *gin.Context, client *mongo.Client) {
+func Register(c *gin.Context, db *database.Database) {
 	//log.Println("websocket handler CALLED")
 	//sleep 15 milliseconds
 	time.Sleep(15 * time.Millisecond)
@@ -200,7 +212,7 @@ func Register(c *gin.Context, client *mongo.Client) {
 				registerMsg.FeedBack = append(registerMsg.FeedBack, "Email is not valid")
 			}
 			if registerMsg.FormPass {
-				if mongoDB.CheckEmail(registerRequest.Email, client) {
+				if (*db).CheckEmail(registerRequest.Email) {
 					registerMsg.FormPass = false
 					registerMsg.FeedBack = append(registerMsg.FeedBack, "Email is already in use")
 				}
