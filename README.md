@@ -12,10 +12,10 @@ Mobile
 
 ### Project
 
-Backend: Functional version using Go Gin, was NodeJs (incompatible API), some beginnings of Rust actix
+Backend: Functional version using Go Gin (optionally either mongo or sqlite), was NodeJs (incompatible API), some beginnings of Rust actix
 
 Web: TypeScript + React
 
 Mobile: TODO. Possibly Tauri. Not compatible with API anymore.  TypeScript + React Native (currently uses expo)
 
-Desktop: Modified version of Web frontend using Tauri. NOTE:  While it has a quite similar code base it has significant changes.
+Desktop: Modified version of the Web frontend using Tauri. NOTE:  While it has a quite similar code base it has significant changes to support desktop and workarounds to plausible issues with desktop web engines (buggy audio etc).
