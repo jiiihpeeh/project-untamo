@@ -2,8 +2,8 @@ package sqliteDB
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -78,7 +78,7 @@ func (s *SQLiteDB) CreateTables() {
 
 func (s *SQLiteDB) Connect(file string) interface{} {
 	//db, err := sql.Open("sqlite3", "./untamo.db")
-	db, err := sql.Open("sqlite", "./untamo.db")
+	db, err := sql.Open("sqlite", file)
 	if err != nil {
 		panic(err)
 	}
@@ -201,8 +201,8 @@ func (s *SQLiteDB) EditAlarm(alarm *alarm.Alarm) bool {
 	// Check if the user field remains the same
 	//convert to AlarmSQL
 	alarmSql := alarm.ToSQLForm()
-	sql, _ := json.Marshal(alarmSql)
-	fmt.Println("AlarmSql: ", string(sql))
+	//sql, _ := json.Marshal(alarmSql)
+	//fmt.Println("AlarmSql: ", string(sql))
 	user := alarm.User
 	id := alarm.SQLiteID
 	//edit alarm based on id and user
@@ -256,6 +256,7 @@ func (s *SQLiteDB) GetSessionFromToken(token string) (*session.Session, *user.Us
 	session := &session.Session{}
 	err := row.Scan(&session.SQLiteID, &session.UserId, &session.Token, &session.WsToken, &session.Time, &session.WsPair)
 	if err != nil {
+		log.Println(err)
 		return nil, nil
 	}
 	userInSession := s.GetUserFromID(session.UserId)
@@ -477,6 +478,7 @@ func (s *SQLiteDB) GetDeviceByID(id string) *device.Device {
 func (s *SQLiteDB) EditDevice(device *device.Device) bool {
 	id := device.SQLiteID
 	user := device.User
+	//log.Println("Edit device: ", device)
 	query := "UPDATE devices SET DeviceName = ?, DeviceType = ?, User = ? WHERE ID = ? AND User = ?"
 	_, err := s.connection.Exec(query, device.DeviceName, device.DeviceType, device.User, id, user)
 	return err == nil
