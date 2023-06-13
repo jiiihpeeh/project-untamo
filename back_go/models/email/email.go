@@ -5,12 +5,13 @@ import (
 )
 
 type Email struct {
-	ID      primitive.ObjectID `bson:"_id,omitempty"`
-	User    string             `bson:"user"`
-	Success bool               `bson:"success"`
-	Time    int64              `bson:"time"`
-	Subject string             `bson:"subject"`
-	Body    string             `bson:"body"`
+	MongoID  primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	SQLiteID string             `json:"id"`
+	User     string             `bson:"user" json:"user"`
+	Success  bool               `bson:"success" json:"success"`
+	Time     int64              `bson:"time" json:"time"`
+	Subject  string             `bson:"subject" json:"subject"`
+	Body     string             `bson:"body" json:"body"`
 }
 
 // type loginAuth struct {

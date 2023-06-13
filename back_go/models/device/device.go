@@ -2,7 +2,9 @@ package device
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"untamo_server.zzz/utils/dbConnection"
 	"untamo_server.zzz/utils/id"
+	"untamo_server.zzz/utils/tools"
 )
 
 // device type enum
@@ -16,10 +18,11 @@ const (
 )
 
 type Device struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	DeviceName string             `bson:"device_name,omitempty"`
-	DeviceType string             `bson:"device_type,omitempty"`
-	User       string             `bson:"user,omitempty"`
+	MongoID    primitive.ObjectID `bson:"_id,omitempty" json:"-"`
+	SQLiteID   int64              `json:"id"`
+	DeviceName string             `bson:"device_name,omitempty" json:"deviceName"`
+	DeviceType string             `bson:"device_type,omitempty" json:"deviceType"`
+	User       string             `bson:"user,omitempty" json:"user"`
 }
 
 type DeviceOut struct {
@@ -30,8 +33,16 @@ type DeviceOut struct {
 
 // convert Device to DeviceOut
 func (d *Device) ToDeviceOut() DeviceOut {
+	//check if MongoID exists
+	Id := ""
+	if dbConnection.UseSQLite {
+		Id = tools.IntToRadix(d.SQLiteID)
+	} else {
+		Id = d.MongoID.Hex()
+	}
+
 	return DeviceOut{
-		ID:         d.ID.Hex(),
+		ID:         Id,
 		DeviceName: d.DeviceName,
 		DeviceType: d.DeviceType,
 	}
@@ -39,10 +50,17 @@ func (d *Device) ToDeviceOut() DeviceOut {
 
 // convert DeviceOut to Device ask user Id
 func (d *DeviceOut) ToDevice(userId string) Device {
-	uID, _ := id.IdFromString(d.ID)
+	if dbConnection.UseSQLite {
+		return Device{
+			SQLiteID:   tools.RadixToInt(d.ID),
+			DeviceName: d.DeviceName,
+			DeviceType: d.DeviceType,
+			User:       userId,
+		}
+	}
 
 	return Device{
-		ID:         uID,
+		MongoID:    id.IdFromString(d.ID),
 		DeviceName: d.DeviceName,
 		DeviceType: d.DeviceType,
 		User:       userId,

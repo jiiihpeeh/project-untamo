@@ -14,13 +14,17 @@ import (
 	"github.com/denisbrodbeck/machineid"
 	"github.com/goccy/go-json"
 	"github.com/manifoldco/promptui"
-	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/sha3"
-	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/database"
 	"untamo_server.zzz/models/register"
 	"untamo_server.zzz/models/user"
 
 	"untamo_server.zzz/utils/hash"
+)
+
+const (
+	DatabaseTypeMongo  string = "mongo"
+	DatabaseTypeSQLite string = "sqlite"
 )
 
 const AppKey = "Untamo-AlarmClock"
@@ -29,6 +33,7 @@ var AppConfiguration *AppConfig
 var AppConfigurationMutex = &sync.Mutex{}
 
 type LaunchConfig struct {
+	DatabaseType  string `json:"databaseType"`
 	OwnerID       string `json:"ownerId"`
 	UserDB        string `json:"userDb"`
 	PasswordDB    string `json:"passwordDb"`
@@ -38,6 +43,7 @@ type LaunchConfig struct {
 	ActivateAuto  bool   `json:"activateAuto"`
 	ActivateEmail bool   `json:"activateEmail"`
 	SessionLength uint64 `json:"sessionLength"`
+	DatabasePath  string `json:"databasePath"`
 }
 
 type OwnerConfig struct {
@@ -49,6 +55,7 @@ type OwnerConfig struct {
 	EmailPlainAuth bool   `json:"emailPlainAuth"`
 }
 type AppConfig struct {
+	DatabaseType   string `json:"databaseType"`
 	OwnerID        string `json:"ownerId"`
 	UrlDB          string `json:"urlDB"`
 	CustomURI      string `json:"customUri"`
@@ -64,6 +71,7 @@ type AppConfig struct {
 	ActivateAuto   bool   `json:"activateAuto"`
 	ActivateEmail  bool   `json:"activateEmail"`
 	SessionLength  uint64 `json:"sessionLength"`
+	DatabasePath   string `json:"databasePath"`
 }
 
 func getAppMachineKey() ([]byte, error) {
@@ -124,6 +132,7 @@ func GetConfig() (*AppConfig, error) {
 		return &config, err
 	}
 	config = AppConfig{
+		DatabaseType:   appConfig.DatabaseType,
 		OwnerID:        appConfig.OwnerID,
 		UserDB:         appConfig.UserDB,
 		UrlDB:          appConfig.UrlDB,
@@ -137,6 +146,7 @@ func GetConfig() (*AppConfig, error) {
 		ActivateAuto:   appConfig.ActivateAuto,
 		ActivateEmail:  appConfig.ActivateEmail,
 		SessionLength:  appConfig.SessionLength,
+		DatabasePath:   appConfig.DatabasePath,
 	}
 
 	return &config, err
@@ -151,6 +161,7 @@ func SetConfig(config *AppConfig) bool {
 		config.SessionLength = 31536000000
 	}
 	appConfig := LaunchConfig{
+		DatabaseType:  config.DatabaseType,
 		OwnerID:       config.OwnerID,
 		UserDB:        config.UserDB,
 		PasswordDB:    config.PasswordDB,
@@ -158,6 +169,7 @@ func SetConfig(config *AppConfig) bool {
 		ActivateAuto:  config.ActivateAuto,
 		ActivateEmail: config.ActivateEmail,
 		SessionLength: config.SessionLength,
+		DatabasePath:  config.DatabasePath,
 	}
 	content, err := json.Marshal(appConfig)
 	if err != nil {
@@ -207,6 +219,11 @@ func FoundConfig() bool {
 
 func (app *AppConfig) GetUrl() string {
 	//check if UseCustomURI is true
+	//check if UseSQLite is true
+	//if UseSQLite is true return DatabasePath
+	if app.DatabaseType == DatabaseTypeSQLite {
+		return app.DatabasePath
+	}
 	if app.UseCustomURI {
 		return app.CustomURI
 	}
@@ -219,40 +236,70 @@ func AskDBUrl() *AppConfig {
 	var dbConfig AppConfig
 	//Ask if user wants to use custom uri
 	fmt.Println("A machine and OS specific encrypted configuration will be created. This configuration can not be decrypted automatically on other machines without access to the original.")
-	items := []bool{
-		true,
-		false,
+	dbType := []string{"MongoDB", "SQLite"}
+	promptDbType := promptui.Select{
+		Label: "Select database type",
+		Items: dbType,
 	}
-	prompt := promptui.Select{
-		Label: "Do you want to use a custom uri? Including user + password",
-		Items: items,
-	}
-	idx, _, _ := prompt.Run()
+	_, result, _ := promptDbType.Run()
+	if result == "MongoDB" {
+		dbConfig.DatabaseType = DatabaseTypeMongo
+		items := []bool{
+			true,
+			false,
+		}
+		prompt := promptui.Select{
+			Label: "Do you want to use a custom uri? Including user + password",
+			Items: items,
+		}
+		idx, _, _ := prompt.Run()
 
-	dbConfig.UseCustomURI = items[idx]
-	if dbConfig.UseCustomURI {
-		promptURI := promptui.Prompt{
-			Label:       "Enter custom uri",
+		dbConfig.UseCustomURI = items[idx]
+		if dbConfig.UseCustomURI {
+			promptURI := promptui.Prompt{
+				Label:       "Enter custom uri",
+				HideEntered: true,
+			}
+			result, _ := promptURI.Run()
+			dbConfig.CustomURI = result
+			return &dbConfig
+		}
+		promptUrl := promptui.Prompt{
+			Label: "Enter database url",
+		}
+		dbConfig.UrlDB, _ = promptUrl.Run()
+		promptUser := promptui.Prompt{
+			Label: "Enter database user",
+		}
+		dbConfig.UserDB, _ = promptUser.Run()
+		promptPassword := promptui.Prompt{
+			Label:       "Enter database password",
 			HideEntered: true,
 		}
-		result, _ := promptURI.Run()
-		dbConfig.CustomURI = result
-		return &dbConfig
-	}
-	promptUrl := promptui.Prompt{
-		Label: "Enter database url",
-	}
-	dbConfig.UrlDB, _ = promptUrl.Run()
-	promptUser := promptui.Prompt{
-		Label: "Enter database user",
-	}
-	dbConfig.UserDB, _ = promptUser.Run()
-	promptPassword := promptui.Prompt{
-		Label:       "Enter database password",
-		HideEntered: true,
-	}
-	dbConfig.PasswordDB, _ = promptPassword.Run()
+		dbConfig.PasswordDB, _ = promptPassword.Run()
+	} else {
+		dbConfig.DatabaseType = DatabaseTypeSQLite
+		custom := []string{"Yes", "No"}
+		promptCustom := promptui.Select{
+			Label: "Do you want to use a custom database location?",
+			Items: custom,
+		}
+		_, result, _ := promptCustom.Run()
+		if result == "Yes" {
+			promptURI := promptui.Prompt{
+				Label:       "Enter custom database path",
+				HideEntered: true,
+			}
+			result, _ := promptURI.Run()
+			dbConfig.DatabasePath = result
+			return &dbConfig
+		} else {
+			dbConfig.DatabasePath = "untamo.db"
+		}
 
+	}
+	config, _ := json.Marshal(dbConfig)
+	fmt.Println("Database configuration.", string(config))
 	return &dbConfig
 }
 
@@ -338,7 +385,7 @@ func OwnerConfigPrompt() *OwnerConfig {
 	return &ownerConfig
 }
 
-func CreateOwnerUserPrompt(client *mongo.Client) string {
+func CreateOwnerUserPrompt(db *database.Database) string {
 	fmt.Println("Creating an owner account. This  account can manage rights of other users. It can be used as a regular user as well. There can be only one owner.")
 
 	var owner user.User
@@ -412,13 +459,12 @@ func CreateOwnerUserPrompt(client *mongo.Client) string {
 		panic("passwords do not match")
 	}
 
-	ownerID, err := mongoDB.AddUser(&owner, client)
+	ownerID, err := (*db).AddUser(&owner)
 	if err != nil {
 		panic(err)
 	}
-	owner.ID = ownerID
 
-	return owner.ID.Hex()
+	return ownerID
 }
 
 func aesEncrypt(text, key []byte) []byte {

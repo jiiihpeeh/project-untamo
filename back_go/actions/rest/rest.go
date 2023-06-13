@@ -17,9 +17,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/steambap/captcha"
-	"go.mongodb.org/mongo-driver/mongo"
 	"untamo_server.zzz/actions/wshandler"
-	"untamo_server.zzz/db/mongoDB"
+	"untamo_server.zzz/database"
 	"untamo_server.zzz/models/admin"
 	"untamo_server.zzz/models/alarm"
 	"untamo_server.zzz/models/device"
@@ -32,12 +31,14 @@ import (
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/models/wsOut"
 	"untamo_server.zzz/utils/appconfig"
+	"untamo_server.zzz/utils/dbConnection"
 	"untamo_server.zzz/utils/emailer"
 	"untamo_server.zzz/utils/hash"
 	"untamo_server.zzz/utils/id"
 	"untamo_server.zzz/utils/list"
 	"untamo_server.zzz/utils/now"
 	"untamo_server.zzz/utils/token"
+	"untamo_server.zzz/utils/tools"
 )
 
 // hashmap for token and captcha
@@ -52,7 +53,7 @@ var tokenCaptchaMapMutex = &sync.Mutex{}
 // mutex for index map
 //var indexMapMutex = &sync.Mutex{}
 
-func LogIn(c *gin.Context, client *mongo.Client) {
+func LogIn(c *gin.Context, db *database.Database) {
 	loginRequest := login.LogInRequest{}
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
 		c.JSON(400, gin.H{
@@ -70,7 +71,7 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 	}
 
 	//get user from db
-	user := mongoDB.GetUserFromEmail(loginRequest.Email, client)
+	user := (*db).GetUserFromEmail(loginRequest.Email)
 	//check if user exists
 	if user == nil {
 		c.JSON(401, gin.H{
@@ -103,10 +104,16 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 		//add 10 minutes to end time
 		expires = now.Now() + 600000
 	}
+	var uID string
+	if dbConnection.UseSQLite {
+		uID = tools.IntToRadix(user.SQLiteID)
+	} else {
+		uID = user.MongoID.Hex()
+	}
+
 	newSession := session.Session{
-		ID:      id.GenerateId(),
 		Time:    expires,
-		UserId:  user.ID.Hex(),
+		UserId:  uID,
 		Token:   token.GenerateToken(token.TokenStringLength),
 		WsToken: token.GenerateToken(token.WsTokenStringLength),
 		WsPair:  token.GenerateToken(token.WsPairLength),
@@ -114,14 +121,18 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 	//add session to db
 	//marshal session to json
 	//fmt.Println(newSession)
-	sID, err := mongoDB.AddSession(&newSession, client)
+	sID, err := (*db).AddSession(&newSession)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add session to db",
 		})
 		return
 	}
-	newSession.ID = sID
+	if dbConnection.UseSQLite {
+		newSession.SQLiteID = tools.RadixToInt(sID)
+	} else {
+		newSession.MongoID = id.IdFromString(sID)
+	}
 	//fmt.Println("newSession", newSession)
 
 	logInResponse := login.LogInResponse{
@@ -141,17 +152,17 @@ func LogIn(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, logInResponse)
 }
 
-func GetDevices(c *gin.Context, client *mongo.Client) {
+func GetDevices(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
 
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request) //GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
 		return
 	}
-	devices := mongoDB.GetDevices(session.UserId, client)
+	devices := (*db).GetDevices(session.UserId)
 	//convert devices to ToDeviceOut
 	deviceOut := []device.DeviceOut{}
 	for _, device := range devices {
@@ -160,9 +171,9 @@ func GetDevices(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, deviceOut)
 }
 
-func AddDevice(c *gin.Context, client *mongo.Client) {
+func AddDevice(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -184,14 +195,18 @@ func AddDevice(c *gin.Context, client *mongo.Client) {
 		DeviceName: deviceIn.DeviceName,
 		DeviceType: deviceIn.DeviceType,
 	}
-	dID, err := mongoDB.AddDevice(&newDevice, client)
+	dID, err := (*db).AddDevice(&newDevice)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add device to db",
 		})
 		return
 	}
-	newDevice.ID = dID
+	if dbConnection.UseSQLite {
+		newDevice.SQLiteID = tools.RadixToInt(dID)
+	} else {
+		newDevice.MongoID = id.IdFromString(dID)
+	}
 
 	//return device as json
 	deviceOut := newDevice.ToDeviceOut()
@@ -204,12 +219,18 @@ func AddDevice(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, deviceOut)
 }
 
-func EditDevice(c *gin.Context, client *mongo.Client) {
+func EditDevice(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, err := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
+		})
+		return
+	}
+	if err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to get session from db",
 		})
 		return
 	}
@@ -232,14 +253,17 @@ func EditDevice(c *gin.Context, client *mongo.Client) {
 	}
 
 	//edit device in db
-	uID, _ := id.IdFromString(deviceId)
 	editedDevice := device.Device{
-		ID:         uID,
 		User:       session.UserId,
 		DeviceName: deviceIn.DeviceName,
 		DeviceType: deviceIn.DeviceType,
 	}
-	if !mongoDB.EditDevice(&editedDevice, client) {
+	if dbConnection.UseSQLite {
+		editedDevice.SQLiteID = tools.RadixToInt(deviceId)
+	} else {
+		editedDevice.MongoID = id.IdFromString(deviceId)
+	}
+	if !(*db).EditDevice(&editedDevice) {
 		c.JSON(500, gin.H{
 			"message": "Failed to edit device in db",
 		})
@@ -256,9 +280,9 @@ func EditDevice(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, deviceOut)
 }
 
-func DeleteDevice(c *gin.Context, client *mongo.Client) {
+func DeleteDevice(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -267,14 +291,8 @@ func DeleteDevice(c *gin.Context, client *mongo.Client) {
 	}
 	//get device id from url
 	deviceId := c.Param("id")
-	uID, err := id.IdFromString(deviceId)
-	if err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
-		return
-	}
-	if !mongoDB.DeleteDevice(uID, session.UserId, client) {
+
+	if !(*db).DeleteDevice(deviceId, session.UserId) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete device from db",
 		})
@@ -292,9 +310,9 @@ func DeleteDevice(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func GetUserAlarms(c *gin.Context, client *mongo.Client) {
+func GetUserAlarms(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -302,7 +320,7 @@ func GetUserAlarms(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//get alarms from db
-	alarms := mongoDB.GetUserAlarms(session.UserId, client)
+	alarms := (*db).GetUserAlarms(session.UserId)
 	//convert alarms to ToAlarmOut
 	alarmOut := []alarm.AlarmOut{}
 	for _, alarm := range alarms {
@@ -311,10 +329,10 @@ func GetUserAlarms(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, alarmOut)
 }
 
-func AddAlarm(c *gin.Context, client *mongo.Client) {
+func AddAlarm(c *gin.Context, db *database.Database) {
 	//fmt.Println("AddAlarm")
 	// check if user is logged in by getting a session from db
-	userSession, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	userSession, userInSession := (*db).GetSessionFromHeader(c.Request)
 	if userSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -341,14 +359,18 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 	newAlarm := alarmIn.ToNewAlarm(userSession.UserId)
 	//empty ID field
 
-	alarmId, err := mongoDB.AddAlarm(&newAlarm, client)
+	alarmId, err := (*db).AddAlarm(&newAlarm)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add alarm to db",
 		})
 		return
 	}
-	newAlarm.ID = alarmId
+	if dbConnection.UseSQLite {
+		newAlarm.SQLiteID = tools.RadixToInt(alarmId)
+	} else {
+		newAlarm.MongoID = id.IdFromString(alarmId)
+	}
 
 	added := newAlarm.ToAlarmOut()
 	go func() {
@@ -359,9 +381,9 @@ func AddAlarm(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, added)
 }
 
-func EditAlarm(c *gin.Context, client *mongo.Client) {
+func EditAlarm(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
-	userSession, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	userSession, _ := (*db).GetSessionFromHeader(c.Request)
 	if userSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -387,7 +409,7 @@ func EditAlarm(c *gin.Context, client *mongo.Client) {
 
 	editedAlarm := alarmIn.ToAlarm(userSession.UserId)
 	editedAlarm.Modified = now.Now()
-	if !mongoDB.EditAlarm(&editedAlarm, client) {
+	if !(*db).EditAlarm(&editedAlarm) {
 		c.JSON(500, gin.H{
 			"message": "Failed to edit alarm in db",
 		})
@@ -403,9 +425,9 @@ func EditAlarm(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, edited)
 }
 
-func DeleteAlarm(c *gin.Context, client *mongo.Client) {
+func DeleteAlarm(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -413,8 +435,8 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	alarmId := c.Param("id")
-	uID, _ := id.IdFromString(alarmId)
-	if !mongoDB.DeleteAlarm(uID, session.UserId, client) {
+
+	if !(*db).DeleteAlarm(alarmId, session.UserId) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete alarm from db",
 		})
@@ -430,8 +452,8 @@ func DeleteAlarm(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func IsSessionValid(c *gin.Context, client *mongo.Client) {
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+func IsSessionValid(c *gin.Context, db *database.Database) {
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -443,9 +465,9 @@ func IsSessionValid(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func GetAudioResources(c *gin.Context, client *mongo.Client, audioResources embed.FS) {
+func GetAudioResources(c *gin.Context, db *database.Database, audioResources embed.FS) {
 	//check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -501,9 +523,9 @@ func GetAudioResources(c *gin.Context, client *mongo.Client, audioResources embe
 }
 
 // serve static files
-func AudioResource(c *gin.Context, client *mongo.Client, audioResources embed.FS) {
+func AudioResource(c *gin.Context, db *database.Database, audioResources embed.FS) {
 	//check if user is logged in by getting a session from db
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -547,11 +569,11 @@ func AudioResource(c *gin.Context, client *mongo.Client, audioResources embed.FS
 	c.Data(200, contentType, fileContent)
 }
 
-func LogOut(c *gin.Context, client *mongo.Client) {
+func LogOut(c *gin.Context, db *database.Database) {
 	//check if user is logged in by getting a session from db
 	token := c.Request.Header.Get("token")
 	//fmt.Println(token)
-	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
+	session, userInSession := (*db).GetSessionFromTokenActivate(token)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -565,7 +587,7 @@ func LogOut(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//delete session from db
-	if !mongoDB.DeleteSession(token, client) {
+	if !(*db).DeleteSession(token) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete session from db",
 		})
@@ -578,7 +600,7 @@ func LogOut(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func QRLogIn(c *gin.Context, client *mongo.Client) {
+func QRLogIn(c *gin.Context, db *database.Database) {
 	//get qr code from url
 	qrToken := qr.QRIn{}
 	if err := c.ShouldBindJSON(&qrToken); err != nil {
@@ -588,7 +610,7 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//fmt.Println(qrToken)
-	qr := mongoDB.GetQrData(qrToken.QrToken, client)
+	qr := (*db).GetQrData(qrToken.QrToken)
 	if qr == nil {
 		c.JSON(404, gin.H{
 			"message": "QR not found",
@@ -608,7 +630,6 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 	}
 	//set up a new session
 	session := session.Session{
-		ID:      id.GenerateId(),
 		Time:    endTime,
 		UserId:  qr.User,
 		Token:   token.GenerateToken(token.TokenStringLength),
@@ -616,24 +637,27 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 		WsPair:  token.GenerateToken(token.WsPairLength),
 	}
 	//add session to db
-	sID, err := mongoDB.AddSession(&session, client)
+	sID, err := (*db).AddSession(&session)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add session to db",
 		})
 		return
 	}
-	session.ID = sID
+	if dbConnection.UseSQLite {
+		session.SQLiteID = tools.RadixToInt(sID)
+	} else {
+		session.MongoID = id.IdFromString(sID)
+	}
 	//delete qr from db
-	if !mongoDB.DeleteQr(qr.QrToken, client) {
+	if !(*db).DeleteQr(qr.QrToken) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete qr from db",
 		})
 		return
 	}
 	//get user from db
-	uID, _ := id.IdFromString(session.UserId)
-	user := mongoDB.GetUserFromID(uID, client)
+	user := (*db).GetUserFromID(session.UserId)
 	if user == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -659,9 +683,9 @@ func QRLogIn(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, login)
 }
 
-func GetQRToken(c *gin.Context, client *mongo.Client) {
+func GetQRToken(c *gin.Context, db *database.Database) {
 	//check session
-	session, _ := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -675,7 +699,7 @@ func GetQRToken(c *gin.Context, client *mongo.Client) {
 		User:    session.UserId,
 		QrToken: qrToken,
 	}
-	if !mongoDB.AddQr(&qr, client) {
+	if !(*db).AddQr(&qr) {
 		c.JSON(500, gin.H{
 			"message": "Failed to add qr to db",
 		})
@@ -684,15 +708,15 @@ func GetQRToken(c *gin.Context, client *mongo.Client) {
 	go func() {
 		//delete qr from db after 25 seconds
 		time.Sleep(26 * time.Second)
-		mongoDB.DeleteQr(qrToken, client)
+		(*db).DeleteQr(qrToken)
 	}()
 	c.JSON(200, gin.H{
 		"qrToken": qrToken,
 	})
 }
 
-func AdminLogIn(c *gin.Context, client *mongo.Client) {
-	session, user := mongoDB.GetSessionFromHeader(c.Request, client)
+func AdminLogIn(c *gin.Context, db *database.Database) {
+	session, user := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -729,14 +753,14 @@ func AdminLogIn(c *gin.Context, client *mongo.Client) {
 	}
 	//create admin using Admin struct
 	adminSession := admin.Admin{
-		ID:     id.GenerateId(),
 		Token:  token.GenerateToken(128),
-		UserId: user.ID.Hex(),
+		UserId: user.MongoID.Hex(),
 		//add 10 minutes to now in ms
 		Time: now.Now() + 600000,
 	}
+
 	//add admin to db
-	if !mongoDB.AddAdminSession(&adminSession, client) {
+	if !(*db).AddAdminSession(&adminSession) {
 		c.JSON(500, gin.H{
 			"message": "Failed to add admin to db",
 		})
@@ -745,7 +769,7 @@ func AdminLogIn(c *gin.Context, client *mongo.Client) {
 	go func() {
 		//delete admin from db after 10 minutes
 		time.Sleep(601 * time.Second)
-		mongoDB.DeleteAdminSession(adminSession.Token, client)
+		(*db).DeleteAdminSession(adminSession.Token)
 	}()
 	adminCreds := admin.AdminData{
 		AdminToken: adminSession.Token,
@@ -755,8 +779,8 @@ func AdminLogIn(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, adminCreds)
 }
 
-func GetUsers(c *gin.Context, client *mongo.Client) {
-	adminSession, _ := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+func GetUsers(c *gin.Context, db *database.Database) {
+	adminSession, _ := (*db).GetAdminSessionFromHeader(c.Request)
 	if adminSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -764,7 +788,7 @@ func GetUsers(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//get users from db
-	users := mongoDB.GetUsers(client)
+	users := (*db).GetUsers()
 	//convert users to []UserOut
 	usersOut := []user.UserOut{}
 	for _, user := range users {
@@ -775,8 +799,8 @@ func GetUsers(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, usersOut)
 }
 
-func UserEdit(c *gin.Context, client *mongo.Client) {
-	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+func UserEdit(c *gin.Context, db *database.Database) {
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -846,7 +870,6 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 		passwordHash = passwordHashed
 	}
 	user := user.User{
-		ID:         userInSession.ID,
 		Email:      editUser.Email,
 		Password:   passwordHash,
 		ScreenName: editUser.ScreenName,
@@ -858,7 +881,12 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 		Activate:   userInSession.Activate,
 		Registered: userInSession.Registered,
 	}
-	updated := mongoDB.UpdateUser(&user, client)
+	if dbConnection.UseSQLite {
+		user.SQLiteID = userInSession.SQLiteID
+	} else {
+		user.MongoID = userInSession.MongoID
+	}
+	updated := (*db).UpdateUser(&user)
 	if !updated {
 		c.JSON(500, gin.H{
 			"message": "Failed to update user",
@@ -870,7 +898,7 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 		//marshal out to json
 		userOut := wsOut.WsOut{Type: "userEdit", Data: out}
 		outJson, _ := json.Marshal(userOut)
-		wshandler.WsServing.ServeMessage(user.ID.Hex(), session.WsToken, []byte(outJson))
+		wshandler.WsServing.ServeMessage(user.MongoID.Hex(), session.WsToken, []byte(outJson))
 	}()
 
 	//return message success
@@ -879,8 +907,8 @@ func UserEdit(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func EditUserState(c *gin.Context, client *mongo.Client) {
-	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+func EditUserState(c *gin.Context, db *database.Database) {
+	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
 	if adminSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -902,9 +930,8 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//get user by id
-	uID, _ := id.IdFromString(userID)
 
-	userEdit := mongoDB.GetUserFromID(uID, client)
+	userEdit := (*db).GetUserFromID(userID)
 	if userEdit == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -919,15 +946,17 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//check if userInSession has same id as user and return unauthorized if it is
-	if userInSession.ID.Hex() == userEdit.ID.Hex() {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-		return
+	var uID string
+	if dbConnection.UseSQLite {
+		uID = tools.IntToRadix(userEdit.SQLiteID)
+
+	} else {
+		uID = userEdit.MongoID.Hex()
 	}
+
 	userEdit.Admin = adminRequest.Admin
 	userEdit.Active = adminRequest.Active
-	updated := mongoDB.UpdateUser(userEdit, client)
+	updated := (*db).UpdateUser(userEdit)
 	if !updated {
 		c.JSON(500, gin.H{
 			"message": "Failed to update user",
@@ -940,12 +969,12 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 		outUser := userEdit.ToUserOut()
 		userOut := wsOut.WsOut{Type: "userEdit", Data: outUser}
 		outJson, _ := json.Marshal(userOut)
-		wshandler.WsServing.ServeMessage(userEdit.ID.Hex(), string("all"), []byte(outJson))
+		wshandler.WsServing.ServeMessage(uID, string("all"), []byte(outJson))
 	}()
 
 	//if edited user is remove all sessions from db
 	if !adminRequest.Active {
-		if !mongoDB.DeleteUserSessions(userEdit.ID, client) {
+		if !(*db).DeleteUserSessions(uID) {
 			c.JSON(500, gin.H{
 				"message": "Failed to delete user sessions",
 			})
@@ -953,7 +982,7 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 		}
 	}
 	//return list of users
-	users := mongoDB.GetUsers(client)
+	users := (*db).GetUsers()
 	//convert users to []UserOut
 	usersOut := []user.UserOut{}
 	for _, user := range users {
@@ -964,8 +993,8 @@ func EditUserState(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, usersOut)
 }
 
-func RemoveUser(c *gin.Context, client *mongo.Client) {
-	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+func RemoveUser(c *gin.Context, db *database.Database) {
+	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
 	if adminSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -980,14 +1009,8 @@ func RemoveUser(c *gin.Context, client *mongo.Client) {
 	}
 	userID := c.Param("id")
 	//get user by id
-	uID, err := id.IdFromString(userID)
-	if err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
-		return
-	}
-	userEdit := mongoDB.GetUserFromID(uID, client)
+
+	userEdit := (*db).GetUserFromID(userID)
 	if userEdit == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -1002,28 +1025,37 @@ func RemoveUser(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//check if userInSession has same id as user and return unauthorized if it is
-	if userInSession.ID.Hex() == userEdit.ID.Hex() {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-		return
-	}
+	// if userInSession.ID.Hex() == userEdit.ID.Hex() {
+	// 	c.JSON(401, gin.H{
+	// 		"message": "Unauthorized",
+	// 	})
+	// 	return
+	// }
 	//delete user from db
-	if !mongoDB.RemoveUser(userEdit.ID, client) {
+	//get id from UseSQLite
+	var uID string
+	if dbConnection.UseSQLite {
+		uID = tools.IntToRadix(userEdit.SQLiteID)
+
+	} else {
+		uID = userEdit.MongoID.Hex()
+	}
+
+	if !(*db).DeleteUser(uID) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete user",
 		})
 		return
 	}
 	//delete all user sessions from db
-	if !mongoDB.DeleteUserSessions(userEdit.ID, client) {
+	if !(*db).DeleteUserSessions(uID) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete user sessions",
 		})
 		return
 	}
 	//return message success
-	users := mongoDB.GetUsers(client)
+	users := (*db).GetUsers()
 	//convert users to []UserOut
 	usersOut := []user.UserOut{}
 	for _, user := range users {
@@ -1034,9 +1066,9 @@ func RemoveUser(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, usersOut)
 }
 
-func RefreshToken(c *gin.Context, client *mongo.Client) {
+func RefreshToken(c *gin.Context, db *database.Database) {
 	//get session from header
-	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1059,7 +1091,7 @@ func RefreshToken(c *gin.Context, client *mongo.Client) {
 	appconfig.AppConfigurationMutex.Unlock()
 	session.Time = now.Now() + int64(sessionLength)
 	//update session in db
-	if !mongoDB.UpdateSession(session, client) {
+	if !(*db).UpdateSession(session) {
 		c.JSON(500, gin.H{
 			"message": "Failed to update session",
 		})
@@ -1075,7 +1107,7 @@ func RefreshToken(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, refresh)
 }
 
-func RegisterUser(c *gin.Context, client *mongo.Client) {
+func RegisterUser(c *gin.Context, db *database.Database) {
 	registerRequest := register.RegisterRequest{}
 	if err := c.ShouldBindJSON(&registerRequest); err != nil {
 		c.JSON(400, gin.H{
@@ -1105,7 +1137,7 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//check if email is already in use
-	if mongoDB.CheckEmail(registerRequest.Email, client) {
+	if (*db).CheckEmail(registerRequest.Email) {
 		c.JSON(400, gin.H{
 			"message": "Email already in use",
 		})
@@ -1143,7 +1175,7 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 	}
 
 	//create user using User struct
-	ownerAdmin := mongoDB.CountUsers(client) == 0
+	ownerAdmin := (*db).CountUsers() == 0
 	user := user.User{
 		Email:      registerRequest.Email,
 		Password:   passwordHashed,
@@ -1175,13 +1207,14 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 			sent := emailer.SendEmail(&emailMsg)
 			if !sent {
 				emailMsg.Success = false
-				mongoDB.StoreEmail(emailMsg, client)
+				(*db).StoreEmail(emailMsg)
 			}
 		}()
 	}
 
 	//add user to db
-	uID, err := mongoDB.AddUser(&user, client)
+	//fmt.Println("adding user to db", user)
+	_, err = (*db).AddUser(&user)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"message": "Failed to add user to db",
@@ -1189,16 +1222,14 @@ func RegisterUser(c *gin.Context, client *mongo.Client) {
 		return
 	}
 
-	user.ID = uID
-
 	c.JSON(200, gin.H{
 		"message": "User registered",
 	})
 }
 
-func GetUser(c *gin.Context, client *mongo.Client) {
+func GetUser(c *gin.Context, db *database.Database) {
 	//get user from header
-	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1210,8 +1241,15 @@ func GetUser(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
+	var uID string
+	if dbConnection.UseSQLite {
+		uID = tools.IntToRadix(userInSession.SQLiteID)
+	} else {
+		uID = userInSession.MongoID.Hex()
+	}
+
 	//get user from db
-	user := mongoDB.GetUserFromID(userInSession.ID, client)
+	user := (*db).GetUserFromID(uID)
 	if user == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -1223,9 +1261,9 @@ func GetUser(c *gin.Context, client *mongo.Client) {
 }
 
 // update WsToKen in session
-func UpdateWsToken(c *gin.Context, client *mongo.Client) {
+func UpdateWsToken(c *gin.Context, db *database.Database) {
 	//get session from header
-	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1241,7 +1279,7 @@ func UpdateWsToken(c *gin.Context, client *mongo.Client) {
 	newWsToken := token.GenerateToken(66)
 	session.WsToken = newWsToken
 	//update session in db
-	if !mongoDB.UpdateSession(session, client) {
+	if !(*db).UpdateSession(session) {
 		c.JSON(500, gin.H{
 			"message": "Failed to update session",
 		})
@@ -1253,9 +1291,9 @@ func UpdateWsToken(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func GetUpdate(c *gin.Context, client *mongo.Client) {
+func GetUpdate(c *gin.Context, db *database.Database) {
 	//get session from header
-	session, userInSession := mongoDB.GetSessionFromHeader(c.Request, client)
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1268,14 +1306,14 @@ func GetUpdate(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//get update from db
-	alarms := mongoDB.GetUserAlarms(session.UserId, client)
+	alarms := (*db).GetUserAlarms(session.UserId)
 	if alarms == nil {
 		c.JSON(404, gin.H{
 			"message": "Alarms not found",
 		})
 		return
 	}
-	devices := mongoDB.GetDevices(session.UserId, client)
+	devices := (*db).GetDevices(session.UserId)
 	if devices == nil {
 		c.JSON(404, gin.H{
 			"message": "Devices not found",
@@ -1305,7 +1343,7 @@ func GetUpdate(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, update)
 }
 
-func ActivateAccount(c *gin.Context, client *mongo.Client) {
+func ActivateAccount(c *gin.Context, db *database.Database) {
 	//activate?verification=${verification}&captcha=${captchaResp}&accepted=${accepted}
 	//sleep 100 milliseconds
 	time.Sleep(100 * time.Millisecond)
@@ -1336,7 +1374,7 @@ func ActivateAccount(c *gin.Context, client *mongo.Client) {
 		})
 		return
 	}
-	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
+	session, userInSession := (*db).GetSessionFromTokenActivate(token)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1368,7 +1406,7 @@ func ActivateAccount(c *gin.Context, client *mongo.Client) {
 	//set activate to empty string
 	userInSession.Activate = ""
 	//update user in db
-	if !mongoDB.UpdateUser(userInSession, client) {
+	if !(*db).UpdateUser(userInSession) {
 		c.JSON(500, gin.H{
 			"message": "Failed to update user",
 		})
@@ -1380,11 +1418,11 @@ func ActivateAccount(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func ForgotPassword(c *gin.Context, client *mongo.Client) {
+func ForgotPassword(c *gin.Context, db *database.Database) {
 	//get get email from params
 	emailAddress := c.Param("email")
 	//get user from email from db
-	user := mongoDB.GetUserFromEmail(emailAddress, client)
+	user := (*db).GetUserFromEmail(emailAddress)
 	if user == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -1397,7 +1435,7 @@ func ForgotPassword(c *gin.Context, client *mongo.Client) {
 	user.PasswordResetToken = resetToken[0:18]
 	user.PasswordResetRequestTime = now.Now()
 	//update user in db
-	if !mongoDB.UpdateUser(user, client) {
+	if !(*db).UpdateUser(user) {
 		c.JSON(500, gin.H{
 			"message": "Failed to update user",
 		})
@@ -1419,7 +1457,7 @@ func ForgotPassword(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func ResetPassword(c *gin.Context, client *mongo.Client) {
+func ResetPassword(c *gin.Context, db *database.Database) {
 	//get reset token and email from json
 	reset := user.ResetPasswordRequest{}
 	if err := c.ShouldBindJSON(&reset); err != nil {
@@ -1429,7 +1467,7 @@ func ResetPassword(c *gin.Context, client *mongo.Client) {
 		return
 	}
 	//get user from email from db
-	userToEdit := mongoDB.GetUserFromEmail(reset.Email, client)
+	userToEdit := (*db).GetUserFromEmail(reset.Email)
 	if userToEdit == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -1497,7 +1535,7 @@ func ResetPassword(c *gin.Context, client *mongo.Client) {
 	}
 	userToEdit.Password = passwordHashed
 	//update user in db
-	if !mongoDB.UpdateUser(userToEdit, client) {
+	if !(*db).UpdateUser(userToEdit) {
 		c.JSON(500, gin.H{
 			"message": "Failed to update user",
 		})
@@ -1509,7 +1547,7 @@ func ResetPassword(c *gin.Context, client *mongo.Client) {
 	})
 }
 
-func StoreServerConfig(c *gin.Context, client *mongo.Client) {
+func StoreServerConfig(c *gin.Context, db *database.Database) {
 	//get original config from appconfig module
 	originalConfig, err := appconfig.GetConfig()
 	if err != nil {
@@ -1533,7 +1571,7 @@ func StoreServerConfig(c *gin.Context, client *mongo.Client) {
 
 }
 
-func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
+func GetActivationCaptcha(c *gin.Context, db *database.Database) {
 	time.Sleep(250 * time.Millisecond)
 	token := c.Request.Header.Get("token")
 	//check if token is in tokenCaptchaMap
@@ -1549,7 +1587,7 @@ func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
 	}
 
 	//fmt.Println(token)
-	session, userInSession := mongoDB.GetSessionFromTokenActivate(token, client)
+	session, userInSession := (*db).GetSessionFromTokenActivate(token)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1582,9 +1620,9 @@ func GetActivationCaptcha(c *gin.Context, client *mongo.Client) {
 	c.Data(200, "image/png", imageBytes)
 }
 
-func GetOwnerSettings(c *gin.Context, client *mongo.Client) {
+func GetOwnerSettings(c *gin.Context, db *database.Database) {
 	//get admin session from header
-	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
 	if adminSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1607,9 +1645,9 @@ func GetOwnerSettings(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, config)
 }
 
-func SetOwnerSettings(c *gin.Context, client *mongo.Client) {
+func SetOwnerSettings(c *gin.Context, db *database.Database) {
 	//get admin session from header
-	adminSession, userInSession := mongoDB.GetAdminSessionFromHeader(c.Request, client)
+	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
 	if adminSession == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
@@ -1649,10 +1687,10 @@ func SetOwnerSettings(c *gin.Context, client *mongo.Client) {
 	c.JSON(200, app)
 }
 
-func ResendActivation(c *gin.Context, client *mongo.Client) {
+func ResendActivation(c *gin.Context, db *database.Database) {
 	emailActivate := c.Param("email")
 	//check that user is not active
-	user := mongoDB.GetUserFromEmail(emailActivate, client)
+	user := (*db).GetUserFromEmail(emailActivate)
 	if user == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -1683,7 +1721,7 @@ func ResendActivation(c *gin.Context, client *mongo.Client) {
 		sent := emailer.SendEmail(&emailMsg)
 		if !sent {
 			emailMsg.Success = false
-			mongoDB.StoreEmail(emailMsg, client)
+			(*db).StoreEmail(emailMsg)
 		}
 	}()
 	//return message success

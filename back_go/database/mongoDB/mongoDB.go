@@ -2,6 +2,7 @@ package mongoDB
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -31,10 +32,16 @@ const (
 	EMAILCOLL   = "emails"
 )
 
+type MongoDB struct {
+	// Include any necessary fields for the MongoDB adapter.
+	// For example, the MongoDB client or collection.
+	connection *mongo.Client
+}
+
 // generate indexes for collections
-func GenerateIndexes(client *mongo.Client) {
+func (m *MongoDB) GenerateIndexes() {
 	//generate indexes for users
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	//generate index for email
 	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys:    bson.M{"email": 1, "_id": 1},
@@ -42,7 +49,7 @@ func GenerateIndexes(client *mongo.Client) {
 	})
 
 	//switch to sessions
-	collection = client.Database(DB_NAME).Collection(SESSIONCOLL)
+	collection = m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	//generate index for token
 	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys:    bson.M{"token": 1},
@@ -54,7 +61,7 @@ func GenerateIndexes(client *mongo.Client) {
 		Options: options.Index().SetUnique(true),
 	})
 	//switch to alarms
-	collection = client.Database(DB_NAME).Collection(ALARMCOLL)
+	collection = m.connection.Database(DB_NAME).Collection(ALARMCOLL)
 	//generate index for user and id
 	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys:    bson.M{"user": 1},
@@ -70,7 +77,7 @@ func GenerateIndexes(client *mongo.Client) {
 		Options: options.Index().SetUnique(true),
 	})
 	//switch to devices
-	collection = client.Database(DB_NAME).Collection(DEVICECOLL)
+	collection = m.connection.Database(DB_NAME).Collection(DEVICECOLL)
 	//generate index for user and id
 	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys:    bson.M{"user": 1},
@@ -82,32 +89,39 @@ func GenerateIndexes(client *mongo.Client) {
 	})
 }
 
-func Connect(uri string) *mongo.Client {
+func (m *MongoDB) Connect(uri string) interface{} {
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
 	}
-	go GenerateIndexes(client)
-	return client
+	m.connection = client
+	go m.GenerateIndexes()
+	m.connection = client
+	return *m
 }
+
+func (m *MongoDB) Disconnect() error {
+	return m.connection.Disconnect(context.Background())
+}
+
 func GetTokenFromHeader(req *http.Request) string {
 	token := req.Header.Get("token")
 	return token
 }
 
-func GetSessionFromToken(token string, client *mongo.Client) (*session.Session, *user.User) {
+func (m *MongoDB) GetSessionFromToken(token string) (*session.Session, *user.User) {
 	session := &session.Session{}
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"token": token}).Decode(&session)
 	if err != nil {
 		return nil, nil
 	}
-	uID, err := id.IdFromString(session.UserId)
+	uID := id.IdFromString(session.UserId)
 	if err != nil {
 		return nil, nil
 	}
 
-	userInSession := GetUserFromID(uID, client)
+	userInSession := m.GetUserFromID(uID.Hex())
 	//fmt.Println("User in session: ", userInSession)
 	if userInSession == nil {
 		return nil, nil
@@ -120,20 +134,17 @@ func GetSessionFromToken(token string, client *mongo.Client) (*session.Session, 
 	return session, userInSession
 }
 
-func GetSessionFromTokenActivate(token string, client *mongo.Client) (*session.Session, *user.User) {
+func (m *MongoDB) GetSessionFromTokenActivate(token string) (*session.Session, *user.User) {
 	session := &session.Session{}
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"token": token}).Decode(&session)
 	//fmt.Println("Session check: ", session, token)
 	if err != nil {
 		return nil, nil
 	}
-	uID, err := id.IdFromString(session.UserId)
-	if err != nil {
-		return nil, nil
-	}
+	uID := id.IdFromString(session.UserId)
 
-	userInSession := GetUserFromID(uID, client)
+	userInSession := m.GetUserFromID(uID.Hex())
 	//fmt.Println("User in session: ", userInSession)
 	if userInSession == nil {
 		return nil, nil
@@ -142,8 +153,8 @@ func GetSessionFromTokenActivate(token string, client *mongo.Client) (*session.S
 	return session, userInSession
 }
 
-func DeleteSession(token string, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+func (m *MongoDB) DeleteSession(token string) bool {
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	res, err := collection.DeleteOne(context.Background(), bson.M{"token": token})
 	if err != nil {
 		return false
@@ -154,32 +165,28 @@ func DeleteSession(token string, client *mongo.Client) bool {
 	return true
 }
 
-func GetSession(token string, client *mongo.Client) (*session.Session, *user.User) {
+func (m *MongoDB) GetSession(token string) (*session.Session, *user.User) {
 	session := &session.Session{}
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"token": token}).Decode(&session)
 	//fmt.Println("Session check: ", session, token)
 	//fmt.Println("Session check error: ", err)
 	if err != nil {
-		DeleteSession(token, client)
+		m.DeleteSession(token)
 		return nil, nil
 	}
 	//fmt.Println("Session check: ", session, token)
 
 	if session.Time < time.Now().UnixMilli() {
-		DeleteSession(token, client)
+		m.DeleteSession(token)
 		return nil, nil
 	}
-	uID, err := id.IdFromString(session.UserId)
-	if err != nil {
-		DeleteSession(token, client)
-		return nil, nil
-	}
+	uID := id.IdFromString(session.UserId)
 
-	user := GetUserFromID(uID, client)
+	user := m.GetUserFromID(uID.Hex())
 	//fmt.Println("User check: ", user)
 	if user == nil {
-		DeleteSession(token, client)
+		m.DeleteSession(token)
 		return nil, nil
 	}
 	//check if user is active
@@ -190,15 +197,15 @@ func GetSession(token string, client *mongo.Client) (*session.Session, *user.Use
 
 	return session, user
 }
-func GetSessionFromHeader(req *http.Request, client *mongo.Client) (*session.Session, *user.User) {
+func (m *MongoDB) GetSessionFromHeader(req *http.Request) (*session.Session, *user.User) {
 	token := GetTokenFromHeader(req)
 	//fmt.Println("Token: ", token)
-	return GetSession(token, client)
+	return m.GetSession(token)
 }
 
-func GetUserFromSession(session *session.Session, client *mongo.Client) *user.User {
+func (m *MongoDB) GetUserFromSession(session *session.Session) *user.User {
 	user := &user.User{}
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"_id": session.UserId}).Decode(&user)
 	if err != nil {
 		return nil
@@ -206,9 +213,9 @@ func GetUserFromSession(session *session.Session, client *mongo.Client) *user.Us
 	return user
 }
 
-func GetUserAlarms(userID string, client *mongo.Client) []*alarm.Alarm {
+func (m *MongoDB) GetUserAlarms(userID string) []*alarm.Alarm {
 	alarms := []*alarm.Alarm{}
-	collection := client.Database(DB_NAME).Collection(ALARMCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(ALARMCOLL)
 	cursor, err := collection.Find(context.Background(), bson.M{"user": userID})
 	if err != nil {
 		return nil
@@ -217,7 +224,7 @@ func GetUserAlarms(userID string, client *mongo.Client) []*alarm.Alarm {
 		alarm := &alarm.Alarm{}
 		err := cursor.Decode(&alarm)
 		if err != nil {
-			go DeleteAlarm(alarm.ID, userID, client)
+			go m.DeleteAlarm(alarm.MongoID.Hex(), userID)
 			continue
 		}
 		alarms = append(alarms, alarm)
@@ -225,9 +232,9 @@ func GetUserAlarms(userID string, client *mongo.Client) []*alarm.Alarm {
 	return alarms
 }
 
-func GetDevices(userID string, client *mongo.Client) []*device.Device {
+func (m *MongoDB) GetDevices(userID string) []*device.Device {
 	devices := []*device.Device{}
-	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
+	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
 	cursor, err := collection.Find(context.Background(), bson.M{"user": userID})
 	if err != nil {
 		return nil
@@ -236,7 +243,7 @@ func GetDevices(userID string, client *mongo.Client) []*device.Device {
 		device := &device.Device{}
 		err := cursor.Decode(&device)
 		if err != nil {
-			go DeleteDevice(device.ID, userID, client)
+			go m.DeleteDevice(device.MongoID.Hex(), userID)
 			continue
 		}
 		devices = append(devices, device)
@@ -244,8 +251,8 @@ func GetDevices(userID string, client *mongo.Client) []*device.Device {
 	return devices
 }
 
-func AddAlarm(alarm *alarm.Alarm, client *mongo.Client) (primitive.ObjectID, error) {
-	collection := client.Database(DB_NAME).Collection(ALARMCOLL)
+func (m *MongoDB) AddAlarm(alarm *alarm.Alarm) (string, error) {
+	collection := m.connection.Database(DB_NAME).Collection(ALARMCOLL)
 	//insert alarm and get id
 
 	insert, err := collection.InsertOne(context.Background(), alarm)
@@ -253,103 +260,112 @@ func AddAlarm(alarm *alarm.Alarm, client *mongo.Client) (primitive.ObjectID, err
 		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID, err
+	return insertedID.Hex(), err
 }
 
-func EditAlarm(alarm *alarm.Alarm, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(ALARMCOLL)
+func (m *MongoDB) EditAlarm(alarm *alarm.Alarm) bool {
+	collection := m.connection.Database(DB_NAME).Collection(ALARMCOLL)
 	//replace alarm by alarm id and user id
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": alarm.ID, "user": alarm.User}, alarm)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": alarm.MongoID, "user": alarm.User}, alarm)
 
 	return err == nil
 }
 
-func EditDevice(device *device.Device, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
+func (m *MongoDB) EditDevice(device *device.Device) bool {
+	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
 	//_, err := collection.UpdateOne(context.Background(), bson.M{"_id": device.ID, "user": device.User}, bson.M{"$set": device})
 	//replace device
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": device.ID, "user": device.User}, device)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": device.MongoID, "user": device.User}, device)
 	return err == nil
 }
 
-func DeleteAlarm(alarmID primitive.ObjectID, userID string, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(ALARMCOLL)
-	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": alarmID, "user": userID})
+func (m *MongoDB) DeleteAlarm(alarmID string, userID string) bool {
+	//convert alarmID to primitive.ObjectID
+	alarmIDObj := id.IdFromString(alarmID)
+
+	collection := m.connection.Database(DB_NAME).Collection(ALARMCOLL)
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": alarmIDObj, "user": userID})
 	return err == nil
 }
 
-func DeleteDevice(deviceID primitive.ObjectID, userID string, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
-	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": deviceID, "user": userID})
+func (m *MongoDB) DeleteDevice(deviceID string, userID string) bool {
+	//convert deviceID to primitive.ObjectID
+	deviceIDObj := id.IdFromString(deviceID)
+	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": deviceID, "user": deviceIDObj})
 	return err == nil
 }
 
-func GetUserFromEmail(email string, client *mongo.Client) *user.User {
+func (m *MongoDB) GetUserFromEmail(email string) *user.User {
 	user := &user.User{}
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"email": email}).Decode(&user)
 	if err != nil {
+		fmt.Println("Error: ", err)
 		return nil
 	}
 	return user
 }
 
-func AddSession(session *session.Session, client *mongo.Client) (primitive.ObjectID, error) {
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+func (m *MongoDB) AddSession(session *session.Session) (string, error) {
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	//insert session and get id
 	insert, err := collection.InsertOne(context.Background(), session)
 	if err != nil {
 		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID, err
+	return insertedID.Hex(), err
 }
 
-func AddDevice(device *device.Device, client *mongo.Client) (primitive.ObjectID, error) {
-	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
+func (m *MongoDB) AddDevice(device *device.Device) (string, error) {
+	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
 	//insert device and get id
 	insert, err := collection.InsertOne(context.Background(), device)
 	if err != nil {
 		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID, err
+	return insertedID.Hex(), err
 }
 
-func AddQr(qr *qr.QR, client *mongo.Client) bool {
-	RemoveExpiredQr(client)
+func (m *MongoDB) AddQr(qr *qr.QR) bool {
+	m.RemoveExpiredQr()
 	//fmt.Println("Adding qr: ", qr)
-	collection := client.Database(DB_NAME).Collection(QRCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(QRCOLL)
 	//insert qr and expire it after 5 minutes
 	_, err := collection.InsertOne(context.Background(), qr)
 	return err == nil
 }
 
-func DeleteQr(token string, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(QRCOLL)
+func (m *MongoDB) DeleteQr(token string) bool {
+	collection := m.connection.Database(DB_NAME).Collection(QRCOLL)
 	_, err := collection.DeleteOne(context.Background(), bson.M{"qr_token": token})
 	return err == nil
 }
 
-func GetQrData(token string, client *mongo.Client) *qr.QR {
+func (m *MongoDB) GetQrData(token string) *qr.QR {
 	qr := &qr.QR{}
-	collection := client.Database(DB_NAME).Collection(QRCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(QRCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"qr_token": token}).Decode(&qr)
 	if err != nil {
 		return nil
 	}
 	//check if qr is expired
 	if qr.Time < time.Now().UnixMilli() {
-		go DeleteQr(token, client)
+		go m.DeleteQr(token)
 		return nil
 	}
 	return qr
 }
 
-func GetUserFromID(userID primitive.ObjectID, client *mongo.Client) *user.User {
+func (m *MongoDB) GetUserFromID(userID string) *user.User {
+	//convert userID to primitive.ObjectID
+	userIDObj := id.IdFromString(userID)
+
 	user := &user.User{}
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
-	err := collection.FindOne(context.Background(), bson.M{"_id": userID}).Decode(&user)
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
+	err := collection.FindOne(context.Background(), bson.M{"_id": userIDObj}).Decode(&user)
 	//fmt.Println("User :  __ ", user, userID)
 	if err != nil {
 		return nil
@@ -357,9 +373,9 @@ func GetUserFromID(userID primitive.ObjectID, client *mongo.Client) *user.User {
 	return user
 }
 
-func GetUserFromActivation(email string, activate string, client *mongo.Client) *user.User {
+func (m *MongoDB) GetUserFromActivation(email string, activate string) *user.User {
 	user := &user.User{}
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"email": email, "activate": activate}).Decode(&user)
 	if err != nil {
 		return nil
@@ -367,49 +383,49 @@ func GetUserFromActivation(email string, activate string, client *mongo.Client) 
 	return user
 }
 
-func RemoveExpiredQr(client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(QRCOLL)
+func (m *MongoDB) RemoveExpiredQr() bool {
+	collection := m.connection.Database(DB_NAME).Collection(QRCOLL)
 	_, err := collection.DeleteMany(context.Background(), bson.M{"time": bson.M{"$lt": time.Now().UnixMilli()}})
 	return err == nil
 }
 
-func AddAdminSession(admin *admin.Admin, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(ADMINCOLL)
+func (m *MongoDB) AddAdminSession(admin *admin.Admin) bool {
+	collection := m.connection.Database(DB_NAME).Collection(ADMINCOLL)
 	_, err := collection.InsertOne(context.Background(), admin)
 	return err == nil
 }
 
-func DeleteAdminSession(token string, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(ADMINCOLL)
+func (m *MongoDB) DeleteAdminSession(token string) bool {
+	collection := m.connection.Database(DB_NAME).Collection(ADMINCOLL)
 	_, err := collection.DeleteOne(context.Background(), bson.M{"token": token})
 	return err == nil
 }
 
-func GetAdminSession(token string, user_admin user.User, client *mongo.Client) *admin.Admin {
+func (m *MongoDB) GetAdminSession(token string, user_admin user.User) *admin.Admin {
 	admin := &admin.Admin{}
-	collection := client.Database(DB_NAME).Collection(ADMINCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(ADMINCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"token": token}).Decode(&admin)
 	if err != nil {
 		return nil
 	}
 	//check if admin session is expired
 	if admin.Time < time.Now().UnixMilli() {
-		go DeleteAdminSession(token, client)
+		go m.DeleteAdminSession(token)
 		return nil
 	}
 	if !user_admin.Active || !user_admin.Admin {
-		go DeleteAdminSession(token, client)
+		go m.DeleteAdminSession(token)
 		return nil
 	}
 	return admin
 }
 
-func GetAdminSessionFromHeader(req *http.Request, client *mongo.Client) (*admin.Admin, *user.User) {
+func (m *MongoDB) GetAdminSessionFromHeader(req *http.Request) (*admin.Admin, *user.User) {
 	token := GetTokenFromHeader(req)
 	//get AdminToken from header json
 	adminToken := req.Header.Get("adminToken")
 	//get session
-	session, user := GetSession(token, client)
+	session, user := m.GetSession(token)
 	//if session is not found return nil
 	//fmt.Println("Session: ", session, "User: ", user)
 
@@ -417,7 +433,7 @@ func GetAdminSessionFromHeader(req *http.Request, client *mongo.Client) (*admin.
 		return nil, nil
 	}
 	//get admin session
-	adminSession := GetAdminSession(adminToken, *user, client)
+	adminSession := m.GetAdminSession(adminToken, *user)
 	//if admin session is not found return nil
 	if adminSession == nil {
 		return nil, nil
@@ -425,9 +441,9 @@ func GetAdminSessionFromHeader(req *http.Request, client *mongo.Client) (*admin.
 	return adminSession, user
 }
 
-func GetUsers(client *mongo.Client) []*user.User {
+func (m *MongoDB) GetUsers() []*user.User {
 	users := []*user.User{}
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	cursor, err := collection.Find(context.Background(), bson.M{})
 	if err != nil {
 		return nil
@@ -443,36 +459,42 @@ func GetUsers(client *mongo.Client) []*user.User {
 	return users
 }
 
-func UpdateUser(user *user.User, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+func (m *MongoDB) UpdateUser(user *user.User) bool {
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	// replace user
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": user.ID}, user)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": user.MongoID}, user)
 	//_, err := collection.UpdateOne(context.Background(), bson.M{"_id": user.ID}, bson.M{"$set": user})
 	return err == nil
 }
 
-func DeleteUserSessions(userID primitive.ObjectID, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
-	_, err := collection.DeleteMany(context.Background(), bson.M{"user_id": userID})
+func (m *MongoDB) DeleteUserSessions(userID string) bool {
+	//convert userID to primitive.ObjectID
+	userIDObj := id.IdFromString(userID)
+
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
+	_, err := collection.DeleteMany(context.Background(), bson.M{"user_id": userIDObj})
 	return err == nil
 }
 
-func RemoveUser(userID primitive.ObjectID, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
-	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": userID})
+func (m *MongoDB) DeleteUser(userID string) bool {
+	//convert userID to primitive.ObjectID
+	userIDObj := id.IdFromString(userID)
+
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": userIDObj})
 	return err == nil
 }
 
-func UpdateSession(session *session.Session, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+func (m *MongoDB) UpdateSession(session *session.Session) bool {
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	//replace session by session id and user id
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": session.ID, "user_id": session.UserId}, session)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": session.MongoID, "user_id": session.UserId}, session)
 	return err == nil
 }
 
 // count number of users
-func CountUsers(client *mongo.Client) int64 {
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+func (m *MongoDB) CountUsers() int64 {
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	count, err := collection.CountDocuments(context.Background(), bson.M{})
 	if err != nil {
 		return 0
@@ -481,20 +503,20 @@ func CountUsers(client *mongo.Client) int64 {
 }
 
 // add user to db
-func AddUser(user *user.User, client *mongo.Client) (primitive.ObjectID, error) {
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+func (m *MongoDB) AddUser(user *user.User) (string, error) {
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	//insert user and get id
 	insert, err := collection.InsertOne(context.Background(), user)
 	if err != nil {
 		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID, err
+	return insertedID.Hex(), err
 }
 
 // check if email is already in use
-func CheckEmail(email string, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+func (m *MongoDB) CheckEmail(email string) bool {
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	count, err := collection.CountDocuments(context.Background(), bson.M{"email": email})
 	if err != nil {
 		return false
@@ -504,50 +526,49 @@ func CheckEmail(email string, client *mongo.Client) bool {
 
 //get session and user  from wsToken
 
-func GetUserAndSessionFromWsToken(wsToken string, client *mongo.Client) (*session.Session, *user.User) {
+func (m *MongoDB) GetUserAndSessionFromWsToken(wsToken string) (*session.Session, *user.User) {
 	session := &session.Session{}
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"ws_token": wsToken}).Decode(&session)
 	if err != nil {
 		return nil, nil
 	}
-	uID, err := id.IdFromString(session.UserId)
-	if err != nil {
-		return nil, nil
-	}
+	uID := id.IdFromString(session.UserId)
 
-	user := GetUserFromID(uID, client)
+	user := m.GetUserFromID(uID.Hex())
 	if user == nil {
 		return nil, nil
 	}
 	return session, user
 }
 
-func GetOwnerID(client *mongo.Client) (string, error) {
+func (m *MongoDB) GetOwnerID() (string, error) {
 	user := &user.User{}
-	collection := client.Database(DB_NAME).Collection(USERCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"owner": true}).Decode(&user)
 	if err != nil {
 		return "", err
 	}
-	return user.ID.Hex(), nil
+	return user.MongoID.Hex(), nil
 }
 
-func StoreEmail(mail email.Email, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(EMAILCOLL)
+func (m *MongoDB) StoreEmail(mail email.Email) bool {
+	collection := m.connection.Database(DB_NAME).Collection(EMAILCOLL)
 	_, err := collection.InsertOne(context.Background(), mail)
 	return err == nil
 }
 
-func DeleteEmail(id primitive.ObjectID, client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(EMAILCOLL)
-	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": id})
+func (m *MongoDB) DeleteEmail(userID string) bool {
+	userIDObj := id.IdFromString(userID)
+
+	collection := m.connection.Database(DB_NAME).Collection(EMAILCOLL)
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": userIDObj})
 	return err == nil
 }
 
-func GetEmails(client *mongo.Client) []*email.Email {
+func (m *MongoDB) GetEmails() []*email.Email {
 	emails := []*email.Email{}
-	collection := client.Database(DB_NAME).Collection(EMAILCOLL)
+	collection := m.connection.Database(DB_NAME).Collection(EMAILCOLL)
 	cursor, err := collection.Find(context.Background(), bson.M{})
 	if err != nil {
 		return nil
@@ -563,16 +584,16 @@ func GetEmails(client *mongo.Client) []*email.Email {
 	return emails
 }
 
-func RemoveOldSessions(client *mongo.Client) bool {
-	collection := client.Database(DB_NAME).Collection(SESSIONCOLL)
+func (m *MongoDB) RemoveOldSessions() bool {
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	_, err := collection.DeleteMany(context.Background(), bson.M{"time": bson.M{"$lt": time.Now().UnixMilli()}})
 	return err == nil
 }
 
-func RemoveAlarmsWithNoDevices(client *mongo.Client) bool {
+func (m *MongoDB) RemoveAlarmsWithNoDevices() bool {
 	//get slice of all deviceIDs
 	deviceIDs := []string{}
-	collection := client.Database(DB_NAME).Collection(DEVICECOLL)
+	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
 	cursor, err := collection.Find(context.Background(), bson.M{})
 	if err != nil {
 		return false
@@ -583,10 +604,10 @@ func RemoveAlarmsWithNoDevices(client *mongo.Client) bool {
 		if err != nil {
 			return false
 		}
-		deviceIDs = append(deviceIDs, device.ID.Hex())
+		deviceIDs = append(deviceIDs, device.MongoID.Hex())
 	}
 	//check that alarm has at least one device
-	collection = client.Database(DB_NAME).Collection(ALARMCOLL)
+	collection = m.connection.Database(DB_NAME).Collection(ALARMCOLL)
 	_, err = collection.DeleteMany(context.Background(), bson.M{"devices": bson.M{"$nin": deviceIDs}})
 
 	return err == nil
