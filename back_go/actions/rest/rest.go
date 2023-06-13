@@ -221,19 +221,19 @@ func AddDevice(c *gin.Context, db *database.Database) {
 
 func EditDevice(c *gin.Context, db *database.Database) {
 	// check if user is logged in by getting a session from db
-	session, err := (*db).GetSessionFromHeader(c.Request)
+	session, _ := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
 		return
 	}
-	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to get session from db",
-		})
-		return
-	}
+	// if user != nil {
+	// 	c.JSON(500, gin.H{
+	// 		"message": "Failed to get session from db",
+	// 	})
+	// 	return
+	// }
 	//get device id from url
 	deviceId := c.Param("id")
 
