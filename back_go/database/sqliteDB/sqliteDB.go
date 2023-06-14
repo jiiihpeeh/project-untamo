@@ -3,12 +3,12 @@ package sqliteDB
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	//_ "github.com/mattn/go-sqlite3"
 	_ "github.com/glebarez/go-sqlite"
+	"github.com/thoas/go-funk"
 	"untamo_server.zzz/models/admin"
 	"untamo_server.zzz/models/alarm"
 	"untamo_server.zzz/models/device"
@@ -57,7 +57,7 @@ func (s *SQLiteDB) CreateTables() {
 	s.connection.Exec(query)
 
 	//create admins table
-	query = "CREATE TABLE IF NOT EXISTS admins (ID INTEGER PRIMARY KEY AUTOINCREMENT, Token TEXT, UserId TEXT, Time INTEGER)"
+	query = "CREATE TABLE IF NOT EXISTS admin (ID INTEGER PRIMARY KEY AUTOINCREMENT, Token TEXT, UserId TEXT, Time INTEGER)"
 	s.connection.Exec(query)
 
 	//create qr table
@@ -82,7 +82,7 @@ func (s *SQLiteDB) Connect(file string) interface{} {
 	if err != nil {
 		panic(err)
 	}
-	db.SetMaxOpenConns(1)
+	db.SetMaxOpenConns(6)
 	s.connection = db
 	s.CreateTables()
 	return *s
@@ -103,7 +103,7 @@ func (s *SQLiteDB) AddSession(session *session.Session) (string, error) {
 	fmt.Println("Session added: ", session)
 
 	id, _ := result.LastInsertId()
-	fmt.Println("Session added: ", id, result)
+	//fmt.Println("Session added: ", id, result)
 	return tools.IntToRadix(id), nil
 }
 
@@ -134,9 +134,7 @@ func (s *SQLiteDB) GetSession(token string) (*session.Session, *user.User) {
 		s.DeleteSession(token)
 		return nil, nil
 	}
-	///set session from row
-
-	//fmt.Println("Session check: ", session, token)
+	//set session from row
 
 	if session.Time < time.Now().UnixMilli() {
 		s.DeleteSession(token)
@@ -159,7 +157,6 @@ func (s *SQLiteDB) GetSession(token string) (*session.Session, *user.User) {
 
 func (s *SQLiteDB) GetSessionFromHeader(req *http.Request) (*session.Session, *user.User) {
 	token := GetTokenFromHeader(req)
-	//fmt.Println("Token: ", token)
 	return s.GetSession(token)
 }
 
@@ -201,11 +198,9 @@ func (s *SQLiteDB) EditAlarm(alarm *alarm.Alarm) bool {
 	// Check if the user field remains the same
 	//convert to AlarmSQL
 	alarmSql := alarm.ToSQLForm()
-	//sql, _ := json.Marshal(alarmSql)
-	//fmt.Println("AlarmSql: ", string(sql))
 	user := alarm.User
 	id := alarm.SQLiteID
-	//edit alarm based on id and user
+	//edit alarm based on ID and user
 	query := "UPDATE alarms SET Occurrence = ?, Time = ?, Weekdays = ?, Date = ?, Label = ?, Devices = ?, Snooze = ?, Tune = ?, Active = ?, User = ?, Modified = ?, Fingerprint = ?, CloseTask = ?, Offline = ? WHERE ID = ? AND User = ?"
 	_, err := s.connection.Exec(query, alarmSql.Occurrence, alarmSql.Time, alarmSql.Weekdays, alarmSql.Date, alarmSql.Label, alarmSql.Devices, alarmSql.Snooze, alarmSql.Tune, alarmSql.Active, alarmSql.User, alarmSql.Modified, alarmSql.Fingerprint, alarmSql.CloseTask, alarmSql.Offline, id, user)
 	return err == nil
@@ -217,7 +212,7 @@ func (s *SQLiteDB) DeleteAlarm(id string, userID string) bool {
 	if existingAlarm == nil || existingAlarm.User != userID {
 		return false
 	}
-	query := "DELETE FROM alarms WHERE id = ? AND user = ?"
+	query := "DELETE FROM alarms WHERE ID = ? AND user = ?"
 	_, err := s.connection.Exec(query, tools.RadixToInt(id), userID)
 
 	return err == nil
@@ -256,7 +251,7 @@ func (s *SQLiteDB) GetSessionFromToken(token string) (*session.Session, *user.Us
 	session := &session.Session{}
 	err := row.Scan(&session.SQLiteID, &session.UserId, &session.Token, &session.WsToken, &session.Time, &session.WsPair)
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
 		return nil, nil
 	}
 	userInSession := s.GetUserFromID(session.UserId)
@@ -273,7 +268,7 @@ func (s *SQLiteDB) AddUser(user *user.User) (string, error) {
 	result, err := s.connection.Exec(query, user.Email, user.FirstName, user.LastName, user.ScreenName, user.Admin, user.Owner, user.Active, user.Password, user.Activate, user.Registered, user.PasswordResetRequestTime, user.PasswordResetToken)
 
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return "", err
 	}
 	//// Get the inserted ID
@@ -333,7 +328,7 @@ func (s *SQLiteDB) GetUserAndSessionFromWsToken(wsToken string) (*session.Sessio
 }
 
 func (s *SQLiteDB) DeleteSessionByToken(token string, user string) bool {
-	query := "DELETE FROM sessions WHERE token = ? AND user_id = ?"
+	query := "DELETE FROM sessions WHERE token = ? AND userID = ?"
 	_, err := s.connection.Exec(query, token, user)
 	return err == nil
 }
@@ -379,10 +374,11 @@ func (s *SQLiteDB) GetAdminSessionFromHeader(req *http.Request) (*admin.Admin, *
 		return nil, nil
 	}
 	admin := &admin.Admin{}
-	query := "SELECT * FROM admins WHERE user_id = ?"
+	query := "SELECT * FROM admin WHERE userID = ?"
 	row := s.connection.QueryRow(query, user.SQLiteID)
 	err := row.Scan(&admin.SQLiteID, &admin.Token, &admin.UserId, &admin.Time)
 	if err != nil {
+		//log.Println(err)
 		return nil, nil
 	}
 	return admin, user
@@ -401,10 +397,12 @@ func (s *SQLiteDB) GetUsers() []*user.User {
 		user := &user.User{}
 		err := rows.Scan(&user.SQLiteID, &user.Email, &user.FirstName, &user.LastName, &user.ScreenName, &user.Admin, &user.Owner, &user.Active, &user.Password, &user.Activate, &user.Registered, &user.PasswordResetRequestTime, &user.PasswordResetToken)
 		if err != nil {
+			//log.Println(err)
 			return nil
 		}
 		users = append(users, user)
 	}
+	//log.Println("Users: ", users)
 	return users
 }
 
@@ -427,11 +425,11 @@ func (s *SQLiteDB) UpdateUser(user *user.User) bool {
 }
 
 func (s *SQLiteDB) DeleteUser(id string) bool {
-	query := "DELETE FROM users WHERE id = ?"
+	query := "DELETE FROM users WHERE ID = ?"
 	_, err := s.connection.Exec(query, tools.RadixToInt(id))
 
 	//delete all sessions for user
-	query = "DELETE FROM sessions WHERE user_id = ?"
+	query = "DELETE FROM sessions WHERE userID = ?"
 	go s.connection.Exec(query, id)
 	//delete all alarms for user
 	query = "DELETE FROM alarms WHERE user = ?"
@@ -485,7 +483,7 @@ func (s *SQLiteDB) EditDevice(device *device.Device) bool {
 }
 
 func (s *SQLiteDB) DeleteDevice(id string, userID string) bool {
-	query := "DELETE FROM devices WHERE id = ? AND user = ?"
+	query := "DELETE FROM devices WHERE ID = ? AND user = ?"
 	_, err := s.connection.Exec(query, tools.RadixToInt(id), userID)
 	return err == nil
 }
@@ -620,13 +618,57 @@ func (s *SQLiteDB) RemoveOldSessions() bool {
 }
 
 func (s *SQLiteDB) RemoveAlarmsWithNoDevices() bool {
-	query := "DELETE FROM alarms WHERE Devices = ?"
-	_, err := s.connection.Exec(query, "[]")
-	return err == nil
+	deviceIDs := []string{}
+	query := "SELECT ID FROM devices"
+	rows, err := s.connection.Query(query)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int64
+		err := rows.Scan(&id)
+		if err != nil {
+			return false
+		}
+		deviceIDs = append(deviceIDs, tools.IntToRadix(id))
+	}
+	query = "SELECT ID, Devices, User FROM alarms"
+	rows, err = s.connection.Query(query)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int64
+		var devices string
+		var user string
+		err := rows.Scan(&id, &devices, &user)
+		if err != nil {
+			return false
+		}
+		//check if device is in devices
+		//convert devices to slice
+		devicesSlice := tools.StringToDevicesArray(devices)
+		//check if device is in devices
+
+		for _, device := range devicesSlice {
+			//use funk to check if device is in devices
+			if !funk.ContainsString(deviceIDs, device) {
+				//delete alarm
+				s.DeleteAlarm(tools.IntToRadix(id), user)
+			}
+
+		}
+	}
+	return true
 }
 
 func (s *SQLiteDB) AddAdminSession(admin *admin.Admin) bool {
 	query := "INSERT INTO admin (Token, UserId, Time) VALUES (?, ?, ?)"
 	_, err := s.connection.Exec(query, admin.Token, admin.UserId, admin.Time)
+	//log.Println("AddAdminSession: ", result, err)
 	return err == nil
 }

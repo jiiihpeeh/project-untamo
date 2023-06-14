@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -711,20 +712,20 @@ func GetQRToken(c *gin.Context, db *database.Database) {
 }
 
 func AdminLogIn(c *gin.Context, db *database.Database) {
-	session, user := (*db).GetSessionFromHeader(c.Request)
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
 	}
-	if user == nil {
+	if userInSession == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
 		})
 		return
 	}
 	//check if user is admin
-	if !user.Admin {
+	if !userInSession.Admin {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
@@ -738,8 +739,9 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
+	log.Println("password", password)
 	//check if password is correct
-	match := hash.ComparePasswordAndHash(password.Password, user.Password)
+	match := hash.ComparePasswordAndHash(password.Password, userInSession.Password)
 	if !match {
 		c.JSON(401, gin.H{
 			"message": "Wrong password or failed to hash password",
@@ -752,9 +754,9 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 		//add 10 minutes to now in ms
 		Time: now.Now() + 600000,
 	}
-	uID := user.GetUid()
+	uID := userInSession.GetUid()
 	adminSession.UserId = uID
-
+	log.Println("adminSession", adminSession)
 	//add admin to db
 	if !(*db).AddAdminSession(&adminSession) {
 		c.JSON(500, gin.H{
