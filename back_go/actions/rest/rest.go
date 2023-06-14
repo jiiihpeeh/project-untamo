@@ -104,12 +104,7 @@ func LogIn(c *gin.Context, db *database.Database) {
 		//add 10 minutes to end time
 		expires = now.Now() + 600000
 	}
-	var uID string
-	if dbConnection.UseSQLite {
-		uID = tools.IntToRadix(user.SQLiteID)
-	} else {
-		uID = user.MongoID.Hex()
-	}
+	uID := user.GetUid()
 
 	newSession := session.Session{
 		Time:    expires,
@@ -753,11 +748,12 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 	}
 	//create admin using Admin struct
 	adminSession := admin.Admin{
-		Token:  token.GenerateToken(128),
-		UserId: user.MongoID.Hex(),
+		Token: token.GenerateToken(128),
 		//add 10 minutes to now in ms
 		Time: now.Now() + 600000,
 	}
+	uID := user.GetUid()
+	adminSession.UserId = uID
 
 	//add admin to db
 	if !(*db).AddAdminSession(&adminSession) {
@@ -946,14 +942,7 @@ func EditUserState(c *gin.Context, db *database.Database) {
 		return
 	}
 	//check if userInSession has same id as user and return unauthorized if it is
-	var uID string
-	if dbConnection.UseSQLite {
-		uID = tools.IntToRadix(userEdit.SQLiteID)
-
-	} else {
-		uID = userEdit.MongoID.Hex()
-	}
-
+	uID := userEdit.GetUid()
 	userEdit.Admin = adminRequest.Admin
 	userEdit.Active = adminRequest.Active
 	updated := (*db).UpdateUser(userEdit)
@@ -1033,14 +1022,7 @@ func RemoveUser(c *gin.Context, db *database.Database) {
 	// }
 	//delete user from db
 	//get id from UseSQLite
-	var uID string
-	if dbConnection.UseSQLite {
-		uID = tools.IntToRadix(userEdit.SQLiteID)
-
-	} else {
-		uID = userEdit.MongoID.Hex()
-	}
-
+	uID := userInSession.GetUid()
 	if !(*db).DeleteUser(uID) {
 		c.JSON(500, gin.H{
 			"message": "Failed to delete user",
@@ -1241,12 +1223,7 @@ func GetUser(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-	var uID string
-	if dbConnection.UseSQLite {
-		uID = tools.IntToRadix(userInSession.SQLiteID)
-	} else {
-		uID = userInSession.MongoID.Hex()
-	}
+	uID := userInSession.GetUid()
 
 	//get user from db
 	user := (*db).GetUserFromID(uID)
