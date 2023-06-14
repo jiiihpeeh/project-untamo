@@ -107,3 +107,11 @@ func (r *EditUser) CheckPassword() bool {
 	}
 	return true
 }
+
+func (u *User) GetUid() string {
+	if dbConnection.UseSQLite {
+		return tools.IntToRadix(u.SQLiteID)
+	}
+	return u.MongoID.Hex()
+
+}
