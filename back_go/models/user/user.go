@@ -42,12 +42,7 @@ type UserOut struct {
 
 func (u *User) ToUserOut() UserOut {
 
-	id := ""
-	if dbConnection.UseSQLite {
-		id = tools.IntToRadix(u.SQLiteID)
-	} else {
-		id = u.MongoID.Hex()
-	}
+	id := u.GetUid()
 	return UserOut{
 		User:       id,
 		Email:      u.Email,
