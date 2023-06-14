@@ -48,6 +48,7 @@ const useEmojiStore = create<UseEmoji>()(
           {
             emojiData: null,
             fetchEmojiData: async () => {
+                //console.log("fetchEmojiData")
                 const { server, token } = getCommunicationInfo()
                 if (token.length < 3) {
                     return
@@ -60,9 +61,12 @@ const useEmojiStore = create<UseEmoji>()(
                             }
                         }
                     )
-                    let emojiData = JSON.parse(res.data) as Emoji
+                    //console.log(res)
+                    let emojiData = res.data as Emoji
+
                     set({ emojiData: emojiData })
                 } catch (err) {
+                    console.log(err)
                 }
             },
             getEmojiData:  () => {
@@ -70,9 +74,11 @@ const useEmojiStore = create<UseEmoji>()(
                     get().fetchEmojiData()
                 }
                 let data = get().emojiData
+                //console.log(data)
                 if(data === null){
                     return null
                 }
+                
                 return data
             }
         }
