@@ -689,7 +689,7 @@ func GetQRToken(c *gin.Context, db *database.Database) {
 		return
 	}
 	//generate qr token
-	qrToken := token.GenerateToken(196)
+	qrToken := session.UserId + token.GenerateToken(196)
 	qr := qr.QR{
 		Time:    now.Now() + 25000,
 		User:    session.UserId,

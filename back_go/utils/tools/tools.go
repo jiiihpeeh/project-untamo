@@ -34,7 +34,7 @@ func TimeArrayToInteger(arr [2]uint8) int16 {
 
 func IntegerToTimeArray(number int16) [2]uint8 {
 	hours := uint8(number / 100)
-	minutes := uint8(number - int16(hours)*100)
+	minutes := uint8(number % 100)
 	arr := [2]uint8{hours, minutes}
 	return arr
 }
@@ -45,11 +45,11 @@ func DateArrayToInteger(arr [3]uint16) int32 {
 }
 
 func IntegerToDateArray(number int32) [3]uint16 {
-	years := number / 10000
-	months := (number - years*10000) / 100
-	days := number - years*10000 - int32(months)*100
+	days := uint16(number % 100)
+	months := uint16((number / 100) % 100)
+	years := uint16(number / 10000)
 
-	arr := [3]uint16{uint16(years), uint16(months), uint16(days)}
+	arr := [3]uint16{years, months, days}
 	return arr
 }
 

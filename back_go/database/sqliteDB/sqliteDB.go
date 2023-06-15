@@ -96,11 +96,11 @@ func (s *SQLiteDB) AddSession(session *session.Session) (string, error) {
 	query := "INSERT INTO sessions (UserId, Token, WsToken, Time, WsPair) VALUES (?, ?, ?, ?, ?)"
 	result, err := s.connection.Exec(query, session.UserId, session.Token, session.WsToken, session.Time, session.WsPair)
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return "", err
 	}
 	//commit
-	fmt.Println("Session added: ", session)
+	//fmt.Println("Session added: ", session)
 
 	id, _ := result.LastInsertId()
 	//fmt.Println("Session added: ", id, result)

@@ -16,6 +16,7 @@
         "DEVICECOLL",
         "EMAILCOLL",
         "Encrypter",
+        "flac",
         "fontobject",
         "goccy",
         "gonic",

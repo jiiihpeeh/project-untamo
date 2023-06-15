@@ -5,6 +5,7 @@ import (
 	rand "crypto/rand"
 	"encoding/base64"
 	"strconv"
+	"strings"
 
 	"untamo_server.zzz/utils/now"
 )
@@ -43,7 +44,7 @@ func randomBoolSlice(length int) ([]bool, error) {
 		bitIndex := uint(i % 8)
 		bools[i] = (bytes[byteIndex] & (1 << bitIndex)) != 0
 	}
-
+	//fmt.Println(bools)
 	return bools, nil
 }
 func GenerateRandomString(s int) (string, error) {
@@ -58,16 +59,13 @@ func GenerateToken(n uint16) string {
 	nowStr := strconv.FormatUint(uint64(now.NowNano()), 36)
 	//convert nowStr to rune
 	t := []byte(nowStr)
-	for i := range t {
-		//randomly capitalize a letter in nowStr
-		//check in random byte is even
-		j, _ := randomBoolSlice(len(t))
-		for l := range t {
-			if j[l] {
-				t[i] = bytes.ToUpper(t[i : i+1])[0]
-			}
+	//randomly capitalize a letter in nowStr
+	//check in random byte is even
+	j, _ := randomBoolSlice(len(t))
+	for l := range t {
+		if j[l] {
+			t[l] = bytes.ToUpper([]byte{t[l]})[0]
 		}
 	}
-	//randomly capitalize a letter in nowStr
-	return string(b) + string(t)
+	return strings.Replace(b, "=", "", -1) + string(t)
 }
