@@ -1,7 +1,6 @@
 package wshandler
 
 import (
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -12,9 +11,7 @@ import (
 	"github.com/thoas/go-funk"
 	"untamo_server.zzz/database"
 	"untamo_server.zzz/models/register"
-	"untamo_server.zzz/utils/dbConnection"
 	"untamo_server.zzz/utils/token"
-	"untamo_server.zzz/utils/tools"
 )
 
 type WsServer struct {
@@ -119,7 +116,7 @@ func (server *WsServer) ServeMessage(userId string, token string, message []byte
 		if tokenM != token && server.tokenReady[tokenM] {
 			conn := server.tokenConnection[tokenM]
 			if conn == nil {
-				log.Println("conn is nil")
+				//log.Println("conn is nil")
 				continue
 			}
 			go func() {
@@ -164,33 +161,22 @@ func Action(c *gin.Context, db *database.Database) {
 	wsToken := c.Param("token")
 	//check that token is long enough
 	if len(wsToken) < int(token.WsTokenStringLength) {
-		//log.Println("token is too short")
 		return
 	}
 	//get session from db
 	session, userInSession := (*db).GetUserAndSessionFromWsToken(wsToken)
-	// if action is not found, return
 	if session == nil {
-		//log.Println("session is nil")
 		return
 	}
 	if userInSession == nil {
-		//og.Println("userInSession is nil")
 		return
 	}
-	var uID string
-	if dbConnection.UseSQLite {
+	uID := userInSession.GetUid()
 
-		uID = tools.IntToRadix(userInSession.SQLiteID)
-	} else {
-		uID = userInSession.MongoID.Hex()
-	}
-	//fmt.Println("uID: ", uID, "wsToken: ", wsToken, "session.WsPair: ", session.WsPair)
 	WsServing.echo(c.Writer, c.Request, wsToken, uID, session.WsPair)
 }
 
 func Register(c *gin.Context, db *database.Database) {
-	//log.Println("websocket handler CALLED")
 	//sleep 15 milliseconds
 	time.Sleep(15 * time.Millisecond)
 	connection, _ := upgrader.Upgrade(c.Writer, c.Request, nil)

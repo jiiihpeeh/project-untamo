@@ -141,16 +141,7 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 	if a.Devices == nil {
 		a.Devices = []string{}
 	}
-	// if date == nil {
-	// 	date = [3]uint16{}
-	// }
-	// if time == nil {
-	// 	time = [2]uint8{}
-	// }
-	//a.weekdays
-	// if a.Weekdays == nil {
-	// 	a.Weekdays = 0
-	// }
+
 	return AlarmOut{
 		ID:          id,
 		Occurrence:  a.Occurrence,
@@ -170,12 +161,10 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 
 // convert AlarmOutput to Alarm ask user Id
 func (a *AlarmOut) ToAlarm(userId string) Alarm {
+
 	//check ID type and convert to string
 	if dbConnection.UseSQLite {
-		// time, _ := json.Marshal(a.Time)
-		// date, _ := json.Marshal(a.Date)
-		// devices, _ := json.Marshal(a.Devices)
-		// snooze, _ := json.Marshal(a.Snooze)
+
 		return Alarm{
 			SQLiteID:    tools.RadixToInt(a.ID),
 			Occurrence:  a.Occurrence,
@@ -215,7 +204,6 @@ func (a *AlarmOut) ToAlarm(userId string) Alarm {
 func (a *AlarmOut) ToNewAlarm(userId string) Alarm {
 
 	return Alarm{
-		//ID:          uID,
 		Occurrence:  a.Occurrence,
 		Time:        a.Time,
 		Weekdays:    a.Weekdays,
