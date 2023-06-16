@@ -6,7 +6,7 @@ import (
 
 type Session struct {
 	MongoID  primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	SQLiteID int64              `json:"id"`
+	SQLiteID uint64             `json:"id"`
 	UserId   string             `bson:"user_id" json:"userId"`
 	Token    string             `bson:"token" json:"token"`
 	WsToken  string             `bson:"ws_token" json:"wsToken" `

@@ -15,9 +15,9 @@ func isStringInt64(s string) bool {
 	return err == nil
 }
 
-func RadixToInt(s string) int64 {
+func RadixToInt(s string) uint64 {
 	if isStringInt64(s) {
-		i, _ := strconv.ParseInt(s, 36, 64)
+		i, _ := strconv.ParseUint(s, 36, 64)
 		return i
 	}
 	return 0
