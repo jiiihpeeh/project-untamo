@@ -19,7 +19,7 @@ const (
 
 type Alarm struct {
 	MongoID     primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	SQLiteID    int64              `json:"id"`
+	SQLiteID    uint64             `json:"id"`
 	Occurrence  string             `bson:"occurrence,omitempty" json:"occurrence"`
 	Time        [2]uint8           `bson:"time,omitempty"`
 	Weekdays    uint8              `bson:"weekdays,omitempty" json:"weekdays"`
@@ -37,7 +37,7 @@ type Alarm struct {
 }
 
 type AlarmSQL struct {
-	SQLiteID    int64  `json:"id"`
+	SQLiteID    uint64 `json:"id"`
 	Occurrence  string `bson:"occurrence,omitempty" json:"occurrence"`
 	Time        int16  `bson:"time,omitempty"`
 	Weekdays    uint8  `bson:"weekdays,omitempty" json:"weekdays"`

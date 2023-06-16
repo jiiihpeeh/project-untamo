@@ -18,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/steambap/captcha"
+	"github.com/thoas/go-funk"
 	"untamo_server.zzz/actions/wshandler"
 	"untamo_server.zzz/database"
 	"untamo_server.zzz/models/admin"
@@ -36,7 +37,6 @@ import (
 	"untamo_server.zzz/utils/emailer"
 	"untamo_server.zzz/utils/hash"
 	"untamo_server.zzz/utils/id"
-	"untamo_server.zzz/utils/list"
 	"untamo_server.zzz/utils/now"
 	"untamo_server.zzz/utils/token"
 	"untamo_server.zzz/utils/tools"
@@ -110,9 +110,9 @@ func LogIn(c *gin.Context, db *database.Database) {
 	newSession := session.Session{
 		Time:    expires,
 		UserId:  uID,
-		Token:   token.GenerateToken(token.TokenStringLength),
-		WsToken: token.GenerateToken(token.WsTokenStringLength),
-		WsPair:  token.GenerateToken(token.WsPairLength),
+		Token:   uID + token.GenerateToken(token.TokenStringLength),
+		WsToken: uID + token.GenerateToken(token.WsTokenStringLength),
+		WsPair:  uID + token.GenerateToken(token.WsPairLength),
 	}
 	//add session to db
 	//marshal session to json
@@ -494,7 +494,8 @@ func GetAudioResources(c *gin.Context, db *database.Database, audioResources emb
 		}
 		filename = filename[:len(filename)-len(filepath.Ext(filename))]
 		// check if filename is already in audioResourceFiles
-		if !list.IsInList(audioResourceFiles, filename) {
+		if !funk.Contains(audioResourceFiles, filename) {
+			//if !list.IsInList(audioResourceFiles, filename) {
 			audioResourceFiles = append(audioResourceFiles, filename)
 		}
 	}
@@ -509,7 +510,9 @@ func GetAudioResources(c *gin.Context, db *database.Database, audioResources emb
 			}
 			filename = filename[:len(filename)-len(filepath.Ext(filename))]
 			// check if filename is already in audioResourceFiles
-			if !list.IsInList(audioResourceFiles, filename) {
+			//use funk to check if filename is in audioResourceFiles
+			if !funk.Contains(audioResourceFiles, filename) {
+				//if !list.IsInList(audioResourceFiles, filename) {
 				audioResourceFiles = append(audioResourceFiles, filename)
 			}
 		}
@@ -628,9 +631,9 @@ func QRLogIn(c *gin.Context, db *database.Database) {
 	session := session.Session{
 		Time:    endTime,
 		UserId:  qr.User,
-		Token:   token.GenerateToken(token.TokenStringLength),
-		WsToken: token.GenerateToken(token.TokenStringLength),
-		WsPair:  token.GenerateToken(token.WsPairLength),
+		Token:   qr.User + token.GenerateToken(token.TokenStringLength),
+		WsToken: qr.User + token.GenerateToken(token.TokenStringLength),
+		WsPair:  qr.User + token.GenerateToken(token.WsPairLength),
 	}
 	//add session to db
 	sID, err := (*db).AddSession(&session)
@@ -1064,11 +1067,11 @@ func RefreshToken(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-
+	uID := userInSession.GetUid()
 	newToken := token.GenerateToken(token.TokenStringLength)
-	session.Token = newToken
-	session.WsPair = token.GenerateToken(token.WsPairLength)
-	session.WsToken = token.GenerateToken(token.WsTokenStringLength)
+	session.Token = uID + newToken
+	session.WsPair = uID + token.GenerateToken(token.WsPairLength)
+	session.WsToken = uID + token.GenerateToken(token.WsTokenStringLength)
 	//get session length from config
 	appconfig.AppConfigurationMutex.Lock()
 	sessionLength := appconfig.AppConfiguration.SessionLength

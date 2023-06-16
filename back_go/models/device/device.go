@@ -19,7 +19,7 @@ const (
 
 type Device struct {
 	MongoID    primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	SQLiteID   int64              `json:"id"`
+	SQLiteID   uint64             `json:"id"`
 	DeviceName string             `bson:"device_name,omitempty" json:"deviceName"`
 	DeviceType string             `bson:"device_type,omitempty" json:"deviceType"`
 	User       string             `bson:"user,omitempty" json:"user"`
