@@ -57,12 +57,12 @@ func (u *User) ToUserOut() UserOut {
 }
 
 type EditUser struct {
-	Email           string `json:"email"`
-	FirstName       string `json:"firstName"`
-	LastName        string `json:"lastName"`
-	ScreenName      string `json:"screenName"`
-	Password        string `json:"password:omitempty"`
-	ConfirmPassword string `json:"confirmPassword"`
+	Email          string `json:"email"`
+	FirstName      string `json:"firstName"`
+	LastName       string `json:"lastName"`
+	ScreenName     string `json:"screenName"`
+	Password       string `json:"password"`
+	ChangePassword string `json:"changePassword:omitempty"`
 }
 
 type ResetPasswordRequest struct {
@@ -92,14 +92,17 @@ func (r *EditUser) CheckPassword() bool {
 	//loop through array and check similarity
 	for _, field := range lowerFields {
 		scoreNorm := strutil.Similarity(password, field, metrics.NewLevenshtein())
+		//fmt.Println("scoreNorm", scoreNorm)
 		if scoreNorm > register.MaxPasswordSimilarity {
 			return false
 		}
 		scoreLeet := strutil.Similarity(passwordLeet, field, metrics.NewLevenshtein())
+		//fmt.Println("scoreLeet", scoreLeet)
 		if scoreLeet > register.MaxPasswordSimilarity {
 			return false
 		}
 	}
+	//fmt.Println("password is valid")
 	return true
 }
 

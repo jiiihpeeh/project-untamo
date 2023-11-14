@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"embed"
 	"encoding/hex"
+	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -834,14 +835,16 @@ func UserEdit(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-	if editUser.CheckPassword() {
+	if !editUser.CheckPassword() {
 		c.JSON(400, gin.H{
 			"message": "Password is redundant",
 		})
 		return
 	}
 	//check if confirm password matches password using hash
-	match := hash.ComparePasswordAndHash(editUser.ConfirmPassword, userInSession.Password)
+	fmt.Println("editUser.Password", editUser.Password)
+	fmt.Println("userInSession.Password", userInSession.Password)
+	match := hash.ComparePasswordAndHash(editUser.Password, userInSession.Password)
 	if !match {
 		c.JSON(401, gin.H{
 			"message": "Wrong password or failed to hash password",
@@ -851,7 +854,7 @@ func UserEdit(c *gin.Context, db *database.Database) {
 	//check if password is strong enough using zxcvbn
 	passwordHash := userInSession.Password
 	if editUser.Password != "" {
-		estimate := register.Estimate(editUser.Password)
+		estimate := register.Estimate(editUser.ChangePassword)
 		if estimate.Guesses < register.MinimumGuesses {
 			c.JSON(400, gin.H{
 				"message": "Password is not strong enough",
@@ -859,7 +862,7 @@ func UserEdit(c *gin.Context, db *database.Database) {
 			return
 		}
 		//hash password
-		passwordHashed, err := hash.HashPassword(editUser.Password)
+		passwordHashed, err := hash.HashPassword(editUser.ChangePassword)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"message": "Failed to hash password",
@@ -1480,9 +1483,9 @@ func ResetPassword(c *gin.Context, db *database.Database) {
 	userToEdit.PasswordResetRequestTime = 0
 
 	editUser := user.EditUser{}
-	editUser.Password = reset.Password
+	editUser.ChangePassword = reset.Password
 	editUser.Email = reset.Email
-	editUser.ConfirmPassword = reset.ConfirmPassword
+	editUser.Password = reset.ConfirmPassword
 	editUser.FirstName = userToEdit.FirstName
 	editUser.LastName = userToEdit.LastName
 	editUser.ScreenName = userToEdit.ScreenName
