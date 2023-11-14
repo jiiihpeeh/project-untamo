@@ -8,6 +8,10 @@ type Command = {
     action: AdminAction|null,
     id: string|null,
 }
+export enum DatabaseType {
+    Sqlite = "sqlite",
+    Mongo = "mongo"
+}
 
 type OwnerConfig = {
     ownerId: string,
@@ -25,6 +29,8 @@ type OwnerConfig = {
     activateAuto: boolean,
     activateEmail: boolean,
     sessionLength: number,
+    databasePath: string,
+    databaseType: DatabaseType,
 }
 
 

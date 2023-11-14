@@ -1,9 +1,11 @@
 import { Modal, ModalContent,  ModalHeader, ModalFooter,
          ModalBody, ModalCloseButton,  Button,
-         ButtonGroup,  FormLabel,Input} from '@chakra-ui/react'
+         ButtonGroup,  FormLabel,Input, HStack} from '@chakra-ui/react'
 import { FocusLock } from '@chakra-ui/focus-lock'
 import React, { useState, useEffect }  from 'react'
 import { usePopups, useServer } from '../stores' 
+import  {pingServer} from '../stores/loginStore'
+
 
 function ServerLocation() {
   const server = useServer((state) => state.address)
@@ -26,6 +28,7 @@ function ServerLocation() {
       returnFocusOnClose={false}
       isOpen={showServerEdit}
       onClose={() => setShowServerEdit(false)}
+      isCentered
     >
       <ModalContent>
         <ModalHeader
@@ -42,10 +45,17 @@ function ServerLocation() {
             <FormLabel>
               Address
             </FormLabel>
-            <Input
-              type="text"
-              value={serverString}
-              onChange={(e) => setServerString(e.target.value)} />
+            <HStack>
+              <Input
+                type="text"
+                value={serverString}
+                onChange={(e) => setServerString(e.target.value)} />
+              <Button
+                onClick={(e) => pingServer(serverString)}
+              >
+                Test
+              </Button>
+            </HStack>
           </FocusLock>
         </ModalBody>
         <ModalFooter

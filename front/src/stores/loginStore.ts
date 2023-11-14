@@ -694,4 +694,23 @@ const useLogIn = create<UseLogIn>()(
     )
 )
 
+//pingServer using axios
+export async function pingServer(server: string) {
+    try {
+      const res = await axios.get(`${server}/ping`)
+      if (res.status === 200) {
+        notification('Server Ping', 'Server is online', Status.Success
+        )
+      } else {
+        notification('Server Ping', 'Server is not responding', Status.Error
+        )
+      }
+    } catch (e) {
+      notification('Server Ping', 'Server is not responding', Status.Error
+      )
+    }
+ }
+  
+
+
 export default useLogIn
