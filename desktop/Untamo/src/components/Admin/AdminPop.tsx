@@ -1,7 +1,7 @@
 import {  Popover, Button, Portal, PopoverContent, PopoverHeader,
           PopoverArrow, PopoverBody, Center, PopoverAnchor, Box } from '@chakra-ui/react'
 import { useAdmin, useLogIn, usePopups, useSettings } from '../../stores'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, CSSProperties } from 'react'
 
 function AdminPop() {
     const windowSize = usePopups((state) => state.windowSize)
@@ -13,7 +13,7 @@ function AdminPop() {
     const setShowAdminPop = usePopups((state) => state.setShowAdminPop)
 
     const navigationTriggered = usePopups((state) => state.navigationTriggered)
-    const [posStyle, setPosStyle] = useState<React.CSSProperties>({})
+    const [posStyle, setPosStyle] = useState<CSSProperties>({})
 
     useEffect(() => {
         let elem = document.getElementById("link-admin")

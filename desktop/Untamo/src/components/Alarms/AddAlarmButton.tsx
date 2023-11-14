@@ -1,16 +1,16 @@
 import { Button, Text } from '@chakra-ui/react'
-import React, { useEffect,  useState } from 'react'
+import React, { CSSProperties, RefObject, useEffect,  useState } from 'react'
 import { useAlarms, usePopups, useSettings } from '../../stores'
 
 interface Props{
-    mounting: React.RefObject<HTMLDivElement>
+    mounting: RefObject<HTMLDivElement>
 }
 function AddAlarmButton(props: Props) {
     const mounting = props.mounting
     const alarms = useAlarms((state)=>state.alarms)
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
     const windowSize = usePopups((state)=>state.windowSize)
-    const [ buttonPosition, setButtonPosition ] = useState<React.CSSProperties>({})
+    const [ buttonPosition, setButtonPosition ] = useState<CSSProperties>({})
     const navBarTop = useSettings((state)=> state.navBarTop)
     const navHeight = useSettings((state)=> state.height)
     const isLight = useSettings((state)=> state.isLight)
