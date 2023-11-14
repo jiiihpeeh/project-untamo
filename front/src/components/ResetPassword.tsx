@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, ChangeEvent } from 'react'
 import { useLogIn, usePopups, useSettings  } from '../stores'
 import { ColorMode, PasswordReset, Path } from '../type'
 import { Box, FormControl, FormLabel, Input, Button, Divider } from '@chakra-ui/react'
@@ -18,7 +18,7 @@ function ResetPassword(){
     const emailPattern = new RegExp(".+@.+..+")
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     
-    function onChange(event: React.ChangeEvent<HTMLInputElement>) {
+    function onChange(event: ChangeEvent<HTMLInputElement>) {
         setFormData((formData) => {
             return {
                 ...formData,
