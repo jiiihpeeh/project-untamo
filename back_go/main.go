@@ -165,6 +165,9 @@ func main() {
 	router.GET("/", func(c *gin.Context) {
 		rest.Index(c, resources)
 	})
+	router.GET("/ping", func(c *gin.Context) {
+		rest.Index(c, resources)
+	})
 	router.GET("/assets/:file", func(c *gin.Context) {
 		rest.Assets(c, resources)
 	})
