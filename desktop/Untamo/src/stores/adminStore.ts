@@ -58,7 +58,7 @@ type UsersData = {
     admin: boolean,
     owner: boolean
 }
-//ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailTLS":false,"activateAuto":false,"activateEmai
+//ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailTLS":false,"activateAuto":false,"activateEmail
 
 
 interface ResponseData {

@@ -13,6 +13,7 @@ import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, isSuccess, generateRandomString, calculateSHA512 } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { Alarm, Device, Path, PasswordReset } from "../type"
+import { error } from 'console'
 
 type UseLogIn = {
     wsToken: string
@@ -801,5 +802,26 @@ const useLogIn = create<UseLogIn>()(
       }
     )
 )
-
+export async function pingServer(server: string) {
+    try {
+      const client = await getClient()
+      const res = await client.request(
+        {
+          method: "GET",
+          url: `${server}/ping`,
+          responseType: ResponseType.Text
+        }
+      )
+      if ( res.status === 200) {
+        notification('Server Ping', 'Server is online', Status.Success
+        )
+      } else {
+        notification('Server Ping', `Server is not responding ${res.status}`, Status.Error
+        )
+      }
+    } catch (e) {
+      notification('Server Ping', `Server is not responding ${e}`, Status.Error
+      )
+    }
+  }
 export default useLogIn

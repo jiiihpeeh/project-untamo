@@ -1,6 +1,7 @@
 package alarm
 
 import (
+	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"untamo_server.zzz/utils/dbConnection"
 	"untamo_server.zzz/utils/id"
@@ -56,13 +57,8 @@ type AlarmSQL struct {
 
 // make unique by converting  array to set to array
 func (a *Alarm) SetDevices(devices []string) {
-	set := make(map[string]bool)
-	for _, device := range devices {
-		set[device] = true
-	}
-	for key, _ := range set {
-		a.Devices = append(a.Devices, key)
-	}
+	uniqueDevices := funk.Uniq(devices).([]string)
+	a.Devices = uniqueDevices
 }
 
 type AlarmOut struct {
@@ -123,21 +119,17 @@ func (s *AlarmSQL) ToAlarm() Alarm {
 
 // convert Alarm to AlarmOutput
 func (a *Alarm) ToAlarmOut() AlarmOut {
-	//check ID type and convert to string
 	var id string
 	if dbConnection.UseSQLite {
 		id = tools.IntToRadix(a.SQLiteID)
-
 	} else {
 		id = a.MongoID.Hex()
-
 	}
-	//check  a.snooze is not nil
+
 	if a.Snooze == nil {
 		a.Snooze = []int64{}
 	}
 
-	//same for a.devices
 	if a.Devices == nil {
 		a.Devices = []string{}
 	}

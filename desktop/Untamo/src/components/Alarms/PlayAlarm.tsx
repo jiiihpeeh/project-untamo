@@ -143,7 +143,7 @@ function PlayAlarm() {
                     fontSize='sm'
                     textShadow='1px 1px #ff0000'
                 >
-                    ({runAlarm ? runAlarm.time : ''})
+                    ({runAlarm ? `${runAlarm.time[0]}:${runAlarm.time[1]}` : ''})
                 </Text>
             </Heading>
             <Heading

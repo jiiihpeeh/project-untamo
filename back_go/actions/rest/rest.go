@@ -116,7 +116,6 @@ func LogIn(c *gin.Context, db *database.Database) {
 	}
 	//add session to db
 	//marshal session to json
-	//fmt.Println(newSession)
 	sID, err := (*db).AddSession(&newSession)
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -129,7 +128,6 @@ func LogIn(c *gin.Context, db *database.Database) {
 	} else {
 		newSession.MongoID = id.IdFromString(sID)
 	}
-	//fmt.Println("newSession", newSession)
 
 	logInResponse := login.LogInResponse{
 		Token:      newSession.Token,
@@ -882,6 +880,7 @@ func UserEdit(c *gin.Context, db *database.Database) {
 		Activate:   userInSession.Activate,
 		Registered: userInSession.Registered,
 	}
+
 	if dbConnection.UseSQLite {
 		user.SQLiteID = userInSession.SQLiteID
 	} else {
@@ -1825,4 +1824,9 @@ func Assets(c *gin.Context, resources embed.FS) {
 		return
 
 	}
+}
+
+func Ping(c *gin.Context) {
+	//return  200 and zero bytes
+	c.Data(200, "text/plain", []byte(""))
 }

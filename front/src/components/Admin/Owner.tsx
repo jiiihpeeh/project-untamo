@@ -2,13 +2,14 @@ import {  HStack, Spacer, Stack, Text,
     Button, Box, VStack, Input, FormLabel,
     Switch,  Checkbox,   NumberInput, Center,
     NumberInputField, NumberInputStepper,
-    NumberIncrementStepper,  NumberDecrementStepper, } from '@chakra-ui/react'
+    NumberIncrementStepper,  NumberDecrementStepper, Heading, } from '@chakra-ui/react'
 import React, { useEffect, useState   } from 'react'
 import {   useAdmin, useLogIn, useSettings } from '../../stores' 
+import { DatabaseType } from '../../stores/adminStore'
 import { ColorMode, Path } from '../../type'
 
 
-//ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailPlainAuth":false,"activateAuto":false,"activateEmai
+//ownerId":"6461f3091330e40a7e528abc","urlDB":"0.0.0.0:27017","customUri":"","userDb":"root","useCustomUri":false,"passwordDb":"example","email":"","password":"","emailPort":"","emailServer":"","emailPlainAuth":false,"activateAuto":false,"activateEmail
 
 function Owner() {
     const inputHideShow = {
@@ -49,7 +50,9 @@ function Owner() {
         emailPlainAuth:false,
         activateAuto:false,
         activateEmail:false,
-        sessionLength: 63072000000
+        sessionLength: 63072000000,
+        databaseType: DatabaseType.Mongo,
+        databasePath: ""
     }
     function msInYearsMonthsDaysHoursMinutesSeconds(ms:number):Timing{
         const years = Math.floor(ms / 31536000000)
@@ -235,14 +238,20 @@ function Owner() {
 
 return (
         <>
+            <Heading>
+                Database Type : {ownerConfig?.databaseType?ownerConfig.databaseType:""}
+            </Heading>
             <Box
-                    borderRadius={"md"}
-                    m={"2%"} 
-                    className={(colorMode === ColorMode.Light) ? 'UserForm' : "UserFormDark"}
-                >
+                borderRadius={"md"}
+                m={"2%"} 
+                className={(colorMode === ColorMode.Light) ? 'UserForm' : "UserFormDark"}
+            >
                     <Box
                         m={"2%"}
-                    >                    
+                    >
+
+
+           
                         <FormLabel>
                             Owner ID
                         </FormLabel>
