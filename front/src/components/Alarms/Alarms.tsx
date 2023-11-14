@@ -159,7 +159,7 @@ function Alarms() {
             if (!clock24) {
                 let fmt = time24hToTime12h(time)
                 return (<HStack>
-                    <Text>{fmt.time}
+                    <Text>{`${timePadding(fmt.time[0])}:${timePadding(fmt.time[1])}`}
                         <Text
                             fontSize='sm'
                         >
@@ -168,7 +168,7 @@ function Alarms() {
                     </Text>
                 </HStack>)
             }
-            let timeString = timePadding(time[0]) +":"+ timePadding(time[1])
+            let timeString = `${timePadding(time[0])}:${timePadding(time[1])}`
             return (<Text>{timeString}</Text>)
         }
         return sortedView.map(({ id, occurrence, time, weekdays, date, label, devices, active }, key) => {
