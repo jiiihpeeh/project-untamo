@@ -13,6 +13,12 @@ export type CardColors =  {
     background: string
 }
 
+export enum NotificationType{
+    Desktop="desktop",
+    Toast="toast",
+    Both="both",
+    None = "none"
+}
 
 const defaultCardLight : CardColors = { 
                                     inactive: "#ececec", 
@@ -41,6 +47,8 @@ type UseSettings =  {
     colorMode: ColorMode,
     isLight: boolean,
     volume: number,
+    notificationType: NotificationType,
+    theme: Record<string, any>,
     setDialogSize: (size: number) => void,
     setColorMode: (mode: ColorMode) => void,
     setCloseTask: (task: CloseTask) => void,
@@ -52,8 +60,8 @@ type UseSettings =  {
     setPanelSize: (size: number) => void,
     setSnoozePress: (n: number) => void,
     setVolume: (volume: number) => void,
-    theme: Record<string, any>,
     setTheme: (light: string, dark: string) => void,
+    setNotificationType: (type: NotificationType) => void,
 }
 
 function themeSettings(light=defaultCardLight.background, dark=defaultCardDark.background){
@@ -86,6 +94,8 @@ const useSettings = create<UseSettings>()(
             closeTask: CloseTask.Obey,
             snoozePress: 200,
             volume: 0.9,
+            theme: themeSettings(),
+            notificationType: NotificationType.Desktop,
             setDialogSize: (size: number) => set({ dialogSize: size }),
             setColorMode: (mode: ColorMode) => {
                 set(
@@ -177,7 +187,6 @@ const useSettings = create<UseSettings>()(
                     }
                 )
             },
-            theme: themeSettings(),
             setTheme: (light, dark) => {
                 set(
                     {
@@ -185,6 +194,13 @@ const useSettings = create<UseSettings>()(
                     }
                 )
             },
+            setNotificationType: (type) => {
+                set(
+                    {
+                        notificationType: type
+                    }
+                )
+            }
           }
       ),
       {
@@ -202,6 +218,7 @@ const useSettings = create<UseSettings>()(
                 snoozePress: state.snoozePress,
                 isLight: state.isLight,
                 volume: state.volume,
+                notificationType: state.notificationType,
               }
           ),
       }

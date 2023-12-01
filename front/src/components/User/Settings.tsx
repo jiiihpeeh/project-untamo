@@ -1,17 +1,19 @@
 import {    Modal,ModalOverlay,ModalContent,ModalHeader,
             ModalFooter, ModalBody, HStack, Center, Switch,
-            ModalCloseButton, RadioGroup, Radio, Spacer,
+            ModalCloseButton,   Spacer,
             Button, Table,Thead, Tbody,Tr,Th,Td, Box,
             Slider,SliderTrack, SliderFilledTrack,
             SliderThumb, IconButton, useColorMode} from '@chakra-ui/react'
 import React, {useState, useRef, useEffect } from 'react'
 import { usePopups, useSettings  } from '../../stores'
-import TimeFormat from './TimeFormat'
-import CloseTaskMenu from './CloseTaskMenu'
 import PressSnoozeSlider from './PressSnoozeSlider'
 import { AddIcon as Add, MinusIcon as Minus } from  '@chakra-ui/icons';
-import { ColorMode } from '../../type'
-import { dialogSizes as sizes } from '../../stores/settingsStore'
+import { CloseTask, ColorMode } from '../../type'
+import { dialogSizes as sizes, NotificationType} from '../../stores/settingsStore'
+import EnumToMenu from '../EnumToMenu'
+import { enumValues } from '../../utils'
+import OptionsToRadio from '../OptionsToRadio'
+import { useTheme, Theme } from  "./Theme"
 
 function Settings() {
     const setShowSettings = usePopups((state) => state.setShowSettings)
@@ -27,11 +29,17 @@ function Settings() {
     const size = useSettings((state) => state.dialogSize)
     const setSize = useSettings((state) => state.setDialogSize)
     const maxSize = useRef(1)
-    const { colorMode, toggleColorMode } = useColorMode()
-    const setColorSetting = useSettings((state) => state.setColorMode)
-    const setShowChangeColors = usePopups((state) => state.setShowChangeColors)
     const volume = useSettings((state) => state.volume)
     const setVolume = useSettings((state) => state.setVolume)
+    const notificationType = useSettings((state) => state.notificationType)
+    const setNotificationType = useSettings((state) => state.setNotificationType)
+    const closeTask = useSettings((state) => state.closeTask)
+    const setCloseTask = useSettings((state) => state.setCloseTask)
+    const clock24 = useSettings((state) => state.clock24)
+    const setClock24 = useSettings((state) => state.setClock24)
+    const theme = useTheme((state) => state.theme)
+    const setTheme = useTheme((state) => state.setTheme)
+
 
     useEffect(() => {
         if (windowSize.height < 745) {
@@ -46,13 +54,7 @@ function Settings() {
             maxSize.current = isMobile ? 1 : 2
         }
     }, [windowSize])
-    useEffect(() => {
-        if (colorMode === ColorMode.Light) {
-            setColorSetting(ColorMode.Light)
-        } else {
-            setColorSetting(ColorMode.Dark)
-        }
-    }, [colorMode])
+
     return (
         <Modal
             isOpen={showSettings}
@@ -96,31 +98,13 @@ function Settings() {
                                 </Td>
                                 <Td>
                                     <Center>
-                                        <RadioGroup
-                                            size={sizes.get(size)}
-                                        >
-                                            <HStack>
-                                                <Radio
-                                                    isChecked={colorMode === ColorMode.Light}
-                                                    onChange={() => {
-                                                        setShowChangeColors(true)
-                                                        toggleColorMode()
-                                                    } }
-                                                >
-                                                    Light
-                                                </Radio>
-                                                <Spacer />
-                                                <Radio
-                                                    isChecked={colorMode === ColorMode.Dark}
-                                                    onChange={() => {
-                                                        setShowChangeColors(true)
-                                                        toggleColorMode()
-                                                    } }
-                                                >
-                                                    Dark
-                                                </Radio>
-                                            </HStack>
-                                        </RadioGroup>
+                                        <OptionsToRadio
+                                            options={{ "System": Theme.System, "Light": Theme.Light, "Dark": Theme.Dark }}
+                                            selectedOption={theme}
+                                            setOption={setTheme}
+                                            capitalizeOption={true}
+                                            sizeKey={sizes.get(size) as string}
+                                        />
                                     </Center>
                                 </Td>
                             </Tr>
@@ -130,25 +114,13 @@ function Settings() {
                                 </Td>
                                 <Td>
                                     <Center>
-                                        <RadioGroup
-                                            size={sizes.get(size)}
-                                        >
-                                            <HStack>
-                                                <Radio
-                                                    isChecked={navBarTop}
-                                                    onChange={() => setNavBarTop(!navBarTop)}
-                                                >
-                                                    Top
-                                                </Radio>
-                                                <Spacer />
-                                                <Radio
-                                                    isChecked={!navBarTop}
-                                                    onChange={() => setNavBarTop(!navBarTop)}
-                                                >
-                                                    Bottom
-                                                </Radio>
-                                            </HStack>
-                                        </RadioGroup>
+                                        <OptionsToRadio 
+                                            options= {{ "Top": true, "Bottom": false}}
+                                            setOption={setNavBarTop}
+                                            selectedOption={navBarTop}
+                                            capitalizeOption={true}
+                                            sizeKey={sizes.get(size) as string}
+                                        />
                                     </Center>
                                 </Td>
                             </Tr>
@@ -195,7 +167,15 @@ function Settings() {
                                     Time Format
                                 </Td>
                                 <Td>
-                                    <TimeFormat />
+                                <Center>
+                                        <OptionsToRadio
+                                            options={{ "24 h": true, "12 h": false }}
+                                            selectedOption={clock24}
+                                            setOption={setClock24}
+                                            capitalizeOption={true}
+                                            sizeKey={sizes.get(size) as string}
+                                        />
+                                    </Center>
                                 </Td>
                             </Tr>
                             <Tr>
@@ -235,7 +215,14 @@ function Settings() {
                                     Close Task
                                 </Td>
                                 <Td>
-                                    <CloseTaskMenu />
+                                    {/* <CloseTaskMenu /> */}
+                                    <EnumToMenu
+                                        options={enumValues(CloseTask)}
+                                        selectedOption={closeTask}
+                                        setOption={setCloseTask}
+                                        sizeKey={sizes.get(size) as string}
+                                        capitalizeOption={true} 
+                                        prefix={''}                                    />
                                 </Td>
                             </Tr>
                             <Tr>
@@ -250,6 +237,21 @@ function Settings() {
                                     >
                                         Clear Settings
                                     </Button>
+                                </Td>
+                            </Tr>
+                            <Tr>
+                                <Td>
+                                    Notification
+                                </Td>
+                                <Td>
+                                    {/* <NotifyMenu /> */}
+                                    <EnumToMenu
+                                        options={enumValues(NotificationType)}
+                                        selectedOption={notificationType}
+                                        setOption={setNotificationType}
+                                        sizeKey={sizes.get(size) as string}
+                                        capitalizeOption={true} 
+                                        prefix={''}                                    />
                                 </Td>
                             </Tr>
                         </Tbody>

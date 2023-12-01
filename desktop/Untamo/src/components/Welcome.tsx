@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from "react"
 import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList, Box, Divider,
           MenuItem , Spacer, VStack, Center, Heading, Table, Tr, Td, Tbody  } from '@chakra-ui/react'
-import { useLogIn, useDevices  } from "../stores"
+import { useLogIn, useDevices, useSettings} from "../stores"
+import { dialogSizes as sizes } from "../stores/settingsStore"
 import usePopups from "../stores/popUpStore"
 import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
 import { SessionStatus, Path } from "../type"
 import DeviceIcons from "./Device/DeviceIcons"
-import TimeFormat from "./User/TimeFormat"
+import OptionsToRadio from "./OptionsToRadio"
 
 function Welcome() {
     const userInfo = useLogIn((state) => state.user)
@@ -17,6 +18,9 @@ function Welcome() {
     const setShowAddDevice = usePopups(state => state.setShowAddDevice)
     const menuRef = useRef<HTMLButtonElement>(null)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
+    const clock24 = useSettings((state) => state.clock24)
+    const setClock24 = useSettings((state) => state.setClock24)
+    const size = useSettings((state) => state.dialogSize)
 
     function TimeFormatSelect() {
         return (
@@ -27,7 +31,13 @@ function Welcome() {
                         Time Format
                     </Text>
                     <VStack>
-                        <TimeFormat />
+                        <OptionsToRadio
+                            options={{ "24 h": true, "12 h": false }}
+                            selectedOption={clock24}
+                            setOption={setClock24}
+                            capitalizeOption={true}
+                            sizeKey={sizes.get(size) as string}
+                        />
                     </VStack>
                 </Box>
             </Center>

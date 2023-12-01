@@ -802,26 +802,5 @@ const useLogIn = create<UseLogIn>()(
       }
     )
 )
-export async function pingServer(server: string) {
-    try {
-      const client = await getClient()
-      const res = await client.request(
-        {
-          method: "GET",
-          url: `${server}/ping`,
-          responseType: ResponseType.Text
-        }
-      )
-      if ( res.status === 200) {
-        notification('Server Ping', 'Server is online', Status.Success
-        )
-      } else {
-        notification('Server Ping', `Server is not responding ${res.status}`, Status.Error
-        )
-      }
-    } catch (e) {
-      notification('Server Ping', `Server is not responding ${e}`, Status.Error
-      )
-    }
-  }
+
 export default useLogIn

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { keysAudio, getAudioPath } from './audioDatabase' 
 import { Child, Command } from '@tauri-apps/api/shell'
 import  useSettings  from './settingsStore'
+import { sleep } from '../utils'
 
 
 type UseAudio = {
@@ -49,9 +50,11 @@ async function play(track: string, loop: boolean) {
     return out
 }
 
-function stop() {
+async function stop() {
     let children: Array<Child> = []
     if (useAudio.getState().plays) {
+        useAudio.getState().audioProcess?.map(c => { c.kill(); children.push(c) })
+        await sleep(30)
         useAudio.getState().audioProcess?.map(c => { c.kill(); children.push(c) })
     }
     return children
@@ -98,7 +101,7 @@ const useAudio = create<UseAudio>((set, get) => (
         stop: () => {
             let children = stop()
             let audioProcess = get().audioProcess
-            let avail = audioProcess?.filter(c => !children.includes(c))
+            let avail = audioProcess?.filter(async c => !(await children).includes(c))
             set(
                 {
                     audioProcess: avail?avail:null,

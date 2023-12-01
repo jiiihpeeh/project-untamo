@@ -4,7 +4,7 @@ import { Modal, ModalContent,  ModalHeader, ModalFooter,
 import { FocusLock } from '@chakra-ui/focus-lock'
 import React, { useState, useEffect }  from 'react'
 import { usePopups, useServer } from '../stores' 
-import  {pingServer} from '../stores/loginStore'
+import  {pingServer} from '../utils'
 
 
 function ServerLocation() {

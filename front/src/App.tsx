@@ -46,6 +46,7 @@ import ChangeAlarmColors from './components/User/ChangeColors'
 import ResetPassword from './components/ResetPassword'
 import ResendActivation from './components/ResendActivation'
 import QrLogin from './components/QR/QrLogin'
+import ThemeComponent from './components/User/Theme'
 import './App.css'
 
 function App() {
@@ -123,6 +124,7 @@ function App() {
         <PasswordForgot/>
         <ResendActivation/>
         <QrLogin/>
+        <ThemeComponent/>
     </Container>
     )
 }

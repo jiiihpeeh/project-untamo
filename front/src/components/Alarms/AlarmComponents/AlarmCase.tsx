@@ -1,15 +1,15 @@
-import React, { useRef} from "react";
-import { Menu, MenuButton, MenuList, Button, MenuItem, Center} from "@chakra-ui/react";
-import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
+import React, { useRef} from "react"
+import { Menu, MenuButton, MenuList, Button, MenuItem, Center} from "@chakra-ui/react"
+import { ChevronDownIcon as Down } from  '@chakra-ui/icons'
 import useAlarm from './alarmStates'
 import { AlarmCases }  from "../../../type"
-import { capitalize } from "../../../utils";
+import { capitalize, enumValues } from "../../../utils"
 
 function AlarmCase() {
-  const alarmCase = useAlarm((state) => state.occurrence);
-  const setAlarmCase = useAlarm((state) => state.setOccurrence);
-  const cases = Object.values(AlarmCases).filter((item) => item);
-  const inputTime = useRef<number>(Date.now());
+  const alarmCase = useAlarm((state) => state.occurrence)
+  const setAlarmCase = useAlarm((state) => state.setOccurrence)
+  const cases = enumValues(AlarmCases)
+  const inputTime = useRef<number>(Date.now())
 
   function mouseSelect(e: number) {
     const now = Date.now();

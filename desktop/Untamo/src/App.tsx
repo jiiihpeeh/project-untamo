@@ -47,6 +47,7 @@ import ResetPassword from './ResetPassword'
 import ResendActivation from './components/ResendActivation'
 import QrLogin from './components/QR/QrLogin'
 import './App.css'
+import ThemeComponent from './components/User/Theme'
 
   // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
 function App() {
@@ -131,6 +132,7 @@ function App() {
         <PasswordForgot/>
         <ResendActivation/>
         <QrLogin/>
+        <ThemeComponent/>
     </Container>
     )
 }
