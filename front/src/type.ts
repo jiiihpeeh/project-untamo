@@ -23,6 +23,7 @@ export enum Path {
     ResetPassword = "reset-password",
 }
 export enum ColorMode {
+    System = "system",
     Light = "light",
     Dark = "dark"
 }

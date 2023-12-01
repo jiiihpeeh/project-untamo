@@ -1,3 +1,5 @@
+import axios from 'axios'
+import { notification, Status } from './components/notification'
 import { Path } from './type'
 
 
@@ -74,3 +76,29 @@ export async function calculateSHA512(blob: Blob): Promise<string> {
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
+export async function pingServer(server: string, notify = true) {
+    try {
+      const res = await axios.get(`${server}/ping`)
+      if (res.status === 200) {
+        notify  ? notification('Server Ping', 'Server is online', Status.Success ) : null
+        return true
+      } else {
+        notify ? notification('Server Ping', 'Server is not responding', Status.Error ) : null
+        return false
+      }
+    } catch (e) {
+        notify ? notification('Server Ping', 'Server is not responding', Status.Error ) : null
+        return false
+    }
+}
+
+export function enumValues<T extends Record<string, string | number>>(
+    enumObject: T
+  ): Array<T[keyof T]> {
+    return Object.values(enumObject) as Array<T[keyof T]>
+}
+
+export function getKeyByValue<T>(object: { [key: string]: T }, value: T): string  {
+    const k = Object.keys(object).find((key) => object[key] === value)
+    return k ? k : ""
+}
