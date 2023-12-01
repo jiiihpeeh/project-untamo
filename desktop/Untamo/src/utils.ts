@@ -1,5 +1,7 @@
+import { ResponseType, getClient } from '@tauri-apps/api/http';
 import { Path } from './type'
 import { invoke } from '@tauri-apps/api';
+import { Status, notification } from './components/notification';
 
 export async function sleep(ms: number) {
     return await  invoke("sleep", {millis: ms}) as boolean;
@@ -81,4 +83,42 @@ export function generateRandomString(length: number): string {
 export async function calculateSHA512(blob: Blob): Promise<string> {
     const hash = await crypto.subtle.digest('SHA-512', await blob.arrayBuffer())
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+
+export async function pingServer(server: string, notify = true) {
+    try {
+      const client = await getClient()
+      const res = await client.request(
+        {
+          method: "GET",
+          url: `${server}/ping`,
+          responseType: ResponseType.Text
+        }
+      )
+      if ( res.status === 200) {
+        //check if notification is enabled using unary operator
+
+        notify ?  notification('Server Ping', 'Server is online', Status.Success ) : null
+        return true
+      } else {
+        notify ?  notification('Server Ping', `Server is not responding ${res.status}`, Status.Error) : null
+        return false
+      }
+    } catch (e) {
+      notify ? notification('Server Ping', `Server is not responding ${e}`, Status.Error ) : null
+      return false
+    }
+}
+
+export function enumValues<T extends Record<string, string | number>>(
+    enumObject: T
+  ): Array<T[keyof T]> {
+    return Object.values(enumObject) as Array<T[keyof T]>
+}
+
+
+export function getKeyByValue<T>(object: { [key: string]: T }, value: T): string  {
+    const k = Object.keys(object).find((key) => object[key] === value)
+    return k ? k : ""
 }

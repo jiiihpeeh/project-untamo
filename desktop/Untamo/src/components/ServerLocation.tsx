@@ -5,7 +5,7 @@ import { FocusLock } from '@chakra-ui/focus-lock'
 import React, { useState, useEffect }  from 'react'
 import { usePopups } from '../stores' 
 import useServer from '../stores/serverStore'
-import  {pingServer} from '../stores/loginStore'
+import  {pingServer} from '../utils'
 
 function ServerLocation() {
   const server = useServer((state) => state.address)

@@ -19,6 +19,13 @@ export enum WindowTop{
     Never="never"
 }
 
+export enum NotificationType{
+    Desktop="desktop",
+    Toast="toast",
+    Both="both",
+    None="none"
+}
+
 export const defaultCardLight : CardColors = { 
     inactive: "#ececec", 
     even: '#c4ffff ', 
@@ -49,6 +56,8 @@ type UseSettings =  {
     colorMode: ColorMode,
     isLight: boolean,
     volume: number,
+    notificationType: NotificationType,
+    theme: Record<string, any>,
     setDialogSize: (size: number) => void,
     setColorMode: (mode: ColorMode) => void,
     setOnTop: (value: WindowTop) => void,
@@ -61,7 +70,7 @@ type UseSettings =  {
     setPanelSize: (size: number) => void,
     setSnoozePress: (n: number) => void,
     setVolume: (n: number) => void,
-    theme: Record<string, any>,
+    setNotificationType: (type: NotificationType) => void,
     setTheme: (light: string, dark: string) => void,
 }
 
@@ -95,6 +104,8 @@ const useSettings = create<UseSettings>()(
             onTop: WindowTop.Alarm,
             snoozePress: 200,
             volume: 0.9,
+            theme: themeSettings(),
+            notificationType: NotificationType.Desktop,
             setDialogSize: (size: number) => set({ dialogSize: size }),
             setColorMode: (mode: ColorMode) => {
                 set(
@@ -192,11 +203,17 @@ const useSettings = create<UseSettings>()(
                     }
                 )
             },
-            theme: themeSettings(),
             setTheme: (light, dark) => {
                 set(
                     {
                         theme: themeSettings(light, dark)
+                    }
+                )
+            },
+            setNotificationType: (type) => {
+                set(
+                    {
+                        notificationType: type
                     }
                 )
             },
@@ -218,6 +235,7 @@ const useSettings = create<UseSettings>()(
                 onTop: state.onTop,
                 isLight: state.isLight,
                 volume: state.volume,
+                notificationType: state.notificationType,
               }
           ),
       }
