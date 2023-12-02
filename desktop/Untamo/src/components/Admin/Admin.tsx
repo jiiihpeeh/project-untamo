@@ -3,7 +3,7 @@ import { Button, Table, Thead, Tbody, Tr,Th,Td, TableContainer,
          Switch, IconButton, Box, VStack, Card, Flex, Container, Center, Spacer, HStack } from "@chakra-ui/react"
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
-import { usePopups, useLogIn, useAdmin } from "../../stores"
+import { usePopups, useLogIn, useAdmin, useSettings } from "../../stores"
 import { AdminAction, Path } from '../../type'
 
 function Admin() {
@@ -16,6 +16,7 @@ function Admin() {
     //const navigateTo = useLogIn((state) => state.navigateTo)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const isOwner = useLogIn((state) => state.user.owner)
+    const isLight = useSettings((state) => state.isLight)
 
     function userActive(id: string, active: boolean, owner: boolean, currentUser: boolean, key: number) {
         return (
@@ -65,7 +66,7 @@ function Admin() {
         }
         return usersData.map(({ active, admin, owner, email, user }, key) => {
             return (
-                <Card key={`user-${key}`} p={4} mb={4} bg="teal.50">
+                <Card key={`user-${key}`} p={4} mb={4} bg={ isLight ? "teal.50": "teal.500"}>
                     <Flex justify="space-between" align="center">
                         <VStack>
                             <HStack>
