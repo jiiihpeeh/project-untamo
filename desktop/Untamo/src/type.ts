@@ -45,6 +45,7 @@ export type Device = {
     type: DeviceType
 }
 export enum ColorMode{
+    System = "system",
     Light="light",
     Dark="dark"
 }
