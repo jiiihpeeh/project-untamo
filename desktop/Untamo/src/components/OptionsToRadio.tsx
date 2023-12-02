@@ -12,7 +12,7 @@ interface OptionsRadioProps<T> {
     sizeKey: string
 }
   
-  function OptionsToRadio<T>({
+function OptionsToRadio<T>({
     options,
     selectedOption,
     setOption,
@@ -33,7 +33,7 @@ interface OptionsRadioProps<T> {
         ))}
       </Stack>
     </RadioGroup>
-    )
-  }
+  )
+}
   
   export default OptionsToRadio

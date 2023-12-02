@@ -52,7 +52,7 @@ type UseAdmin = {
     clear:()=> void,
 }
 type UsersData = {
-    userID: string,
+    user: string,
     email: string,
     active: boolean,
     admin: boolean,
@@ -140,7 +140,7 @@ async function runAdminAction() {
     const { server, token } = getCommunicationInfo()
     const usersData = useAdmin.getState().usersData
     const command = useAdmin.getState().command
-    let user = usersData.filter(user => user.userID === command.id)[0]
+    let user = usersData.filter(user => user.user === command.id)[0]
 
     const adminToken = useAdmin.getState().token
     switch (command.action) {

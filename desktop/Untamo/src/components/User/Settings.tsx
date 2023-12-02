@@ -12,9 +12,9 @@ import { AddIcon as Add, MinusIcon as Minus } from  '@chakra-ui/icons';
 import { CloseTask, ColorMode } from '../../type'
 import { dialogSizes as sizes } from '../../stores/settingsStore'
 import EnumToMenu from '../EnumToMenu'
-import { enumValues } from '../../utils'
+import { enumToObject, enumValues } from '../../utils'
 import OptionsToRadio from '../OptionsToRadio'
-import { useTheme, Theme } from  "./Theme"
+import { useTheme } from  "./Theme"
 
 function Settings() {
     const setShowSettings = usePopups((state) => state.setShowSettings)
@@ -102,7 +102,7 @@ function Settings() {
                                 <Td>
                                     <Center>
                                         <OptionsToRadio
-                                            options={{ "System": Theme.System, "Light": Theme.Light, "Dark": Theme.Dark }}
+                                            options={enumToObject(ColorMode)}
                                             selectedOption={theme}
                                             setOption={setTheme}
                                             capitalizeOption={true}

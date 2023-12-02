@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLogIn, usePopups } from '../stores';
 import { Button, Modal, ModalBody, ModalContent, Input,
      Text, ModalFooter, ModalHeader, Spacer, 

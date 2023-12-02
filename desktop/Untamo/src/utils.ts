@@ -122,3 +122,14 @@ export function getKeyByValue<T>(object: { [key: string]: T }, value: T): string
     const k = Object.keys(object).find((key) => object[key] === value)
     return k ? k : ""
 }
+
+export function enumToObject<T extends Record<string, string>>(
+    enumObj: T
+  ): { [key: string]: T[keyof T] } {
+    return Object.fromEntries(
+      Object.keys(enumObj).map((key) => [
+        key,
+        enumObj[key as keyof T],
+      ])
+    )
+}
