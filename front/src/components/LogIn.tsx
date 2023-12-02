@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState, ChangeEvent } from "react"
 import { Input , FormControl,FormLabel, Spacer, VStack, HStack,
        Center, Button, Box,Divider, Spinner, IconButton, Icon } from '@chakra-ui/react'
 import { useLogIn,  usePopups, useSettings } from "../stores"
@@ -27,7 +27,7 @@ function LogIn() {
     })
     const [canSubmit, setCanSubmit] = useState(false)
 
-    function onChange(event: React.ChangeEvent<HTMLInputElement>) {
+    function onChange(event: ChangeEvent<HTMLInputElement>) {
         setFormData((formData) => {
             return {
                 ...formData,

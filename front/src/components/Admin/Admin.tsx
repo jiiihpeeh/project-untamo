@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { Button, Table, Thead, Tbody, Tr,Th,Td, TableContainer,
-         Switch, IconButton, Box, VStack } from "@chakra-ui/react"
+         Switch, IconButton, Box, VStack, Card, Flex, Container, Center, Spacer, HStack } from "@chakra-ui/react"
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
 import { usePopups, useLogIn, useAdmin } from "../../stores"
@@ -65,25 +65,34 @@ function Admin() {
         }
         return usersData.map(({ active, admin, owner, email, user }, key) => {
             return (
-                <Tr
-                    key={`user-${key}`}
-                >
-                    <Td>
-                        {user}
-                    </Td>
-                    <Td>
-                        {email}
-                    </Td>
-                    <Td>
-                        {userActive(user, active, owner, userInfo.email === email, key)}
-                    </Td>
-                    <Td>
-                        {userAdmin(user, admin, owner, userInfo.email === email, key)}
-                    </Td>
-                    <Td>
-                        {userDelete(user, owner, userInfo.email === email, key)}
-                    </Td>
-                </Tr>
+                <Card key={`user-${key}`} p={4} mb={4} bg="teal.50">
+                    <Flex justify="space-between" align="center">
+                        <VStack>
+                            <HStack>
+                                <Box>
+                                    <strong>ID:</strong> {user}
+                                </Box>
+                                <Spacer />
+                                <Box>
+                                    <strong>Email:</strong> {email}
+                                </Box>
+                            </HStack>
+                            <HStack>
+                                <Box>
+                                    <strong>Active:</strong> {userActive(user, active, owner, userInfo.email === email, key)}
+                                </Box>
+                                <Spacer />
+                                <Box>
+                                    <strong>Admin:</strong> {userAdmin(user, admin, owner, userInfo.email === email, key)}
+                                </Box>
+                                <Spacer />
+                                <Box>
+                                    <strong>Delete:</strong> {userDelete(user, owner, userInfo.email === email, key)}
+                                </Box>
+                            </HStack>
+                        </VStack>
+                    </Flex>
+                </Card>
             )
         })
     }
@@ -102,7 +111,9 @@ function Admin() {
     useEffect(() => {
         renderUsers()
     }, [usersData, renderUsers])
-    return (<Box>
+    return (
+        <Center>
+            <Box>
                 <VStack>
                     <Button
                         onClick={getUsersData}
@@ -119,61 +130,16 @@ function Admin() {
                         Server Configuration (Owner Only)
                     </Button>
                 </VStack>
-                <TableContainer
-                    key="TableContainer"
-                    width={"100%"}
-                    style={{ left: 0, position: "absolute" }}
-                >
-                    <Table
-                        variant='striped'
-                        key="userTable"
-                        id="Admin-Table"
-                        alignContent={"center"}
-                        alignItems={"center"}
-                    >
-                        <Thead
-                            key="table-Header"
-                        >
-                            <Tr
-                                key="header-Rows"
-                            >
-                                <Th
-                                    key="header-ID"
-                                >
-                                    ID
-                                </Th>
-                                <Th>
-                                    User
-                                </Th>
-                                <Th
-                                    key="header-active"
-                                >
-                                    Active
-                                </Th>
-                                <Th
-                                    key="header-admin"
-                                >
-                                    Admin
-                                </Th>
-                                <Th
-                                    key="header-delete"
-                                >
-                                    Delete
-                                </Th>
-                            </Tr>
-                        </Thead>
-                        <Tbody
-                            key="TableContent"
-                        >
-                            {renderUsers()}
-                        </Tbody>
-
-                    </Table>
-                </TableContainer>
+                
+                <Container>
+                    {renderUsers()}
+                </Container>
+                
 
                 <AdminConfirm />
 
             </Box>
+            </Center>
     )
 }
 

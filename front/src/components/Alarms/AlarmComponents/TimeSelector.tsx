@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { Input, FormLabel, Box,Center, Button, Text } from "@chakra-ui/react"
+import { Input, FormLabel, Box,Center, Text } from "@chakra-ui/react"
 import useAlarm, { Direction } from "./alarmStates"
 import ClockWindow from './ClockWindow'
 import { usePopups, useSettings } from '../../../stores'
 import { time24hToTime12h, timePadding } from '../../../utils'
 
-const timeToString = (time: [number,number]) => {
+function timeToString(time: [number,number]){
     let timeString = ""
     for(const i of time){
         timeString += timePadding(i)
@@ -14,7 +14,7 @@ const timeToString = (time: [number,number]) => {
     return `${timePadding(time[0])}:${timePadding(time[1])}`
 }
 
-const TimeSelector = () => {
+function TimeSelector() {
     const time = useAlarm((state)=> state.time)
     const clock24 = useSettings((state)=> state.clock24)
 
@@ -30,7 +30,7 @@ const TimeSelector = () => {
     const wheelTimes = useRef<Array<number>>([])
   
 
-    const ChangeTimeWheel = (message: number, position: number) => {
+    function ChangeTimeWheel(message: number, position: number){
         const now = Date.now()
         if(now - inputTime.current  < 20){
             return
