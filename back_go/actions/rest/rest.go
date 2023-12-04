@@ -6,6 +6,7 @@ import (
 	"embed"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -758,7 +759,7 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 	}
 	uID := userInSession.GetUid()
 	adminSession.UserId = uID
-	log.Println("adminSession", adminSession)
+	//log.Println("adminSession", adminSession)
 	//add admin to db
 	if !(*db).AddAdminSession(&adminSession) {
 		c.JSON(500, gin.H{
@@ -1053,6 +1054,66 @@ func RemoveUser(c *gin.Context, db *database.Database) {
 	}
 	//return usersOut as json
 	c.JSON(200, usersOut)
+}
+
+func GetWebColors(c *gin.Context, db *database.Database) {
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	//get colors from db
+	colors := (*db).GetWebColors(userInSession)
+	fmt.Println("colors", colors)
+
+	//return colors as json
+	c.JSON(200, &colors)
+}
+
+func SetWebColors(c *gin.Context, db *database.Database) {
+	session, userInSession := (*db).GetSessionFromHeader(c.Request)
+	if session == nil {
+		c.JSON(401, gin.H{
+			"message": "Unauthorized",
+		})
+		return
+	}
+	if userInSession == nil {
+		c.JSON(404, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		return
+	}
+
+	// Convert the body to a string
+	colors := string(body)
+
+	if !(*db).AddWebColors(userInSession, colors) {
+		c.JSON(500, gin.H{
+			"message": "Failed to set web colors",
+		})
+		return
+	}
+	//remove keys "Light" and "Dark" from colors
+
+	//send to ws
+	go func() {
+		wsOut := wsOut.WsOut{Type: "webColors", Data: colors}
+		wsOutJson, _ := json.Marshal(wsOut)
+		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(wsOutJson))
+	}()
 }
 
 func RefreshToken(c *gin.Context, db *database.Database) {
