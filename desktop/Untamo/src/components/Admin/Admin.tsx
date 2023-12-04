@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
-import { Button, Table, Thead, Tbody, Tr,Th,Td, TableContainer,
-         Switch, IconButton, Box, VStack, Card, Flex, Container, Center, Spacer, HStack } from "@chakra-ui/react"
+import { Button, Switch, IconButton, Box, VStack, 
+    Card, Flex, Container, Center, Spacer, HStack } from "@chakra-ui/react"
 import { DeleteIcon } from '@chakra-ui/icons'
 import AdminConfirm from "./AdminConfirm"
 import { usePopups, useLogIn, useAdmin, useSettings } from "../../stores"
@@ -55,18 +55,18 @@ function Admin() {
         useAdmin.setState({ command: { id: id, action: AdminAction.Activity } })
         setConfirmOpen(true)
     }
-    const initChangeAdminState = (id: string) => {
+    function initChangeAdminState(id: string) {
         useAdmin.setState({ command: { id: id, action: AdminAction.Admin } })
         setConfirmOpen(true)
     }
 
-    const renderUsers = () => {
+    function renderUsers() {
         if (!usersData || usersData.length === 0) {
             return ([] as Array<JSX.Element>)
         }
         return usersData.map(({ active, admin, owner, email, user }, key) => {
             return (
-                <Card key={`user-${key}`} p={4} mb={4} bg={ isLight ? "teal.50": "teal.500"}>
+                <Card key={`user-${key}`} p={4} mb={4} bg={isLight ? "teal.50" : "teal.500"}>
                     <Flex justify="space-between" align="center">
                         <VStack>
                             <HStack>
@@ -140,7 +140,7 @@ function Admin() {
                 <AdminConfirm />
 
             </Box>
-            </Center>
+        </Center>
     )
 }
 

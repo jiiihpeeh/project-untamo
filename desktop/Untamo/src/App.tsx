@@ -48,6 +48,7 @@ import ResendActivation from './components/ResendActivation'
 import QrLogin from './components/QR/QrLogin'
 import './App.css'
 import ThemeComponent from './components/User/Theme'
+import SaveColorScheme from './components/User/SaveColors'
 
   // you need to call unlisten if your handler goes out of scope e.g. the component is unmounted
 function App() {
@@ -124,6 +125,7 @@ function App() {
                 <AdminPop/>
                 <Color/>
                 <Task/>
+                <SaveColorScheme/>
             </Container>
         <Settings/>
         <ClearSettings/>
