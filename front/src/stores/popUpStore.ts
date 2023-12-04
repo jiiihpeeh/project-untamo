@@ -69,6 +69,8 @@ type Popup = {
     setShowResendActivation: (b: boolean) => void,
     showQrCodeReader: boolean,
     setShowQrCodeReader: (b: boolean) => void,
+    showSaveColorScheme: boolean,
+    setShowSaveColorScheme: (b: boolean) => void,
 }
 
 const usePopups = create<Popup>((set, get) => ({
@@ -342,6 +344,14 @@ const usePopups = create<Popup>((set, get) => ({
             set(
                 {
                     showQrCodeReader: b
+                }
+            )
+        },
+        showSaveColorScheme: false,
+        setShowSaveColorScheme: (b) => {
+            set(
+                {
+                    showSaveColorScheme: b
                 }
             )
         }
