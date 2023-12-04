@@ -12,6 +12,7 @@ import useFetchQR from '../stores/QRStore'
 import { SessionStatus, FormData, UserInfo, Device, Alarm, Path, PasswordReset, QrLoginScan } from '../type'
 import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, generateRandomString, calculateSHA512 } from '../utils'
+import useSettings, { defaultCardDark, defaultCardLight, defaultWebColors, UserColors } from './settingsStore'
 
 
 type UseLogIn = {
@@ -339,6 +340,7 @@ async function logIn(email: string, password: string) {
         useLogIn.setState({ sessionValid: SessionStatus.NotValid })
         //console.error(err)
     }
+    await getWebColors()
 }
 
 async function updateState(){
@@ -374,6 +376,7 @@ async function updateState(){
     } catch (err) {
         notification("Update", "Update failed", Status.Error)
     }
+    await getWebColors()
 }
 
 async function logOutProcedure() {
@@ -488,6 +491,27 @@ async function resendActivation(email: string){
     }
 }
 
+async function getWebColors(){
+    const {server, token} = getCommunicationInfo()
+    const url = `${server}/api/web-colors`
+    let res = await axios.get(url,             {
+        headers: {
+            token: token
+        }
+    })
+    //check if response is ok
+    if(res.status !== 200){
+        notification('Web Colors', 'Failed to get web colors', Status.Error)
+        //console.log(res)
+        return {}
+    }
+    const cols = JSON.parse(res.data) as UserColors
+    const newColors = defaultWebColors()
+    //useSettings.getState().setWebColors({...useSettings.getState().webColors, ...cols})
+    useSettings.setState({webColors: {...newColors, ...cols}})
+}
+
+
 async function logInWithQr(scan: QrLoginScan) {
     let server = scan.server
     let token = scan.token
@@ -550,6 +574,7 @@ async function logInWithQr(scan: QrLoginScan) {
         notification("Log In", "Log In Failed", Status.Error)
         useLogIn.setState({ sessionValid: SessionStatus.NotValid })
     }
+    await getWebColors()
 }
 
 
@@ -581,7 +606,7 @@ const useLogIn = create<UseLogIn>()(
             tokenTime: -1,
             tunes: [],
             wsPair:"",
-            fingerprint: generateRandomString(24) + Date.now().toString(36),//[...Array(Math.round(Math.random() * 5 ) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36),
+            fingerprint: generateRandomString(24) + Date.now().toString(36),
             captcha: null,
             captchaSum: "",
             setToken: (s) => set(

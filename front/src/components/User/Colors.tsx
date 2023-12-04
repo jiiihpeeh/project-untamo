@@ -3,8 +3,9 @@ import React, { useState, useEffect } from "react"
 import { usePopups, useSettings } from "../../stores"
 import { Spacer, HStack, Button, VStack, Modal,
          ModalOverlay, ModalContent, Divider,
-         ModalHeader, ModalBody, ModalCloseButton } from '@chakra-ui/react'
+         ModalHeader, ModalBody, ModalCloseButton, Center } from '@chakra-ui/react'
 import { CardColors } from "../../stores/settingsStore"
+import LoadColorScheme from "./LoadColors"
 
 function Color() {
     const showColor = usePopups((state) => state.showColor)
@@ -12,7 +13,7 @@ function Color() {
     const cardColors = useSettings((state) => state.cardColors)
     const setCardColors = useSettings((state) => state.setCardColors)
     const setDefaultCardColors = useSettings((state) => state.setDefaultCardColors)
-
+    const setShowSaveColorScheme = usePopups((state) => state.setShowSaveColorScheme)
     const [color, setColor] = useState(cardColors.odd)
     const [mode, setMode] = useState<keyof CardColors>("odd")
 
@@ -38,9 +39,21 @@ function Color() {
                 <ModalCloseButton />
                 <ModalBody>
                     <HStack>
-                        <HexColorPicker
-                            color={color}
-                            onChange={setColor} />
+                        <VStack>
+                            <HexColorPicker
+                                color={color}
+                                onChange={setColor} />
+                            <Center>
+                                <VStack>
+                                    <Button
+                                        onClick={() => setShowSaveColorScheme(true)}
+                                    >
+                                        Save Theme
+                                    </Button>
+                                    <LoadColorScheme />
+                                </VStack>
+                            </Center>
+                        </VStack>
                         <VStack>
                             <Button
                                 background={cardColors.odd}

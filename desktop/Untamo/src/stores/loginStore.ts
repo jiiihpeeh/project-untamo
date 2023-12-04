@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { getCommunicationInfo } from '../stores'
+import { getCommunicationInfo, useSettings } from '../stores'
 import { notification, Status } from '../components/notification'
 import { SessionStatus, FormData, UserInfo, QrLoginScan } from '../type'
 import useServer from './serverStore'
@@ -13,7 +13,7 @@ import { initAudioDB, deleteAudioDB ,fetchAudioFiles } from "./audioDatabase"
 import { sleep, isSuccess, generateRandomString, calculateSHA512 } from '../utils'
 import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { Alarm, Device, Path, PasswordReset } from "../type"
-import { error } from 'console'
+import { UserColors, defaultCardDark, defaultCardLight, defaultWebColors } from './settingsStore'
 
 type UseLogIn = {
     wsToken: string
@@ -394,6 +394,7 @@ async function updateState(){
     } catch (err) {
         notification("Update", "Update failed", Status.Error)
     }
+    await getWebColors()
 }
 async function logIn(email: string, password: string) {
     //console.log("Logging in ", email, password)
@@ -479,6 +480,7 @@ async function logIn(email: string, password: string) {
         useLogIn.setState({ sessionValid: SessionStatus.NotValid })
         //console.error(err)
     }
+    await getWebColors()
 }
 async function logOutProcedure() {
     const { server, token } = getCommunicationInfo()
@@ -594,6 +596,31 @@ async function resendActivation(email: string){
     }
 }
 
+async function getWebColors(){
+    const {server, token} = getCommunicationInfo()
+
+
+    try{
+        const client = await getClient()
+        const res = await client.request(
+            {
+                url: `${server}/api/web-colors`,
+                method: 'GET',
+                headers: {
+                    token: token
+                },
+                responseType: ResponseType.JSON
+            }
+        )
+        isSuccess(res)
+        const newColors : UserColors = defaultWebColors()
+        const cols = JSON.parse(res.data as string) as UserColors
+        //console.log(cols, {...newColors, ...cols})
+        useSettings.setState({webColors: {...newColors, ...cols}})
+    }catch(err){
+        notification('Web Colors', 'Failed to get web colors', Status.Error)
+    }
+}
 
 async function logInWithQr(scan: QrLoginScan) {
     let server = scan.server
@@ -668,6 +695,7 @@ async function logInWithQr(scan: QrLoginScan) {
         useLogIn.setState({ sessionValid: SessionStatus.NotValid })
         //console.error(err)
     }
+    await getWebColors()
 }
 
 

@@ -5,6 +5,10 @@ import { CloseTask, ColorMode} from '../type'
 import { extendTheme } from '@chakra-ui/react'
 import type { StyleFunctionProps } from '@chakra-ui/styled-system'
 import { mode } from '@chakra-ui/theme-tools'
+import { getCommunicationInfo } from '../stores'
+
+import axios from 'axios'
+import { notification, Status } from '../components/notification'
 
 export type CardColors =  {
     even: string,
@@ -12,7 +16,9 @@ export type CardColors =  {
     inactive: string
     background: string
 }
-
+export type UserColors = {
+    [key: string]: CardColors
+}
 export enum NotificationType{
     Desktop="desktop",
     Toast="toast",
@@ -20,19 +26,51 @@ export enum NotificationType{
     None = "none"
 }
 
-const defaultCardLight : CardColors = { 
+export const defaultCardLight : CardColors = { 
                                     inactive: "#ececec", 
                                     even: '#c4ffff ', 
                                     odd:"#ffff9d" ,
                                     background: "#ffffff"
                                  }
-const defaultCardDark : CardColors = {
+export const defaultCardDark : CardColors = {
                                     inactive:"#717171",
                                     even:"#00e7e7",
                                     odd:"#ea9200",
                                     background: "#000000"
                                 }
 export const dialogSizes = new Map<number, string>( [[0, "sm"], [1, "md"], [2, "lg"]])
+
+export function defaultWebColors(): UserColors {
+    return {"Light": defaultCardLight, "Dark": defaultCardDark}
+}
+
+async function sendWebColors(colors: UserColors){
+    //clone object
+    const colorsClone = JSON.parse(JSON.stringify(colors)) as UserColors
+    //remove "Light" and "Dark
+    delete colorsClone["Light"]
+    delete colorsClone["Dark"]
+    //check if colors are empty
+    if(Object.keys(colors).length === 0){
+        return
+    }
+    const {server, token} = getCommunicationInfo()
+    const url = `${server}/api/web-colors`
+    const post = JSON.stringify(colorsClone) 
+    let res = await axios.post(url, post, {
+        headers: {
+            token: token
+        }
+    })
+
+    if(res.status !== 200){
+        notification('Web Colors', 'Failed to save web colors', Status.Error)
+        //console.log(res)
+        return
+    }
+}
+
+
 
 type UseSettings =  {
     dialogSize: number
@@ -49,6 +87,7 @@ type UseSettings =  {
     volume: number,
     notificationType: NotificationType,
     theme: Record<string, any>,
+    webColors: UserColors,
     setDialogSize: (size: number) => void,
     setColorMode: (mode: ColorMode) => void,
     setCloseTask: (task: CloseTask) => void,
@@ -56,12 +95,14 @@ type UseSettings =  {
     setNavBarTop: (to: boolean) => void,
     setHeight: (n:number) => void,
     setCardColors: (color : string, mode: keyof CardColors) => void,
+    loadColorScheme: (theme: string) => void,
     setDefaultCardColors: () => void,
     setPanelSize: (size: number) => void,
     setSnoozePress: (n: number) => void,
     setVolume: (volume: number) => void,
     setTheme: (light: string, dark: string) => void,
     setNotificationType: (type: NotificationType) => void,
+    setWebColors: (colors: UserColors) => void,
 }
 
 function themeSettings(light=defaultCardLight.background, dark=defaultCardDark.background){
@@ -96,6 +137,7 @@ const useSettings = create<UseSettings>()(
             volume: 0.9,
             theme: themeSettings(),
             notificationType: NotificationType.Desktop,
+            webColors: {"Light": defaultCardLight, "Dark": defaultCardDark},
             setDialogSize: (size: number) => set({ dialogSize: size }),
             setColorMode: (mode: ColorMode) => {
                 set(
@@ -155,6 +197,20 @@ const useSettings = create<UseSettings>()(
                 document.body.style.backgroundColor = colors.background
 
             },
+            loadColorScheme: (theme) => {
+                //check if theme is in webColors
+                if(!(theme in get().webColors)){
+                    return
+                }
+                let colors = get().webColors[theme]
+
+                set(
+                    {
+                        cardColors: colors,
+                    }
+                )
+                document.body.style.backgroundColor = colors.background
+            },
             setDefaultCardColors: () => {
                 let colorsDefault = (get().colorMode === ColorMode.Light)? defaultCardLight : defaultCardDark
                 set(
@@ -200,7 +256,15 @@ const useSettings = create<UseSettings>()(
                         notificationType: type
                     }
                 )
-            }
+            },
+            setWebColors: (colors) => {
+                set(
+                    {
+                        webColors: colors
+                    }
+                )
+                sendWebColors(colors)
+            },
           }
       ),
       {
@@ -219,6 +283,7 @@ const useSettings = create<UseSettings>()(
                 isLight: state.isLight,
                 volume: state.volume,
                 notificationType: state.notificationType,
+                webColors: state.webColors,
               }
           ),
       }

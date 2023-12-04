@@ -74,6 +74,12 @@ func (s *SQLiteDB) CreateTables() {
 	//index email table
 	query = "CREATE UNIQUE INDEX IF NOT EXISTS email ON email (Email)"
 	s.connection.Exec(query)
+	//create webColors table
+	query = "CREATE TABLE IF NOT EXISTS webColors (ID INTEGER PRIMARY KEY AUTOINCREMENT, USER INTEGER UNIQUE, WebColors TEXT)"
+	s.connection.Exec(query)
+	//index webColors table for ID
+	query = "CREATE UNIQUE INDEX IF NOT EXISTS USER ON webColors (USER)"
+	s.connection.Exec(query)
 }
 
 func (s *SQLiteDB) Connect(file string) interface{} {
@@ -670,5 +676,32 @@ func (s *SQLiteDB) AddAdminSession(admin *admin.Admin) bool {
 	query := "INSERT INTO admin (Token, UserId, Time) VALUES (?, ?, ?)"
 	_, err := s.connection.Exec(query, admin.Token, admin.UserId, admin.Time)
 	//log.Println("AddAdminSession: ", result, err)
+	return err == nil
+}
+
+func (s *SQLiteDB) GetWebColors(userData *user.User) string {
+	query := "SELECT webColors FROM WebColors WHERE USER = ?"
+	row, err := s.connection.Query(query, userData.SQLiteID)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	defer row.Close()
+	//convert to string
+	var webColors string
+	for row.Next() {
+
+		err := row.Scan(&webColors)
+		if err != nil {
+			fmt.Println(err)
+			return ""
+		}
+	}
+	return webColors
+}
+
+func (s *SQLiteDB) AddWebColors(userData *user.User, webColors string) bool {
+	query := "INSERT OR REPLACE INTO webColors (USER, WebColors) VALUES (?, ?)"
+	_, err := s.connection.Exec(query, userData.SQLiteID, webColors)
 	return err == nil
 }

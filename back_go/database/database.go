@@ -79,4 +79,7 @@ type Database interface {
 
 	RemoveAlarmsWithNoDevices() bool
 	RemoveOldSessions() bool
+	//misc
+	AddWebColors(user *user.User, webColors string) bool
+	GetWebColors(user *user.User) string
 }

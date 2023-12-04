@@ -7,6 +7,7 @@ import useLogIn from './loginStore'
 import useAlarms from './alarmStore'
 import useDevices from './deviceStore'
 import { useAudio } from '../stores'
+import useSettings, { UserColors, defaultWebColors } from './settingsStore'
 
 type wsActionMsg = {
   url?: string,
@@ -19,7 +20,8 @@ enum WsMessage {
   DeviceAdd = "deviceAdd",
   DeviceDelete = "deviceDelete",
   DeviceEdit = "deviceEdit",
-  UserEdit = "userEdit"
+  UserEdit = "userEdit",
+  WebColors = "webColors",
 }
 type wsRegisterMsg = {
   formPass : boolean,
@@ -165,6 +167,11 @@ function wsActionListener(data: any) {
             break
           case WsMessage.UserEdit:
             userEdit(data.data as UserInfo)
+            break
+          case WsMessage.WebColors:
+            const newColors = defaultWebColors()
+            const cols = JSON.parse(data.data) as UserColors
+            useSettings.setState({webColors: {...newColors, ...cols}})
             break
           default:
             break

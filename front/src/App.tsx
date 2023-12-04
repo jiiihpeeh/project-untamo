@@ -48,6 +48,7 @@ import ResendActivation from './components/ResendActivation'
 import QrLogin from './components/QR/QrLogin'
 import ThemeComponent from './components/User/Theme'
 import './App.css'
+import SaveColorScheme from './components/User/SaveColors'
 
 function App() {
     const checkSession = useLogIn((state) => state.validateSession)
@@ -117,6 +118,7 @@ function App() {
                 <AdminPop/>
                 <Color/>
                 <Task/>
+                <SaveColorScheme/>
             </Container>
         <Settings/>
         <ClearSettings/>

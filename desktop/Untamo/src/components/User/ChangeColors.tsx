@@ -1,7 +1,10 @@
 import React, { useRef } from "react"
 import { AlertDialog,AlertDialogBody,AlertDialogFooter,AlertDialogHeader,
-         AlertDialogContent,AlertDialogOverlay,Button } from '@chakra-ui/react'
+         AlertDialogContent,AlertDialogOverlay,Button, AlertDialogCloseButton, Spacer } from '@chakra-ui/react'
 import { useSettings, usePopups } from "../../stores"
+import LoadColorScheme from "./LoadColors"
+
+  
 
 function ChangeAlarmColors() {
   const setShowChangeColors = usePopups((state) => state.setShowChangeColors)
@@ -24,27 +27,32 @@ function ChangeAlarmColors() {
           >
             Color Mode Change
           </AlertDialogHeader>
-
+          <AlertDialogCloseButton />
           <AlertDialogBody>
             Do you want to change the alarm colors?
           </AlertDialogBody>
-
           <AlertDialogFooter>
             <Button
               ref={cancelRef}
               onClick={() => setShowChangeColors(false)}
+              colorScheme='red'
             >
               Cancel
             </Button>
+            <Spacer  />
+            <LoadColorScheme  
+              setter={setShowChangeColors}
+              setterValue={false}
+            />
             <Button
-              colorScheme='red'
+              colorScheme='green'
               onClick={() => {
                 setShowChangeColors(false)
                 setDefaultCardColors()
               } }
               ml={3}
             >
-              OK
+              Default
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

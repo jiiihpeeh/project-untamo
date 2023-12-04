@@ -265,6 +265,12 @@ func main() {
 	router.GET("/api/user", func(c *gin.Context) {
 		rest.GetUser(c, &db)
 	})
+	router.GET("/api/web-colors", func(c *gin.Context) {
+		rest.GetWebColors(c, &db)
+	})
+	router.POST("/api/web-colors", func(c *gin.Context) {
+		rest.SetWebColors(c, &db)
+	})
 	router.GET("/api/update", func(c *gin.Context) {
 		rest.GetUpdate(c, &db)
 	})

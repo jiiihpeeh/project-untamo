@@ -30,6 +30,7 @@ const (
 	DEVICECOLL  = "devices"
 	ADMINCOLL   = "admins"
 	EMAILCOLL   = "emails"
+	WEBCOLORS   = "webcolors"
 )
 
 type MongoDB struct {
@@ -85,6 +86,13 @@ func (m *MongoDB) GenerateIndexes() {
 	})
 	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys:    bson.M{"_id": 1},
+		Options: options.Index().SetUnique(true),
+	})
+	//collection for web colors
+	collection = m.connection.Database(DB_NAME).Collection(WEBCOLORS)
+	//generate index for user and id
+	collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
+		Keys:    bson.M{"user": 1},
 		Options: options.Index().SetUnique(true),
 	})
 }
@@ -612,3 +620,33 @@ func (m *MongoDB) RemoveAlarmsWithNoDevices() bool {
 
 	return err == nil
 }
+
+type WebColorsUser struct {
+	User   primitive.ObjectID `bson:"user"`
+	Colors string             `bson:"colors"`
+}
+
+func (m *MongoDB) AddWebColors(userIn *user.User, webColors string) bool {
+	collection := m.connection.Database(DB_NAME).Collection(WEBCOLORS)
+	//add user id to webColors
+	insert := WebColorsUser{
+		User:   userIn.MongoID,
+		Colors: webColors,
+	}
+	//insert or replace webColors
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"user": userIn.MongoID}, insert)
+	return err == nil
+}
+
+func (m *MongoDB) GetWebColors(userIn *user.User) string {
+	webColorsUser := &WebColorsUser{}
+	collection := m.connection.Database(DB_NAME).Collection(WEBCOLORS)
+	err := collection.FindOne(context.Background(), bson.M{"user": userIn.MongoID}).Decode(&webColorsUser)
+	if err != nil {
+		return ""
+	}
+	return webColorsUser.Colors
+}
+
+// AddWebColors(user *user.User, webColors *user.WebColors) bool
+// GetWebColors(user *user.User) *user.WebColors
