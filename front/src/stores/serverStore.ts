@@ -179,9 +179,9 @@ function wsActionListener(data: any) {
             userEdit(data.data as UserInfo)
             break
           case WsMessage.WebColors:
-            const newColors = defaultWebColors()
-            const cols = JSON.parse(data.data) as UserColors
-            useSettings.setState({webColors: {...newColors, ...cols}})
+            const defaultColors = defaultWebColors()
+            const cols = data.data as UserColors
+            useSettings.setState({webColors: {...defaultColors, ...cols}})
             break
           default:
             break
