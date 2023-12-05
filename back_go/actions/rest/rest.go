@@ -6,7 +6,6 @@ import (
 	"embed"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -1072,10 +1071,15 @@ func GetWebColors(c *gin.Context, db *database.Database) {
 	}
 	//get colors from db
 	colors := (*db).GetWebColors(userInSession)
-	fmt.Println("colors", colors)
 
-	//return colors as json
-	c.JSON(200, &colors)
+	webCols := user.WebColors{}
+	if err := json.Unmarshal([]byte(colors), &webCols); err != nil {
+		c.JSON(500, gin.H{
+			"message": "Failed to unmarshal colors",
+		})
+		return
+	}
+	c.JSON(200, webCols)
 }
 
 func SetWebColors(c *gin.Context, db *database.Database) {
@@ -1092,28 +1096,38 @@ func SetWebColors(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
+	webColors := user.WebColors{}
+	if err := c.ShouldBindJSON(&webColors); err != nil {
+		c.JSON(400, gin.H{
+			"message": "Bad request",
+		})
+		return
+	}
+	//delete keys "Light" and "Dark" from colors
+	delete(webColors, "Light")
+	delete(webColors, "Dark")
+	if len(webColors) > 20 {
+		c.JSON(400, gin.H{
+			"message": "Too large map",
+		})
 		return
 	}
 
-	// Convert the body to a string
-	colors := string(body)
+	//send to ws
+	go func() {
+		wsOut := wsOut.WsOut{Type: "webColors", Data: webColors}
+		wsOutJson, _ := json.Marshal(wsOut)
+		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(wsOutJson))
+	}()
+	// marshall webColors to json string
+	webColorsJson, _ := json.Marshal(webColors)
 
-	if !(*db).AddWebColors(userInSession, colors) {
+	if !(*db).AddWebColors(userInSession, string(webColorsJson)) {
 		c.JSON(500, gin.H{
 			"message": "Failed to set web colors",
 		})
 		return
 	}
-	//remove keys "Light" and "Dark" from colors
-
-	//send to ws
-	go func() {
-		wsOut := wsOut.WsOut{Type: "webColors", Data: colors}
-		wsOutJson, _ := json.Marshal(wsOut)
-		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(wsOutJson))
-	}()
 }
 
 func RefreshToken(c *gin.Context, db *database.Database) {
