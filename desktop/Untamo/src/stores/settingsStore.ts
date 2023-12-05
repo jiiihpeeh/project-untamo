@@ -65,7 +65,6 @@ async function sendWebColors(colors: UserColors){
         return
     }
     const {server, token} = getCommunicationInfo()
-    const post = JSON.stringify(colorsClone) 
     try {
         const client = await getClient()
         const res = await client.request(

@@ -72,6 +72,15 @@ type ResetPasswordRequest struct {
 	ConfirmPassword    string `json:"confirmPassword"`
 }
 
+type CardColors struct {
+	Inactive   string `json:"inactive"`
+	Even       string `json:"even"`
+	Odd        string `json:"odd"`
+	Background string `json:"background"`
+}
+
+type WebColors map[string]CardColors
+
 // email is valid
 func (u *EditUser) CheckEmail() bool {
 	return register.EmailRegexp.MatchString(u.Email)

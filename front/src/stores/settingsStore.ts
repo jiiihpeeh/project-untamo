@@ -56,8 +56,7 @@ async function sendWebColors(colors: UserColors){
     }
     const {server, token} = getCommunicationInfo()
     const url = `${server}/api/web-colors`
-    const post = JSON.stringify(colorsClone) 
-    let res = await axios.post(url, post, {
+    let res = await axios.post(url, colorsClone, {
         headers: {
             token: token
         }

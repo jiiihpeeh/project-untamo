@@ -614,7 +614,7 @@ async function getWebColors(){
         )
         isSuccess(res)
         const newColors : UserColors = defaultWebColors()
-        const cols = JSON.parse(res.data as string) as UserColors
+        const cols = res.data as UserColors
         //console.log(cols, {...newColors, ...cols})
         useSettings.setState({webColors: {...newColors, ...cols}})
     }catch(err){

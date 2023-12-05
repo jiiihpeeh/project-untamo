@@ -688,6 +688,7 @@ func (s *SQLiteDB) GetWebColors(userData *user.User) string {
 	}
 	defer row.Close()
 	//convert to string
+
 	var webColors string
 	for row.Next() {
 
