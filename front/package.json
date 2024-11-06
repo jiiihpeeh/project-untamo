@@ -11,6 +11,7 @@
   "dependencies": {
     "@chakra-ui/icons": "^2.0.17",
     "@chakra-ui/react": "^2.4.9",
+    "@chakra-ui/focus-lock":"^2.1.0",
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
     "@emotion/react": "^11.10.5",
@@ -42,6 +43,7 @@
     "react-icons-kit": "^2.0.0",
     "react-router-dom": "^6.8.1",
     "react-use-websocket": "^4.3.1",
+    "react-katex": "3.0.1",
     "zustand": "^4.3.3"
   },
   "devDependencies": {
