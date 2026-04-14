@@ -1,10 +1,8 @@
-import React, { useEffect, useRef } from "react"
-import { Text, Grid, GridItem, Button, Menu, MenuButton, MenuList, Box, Divider,
-          MenuItem , Spacer, VStack, Center, Heading, Table, Tr, Td, Tbody  } from '@chakra-ui/react'
+import { useEffect, useRef, useState } from "preact/hooks"
 import { useLogIn, useDevices } from "../stores"
-import useSettings, { dialogSizes as sizes } from "../stores/settingsStore"
-import usePopups from "../stores/popUpStore"
-import { ChevronDownIcon as Down } from  '@chakra-ui/icons';
+import { useSettings, usePopups } from "../stores"
+import { dialogSizes as sizes } from "../stores/settingsStore"
+import { ChevronDown as ChevronDownIcon } from '../ui/icons'
 import { SessionStatus, Path } from "../type"
 import DeviceIcons from "./Device/DeviceIcons"
 import OptionsToRadio from "./OptionsToRadio"
@@ -21,16 +19,15 @@ function Welcome() {
     const clock24 = useSettings((state) => state.clock24)
     const setClock24 = useSettings((state) => state.setClock24)
     const size = useSettings((state) => state.dialogSize)
+    const [deviceMenuOpen, setDeviceMenuOpen] = useState(false)
 
     function TimeFormatSelect() {
         return (
-            <Center>
-                <Box m={"20px"}>
-                    <Spacer />
-                    <Text as="b">
-                        Time Format
-                    </Text>
-                    <VStack>
+            <div className="flex items-center justify-center">
+                <div style={{ margin: "20px" }}>
+                    <div className="flex-1" />
+                    <b>Time Format</b>
+                    <div className="flex flex-col gap-3">
                         <OptionsToRadio
                             options={{ "24 h": true, "12 h": false }}
                             selectedOption={clock24}
@@ -38,112 +35,85 @@ function Welcome() {
                             capitalizeOption={true}
                             sizeKey={sizes.get(size) as string}
                         />
-                    </VStack>
-                </Box>
-            </Center>
+                    </div>
+                </div>
+            </div>
         )
     }
 
     function menuDevices() {
         return devices.map((device) => {
             return (
-                <MenuItem
-                    onClick={() => setCurrentDevice(device.id)}
-                    key={`menu-device-${device.id}`}
-                    closeOnSelect={true}
-                    alignContent={"center"}
-                >
-                    <Table
-                        variant={"unstyled"}
-                        size="sm"
+                <li key={`menu-device-${device.id}`}>
+                    <a
+                        onClick={() => {
+                            setCurrentDevice(device.id)
+                            setDeviceMenuOpen(false)
+                        }}
+                        className="flex items-center gap-2"
                     >
-                        <Tbody>
-                            <Tr>
-                                <Td>
-                                    <Text
-                                        alignContent={"right"}
-                                        textAlign="center"
-                                    >
-                                        {device.deviceName}
-                                    </Text>
-                                </Td>
-                                <Td>
-                                    <DeviceIcons device={device.type} />
-                                </Td>
-                            </Tr>
-                        </Tbody>
-                    </Table>
-                </MenuItem>
+                        <span className="text-center">{device.deviceName}</span>
+                        <DeviceIcons device={device.type} />
+                    </a>
+                </li>
             )
         })
     }
 
     function DeviceLayout() {
         if (!devices || devices.length === 0) {
-            return (<Grid
-                key="Welcome-Grid-no-Devices"
-            >
-                <GridItem>
-                    <Button
-                        colorScheme='green'
+            return (
+                <div className="flex flex-col items-center gap-3">
+                    <button
+                        className="btn btn-success"
                         onClick={() => setShowAddDevice(true)}
                         id="add-device-button"
-                        key="add-device-button"
-                        width={"50%"}
+                        style={{ width: "50%" }}
                     >
                         Add a device
-                    </Button>
-                </GridItem>
-            </Grid>
+                    </button>
+                </div>
             )
         } else {
             return (
-                <Grid
-                    key="Welcome-Grid-Devices"
-                    m={"20px"}
-                >
-                    <GridItem>
-                        <Menu matchWidth={true} isLazy={true}>
-                            <MenuButton
-                                as={Button}
-                                rightIcon={<Down />}
-                                ref={menuRef}
-                                width="60%"
-                            >
-                                Select a Device
-                            </MenuButton>
-                            <MenuList>
-                                {menuDevices()}
-                            </MenuList>
-                        </Menu>
-                    </GridItem>
-                    <GridItem>
-                        <Text>
-                            or
-                        </Text>
-                    </GridItem>
-                    <GridItem>
-                        <Button
-                            colorScheme='green'
-                            onClick={() => setShowAddDevice(true)}
-                            id="add-device-button"
-                            key="add-device-button"
-                            width={"60%"}
+                <div className="flex flex-col items-center gap-3" style={{ margin: "20px" }}>
+                    <div className="dropdown w-3/5">
+                        <button
+                            ref={menuRef}
+                            type="button"
+                            className="btn btn-outline w-full flex justify-between items-center"
+                            onClick={() => setDeviceMenuOpen(!deviceMenuOpen)}
                         >
-                            Add a device
-                        </Button>
-                    </GridItem>
-                </Grid>
+                            <span>Select a Device</span>
+                            <ChevronDownIcon size={16} />
+                        </button>
+                        {deviceMenuOpen && (
+                            <ul className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full">
+                                {menuDevices()}
+                            </ul>
+                        )}
+                    </div>
+                    <span>or</span>
+                    <button
+                        className="btn btn-success"
+                        onClick={() => setShowAddDevice(true)}
+                        id="add-device-button"
+                        style={{ width: "60%" }}
+                    >
+                        Add a device
+                    </button>
+                </div>
             )
         }
     }
+
     useEffect(() => {
         if (sessionStatus === SessionStatus.NotValid) {
             setNavigateTo(Path.LogIn)
         }
     }, [sessionStatus])
+
     useEffect(() =>{
-        //setNavigateTo(Path.Alarms) if a current device is set
         if(currentDevice){
             setNavigateTo(Path.Alarms)
         }
@@ -151,19 +121,14 @@ function Welcome() {
 
     return (
         <>{(userInfo.screenName.length > 0) ?
-            <Heading
-                textShadow={"xl"}
-                m="2%"
-            >
-                Welcome, <Text as='b'>
-                    {userInfo.screenName}
-                </Text>!
-            </Heading> : ''}
-            <Divider />
-            <Spacer />
+            <h2 className="text-lg font-bold" style={{ textShadow: "xl", margin: "2%" }}>
+                Welcome, <b>{userInfo.screenName}</b>!
+            </h2> : ''}
+            <div className="divider my-1" />
+            <div className="flex-1" />
             <TimeFormatSelect />
-            <Divider />
-            <Spacer />
+            <div className="divider my-1" />
+            <div className="flex-1" />
             <DeviceLayout />
         </>
     )

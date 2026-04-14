@@ -1,98 +1,60 @@
-import { create } from 'zustand'
-import axios from 'axios'
-import { createJSONStorage, persist } from 'zustand/middleware'
-import { getCommunicationInfo } from '../stores'
-
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
+import { getCommunicationInfo, apiGet } from './api'
 
 export interface Emoji {
-    categories: Category[];
-    emojis:     { [key: string]: EmojiValue };
-    aliases:    { [key: string]: string };
-    sheet:      Sheet;
+    categories: Category[]
+    emojis:     { [key: string]: EmojiValue }
+    aliases:    { [key: string]: string }
+    sheet:      Sheet
 }
 
 export interface Category {
-    id:     string;
-    emojis: string[];
+    id:     string
+    emojis: string[]
 }
 
 export interface EmojiValue {
-    id:         string;
-    name:       string;
-    keywords:   string[];
-    skins:      Skin[];
-    version:    number;
-    emoticons?: string[];
+    id:         string
+    name:       string
+    keywords:   string[]
+    skins:      Skin[]
+    version:    number
+    emoticons?: string[]
 }
 
 export interface Skin {
-    unified: string;
-    native:  string;
+    unified: string
+    native:  string
 }
 
 export interface Sheet {
-    cols: number;
-    rows: number;
+    cols: number
+    rows: number
 }
 
-
-type UseEmoji = {
-    emojiData: Emoji|null,
+export interface EmojiSlice {
+    emojiData: Emoji | null
     fetchEmojiData: () => void
-    getEmojiData: () => Emoji|null
+    getEmojiData: () => Emoji | null
 }
 
-const useEmojiStore = create<UseEmoji>()(
-    persist(
-      (set,get) => (
-          {
-            emojiData: null,
-            fetchEmojiData: async () => {
-                //console.log("fetchEmojiData")
-                const { server, token } = getCommunicationInfo()
-                if (token.length < 3) {
-                    return
-                }
-                try {
-                    let res = await axios.get(`${server}/assets/emoji-data.json`,
-                        {
-                            headers: {
-                                token: token
-                            }
-                        }
-                    )
-                    //console.log(res)
-                    let emojiData = res.data as Emoji
-
-                    set({ emojiData: emojiData })
-                } catch (err) {
-                    console.log(err)
-                }
-            },
-            getEmojiData:  () => {
-                if (get().emojiData === null) {
-                    get().fetchEmojiData()
-                }
-                let data = get().emojiData
-                //console.log(data)
-                if(data === null){
-                    return null
-                }
-                
-                return data
-            }
+export const createEmojiSlice: StateCreator<BoundStore, [], [], EmojiSlice> = (set, get) => ({
+    emojiData: null,
+    fetchEmojiData: async () => {
+        const { token } = getCommunicationInfo()
+        if (token.length < 3) return
+        try {
+            const emojiData = await apiGet<Emoji>('/assets/emoji-data.json')
+            set({ emojiData })
+        } catch (err) {
+            console.log(err)
         }
-      ),
-      {
-          name: 'emojiData', 
-          storage: createJSONStorage(() => localStorage), 
-          partialize: (state) => (
-              { 
-                emojiData: state.emojiData,
-              }
-          ),
-      }
-    )
-)
-
-export default useEmojiStore
+    },
+    getEmojiData: () => {
+        if (get().emojiData === null) {
+            get().fetchEmojiData()
+        }
+        return get().emojiData
+    },
+})

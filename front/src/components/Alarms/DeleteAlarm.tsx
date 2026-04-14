@@ -1,63 +1,31 @@
-import {  Button, AlertDialog, 
-          AlertDialogBody,AlertDialogFooter, 
-          AlertDialogHeader,AlertDialogContent, 
-          AlertDialogOverlay, Box } from '@chakra-ui/react'
-import React, { useRef } from 'react'
-import {  useAlarms, usePopups } from '../../stores'
+import React from 'react'
+import { useAlarms, usePopups } from '../../stores'
 import { stringifyTime } from './AlarmComponents/stringifyDate-Time'
 
-
 function DeleteAlarm() {
-    const showDelete = usePopups((state)=> state.showDeleteAlarm) 
-    const setShowDelete = usePopups((state)=> state.setShowDeleteAlarm) 
-    const deleteAlarm  = useAlarms((state)=>state.deleteAlarm)
-    const alarms  = useAlarms((state)=>state.alarms)
-    const toDelete  = useAlarms((state)=>state.toDelete)
-    let alarm = alarms.filter(a => a.id === toDelete)[0]
-    const cancelRef = useRef<HTMLButtonElement>(null)
+    const showDelete = usePopups((state) => state.showDeleteAlarm)
+    const setShowDelete = usePopups((state) => state.setShowDeleteAlarm)
+    const deleteAlarm = useAlarms((state) => state.deleteAlarm)
+    const alarms = useAlarms((state) => state.alarms)
+    const toDelete = useAlarms((state) => state.alarmToDelete)
+    const alarm = alarms.find(a => a.id === toDelete)
 
-    return ( <>{alarm && <Box >
-        <AlertDialog
-            isOpen={showDelete}
-            leastDestructiveRef={cancelRef}
-            onClose={() => {setShowDelete(false)}}
-            isCentered
-        >
-            <AlertDialogOverlay>
-                <AlertDialogContent>
-                    <AlertDialogHeader 
-                        fontSize='lg' 
-                        fontWeight='bold'
-                    >
-                        Delete alarm ({alarm.occurrence}, {stringifyTime(alarm.time)} for {alarm.devices.length} devices)?
-                    </AlertDialogHeader>
-                    <AlertDialogBody>
-                       Are you sure?
-                    </AlertDialogBody>
-                    <AlertDialogFooter>
-                        <Button 
-                            ref={cancelRef} 
-                            onClick={() => {setShowDelete(false)}}
-                        >
-                            Cancel
-                        </Button>
-                        <Button 
-                            colorScheme='red' 
-                            onClick= {() => {
-                                                deleteAlarm()
-                                                setShowDelete(false)
-                                            }
-                                    } 
-                            ml={3}
-                        >
-                           OK
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialogOverlay>
-        </AlertDialog>
-        </Box>}</>
-        )
-    }
+    if (!alarm || !showDelete) return null
+    return (
+        <div className="modal modal-open" style={{ zIndex: 1000 }}>
+            <div className="modal-box max-w-sm">
+                <h3 className="font-bold text-lg mb-4">
+                    Delete alarm ({alarm.occurrence}, {stringifyTime(alarm.time)} for {alarm.devices.length} devices)?
+                </h3>
+                <p>Are you sure?</p>
+                <div className="modal-action">
+                    <button className="btn" onClick={() => setShowDelete(false)}>Cancel</button>
+                    <button className="btn btn-error" onClick={() => { deleteAlarm(); setShowDelete(false) }}>OK</button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={() => setShowDelete(false)} />
+        </div>
+    )
+}
 
 export default DeleteAlarm

@@ -1,3 +1,5 @@
+import { JSX } from 'preact/jsx-runtime'
+
 interface InputProps {
   type?: 'text' | 'password' | 'email' | 'number' | 'date' | 'time' | 'datetime-local'
   value?: string | number

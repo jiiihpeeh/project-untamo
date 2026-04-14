@@ -35,7 +35,10 @@ var WsServing = WsServer{
 var hashMapMutex = &sync.Mutex{}
 
 func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token string, userID string, wsPair string) {
-	connection, _ := upgrader.Upgrade(w, r, nil)
+	connection, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
 	hashMapMutex.Lock()
 	if server.tokenConnection[token] != nil {
 		server.tokenConnection[token].Close()
@@ -45,7 +48,6 @@ func (server *WsServer) echo(w http.ResponseWriter, r *http.Request, token strin
 	server.userTokens[userID] = funk.UniqString(append(server.userTokens[userID], token))
 	server.tokenReady[token] = false
 	//server.clients[connection] = true // Save the connection using it as a key
-	//log.Println(server.userTokens[userID])
 	hashMapMutex.Unlock()
 	for {
 		mt, msg, err := connection.ReadMessage()
@@ -104,7 +106,6 @@ func Ping() {
 }
 
 func (server *WsServer) ServeMessage(userId string, token string, message []byte) {
-	//fmt.Println("sending message: ", message)
 	hashMapMutex.Lock()
 
 	tokens := WsServing.userTokens[userId]
@@ -116,7 +117,6 @@ func (server *WsServer) ServeMessage(userId string, token string, message []byte
 		if tokenM != token && server.tokenReady[tokenM] {
 			conn := server.tokenConnection[tokenM]
 			if conn == nil {
-				//log.Println("conn is nil")
 				continue
 			}
 			go func() {
@@ -155,12 +155,11 @@ func (server *WsServer) Disconnect(token string) {
 }
 
 func Action(c *gin.Context, db *database.Database) {
-	//log.Println("websocket handler CALLED")
 	//sleep 15 milliseconds
 	time.Sleep(15 * time.Millisecond)
 	wsToken := c.Param("token")
-	//check that token is long enough
 	if len(wsToken) < int(token.WsTokenStringLength) {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	//get session from db
@@ -177,9 +176,11 @@ func Action(c *gin.Context, db *database.Database) {
 }
 
 func Register(c *gin.Context, db *database.Database) {
-	//sleep 15 milliseconds
 	time.Sleep(15 * time.Millisecond)
-	connection, _ := upgrader.Upgrade(c.Writer, c.Request, nil)
+	connection, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		return
+	}
 	for {
 		mt, msg, err := connection.ReadMessage()
 		if err != nil || mt == websocket.CloseMessage {

@@ -1,0 +1,21 @@
+import { Center, FormLabel, Switch} from "../../ui"
+import React from "react";
+import useAlarm from "./alarmStates"
+
+function AlarmActive() {
+    const setActive = useAlarm((state) => state.setActive);
+    const active = useAlarm((state) => state.active);
+    return (
+        <Center>
+            <FormLabel>
+                Active
+                <Switch
+                    m={"1%"}
+                    isChecked={active}
+                    onChange={() => setActive(!active)}
+                    size={"lg"} />
+            </FormLabel>
+        </Center>
+    );
+}
+export default AlarmActive

@@ -102,14 +102,11 @@ func (s *SQLiteDB) AddSession(session *session.Session) (string, error) {
 	query := "INSERT INTO sessions (UserId, Token, WsToken, Time, WsPair) VALUES (?, ?, ?, ?, ?)"
 	result, err := s.connection.Exec(query, session.UserId, session.Token, session.WsToken, session.Time, session.WsPair)
 	if err != nil {
-		//fmt.Println(err)
 		return "", err
 	}
 	//commit
-	//fmt.Println("Session added: ", session)
 
 	id, _ := result.LastInsertId()
-	//fmt.Println("Session added: ", id, result)
 	return tools.IntToRadix(id), nil
 }
 
@@ -148,7 +145,6 @@ func (s *SQLiteDB) GetSession(token string) (*session.Session, *user.User) {
 	}
 
 	user := s.GetUserFromID(session.UserId)
-	//fmt.Println("User check: ", user)
 	if user == nil {
 		s.DeleteSession(token)
 		return nil, nil
@@ -257,7 +253,6 @@ func (s *SQLiteDB) GetSessionFromToken(token string) (*session.Session, *user.Us
 	session := &session.Session{}
 	err := row.Scan(&session.SQLiteID, &session.UserId, &session.Token, &session.WsToken, &session.Time, &session.WsPair)
 	if err != nil {
-		//log.Println(err)
 		return nil, nil
 	}
 	userInSession := s.GetUserFromID(session.UserId)
@@ -274,7 +269,6 @@ func (s *SQLiteDB) AddUser(user *user.User) (string, error) {
 	result, err := s.connection.Exec(query, user.Email, user.FirstName, user.LastName, user.ScreenName, user.Admin, user.Owner, user.Active, user.Password, user.Activate, user.Registered, user.PasswordResetRequestTime, user.PasswordResetToken)
 
 	if err != nil {
-		//fmt.Println(err)
 		return "", err
 	}
 	//// Get the inserted ID
@@ -384,7 +378,6 @@ func (s *SQLiteDB) GetAdminSessionFromHeader(req *http.Request) (*admin.Admin, *
 	row := s.connection.QueryRow(query, user.SQLiteID)
 	err := row.Scan(&admin.SQLiteID, &admin.Token, &admin.UserId, &admin.Time)
 	if err != nil {
-		//log.Println(err)
 		return nil, nil
 	}
 	return admin, user
@@ -403,12 +396,10 @@ func (s *SQLiteDB) GetUsers() []*user.User {
 		user := &user.User{}
 		err := rows.Scan(&user.SQLiteID, &user.Email, &user.FirstName, &user.LastName, &user.ScreenName, &user.Admin, &user.Owner, &user.Active, &user.Password, &user.Activate, &user.Registered, &user.PasswordResetRequestTime, &user.PasswordResetToken)
 		if err != nil {
-			//log.Println(err)
 			return nil
 		}
 		users = append(users, user)
 	}
-	//log.Println("Users: ", users)
 	return users
 }
 
@@ -482,7 +473,6 @@ func (s *SQLiteDB) GetDeviceByID(id string) *device.Device {
 func (s *SQLiteDB) EditDevice(device *device.Device) bool {
 	id := device.SQLiteID
 	user := device.User
-	//log.Println("Edit device: ", device)
 	query := "UPDATE devices SET DeviceName = ?, DeviceType = ?, User = ? WHERE ID = ? AND User = ?"
 	_, err := s.connection.Exec(query, device.DeviceName, device.DeviceType, device.User, id, user)
 	return err == nil
@@ -675,7 +665,6 @@ func (s *SQLiteDB) RemoveAlarmsWithNoDevices() bool {
 func (s *SQLiteDB) AddAdminSession(admin *admin.Admin) bool {
 	query := "INSERT INTO admin (Token, UserId, Time) VALUES (?, ?, ?)"
 	_, err := s.connection.Exec(query, admin.Token, admin.UserId, admin.Time)
-	//log.Println("AddAdminSession: ", result, err)
 	return err == nil
 }
 

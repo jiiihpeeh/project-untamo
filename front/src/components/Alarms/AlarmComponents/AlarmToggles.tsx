@@ -1,17 +1,13 @@
-import { Flex, Spacer } from "@chakra-ui/react"
 import React from "react"
 import AlarmActive from "./AlarmActive"
 import AlarmTask from "./AlarmTask"
 
 function AlarmToggles() {
     return (
-        <Flex
-            onMouseDown={e => e.preventDefault()}
-        >
-            <Spacer />
+        <div className="flex items-center justify-center gap-4" onMouseDown={e => e.preventDefault()}>
             <AlarmActive />
             <AlarmTask />
-        </Flex>
+        </div>
     )
 }
 export default AlarmToggles

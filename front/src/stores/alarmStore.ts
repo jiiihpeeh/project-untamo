@@ -1,581 +1,357 @@
-import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
 import { WeekDay, Alarm, AlarmCases } from '../type'
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, useTimeouts, useLogIn, validSession } from '../stores'
-//import { stringifyDate } from '../components/Alarms/AlarmComponents/stringifyDate-Time'
+import { getCommunicationInfo, apiGet, apiPost, apiPut, apiDelete } from './api'
 import { timeToNextAlarm } from '../components/Alarms/calcAlarmTime'
-import axios from 'axios'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore – Vite ?raw import; declared in vite-env.d.ts, tsc passes fine
 import alarmClockString from './logo.svg?raw'
 import { isEqual, sleep } from '../utils'
+// circular import — safe: useStore only accessed inside function bodies after init
+import { useStore } from './store'
 
-const alarmClock = URL.createObjectURL(new Blob([alarmClockString], {type: 'image/svg+xml'}))
-
-
-const maxAlarmTime = 60*60*1000
-const fingerprint = () => useLogIn.getState().fingerprint
+const alarmClock = URL.createObjectURL(new Blob([alarmClockString], { type: 'image/svg+xml' }))
+const maxAlarmTime = 60 * 60 * 1000
 
 export function uniqueAlarms(alarms: Array<Alarm>) {
-  let unique = alarms.filter((alarm, index, self) =>
-    index === self.findIndex((t) => (
-      t.id === alarm.id
-    ))
-  )
-  return unique
-}
-
-async function fetchAlarms() {
-  let fetchedAlarms: Array<Alarm> = []
-  const { server, token } = getCommunicationInfo()
-  if (token.length < 3) {
-    return
-  }
-  await postOfflineAlarms()
-  try {
-    let res = await axios.get(`${server}/api/alarms`,
-      {
-        headers: {
-          token: token
-        }
-      }
+    return alarms.filter((alarm, index, self) =>
+        index === self.findIndex(t => t.id === alarm.id)
     )
-    //console.log(res.data)
-    fetchedAlarms = res.data as Array<Alarm> //alarmSerializedToAlarm(res.data as Array<AlarmSerialized>)
-    let alarms = useAlarms.getState().alarms
-    const newIds = fetchedAlarms.map(alarm => alarm.id)
-    const oldIds = alarms.map(alarm => alarm.id)
-    const toDelete = oldIds.filter(id => !newIds.includes(id))
-    let change = false
-    if (toDelete.length > 0) {
-      alarms = alarms.filter(alarm => !toDelete.includes(alarm.id))
-      change = true
-    }
-    for (const item of fetchedAlarms) {
-      let preFetched = alarms.filter(alarm => alarm.id === item.id)[0]
-
-      if (preFetched && !isEqual(preFetched, item)) {
-        if (preFetched.offline === true && preFetched.modified > item.modified) {
-          await postOfflineEdit(preFetched)
-        } else {
-          alarms = [...alarms.filter(alarm => alarm.id !== item.id), item]
-          change = true
-        }
-
-      } else if (!preFetched) {
-        alarms = [...alarms, item]
-        change = true
-      }
-    }
-    if (change) {
-      useAlarms.setState({ alarms: uniqueAlarms([...alarms]) })
-    }
-  } catch (err) {
-    //console.log("Cannot fetch alarms")
-    (validSession()) ? notification("Alarms", "Couldn't fetch the alarm list", Status.Error) : {}
-  }
-}
-
-async function resetSnooze() {
-  const { server, token } = getCommunicationInfo()
-  const runAlarm = useAlarms.getState().runAlarm
-  const alarms = useAlarms.getState().alarms
-  if (!runAlarm) {
-    return
-  }
-  const alarm = alarms.filter(alarm => alarm.id === runAlarm.id)[0]
-  if (!alarm) {
-    return
-  }
-  alarm.snooze = [0]
-  alarm.fingerprint = fingerprint()
-  alarm.modified = Date.now()
-  try {
-    let res = await axios.put(`${server}/api/alarm/` + runAlarm.id,
-      alarm,
-      {
-        headers: {
-          token: token
-        }
-      }
-    )
-    //console.log(res.data)
-  } catch (err: any) {
-    //console.log("Couldn't update alarm info ", err)
-    //return
-    alarm.offline = true
-  }
-  let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id)
-  useAlarms.setState({ alarms: [...filterAlarms, alarm] })
-}
-
-
-async function snoozer() {
-  const { server, token } = getCommunicationInfo()
-  const runAlarm = useAlarms.getState().runAlarm
-  const alarms = useAlarms.getState().alarms
-  if (!runAlarm) {
-    return
-  }
-  const alarm = alarms.filter(alarm => alarm.id === runAlarm.id)[0]
-  if (!alarm) {
-    return
-  }
-  let currentMoment = Date.now()
-
-  alarm.snooze = alarm.snooze.filter(snooze => snooze > (currentMoment - (60 * 60 * 1000)))
-  alarm.snooze.push(currentMoment)
-  alarm.fingerprint = fingerprint()
-  alarm.modified = Date.now()
-  try {
-    let res = await axios.put(`${server}/api/alarm/` + runAlarm.id,
-      alarm,
-      {
-        headers: {
-          token: token
-        }
-      }
-    )
-    //console.log(res.data)
-  } catch (err: any) {
-    //console.log("Couldn't update alarm info ", err)
-    //return
-    alarm.offline = true
-  }
-  let filterAlarms = alarms.filter(alarm => alarm.id !== runAlarm.id)
-  useAlarms.setState({ alarms: [...filterAlarms, alarm] })
-}
-
-
-type UseAlarms =  {
-  alarms: Array<Alarm>,
-  runAlarm: Alarm| undefined,
-  toDelete: string| undefined,  
-  toEdit: string| undefined,
-  toggleActivity: (id:string) => void,
-  setToDelete: (id:string) => void,
-  setToEdit: (id:string) => void,
-  fetchAlarms: ()=> void,
-  setRunAlarm :  (ID : string|undefined) =>  void,
-  editAlarm: (alarm: Alarm) => void,
-  deleteAlarm: () => void,
-  addNewAlarm: (alarm : Alarm) => void,
-  snoozer: () => void,
-  resetSnooze: () => void,
-  turnOff: boolean,
-  setTurnOff: (bool:boolean) => void,
-  maxAlarmTime: number,
-  timeForNextLaunch: number,
-  setTimeForNextLaunch: (ms:number)=>void,
-  reloadAlarmList: boolean,
-  setReloadAlarmList: () => void,
-  logo: string,
-  clear: () => void,
-}
-
-
-async function addAlarmFromDialog(alarm: Alarm) {
-  const { server, token } = getCommunicationInfo()
-  const alarms = useAlarms.getState().alarms
-  if (!alarm) {
-    return
-  }
-
-  if (!alarm.devices || alarm.devices.length === 0) {
-    notification("Add alarm", "No devices set", Status.Error)
-    return
-  }
-  if ((alarm.occurrence === AlarmCases.Weekly) && (alarm.weekdays === 0)) {
-    notification("Add alarm", "No weekdays set", Status.Error)
-    return
-  }
-  let newAlarm = {
-    active: alarm.active,
-    date: alarm.date,
-    devices: alarm.devices,
-    label: alarm.label,
-    occurrence: alarm.occurrence,
-    time: alarm.time,
-    weekdays: alarm.weekdays,
-    tune: alarm.tune,
-    fingerprint: fingerprint(),
-    modified: Date.now(),
-    snooze: [0],
-    closeTask: alarm.closeTask
-  }
-  switch (alarm.occurrence) {
-    case AlarmCases.Weekly:
-      newAlarm.date = [0,0,0]
-      break
-    case AlarmCases.Daily:
-      newAlarm.date = [0,0,0]
-      newAlarm.weekdays = 0
-      break
-    default:
-      newAlarm.weekdays = 0
-      break
-  }
-  try {
-    const res = await axios.post(
-      `${server}/api/alarm`,
-      newAlarm,
-      {
-        headers: {
-          token: token
-        }
-      }
-    )
-    let addedAlarm = res.data.id as string
-    let alarmWithID = alarm
-    alarmWithID.id = addedAlarm
-    notification("Alarm", "Alarm inserted")
-
-    useAlarms.setState({ alarms: [...alarms, alarmWithID] })
-  } catch (err: any) {
-    //console.error(err.data)
-    alarm.offline = true
-    alarm.id = [...Array(Math.round(Math.random() * 5) + 9)].map(() => Math.floor(Math.random() * 36).toString(36)).join('') + Date.now().toString(36) + "OFFLINE"
-    useAlarms.setState({ alarms: [...alarms, alarm] })
-    notification("Edit Alarm", "Alarm edit save failed (offline mode)", Status.Error)
-  }
-}
-
-async function editAlarmFromDialog(alarm: Alarm) {
-  const { server, token } = getCommunicationInfo()
-  const alarms = useAlarms.getState().alarms
-  let editDate = [0,0,0]
-
-  try {
-    editDate = alarm.date
-  } catch (err) {
-    let newDate = new Date()
-    editDate = [ newDate.getFullYear(), newDate.getMonth()+1,newDate.getDate()]
-  }
-  let modAlarm = {
-    active: alarm.active,
-    date: editDate,
-    devices: alarm.devices,
-    label: alarm.label,
-    occurrence: alarm.occurrence,
-    time: alarm.time,
-    weekdays: alarm.weekdays,
-    id: alarm.id,
-    tune: alarm.tune,
-    fingerprint: fingerprint(),
-    modified: Date.now(),
-    closeTask: alarm.closeTask
-  }
-  switch (alarm.occurrence) {
-    case AlarmCases.Weekly:
-      modAlarm.date = [0,0,0]
-      break
-    case AlarmCases.Daily:
-      modAlarm.date = [0,0,0]
-      modAlarm.weekdays = 0
-      break
-    default:
-      modAlarm.weekdays = 0
-      break
-  }
-  try {
-    const res = await axios.put(
-      `${server}/api/alarm/` + modAlarm.id,
-      modAlarm,
-      {
-        headers: {
-          token: token
-        }
-      }
-    )
-
-    let oldAlarms = alarms.filter(alarm => alarm.id !== modAlarm.id)
-    useAlarms.setState({ alarms: [...oldAlarms, alarm] })
-    notification("Edit Alarm", "Alarm modified")
-  } catch (err) {
-    let oldAlarms = alarms.filter(alarm => alarm.id !== modAlarm.id)
-    alarm.offline = true
-    useAlarms.setState({ alarms: [...oldAlarms, alarm] })
-    notification(
-      "Edit Alarm",
-      "Alarm edit save failed (offline mode)",
-      Status.Error
-    )
-  }
-}
-
-async function postOfflineEdit(alarm: Alarm) {
-  const { server, token } = getCommunicationInfo()
-  const alarms = useAlarms.getState().alarms
-  if (alarm.id.endsWith("OFFLINE")) {
-    postOfflineAlarms()
-    return
-  }
-  try {
-    const res = await axios.put(
-      `${server}/api/alarm/` + alarm.id,
-      alarm,
-      {
-        headers: {
-          token: token
-        }
-      }
-    )
-
-    let newAlarm = { ...alarm }
-    newAlarm.offline = false
-
-    useAlarms.setState({ alarms: [...alarms.filter(oldAlarm => oldAlarm.id !== newAlarm.id), newAlarm] })
-    notification("Edit Alarm", "Offline edited Alarm updated online")
-  } catch (err) {
-    notification(
-      "Edit Alarm",
-      "Offline alarm edit save failed",
-      Status.Error
-    )
-  }
 }
 
 export async function postOfflineAlarms() {
-  const { server, token } = getCommunicationInfo()
-  const alarms = useAlarms.getState().alarms
-  let offlineAlarms = alarms.filter(alarm => alarm.id.endsWith("OFFLINE"))
-  for (const alarm of offlineAlarms) {
-    let postAlarm: Partial<Alarm> = { ...alarm }
-    delete postAlarm.id
-    if (!alarm) {
-      return
-    }
-    try {
-      const res = await axios.post(
-        `${server}/api/alarm`,
-        postAlarm,
-        {
-          headers: {
-            token: token
-          }
+    const { token } = getCommunicationInfo()
+    if (!token) return
+    const alarms = useStore.getState().alarms
+    const offlineAlarms = alarms.filter(alarm => alarm.id.endsWith("OFFLINE"))
+    for (const alarm of offlineAlarms) {
+        const postAlarm: Partial<Alarm> = { ...alarm }
+        delete postAlarm.id
+        if (!alarm) return
+        try {
+            const result = await apiPost<{ id: string }>('/api/alarm', postAlarm)
+            const alarmWithID = postAlarm as Alarm
+            alarmWithID.id = result.id
+            notification("Alarm", "Offline Alarm inserted to an online database")
+            const filteredAlarms = useStore.getState().alarms.filter(a => a.id !== alarm.id)
+            useStore.setState({ alarms: [...filteredAlarms, alarmWithID] })
+        } catch {
+            notification("Edit Alarm", " Offline Alarm save failed ", Status.Error)
         }
-      )
-      let addedAlarm = res.data.id as string
-      let alarmWithID = postAlarm as Alarm
-      alarmWithID.id = addedAlarm
-      notification("Alarm", "Offline Alarm inserted to an online database")
-      let filteredAlarms = alarms.filter(oldAlarm => oldAlarm.id !== alarm.id)
-      useAlarms.setState({ alarms: [...filteredAlarms, alarmWithID] })
-    } catch (err: any) {
-      notification("Edit Alarm", " Offline Alarm save failed ", Status.Error)
     }
-  }
-  await sleep(200)
+    await sleep(200)
 }
 
-function runAlarmSet(id: string | undefined, alarms: Array<Alarm>) {
-  if (!id) {
-    return undefined
-  }
-  let f = alarms.filter(alarm => alarm.id === id)[0]
-  if (f) {
-    return f
-  }
-  return undefined
+async function postOfflineEdit(alarm: Alarm) {
+    if (alarm.id.endsWith("OFFLINE")) {
+        postOfflineAlarms()
+        return
+    }
+    try {
+        await apiPut(`/api/alarm/${alarm.id}`, alarm)
+        const newAlarm = { ...alarm, offline: false }
+        const alarms = useStore.getState().alarms
+        useStore.setState({ alarms: [...alarms.filter(a => a.id !== newAlarm.id), newAlarm] })
+        notification("Edit Alarm", "Offline edited Alarm updated online")
+    } catch {
+        notification("Edit Alarm", "Offline alarm edit save failed", Status.Error)
+    }
+}
+
+async function fetchAlarms() {
+    const { token } = getCommunicationInfo()
+    if (token.length < 3) return
+    await postOfflineAlarms()
+    try {
+        const fetchedAlarms = await apiGet<Array<Alarm>>('/api/alarms')
+        let alarms = useStore.getState().alarms
+        const newIds = fetchedAlarms.map(a => a.id)
+        const oldIds = alarms.map(a => a.id)
+        const toRemove = oldIds.filter(id => !newIds.includes(id))
+        let change = false
+        if (toRemove.length > 0) {
+            alarms = alarms.filter(a => !toRemove.includes(a.id))
+            change = true
+        }
+        for (const item of fetchedAlarms) {
+            const preFetched = alarms.find(a => a.id === item.id)
+            if (preFetched && !isEqual(preFetched, item)) {
+                if (preFetched.offline === true && preFetched.modified > item.modified) {
+                    await postOfflineEdit(preFetched)
+                } else {
+                    alarms = [...alarms.filter(a => a.id !== item.id), item]
+                    change = true
+                }
+            } else if (!preFetched) {
+                alarms = [...alarms, item]
+                change = true
+            }
+        }
+        if (change) {
+            useStore.setState({ alarms: uniqueAlarms([...alarms]) })
+        }
+    } catch (err) {
+        const state = useStore.getState()
+        if (state.sessionValid !== undefined) {
+            notification("Alarms", "Couldn't fetch the alarm list", Status.Error)
+        }
+    }
+}
+
+async function resetSnooze() {
+    const { runAlarm, alarms } = useStore.getState()
+    if (!runAlarm) return
+    const alarm = alarms.find(a => a.id === runAlarm.id)
+    if (!alarm) return
+    alarm.snooze = [0]
+    alarm.fingerprint = useStore.getState().fingerprint
+    alarm.modified = Date.now()
+    try {
+        await apiPut(`/api/alarm/${runAlarm.id}`, alarm)
+    } catch {
+        alarm.offline = true
+    }
+    useStore.setState({ alarms: [...alarms.filter(a => a.id !== runAlarm.id), alarm] })
+}
+
+async function snoozer() {
+    const { runAlarm, alarms } = useStore.getState()
+    if (!runAlarm) return
+    const alarm = alarms.find(a => a.id === runAlarm.id)
+    if (!alarm) return
+    const currentMoment = Date.now()
+    alarm.snooze = alarm.snooze.filter(s => s > (currentMoment - 60 * 60 * 1000))
+    alarm.snooze.push(currentMoment)
+    alarm.fingerprint = useStore.getState().fingerprint
+    alarm.modified = Date.now()
+    try {
+        await apiPut(`/api/alarm/${runAlarm.id}`, alarm)
+    } catch {
+        alarm.offline = true
+    }
+    useStore.setState({ alarms: [...alarms.filter(a => a.id !== runAlarm.id), alarm] })
+}
+
+async function addAlarmFromDialog(alarm: Alarm) {
+    if (!alarm) return
+    if (!alarm.devices || alarm.devices.length === 0) {
+        notification("Add alarm", "No devices set", Status.Error)
+        return
+    }
+    if (alarm.occurrence === AlarmCases.Weekly && alarm.weekdays === 0) {
+        notification("Add alarm", "No weekdays set", Status.Error)
+        return
+    }
+    const newAlarm = {
+        active:     alarm.active,
+        date:       alarm.date,
+        devices:    alarm.devices,
+        label:      alarm.label,
+        occurrence: alarm.occurrence,
+        time:       alarm.time,
+        weekdays:   alarm.weekdays,
+        tune:       alarm.tune,
+        fingerprint: useStore.getState().fingerprint,
+        modified:   Date.now(),
+        snooze:     [0],
+        closeTask:  alarm.closeTask,
+    }
+    switch (alarm.occurrence) {
+        case AlarmCases.Weekly: newAlarm.date = [0, 0, 0]; break
+        case AlarmCases.Daily:  newAlarm.date = [0, 0, 0]; newAlarm.weekdays = 0; break
+        default:                newAlarm.weekdays = 0; break
+    }
+    const alarms = useStore.getState().alarms
+    try {
+        const result = await apiPost<{ id: string }>('/api/alarm', newAlarm)
+        const alarmWithID = { ...alarm, id: result.id }
+        notification("Alarm", "Alarm inserted")
+        useStore.setState({ alarms: [...alarms, alarmWithID] })
+    } catch {
+        const offlineAlarm = {
+            ...alarm,
+            offline: true,
+            id: [...Array(Math.round(Math.random() * 5) + 9)]
+                .map(() => Math.floor(Math.random() * 36).toString(36)).join('') +
+                Date.now().toString(36) + "OFFLINE",
+        }
+        useStore.setState({ alarms: [...alarms, offlineAlarm] })
+        notification("Edit Alarm", "Alarm edit save failed (offline mode)", Status.Error)
+    }
+}
+
+async function editAlarmFromDialog(alarm: Alarm) {
+    let editDate = [0, 0, 0]
+    try { editDate = alarm.date } catch {
+        const d = new Date()
+        editDate = [d.getFullYear(), d.getMonth() + 1, d.getDate()]
+    }
+    const modAlarm = {
+        active:     alarm.active,
+        date:       editDate,
+        devices:    alarm.devices,
+        label:      alarm.label,
+        occurrence: alarm.occurrence,
+        time:       alarm.time,
+        weekdays:   alarm.weekdays,
+        id:         alarm.id,
+        tune:       alarm.tune,
+        fingerprint: useStore.getState().fingerprint,
+        modified:   Date.now(),
+        closeTask:  alarm.closeTask,
+    }
+    switch (alarm.occurrence) {
+        case AlarmCases.Weekly: modAlarm.date = [0, 0, 0]; break
+        case AlarmCases.Daily:  modAlarm.date = [0, 0, 0]; modAlarm.weekdays = 0; break
+        default:                modAlarm.weekdays = 0; break
+    }
+    const alarms = useStore.getState().alarms
+    try {
+        await apiPut(`/api/alarm/${modAlarm.id}`, modAlarm)
+        useStore.setState({ alarms: [...alarms.filter(a => a.id !== modAlarm.id), alarm] })
+        notification("Edit Alarm", "Alarm modified")
+    } catch {
+        useStore.setState({ alarms: [...alarms.filter(a => a.id !== modAlarm.id), { ...alarm, offline: true }] })
+        notification("Edit Alarm", "Alarm edit save failed (offline mode)", Status.Error)
+    }
 }
 
 async function deleteAlarm() {
-  const { server, token } = getCommunicationInfo()
-  const alarms = useAlarms.getState().alarms
-  let id = useAlarms.getState().toDelete
-  if (!id) {
-    return
-  }
-  if (id.endsWith("OFFLINE")) {
-    postOfflineAlarms()
-    return
-  }
-  try {
-    //Delete selected alarm id from mongodb
-    const res = await axios.delete(
-      `${server}/api/alarm/` + id,
-      {
-        headers: {
-          token: token
-        }
-      }
-    )
-    //console.log(res)
-    let filteredAlarms = alarms.filter(alarmItem => alarmItem.id !== id)
-
-    notification("Delete Alarm", "Alarm removed")
-    useAlarms.setState({ alarms: filteredAlarms })
-  } catch (err: any) {
-    notification("Delete alarm", "Delete alarm failed not supported offline", Status.Error)
-    //console.error(err)
-  }
+    const alarms = useStore.getState().alarms
+    const id     = useStore.getState().alarmToDelete
+    if (!id) return
+    if (id.endsWith("OFFLINE")) {
+        postOfflineAlarms()
+        return
+    }
+    try {
+        await apiDelete(`/api/alarm/${id}`)
+        useStore.setState({ alarms: alarms.filter(a => a.id !== id) })
+        notification("Delete Alarm", "Alarm removed")
+    } catch {
+        notification("Delete alarm", "Delete alarm failed not supported offline", Status.Error)
+    }
 }
 
 async function activityChange(id: string) {
-
-  const { server, token } = getCommunicationInfo()
-  const alarms = useAlarms.getState().alarms
-  let alarmArr = alarms.filter(alarm => alarm.id === id)
-  let alarm = alarmArr[0]
-  alarm.active = !alarm.active
-  alarm.fingerprint = fingerprint()
-  alarm.modified = Date.now()
-  alarm.offline = false
-  try {
-    if (id.endsWith("OFFLINE")) {
-      postOfflineAlarms()
-      throw new Error("Offline alarm")
-    }
-    const res = await axios.put(
-      `${server}/api/alarm/` + alarm.id, alarm,
-      {
-        headers: {
-          token: token
+    const alarms = useStore.getState().alarms
+    const alarm  = alarms.find(a => a.id === id)
+    if (!alarm) return
+    alarm.active      = !alarm.active
+    alarm.fingerprint = useStore.getState().fingerprint
+    alarm.modified    = Date.now()
+    alarm.offline     = false
+    try {
+        if (id.endsWith("OFFLINE")) {
+            postOfflineAlarms()
+            throw new Error("Offline alarm")
         }
-      }
-    )
-    notification("Edit Alarm", "Alarm modified")
-    let filteredAlarms = alarms.filter(alarmItem => alarmItem.id !== alarm.id)
-    useAlarms.setState({ alarms: [...filteredAlarms, alarm] })
-  } catch (err: any) {
-    console.error(err)
-    alarm.offline = true
-    let filteredAlarms = alarms.filter(alarmItem => alarmItem.id !== alarm.id)
-    useAlarms.setState({ alarms: [...filteredAlarms, alarm] })
-    notification("Edit Alarm", "Alarm edit save failed (using offline)", Status.Error)
-  }
-}
-function timeForNext() {
-  const runAlarm = useAlarms.getState().runAlarm
-  const alarmTimeout = useTimeouts.getState().id
-  const setAlarmCounter = useTimeouts.getState().setAlarmCounter
-  useTimeouts.getState().clearAlarmCounter()
-  let time = (runAlarm && alarmTimeout) ? Math.floor(timeToNextAlarm(runAlarm) / 1000) : -1
-  if (!alarmTimeout) {
-    setAlarmCounter(setTimeout(() => useAlarms.getState().setTimeForNextLaunch(-1), 5000))
-  }
-  if (time > 0) {
-    let timer = 5000
-    if (time < 10) {
-      timer = 300
-    } else if (time < 60) {
-      timer = 1000
-    } else if (time < 3600) {
-      timer = 2000
+        await apiPut(`/api/alarm/${alarm.id}`, alarm)
+        notification("Edit Alarm", "Alarm modified")
+        useStore.setState({ alarms: [...alarms.filter(a => a.id !== alarm.id), alarm] })
+    } catch (err: unknown) {
+        console.error(err)
+        useStore.setState({ alarms: [...alarms.filter(a => a.id !== alarm.id), { ...alarm, offline: true }] })
+        notification("Edit Alarm", "Alarm edit save failed (using offline)", Status.Error)
     }
-    setAlarmCounter(setTimeout(() => useAlarms.getState().setTimeForNextLaunch(time), timer))
-  }
 }
-const useAlarms = create<UseAlarms>()(
-    persist(
-      (set, get) => (
-          {
-            alarms: [],
-            runAlarm: undefined,
-            toDelete: undefined,
-            tune: 'rooster',
-            toggleActivity: async (id) => {
-              await activityChange(id)
-            },
-            setToDelete: (id) => {
-              let delId : string| undefined = id
-              const alarms = useAlarms.getState().alarms
-              let f = alarms.filter(alarm => alarm.id === id)
-              if(f.length !==1 ){
-                delId = undefined
-              }
-              set(
-                  {
-                    toDelete: delId
-                  }
-              )
-            },
-            toEdit: undefined,
-            setToEdit: (id) => {
-              let edId : string| undefined = id
-              const alarms = useAlarms.getState().alarms
-              let f = alarms.filter(alarm => alarm.id === id)
-              if(f.length !==1 ){
-                edId = undefined
-              }
-              set(
-                  {
-                    toEdit: edId
-                  }
-              )
-            },
-            setRunAlarm: (id) => set(
-              state => (
-                  {
-                    runAlarm : runAlarmSet(id,state.alarms)
-                  }
-              )
-            ),
-            fetchAlarms: async() => {
-              await fetchAlarms()
-            },
-            editAlarm: async (alarm) => { 
-                await editAlarmFromDialog(alarm)
-            },
-            deleteAlarm: async () => {
-              await deleteAlarm()
-            },
-            clear: () => set (
-              {
-                alarms: [] as Array<Alarm>
-              }
-            ),
-            addNewAlarm: async(alarm) => {
-              await addAlarmFromDialog(alarm)
-            },
-            snoozer: async() => {
-                await snoozer()
-            },
-            resetSnooze: async() =>{
-              await resetSnooze()
-            },
-            turnOff: false,
-            setTurnOff: (bool) => {
-              set(
-                {
-                  turnOff: bool
-                }
-              )
-            },
-            maxAlarmTime: maxAlarmTime,
-            timeForNextLaunch: -1,
-            setTimeForNextLaunch: (ms)=>{
-              if(ms > 0){
-                timeForNext()
-              }
-              set(
-                  {
-                    timeForNextLaunch: ms
-                  }
-                )
-            },
-            reloadAlarmList:false,
-            setReloadAlarmList:()=>{
-              set ( 
-                  {
-                    reloadAlarmList: !(get().reloadAlarmList)
-                  }
-                )
-            },
-            logo: alarmClock,
-          }
-      ),
 
-      {
-          name: 'alarms', 
-          storage: createJSONStorage(() => localStorage), 
-          partialize: (state) => (
-              { 
-                alarms: state.alarms,
-              }
-          ),
-      }
-    )
-)
+function timeForNext() {
+    const { runAlarm } = useStore.getState()
+    const alarmTimeout = useStore.getState().id
+    useStore.getState().clearAlarmCounter()
+    const time = (runAlarm && alarmTimeout) ? Math.floor(timeToNextAlarm(runAlarm) / 1000) : -1
+    if (!alarmTimeout) {
+        useStore.getState().setAlarmCounter(
+            setTimeout(() => useStore.getState().setTimeForNextLaunch(-1), 5000)
+        )
+    }
+    if (time > 0) {
+        const timer = time < 10 ? 300 : time < 60 ? 1000 : time < 3600 ? 2000 : 5000
+        useStore.getState().setAlarmCounter(
+            setTimeout(() => useStore.getState().setTimeForNextLaunch(time), timer)
+        )
+    }
+}
 
+function runAlarmSet(id: string | undefined, alarms: Array<Alarm>) {
+    if (!id) return undefined
+    return alarms.find(a => a.id === id)
+}
 
-export default useAlarms
+export interface AlarmSlice {
+    alarms:            Array<Alarm>
+    runAlarm:          Alarm | undefined
+    alarmToDelete:     string | undefined
+    alarmToEdit:       string | undefined
+    toggleActivity:    (id: string) => void
+    setAlarmToDelete:  (id: string) => void
+    setAlarmToEdit:    (id: string) => void
+    fetchAlarms:       () => void
+    setRunAlarm:       (id: string | undefined) => void
+    editAlarm:         (alarm: Alarm) => void
+    deleteAlarm:       () => void
+    addNewAlarm:       (alarm: Alarm) => void
+    snoozer:           () => void
+    resetSnooze:       () => void
+    turnOff:           boolean
+    setTurnOff:        (bool: boolean) => void
+    maxAlarmTime:      number
+    timeForNextLaunch: number
+    setTimeForNextLaunch: (ms: number) => void
+    reloadAlarmList:   boolean
+    setReloadAlarmList: () => void
+    logo:              string
+    clearAlarms:       () => void
+}
+
+export const createAlarmSlice: StateCreator<BoundStore, [], [], AlarmSlice> = (set, get) => ({
+    alarms:            [],
+    runAlarm:          undefined,
+    alarmToDelete:     undefined,
+    alarmToEdit:       undefined,
+    turnOff:           false,
+    maxAlarmTime:      maxAlarmTime,
+    timeForNextLaunch: -1,
+    reloadAlarmList:   false,
+    logo:              alarmClock,
+
+    toggleActivity: async (id) => { await activityChange(id) },
+
+    setAlarmToDelete: (id) => {
+        const alarms = get().alarms
+        const found  = alarms.filter(a => a.id === id)
+        set({ alarmToDelete: found.length === 1 ? id : undefined })
+    },
+
+    setAlarmToEdit: (id) => {
+        const alarms = get().alarms
+        const found  = alarms.filter(a => a.id === id)
+        set({ alarmToEdit: found.length === 1 ? id : undefined })
+    },
+
+    setRunAlarm: (id) => set(state => ({ runAlarm: runAlarmSet(id, state.alarms) })),
+
+    fetchAlarms: async () => { await fetchAlarms() },
+
+    editAlarm: async (alarm) => { await editAlarmFromDialog(alarm) },
+
+    deleteAlarm: async () => { await deleteAlarm() },
+
+    addNewAlarm: async (alarm) => { await addAlarmFromDialog(alarm) },
+
+    snoozer:     async () => { await snoozer() },
+    resetSnooze: async () => { await resetSnooze() },
+
+    setTurnOff: (bool) => set({ turnOff: bool }),
+
+    setTimeForNextLaunch: (ms) => {
+        if (ms > 0) timeForNext()
+        set({ timeForNextLaunch: ms })
+    },
+
+    setReloadAlarmList: () => set(state => ({ reloadAlarmList: !state.reloadAlarmList })),
+
+    clearAlarms: () => set({ alarms: [] as Array<Alarm> }),
+})

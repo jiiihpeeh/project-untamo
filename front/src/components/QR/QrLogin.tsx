@@ -1,6 +1,5 @@
-import { useLogIn, usePopups  } from "../../stores"
+import { useLogIn, usePopups } from "../../stores"
 import React, { useEffect } from 'react'
-import { Modal, ModalBody, ModalHeader, ModalCloseButton, ModalOverlay, ModalContent, Button, ModalFooter } from '@chakra-ui/react'
 import { useQrScanner } from "../../stores/QRStore"
 
 function QrLogin() {
@@ -10,47 +9,30 @@ function QrLogin() {
     const scannedToken = useQrScanner((state) => state.scannedToken)
     const stopScanner = useQrScanner((state) => state.stopScanner)
 
-
     useEffect(() => {
         if (scannedToken) {
             setShowQrCodeReader(false)
-            //logIn with token
             useLogIn.getState().logInWithQr(scannedToken)
         }
     }, [scannedToken])
 
+    const onClose = () => { stopScanner(); setShowQrCodeReader(false) }
 
+    if (!showQrCodeReader) return null
     return (
-        <Modal 
-            isOpen={showQrCodeReader} 
-            onClose={() => {
-                                stopScanner()
-                                setShowQrCodeReader(false)
-                            }
-                    }
-            isCentered
-        >
-            <ModalOverlay />
-            <ModalContent>
-            <ModalHeader>
-                Scan QR code
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-                <video 
-                    id="qrScanReader"
-                >   
-                </video>
-                <ModalFooter>
-                    <Button
-                        onClick={() => {startScanner()}}
-                    >
-                        Activate Camera
-                    </Button>
-                </ModalFooter>
-            </ModalBody>
-            </ModalContent>
-        </Modal>
+        <div className="modal modal-open" style={{ zIndex: 1000 }}>
+            <div className="modal-box max-w-sm">
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={onClose}>✕</button>
+                <h3 className="font-bold text-lg mb-4">Scan QR code</h3>
+                <div className="py-2">
+                    <video id="qrScanReader" className="w-full" />
+                </div>
+                <div className="modal-action">
+                    <button className="btn btn-primary" onClick={() => startScanner()}>Activate Camera</button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={onClose} />
+        </div>
     )
 }
 

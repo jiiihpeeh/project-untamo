@@ -5,10 +5,6 @@ import (
 	"crypto/sha512"
 	"embed"
 	"encoding/hex"
-	"fmt"
-	"io/fs"
-	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,6 +18,7 @@ import (
 	"github.com/thoas/go-funk"
 	"untamo_server.zzz/actions/wshandler"
 	"untamo_server.zzz/database"
+	"untamo_server.zzz/middleware"
 	"untamo_server.zzz/models/admin"
 	"untamo_server.zzz/models/alarm"
 	"untamo_server.zzz/models/device"
@@ -49,11 +46,48 @@ var tokenCaptchaMap = make(map[string]string)
 // mutex for hashmap
 var tokenCaptchaMapMutex = &sync.Mutex{}
 
-// create html index map based on headers
-//var indexMap = make(map[string]string)
+func getSession(c *gin.Context) *session.Session {
+	sess, exists := c.Get("session")
+	if !exists {
+		return nil
+	}
+	return sess.(*session.Session)
+}
 
-// mutex for index map
-//var indexMapMutex = &sync.Mutex{}
+func broadcast(sess *session.Session, msgType string, data interface{}) {
+	go func() {
+		out := wsOut.WsOut{Type: msgType, Data: data}
+		outJson, _ := json.Marshal(out)
+		wshandler.WsServing.ServeMessage(sess.UserId, sess.WsToken, []byte(outJson))
+	}()
+}
+
+func broadcastAll(userID string, msgType string, data interface{}) {
+	go func() {
+		out := wsOut.WsOut{Type: msgType, Data: data}
+		outJson, _ := json.Marshal(out)
+		wshandler.WsServing.ServeMessage(userID, "all", []byte(outJson))
+	}()
+}
+
+func usersToUserOut(users []*user.User) []user.UserOut {
+	usersOut := []user.UserOut{}
+	for _, u := range users {
+		usersOut = append(usersOut, u.ToUserOut())
+	}
+	return usersOut
+}
+
+func checkPasswordStrength(password string) (bool, string) {
+	estimate := register.Estimate(password)
+	if estimate.Score < 3 {
+		return false, "Password is not strong enough"
+	}
+	if estimate.Guesses < register.MinimumGuesses {
+		return false, "Password is not strong enough"
+	}
+	return true, ""
+}
 
 func LogIn(c *gin.Context, db *database.Database) {
 	loginRequest := login.LogInRequest{}
@@ -85,7 +119,6 @@ func LogIn(c *gin.Context, db *database.Database) {
 	//check if password is correct
 	pass := loginRequest.Password
 
-	//fmt.Println(pass)
 	match := hash.ComparePasswordAndHash(pass, user.Password)
 	if !match {
 		c.JSON(401, gin.H{
@@ -148,53 +181,41 @@ func LogIn(c *gin.Context, db *database.Database) {
 }
 
 func GetDevices(c *gin.Context, db *database.Database) {
-	// check if user is logged in by getting a session from db
-
-	session, _ := (*db).GetSessionFromHeader(c.Request) //GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-	devices := (*db).GetDevices(session.UserId)
-	//convert devices to ToDeviceOut
+	devices := (*db).GetDevices(sess.UserId)
 	deviceOut := []device.DeviceOut{}
-	for _, device := range devices {
-		deviceOut = append(deviceOut, device.ToDeviceOut())
+	for _, d := range devices {
+		deviceOut = append(deviceOut, d.ToDeviceOut())
 	}
 	c.JSON(200, deviceOut)
 }
 
 func AddDevice(c *gin.Context, db *database.Database) {
-	// check if user is logged in by getting a session from db
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess, userInSession := (*db).GetSessionFromHeader(c.Request)
+	if sess == nil {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	//get device from json
+	if userInSession == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
+		return
+	}
 	deviceIn := device.DeviceOut{}
 	if err := c.ShouldBindJSON(&deviceIn); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	//add device to db
 	newDevice := device.Device{
-		//ID:         id.GenerateId(),
-		User:       session.UserId,
+		User:       sess.UserId,
 		DeviceName: deviceIn.DeviceName,
 		DeviceType: deviceIn.DeviceType,
 	}
 	dID, err := (*db).AddDevice(&newDevice)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to add device to db",
-		})
+		c.JSON(500, gin.H{"message": "Failed to add device to db"})
 		return
 	}
 	if dbConnection.UseSQLite {
@@ -202,54 +223,28 @@ func AddDevice(c *gin.Context, db *database.Database) {
 	} else {
 		newDevice.MongoID = id.IdFromString(dID)
 	}
-
-	//return device as json
 	deviceOut := newDevice.ToDeviceOut()
-	go func() {
-		out := wsOut.WsOut{Type: "deviceAdd", Data: deviceOut}
-		//marshal out to json
-		outJson, _ := json.Marshal(out)
-		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
-	}()
+	broadcast(sess, "deviceAdd", deviceOut)
 	c.JSON(200, deviceOut)
 }
 
 func EditDevice(c *gin.Context, db *database.Database) {
-	// check if user is logged in by getting a session from db
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-	// if user != nil {
-	// 	c.JSON(500, gin.H{
-	// 		"message": "Failed to get session from db",
-	// 	})
-	// 	return
-	// }
-	//get device id from url
 	deviceId := c.Param("id")
-
 	deviceIn := device.DeviceOut{}
 	if err := c.ShouldBindJSON(&deviceIn); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	//check if ID matches deviceIn.ID
 	if deviceId != deviceIn.ID {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-
-	//edit device in db
 	editedDevice := device.Device{
-		User:       session.UserId,
+		User:       sess.UserId,
 		DeviceName: deviceIn.DeviceName,
 		DeviceType: deviceIn.DeviceType,
 	}
@@ -259,106 +254,60 @@ func EditDevice(c *gin.Context, db *database.Database) {
 		editedDevice.MongoID = id.IdFromString(deviceId)
 	}
 	if !(*db).EditDevice(&editedDevice) {
-		c.JSON(500, gin.H{
-			"message": "Failed to edit device in db",
-		})
+		c.JSON(500, gin.H{"message": "Failed to edit device in db"})
 		return
 	}
 	deviceOut := editedDevice.ToDeviceOut()
-	go func() {
-		out := wsOut.WsOut{Type: "deviceEdit", Data: deviceOut}
-		//marshal out to json
-		outJson, _ := json.Marshal(out)
-		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
-	}()
-	//return device as json
+	broadcast(sess, "deviceEdit", deviceOut)
 	c.JSON(200, deviceOut)
 }
 
 func DeleteDevice(c *gin.Context, db *database.Database) {
-	// check if user is logged in by getting a session from db
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-	//get device id from url
 	deviceId := c.Param("id")
-
-	if !(*db).DeleteDevice(deviceId, session.UserId) {
-		c.JSON(500, gin.H{
-			"message": "Failed to delete device from db",
-		})
+	if !(*db).DeleteDevice(deviceId, sess.UserId) {
+		c.JSON(500, gin.H{"message": "Failed to delete device from db"})
 		return
 	}
-	//return device as json
-	go func() {
-		out := wsOut.WsOut{Type: "deviceDelete", Data: deviceId}
-		//marshal out to json
-		outJson, _ := json.Marshal(out)
-		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(outJson))
-	}()
-	c.JSON(200, gin.H{
-		"message": "Device deleted",
-	})
+	broadcast(sess, "deviceDelete", deviceId)
+	c.JSON(200, gin.H{"message": "Device deleted"})
 }
 
 func GetUserAlarms(c *gin.Context, db *database.Database) {
-	// check if user is logged in by getting a session from db
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-	//get alarms from db
-	alarms := (*db).GetUserAlarms(session.UserId)
-	//convert alarms to ToAlarmOut
+	alarms := (*db).GetUserAlarms(sess.UserId)
 	alarmOut := []alarm.AlarmOut{}
-	for _, alarm := range alarms {
-		alarmOut = append(alarmOut, alarm.ToAlarmOut())
+	for _, a := range alarms {
+		alarmOut = append(alarmOut, a.ToAlarmOut())
 	}
 	c.JSON(200, alarmOut)
 }
 
 func AddAlarm(c *gin.Context, db *database.Database) {
-	//fmt.Println("AddAlarm")
-	// check if user is logged in by getting a session from db
-	userSession, userInSession := (*db).GetSessionFromHeader(c.Request)
-	if userSession == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess, userInSess := (*db).GetSessionFromHeader(c.Request)
+	if sess == nil {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	if userInSess == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-
-	//get alarm from json
 	alarmIn := alarm.AlarmOut{}
 	if err := c.ShouldBindJSON(&alarmIn); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	//add alarm to db
-
-	newAlarm := alarmIn.ToNewAlarm(userSession.UserId)
-	//empty ID field
-
+	newAlarm := alarmIn.ToNewAlarm(sess.UserId)
 	alarmId, err := (*db).AddAlarm(&newAlarm)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to add alarm to db",
-		})
+		c.JSON(500, gin.H{"message": "Failed to add alarm to db"})
 		return
 	}
 	if dbConnection.UseSQLite {
@@ -366,194 +315,120 @@ func AddAlarm(c *gin.Context, db *database.Database) {
 	} else {
 		newAlarm.MongoID = id.IdFromString(alarmId)
 	}
-
 	added := newAlarm.ToAlarmOut()
-	go func() {
-		wsOut := wsOut.WsOut{Type: "alarmAdd", Data: added}
-		wsOutJson, _ := json.Marshal(wsOut)
-		wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
-	}()
+	broadcast(sess, "alarmAdd", added)
 	c.JSON(200, added)
 }
 
 func EditAlarm(c *gin.Context, db *database.Database) {
-	// check if user is logged in by getting a session from db
-	userSession, _ := (*db).GetSessionFromHeader(c.Request)
-	if userSession == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
 	alarmId := c.Param("id")
-
 	alarmIn := alarm.AlarmOut{}
 	if err := c.ShouldBindJSON(&alarmIn); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	//check if ID matches alarmIn.ID
 	if alarmId != alarmIn.ID {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-
-	editedAlarm := alarmIn.ToAlarm(userSession.UserId)
+	editedAlarm := alarmIn.ToAlarm(sess.UserId)
 	editedAlarm.Modified = now.Now()
 	if !(*db).EditAlarm(&editedAlarm) {
-		c.JSON(500, gin.H{
-			"message": "Failed to edit alarm in db",
-		})
+		c.JSON(500, gin.H{"message": "Failed to edit alarm in db"})
 		return
 	}
 	edited := editedAlarm.ToAlarmOut()
-	go func() {
-		wsOut := wsOut.WsOut{Type: "alarmEdit", Data: edited}
-		wsOutJson, _ := json.Marshal(wsOut)
-		wshandler.WsServing.ServeMessage(userSession.UserId, userSession.WsToken, []byte(wsOutJson))
-	}()
-	//return alarm as json
+	broadcast(sess, "alarmEdit", edited)
 	c.JSON(200, edited)
 }
 
 func DeleteAlarm(c *gin.Context, db *database.Database) {
-	// check if user is logged in by getting a session from db
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
 	alarmId := c.Param("id")
-
-	if !(*db).DeleteAlarm(alarmId, session.UserId) {
-		c.JSON(500, gin.H{
-			"message": "Failed to delete alarm from db",
-		})
+	if !(*db).DeleteAlarm(alarmId, sess.UserId) {
+		c.JSON(500, gin.H{"message": "Failed to delete alarm from db"})
 		return
 	}
-	go func() {
-		msg := wsOut.WsOut{Type: "alarmDelete", Data: alarmId}
-		msgJson, _ := json.Marshal(msg)
-		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(msgJson))
-	}()
-	c.JSON(200, gin.H{
-		"message": "Alarm deleted",
-	})
+	broadcast(sess, "alarmDelete", alarmId)
+	c.JSON(200, gin.H{"message": "Alarm deleted"})
 }
 
 func IsSessionValid(c *gin.Context, db *database.Database) {
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-	c.JSON(200, gin.H{
-		"message": "Session is valid",
-	})
+	c.JSON(200, gin.H{"message": "Session is valid"})
 }
 
 func GetAudioResources(c *gin.Context, db *database.Database, audioResources embed.FS) {
-	//check if user is logged in by getting a session from db
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-	//list all audio resources in audio-resources folder
-	audioResourcesInfo, err := ioutil.ReadDir("audio-resources")
+	audioResourcesInfo, err := os.ReadDir("audio-resources")
 	if err != nil {
-		audioResourcesInfo = []fs.FileInfo{}
+		audioResourcesInfo = []os.DirEntry{}
 	}
-	// if err != nil {
-	// 	c.JSON(500, gin.H{
-	// 		"message": "Failed to read audio resources",
-	// 	})
-	// 	return
-	// }
-	//get embedded audio resources
-
-	//append embedded audio resources to audioResourcesInfo
-	//convert audioResourcesInfo to []Filename
 	audioResourceFiles := []string{}
 	for _, audioResourceInfo := range audioResourcesInfo {
 		filename := audioResourceInfo.Name()
-		//remove file extension
 		if !strings.HasSuffix(filename, ".opus") && !strings.HasSuffix(filename, ".flac") && !strings.HasSuffix(filename, ".wav") {
 			continue
 		}
 		filename = filename[:len(filename)-len(filepath.Ext(filename))]
-		// check if filename is already in audioResourceFiles
 		if !funk.Contains(audioResourceFiles, filename) {
-			//if !list.IsInList(audioResourceFiles, filename) {
 			audioResourceFiles = append(audioResourceFiles, filename)
 		}
 	}
 	audioResourcesInfoEmbed, err := audioResources.ReadDir("audio-resources")
 	if err == nil {
-
 		for _, audioResourceInfo := range audioResourcesInfoEmbed {
 			filename := audioResourceInfo.Name()
-			//remove file extension
 			if !strings.HasSuffix(filename, ".opus") && !strings.HasSuffix(filename, ".flac") && !strings.HasSuffix(filename, ".wav") {
 				continue
 			}
 			filename = filename[:len(filename)-len(filepath.Ext(filename))]
-			// check if filename is already in audioResourceFiles
-			//use funk to check if filename is in audioResourceFiles
 			if !funk.Contains(audioResourceFiles, filename) {
-				//if !list.IsInList(audioResourceFiles, filename) {
 				audioResourceFiles = append(audioResourceFiles, filename)
 			}
 		}
 	}
-	//fmt.Println("resources: ", audioResourceFiles)
 	c.JSON(200, audioResourceFiles)
 }
 
-// serve static files
 func AudioResource(c *gin.Context, db *database.Database, audioResources embed.FS) {
-	//check if user is logged in by getting a session from db
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-
-	//read file from audioResources
 	fileName := "audio-resources/" + c.Param("filename")
 	embeddedFile := false
-	//check if file exists
 	if _, err := os.Stat(fileName); os.IsNotExist(err) {
 		embeddedFile = true
-		//check if file exists in audioResources
 		if _, err := audioResources.Open(fileName); err != nil {
-			c.JSON(404, gin.H{
-				"message": "File not found",
-			})
+			c.JSON(404, gin.H{"message": "File not found"})
 			return
 		}
 	}
 	var fileContent []byte
+	var readErr error
 	if embeddedFile {
-		//read file from audioResources
-		fileContent, _ = ioutil.ReadFile(fileName)
+		fileContent, readErr = audioResources.ReadFile(fileName)
 	} else {
-		//read file as bytes into fileContent
-		fileContent, _ = ioutil.ReadFile(fileName)
+		fileContent, readErr = os.ReadFile(fileName)
 	}
-	//send file as response get content type from file extension
+	if readErr != nil {
+		c.JSON(404, gin.H{"message": "File not found"})
+		return
+	}
 	fileExtension := filepath.Ext(fileName)
 	contentType := ""
 	switch fileExtension {
@@ -570,14 +445,13 @@ func AudioResource(c *gin.Context, db *database.Database, audioResources embed.F
 func LogOut(c *gin.Context, db *database.Database) {
 	//check if user is logged in by getting a session from db
 	token := c.Request.Header.Get("token")
-	//fmt.Println(token)
 	session, userInSession := (*db).GetSessionFromTokenActivate(token)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
+		return
 	}
-	//get session from header
 	if userInSession == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -607,13 +481,11 @@ func QRLogIn(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-	//fmt.Println(qrToken)
 	qr := (*db).GetQrData(qrToken.QrToken)
 	if qr == nil {
 		c.JSON(404, gin.H{
 			"message": "QR not found",
 		})
-		//fmt.Println("QR not found")
 		return
 	}
 
@@ -682,35 +554,25 @@ func QRLogIn(c *gin.Context, db *database.Database) {
 }
 
 func GetQRToken(c *gin.Context, db *database.Database) {
-	//check session
-	session, _ := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess := getSession(c)
+	if sess == nil {
 		return
 	}
-	//generate qr token
-	qrToken := session.UserId + token.GenerateToken(196)
+	qrToken := sess.UserId + token.GenerateToken(196)
 	qr := qr.QR{
 		Time:    now.Now() + 25000,
-		User:    session.UserId,
+		User:    sess.UserId,
 		QrToken: qrToken,
 	}
 	if !(*db).AddQr(&qr) {
-		c.JSON(500, gin.H{
-			"message": "Failed to add qr to db",
-		})
+		c.JSON(500, gin.H{"message": "Failed to add qr to db"})
 		return
 	}
 	go func() {
-		//delete qr from db after 25 seconds
 		time.Sleep(26 * time.Second)
 		(*db).DeleteQr(qrToken)
 	}()
-	c.JSON(200, gin.H{
-		"qrToken": qrToken,
-	})
+	c.JSON(200, gin.H{"qrToken": qrToken})
 }
 
 func AdminLogIn(c *gin.Context, db *database.Database) {
@@ -719,6 +581,7 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
+		return
 	}
 	if userInSession == nil {
 		c.JSON(404, gin.H{
@@ -741,8 +604,6 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-	log.Println("password", password)
-	//check if password is correct
 	match := hash.ComparePasswordAndHash(password.Password, userInSession.Password)
 	if !match {
 		c.JSON(401, gin.H{
@@ -758,7 +619,6 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 	}
 	uID := userInSession.GetUid()
 	adminSession.UserId = uID
-	//log.Println("adminSession", adminSession)
 	//add admin to db
 	if !(*db).AddAdminSession(&adminSession) {
 		c.JSON(500, gin.H{
@@ -780,23 +640,8 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 }
 
 func GetUsers(c *gin.Context, db *database.Database) {
-	adminSession, _ := (*db).GetAdminSessionFromHeader(c.Request)
-	if adminSession == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-		return
-	}
-	//get users from db
 	users := (*db).GetUsers()
-	//convert users to []UserOut
-	usersOut := []user.UserOut{}
-	for _, user := range users {
-		userOut := user.ToUserOut()
-		usersOut = append(usersOut, userOut)
-	}
-	//return usersOut as json
-	c.JSON(200, usersOut)
+	c.JSON(200, usersToUserOut(users))
 }
 
 func UserEdit(c *gin.Context, db *database.Database) {
@@ -836,37 +681,18 @@ func UserEdit(c *gin.Context, db *database.Database) {
 		return
 	}
 	if !editUser.CheckPassword() {
-		c.JSON(400, gin.H{
-			"message": "Password is redundant",
-		})
+		c.JSON(400, gin.H{"message": "Redundant password"})
 		return
 	}
-	//check if confirm password matches password using hash
-	fmt.Println("editUser.Password", editUser.Password)
-	fmt.Println("userInSession.Password", userInSession.Password)
-	match := hash.ComparePasswordAndHash(editUser.Password, userInSession.Password)
-	if !match {
-		c.JSON(401, gin.H{
-			"message": "Wrong password or failed to hash password",
-		})
-		return
-	}
-	//check if password is strong enough using zxcvbn
 	passwordHash := userInSession.Password
 	if editUser.Password != "" {
-		estimate := register.Estimate(editUser.ChangePassword)
-		if estimate.Guesses < register.MinimumGuesses {
-			c.JSON(400, gin.H{
-				"message": "Password is not strong enough",
-			})
+		if ok, msg := checkPasswordStrength(editUser.ChangePassword); !ok {
+			c.JSON(400, gin.H{"message": msg})
 			return
 		}
-		//hash password
 		passwordHashed, err := hash.HashPassword(editUser.ChangePassword)
 		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Failed to hash password",
-			})
+			c.JSON(500, gin.H{"message": "Failed to hash password"})
 			return
 		}
 		passwordHash = passwordHashed
@@ -901,7 +727,7 @@ func UserEdit(c *gin.Context, db *database.Database) {
 		//marshal out to json
 		userOut := wsOut.WsOut{Type: "userEdit", Data: out}
 		outJson, _ := json.Marshal(userOut)
-		wshandler.WsServing.ServeMessage(user.MongoID.Hex(), session.WsToken, []byte(outJson))
+		wshandler.WsServing.ServeMessage(user.GetUid(), session.WsToken, []byte(outJson))
 	}()
 
 	//return message success
@@ -911,264 +737,151 @@ func UserEdit(c *gin.Context, db *database.Database) {
 }
 
 func EditUserState(c *gin.Context, db *database.Database) {
-	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
-	if adminSession == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-		return
-	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	userInSess := middleware.GetUserFromContext(c)
+	if userInSess == nil || !userInSess.Owner {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
 	userID := c.Param("id")
 	adminRequest := admin.AdminRequest{}
 	if err := c.ShouldBindJSON(&adminRequest); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	//get user by id
-
 	userEdit := (*db).GetUserFromID(userID)
 	if userEdit == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-	//check if user is owner
 	if userEdit.Owner {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	//check if userInSession has same id as user and return unauthorized if it is
 	uID := userEdit.GetUid()
 	userEdit.Admin = adminRequest.Admin
 	userEdit.Active = adminRequest.Active
-	updated := (*db).UpdateUser(userEdit)
-	if !updated {
-		c.JSON(500, gin.H{
-			"message": "Failed to update user",
-		})
+	if !(*db).UpdateUser(userEdit) {
+		c.JSON(500, gin.H{"message": "Failed to update user"})
 		return
 	}
-
-	//marshal out to json
 	go func() {
 		outUser := userEdit.ToUserOut()
 		userOut := wsOut.WsOut{Type: "userEdit", Data: outUser}
 		outJson, _ := json.Marshal(userOut)
-		wshandler.WsServing.ServeMessage(uID, string("all"), []byte(outJson))
+		wshandler.WsServing.ServeMessage(uID, "all", []byte(outJson))
 	}()
-
-	//if edited user is remove all sessions from db
 	if !adminRequest.Active {
 		if !(*db).DeleteUserSessions(uID) {
-			c.JSON(500, gin.H{
-				"message": "Failed to delete user sessions",
-			})
+			c.JSON(500, gin.H{"message": "Failed to delete user sessions"})
 			return
 		}
 	}
-	//return list of users
-	users := (*db).GetUsers()
-	//convert users to []UserOut
-	usersOut := []user.UserOut{}
-	for _, user := range users {
-		userOut := user.ToUserOut()
-		usersOut = append(usersOut, userOut)
-	}
-	//return usersOut as json
-	c.JSON(200, usersOut)
+	c.JSON(200, usersToUserOut((*db).GetUsers()))
 }
 
 func RemoveUser(c *gin.Context, db *database.Database) {
-	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
-	if adminSession == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-		return
-	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	userInSess := middleware.GetUserFromContext(c)
+	if userInSess == nil || !userInSess.Owner {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
 	userID := c.Param("id")
-	//get user by id
-
 	userEdit := (*db).GetUserFromID(userID)
 	if userEdit == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-	//check if user is owner
 	if userEdit.Owner {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	//check if userInSession has same id as user and return unauthorized if it is
-	// if userInSession.ID.Hex() == userEdit.ID.Hex() {
-	// 	c.JSON(401, gin.H{
-	// 		"message": "Unauthorized",
-	// 	})
-	// 	return
-	// }
-	//delete user from db
-	//get id from UseSQLite
-	uID := userInSession.GetUid()
+	uID := userEdit.GetUid()
 	if !(*db).DeleteUser(uID) {
-		c.JSON(500, gin.H{
-			"message": "Failed to delete user",
-		})
+		c.JSON(500, gin.H{"message": "Failed to delete user"})
 		return
 	}
-	//delete all user sessions from db
 	if !(*db).DeleteUserSessions(uID) {
-		c.JSON(500, gin.H{
-			"message": "Failed to delete user sessions",
-		})
+		c.JSON(500, gin.H{"message": "Failed to delete user sessions"})
 		return
 	}
-	//return message success
-	users := (*db).GetUsers()
-	//convert users to []UserOut
-	usersOut := []user.UserOut{}
-	for _, user := range users {
-		userOut := user.ToUserOut()
-		usersOut = append(usersOut, userOut)
-	}
-	//return usersOut as json
-	c.JSON(200, usersOut)
+	c.JSON(200, usersToUserOut((*db).GetUsers()))
 }
 
 func GetWebColors(c *gin.Context, db *database.Database) {
-	session, userInSession := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	_, userInSess := (*db).GetSessionFromHeader(c.Request)
+	if userInSess == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
-		return
-	}
-	//get colors from db
-	colors := (*db).GetWebColors(userInSession)
-
+	colors := (*db).GetWebColors(userInSess)
 	webCols := user.WebColors{}
-	if err := json.Unmarshal([]byte(colors), &webCols); err != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to unmarshal colors",
-		})
-		return
+	if colors != "" {
+		if err := json.Unmarshal([]byte(colors), &webCols); err != nil {
+			c.JSON(500, gin.H{"message": "Failed to unmarshal colors"})
+			return
+		}
 	}
 	c.JSON(200, webCols)
 }
 
 func SetWebColors(c *gin.Context, db *database.Database) {
-	session, userInSession := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	sess, userInSess := (*db).GetSessionFromHeader(c.Request)
+	if sess == nil {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	if userInSess == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
 	webColors := user.WebColors{}
 	if err := c.ShouldBindJSON(&webColors); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	//delete keys "Light" and "Dark" from colors
 	delete(webColors, "Light")
 	delete(webColors, "Dark")
 	if len(webColors) > 20 {
-		c.JSON(400, gin.H{
-			"message": "Too large map",
-		})
+		c.JSON(400, gin.H{"message": "Too large map"})
 		return
 	}
-
-	//send to ws
-	go func() {
-		wsOut := wsOut.WsOut{Type: "webColors", Data: webColors}
-		wsOutJson, _ := json.Marshal(wsOut)
-		wshandler.WsServing.ServeMessage(session.UserId, session.WsToken, []byte(wsOutJson))
-	}()
-	// marshall webColors to json string
+	broadcast(sess, "webColors", webColors)
 	webColorsJson, _ := json.Marshal(webColors)
-
-	if !(*db).AddWebColors(userInSession, string(webColorsJson)) {
-		c.JSON(500, gin.H{
-			"message": "Failed to set web colors",
-		})
+	if !(*db).AddWebColors(userInSess, string(webColorsJson)) {
+		c.JSON(500, gin.H{"message": "Failed to set web colors"})
 		return
 	}
+	c.JSON(200, gin.H{"message": "Web colors saved"})
 }
 
 func RefreshToken(c *gin.Context, db *database.Database) {
-	//get session from header
-	session, userInSession := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	sess, userInSess := (*db).GetSessionFromHeader(c.Request)
+	if sess == nil {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	uID := userInSession.GetUid()
-	newToken := token.GenerateToken(token.TokenStringLength)
-	session.Token = uID + newToken
-	session.WsPair = uID + token.GenerateToken(token.WsPairLength)
-	session.WsToken = uID + token.GenerateToken(token.WsTokenStringLength)
-	//get session length from config
+	if userInSess == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
+		return
+	}
+	uID := userInSess.GetUid()
+	sess.Token = uID + token.GenerateToken(token.TokenStringLength)
+	sess.WsPair = uID + token.GenerateToken(token.WsPairLength)
+	sess.WsToken = uID + token.GenerateToken(token.WsTokenStringLength)
 	appconfig.AppConfigurationMutex.Lock()
 	sessionLength := appconfig.AppConfiguration.SessionLength
 	appconfig.AppConfigurationMutex.Unlock()
-	session.Time = now.Now() + int64(sessionLength)
-	//update session in db
-	if !(*db).UpdateSession(session) {
-		c.JSON(500, gin.H{
-			"message": "Failed to update session",
-		})
+	sess.Time = now.Now() + int64(sessionLength)
+	if !(*db).UpdateSession(sess) {
+		c.JSON(500, gin.H{"message": "Failed to update session"})
 		return
 	}
-	refresh := login.RefreshToken{
-		Token:   session.Token,
-		Time:    session.Time,
-		WsPair:  session.WsPair,
-		WsToKen: session.WsToken,
-	}
-	//return refresh as json
-	c.JSON(200, refresh)
+	c.JSON(200, login.RefreshToken{
+		Token:   sess.Token,
+		Time:    sess.Time,
+		WsPair:  sess.WsPair,
+		WsToKen: sess.WsToken,
+	})
 }
 
 func RegisterUser(c *gin.Context, db *database.Database) {
@@ -1209,24 +922,11 @@ func RegisterUser(c *gin.Context, db *database.Database) {
 	}
 	//check if password is valid
 	if !registerRequest.CheckPassword() {
-		c.JSON(400, gin.H{
-			"message": "Redundant password",
-		})
+		c.JSON(400, gin.H{"message": "Redundant password"})
 		return
 	}
-
-	//check if password is strong enough using zxcvbn
-	estimate := register.Estimate(registerRequest.Password)
-	if estimate.Score < 3 {
-		c.JSON(400, gin.H{
-			"message": "Password is not strong enough",
-		})
-		return
-	}
-	if estimate.Guesses < register.MinimumGuesses {
-		c.JSON(400, gin.H{
-			"message": "Password is not strong enough",
-		})
+	if ok, msg := checkPasswordStrength(registerRequest.Password); !ok {
+		c.JSON(400, gin.H{"message": msg})
 		return
 	}
 	//hash password
@@ -1277,7 +977,6 @@ func RegisterUser(c *gin.Context, db *database.Database) {
 	}
 
 	//add user to db
-	//fmt.Println("adding user to db", user)
 	_, err = (*db).AddUser(&user)
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -1292,114 +991,67 @@ func RegisterUser(c *gin.Context, db *database.Database) {
 }
 
 func GetUser(c *gin.Context, db *database.Database) {
-	//get user from header
-	session, userInSession := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	_, userInSess := (*db).GetSessionFromHeader(c.Request)
+	if userInSess == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-	uID := userInSession.GetUid()
-
-	//get user from db
+	uID := userInSess.GetUid()
 	user := (*db).GetUserFromID(uID)
 	if user == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-	//return user as json
 	c.JSON(200, user.ToUserOut())
 }
 
-// update WsToKen in session
 func UpdateWsToken(c *gin.Context, db *database.Database) {
-	//get session from header
-	session, userInSession := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	sess, _ := (*db).GetSessionFromHeader(c.Request)
+	if sess == nil {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	//generate new wsToken
-	newWsToken := token.GenerateToken(66)
-	session.WsToken = newWsToken
-	//update session in db
-	if !(*db).UpdateSession(session) {
-		c.JSON(500, gin.H{
-			"message": "Failed to update session",
-		})
+	sess.WsToken = token.GenerateToken(66)
+	if !(*db).UpdateSession(sess) {
+		c.JSON(500, gin.H{"message": "Failed to update session"})
 		return
 	}
-	//return new wsToken as json
-	c.JSON(200, gin.H{
-		"wsToken": newWsToken,
-	})
+	c.JSON(200, gin.H{"wsToken": sess.WsToken})
 }
 
 func GetUpdate(c *gin.Context, db *database.Database) {
-	//get session from header
-	session, userInSession := (*db).GetSessionFromHeader(c.Request)
-	if session == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-	}
-	if userInSession == nil {
-		c.JSON(404, gin.H{
-			"message": "User not found",
-		})
+	sess, userInSess := (*db).GetSessionFromHeader(c.Request)
+	if sess == nil {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	//get update from db
-	alarms := (*db).GetUserAlarms(session.UserId)
+	if userInSess == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
+		return
+	}
+	alarms := (*db).GetUserAlarms(sess.UserId)
 	if alarms == nil {
-		c.JSON(404, gin.H{
-			"message": "Alarms not found",
-		})
+		c.JSON(404, gin.H{"message": "Alarms not found"})
 		return
 	}
-	devices := (*db).GetDevices(session.UserId)
+	devices := (*db).GetDevices(sess.UserId)
 	if devices == nil {
-		c.JSON(404, gin.H{
-			"message": "Devices not found",
-		})
+		c.JSON(404, gin.H{"message": "Devices not found"})
 		return
 	}
-	//convert alarms to []AlarmOut
 	alarmsOut := []alarm.AlarmOut{}
-	for _, alarm := range alarms {
-		alarmsOut = append(alarmsOut, alarm.ToAlarmOut())
+	for _, a := range alarms {
+		alarmsOut = append(alarmsOut, a.ToAlarmOut())
 	}
-	//convert devices to []DeviceOut
 	devicesOut := []device.DeviceOut{}
-	for _, device := range devices {
-		devicesOut = append(devicesOut, device.ToDeviceOut())
+	for _, d := range devices {
+		devicesOut = append(devicesOut, d.ToDeviceOut())
 	}
-	//convert userInSession to UserOut
-	userInSessionOut := userInSession.ToUserOut()
-	//form update
-	update := update.Update{
+	c.JSON(200, update.Update{
 		Alarms:  alarmsOut,
 		Devices: devicesOut,
-		User:    userInSessionOut,
-	}
-
-	//return update as json
-	c.JSON(200, update)
+		User:    userInSess.ToUserOut(),
+	})
 }
 
 func ActivateAccount(c *gin.Context, db *database.Database) {
@@ -1438,6 +1090,7 @@ func ActivateAccount(c *gin.Context, db *database.Database) {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
+		return
 	}
 	if userInSession == nil {
 		c.JSON(404, gin.H{
@@ -1565,31 +1218,16 @@ func ResetPassword(c *gin.Context, db *database.Database) {
 	editUser.LastName = userToEdit.LastName
 	editUser.ScreenName = userToEdit.ScreenName
 	if !editUser.CheckPassword() {
-		c.JSON(400, gin.H{
-			"message": "Redundant password",
-		})
+		c.JSON(400, gin.H{"message": "Redundant password"})
 		return
 	}
-	//check if password is strong enough using zxcvbn
-	estimate := register.Estimate(editUser.Password)
-	if estimate.Score < 3 {
-		c.JSON(400, gin.H{
-			"message": "Password is not strong enough",
-		})
+	if ok, msg := checkPasswordStrength(editUser.Password); !ok {
+		c.JSON(400, gin.H{"message": msg})
 		return
 	}
-	if estimate.Guesses < register.MinimumGuesses {
-		c.JSON(400, gin.H{
-			"message": "Password is not strong enough",
-		})
-		return
-	}
-	//hash password
 	passwordHashed, err := hash.HashPassword(editUser.Password)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to hash password",
-		})
+		c.JSON(500, gin.H{"message": "Failed to hash password"})
 		return
 	}
 	userToEdit.Password = passwordHashed
@@ -1604,30 +1242,6 @@ func ResetPassword(c *gin.Context, db *database.Database) {
 	c.JSON(200, gin.H{
 		"message": "Password reset, Log in with your new password",
 	})
-}
-
-func StoreServerConfig(c *gin.Context, db *database.Database) {
-	//get original config from appconfig module
-	originalConfig, err := appconfig.GetConfig()
-	if err != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to get original config",
-		})
-		return
-	}
-	//override original config with new config from json
-	newConfig := appconfig.AppConfig{}
-	if err := c.ShouldBindJSON(&newConfig); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
-		return
-	}
-	newConfig.OwnerID = originalConfig.OwnerID
-	newConfig.PasswordDB = originalConfig.PasswordDB
-	newConfig.UserDB = originalConfig.UserDB
-	//save new config to appconfig module
-
 }
 
 func GetActivationCaptcha(c *gin.Context, db *database.Database) {
@@ -1645,14 +1259,13 @@ func GetActivationCaptcha(c *gin.Context, db *database.Database) {
 		return
 	}
 
-	//fmt.Println(token)
 	session, userInSession := (*db).GetSessionFromTokenActivate(token)
 	if session == nil {
 		c.JSON(401, gin.H{
 			"message": "Unauthorized",
 		})
+		return
 	}
-	//get session from header
 	if userInSession == nil {
 		c.JSON(404, gin.H{
 			"message": "User not found",
@@ -1680,69 +1293,35 @@ func GetActivationCaptcha(c *gin.Context, db *database.Database) {
 }
 
 func GetOwnerSettings(c *gin.Context, db *database.Database) {
-	//get admin session from header
-	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
-	if adminSession == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-	}
-	if !userInSession.Owner {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	usr := middleware.GetUserFromContext(c)
+	if usr == nil {
 		return
 	}
-
 	appconfig.AppConfigurationMutex.Lock()
 	config := appconfig.AppConfiguration
 	appconfig.AppConfigurationMutex.Unlock()
-
-	//get owner settings from config
-	//return owner settings as json
-
 	c.JSON(200, config)
 }
 
 func SetOwnerSettings(c *gin.Context, db *database.Database) {
-	//get admin session from header
-	adminSession, userInSession := (*db).GetAdminSessionFromHeader(c.Request)
-	if adminSession == nil {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
-	}
-	//check if user is owner
-	if !userInSession.Owner {
-		c.JSON(401, gin.H{
-			"message": "Unauthorized",
-		})
+	usr := middleware.GetUserFromContext(c)
+	if usr == nil {
 		return
 	}
-
-	//get owner settings from json
 	configuration := appconfig.AppConfig{}
 	if err := c.ShouldBindJSON(&configuration); err != nil {
-		c.JSON(400, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	//set owner id in config
 	appconfig.SetConfig(&configuration)
 	app, error := appconfig.GetConfig()
 	if error != nil {
-		c.JSON(500, gin.H{
-			"message": "Failed to get config",
-		})
+		c.JSON(500, gin.H{"message": "Failed to get config"})
 		return
 	}
-
 	appconfig.AppConfigurationMutex.Lock()
 	appconfig.AppConfiguration = app
 	appconfig.AppConfigurationMutex.Unlock()
-
-	//return appconfig as json
 	c.JSON(200, app)
 }
 
@@ -1845,7 +1424,6 @@ func Index(c *gin.Context, resources embed.FS) {
 		})
 		return
 	}
-	//fmt.Println(byteContent)
 	c.Data(200, "text/html; charset=utf-8", []byte(byteContent))
 }
 
@@ -1861,7 +1439,6 @@ func Assets(c *gin.Context, resources embed.FS) {
 		return
 	}
 	//filePath := "./dist/assets/" + fileName
-	//fmt.Println(filePath)
 	//serve fileContent get file information from extension
 	extension := filepath.Ext(fileName)
 	switch extension {
@@ -1904,7 +1481,22 @@ func Assets(c *gin.Context, resources embed.FS) {
 	}
 }
 
-func Ping(c *gin.Context) {
-	//return  200 and zero bytes
-	c.Data(200, "text/plain", []byte(""))
+func Fonts(c *gin.Context, resources embed.FS) {
+	fileName := c.Param("file")
+	fileContent, err := resources.ReadFile("dist/fonts/" + fileName)
+	if err != nil {
+		c.JSON(404, gin.H{"message": "Font not found"})
+		return
+	}
+	extension := filepath.Ext(fileName)
+	switch extension {
+	case ".woff2":
+		c.Data(200, "font/woff2", fileContent)
+	case ".woff":
+		c.Data(200, "font/woff", fileContent)
+	case ".ttf":
+		c.Data(200, "font/ttf", fileContent)
+	default:
+		c.Data(200, "application/octet-stream", fileContent)
+	}
 }

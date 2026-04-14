@@ -4,7 +4,6 @@ import AlarmWeekly from "./AlarmWeekly"
 import AlarmDaily from "./AlarmDaily"
 import AlarmYearly from "./AlarmYearly"
 import AlarmCase from "./AlarmCase"
-import { Divider } from "@chakra-ui/react"
 import useAlarm from "./alarmStates"
 import { AlarmCases }  from "../../../type"
 
@@ -24,7 +23,7 @@ function AlarmSelector() {
     }
     return (<>
         <AlarmCase />
-        <Divider m={'5px'} />
+        <hr className="my-1" />
         {renderCase()}
     </>
     )

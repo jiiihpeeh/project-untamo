@@ -44,7 +44,6 @@ func randomBoolSlice(length int) ([]bool, error) {
 		bitIndex := uint(i % 8)
 		bools[i] = (bytes[byteIndex] & (1 << bitIndex)) != 0
 	}
-	//fmt.Println(bools)
 	return bools, nil
 }
 func GenerateRandomString(s int) (string, error) {

@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"sync"
 
@@ -101,7 +101,7 @@ func GetConfig() (*AppConfig, error) {
 
 	//read config file to memory
 	config := AppConfig{}
-	contentEnc, err := ioutil.ReadFile("app.cfg")
+	contentEnc, err := os.ReadFile("app.cfg")
 	if err != nil {
 		return &config, err
 	}
@@ -122,7 +122,7 @@ func GetConfig() (*AppConfig, error) {
 	if err != nil {
 		return &config, err
 	}
-	ownerConfigEnc, err := ioutil.ReadFile("owner.cfg")
+	ownerConfigEnc, err := os.ReadFile("owner.cfg")
 	if err != nil {
 		return &config, err
 	}
@@ -196,24 +196,22 @@ func SetConfig(config *AppConfig) bool {
 		EmailPlainAuth: config.EmailPlainAuth,
 	}
 	ownerConfJson, _ := json.Marshal(ownerConf)
-	//log.Println("Owner config :", string(ownerConfJson))
 
 	ownerConfigEnc := aesEncrypt(ownerConfJson, appOwnerKey)
-	err = ioutil.WriteFile("app.cfg", contentEnc, 0644)
+	err = os.WriteFile("app.cfg", contentEnc, 0644)
 	if err != nil {
 		return false
 	}
-	err = ioutil.WriteFile("owner.cfg", ownerConfigEnc, 0644)
+	err = os.WriteFile("owner.cfg", ownerConfigEnc, 0644)
 	return err == nil
 }
 
 // Check if config files exist
 func FoundConfig() bool {
-	_, err := ioutil.ReadFile("app.cfg")
-	if err != nil {
+	if _, err := os.Stat("app.cfg"); err != nil {
 		return false
 	}
-	_, err = ioutil.ReadFile("owner.cfg")
+	_, err := os.Stat("owner.cfg")
 	return err == nil
 }
 

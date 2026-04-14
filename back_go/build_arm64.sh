@@ -1,6 +1,10 @@
 #!/bin/bash
 
-read -e -p "(Re)build frontend? [Y/N] " REPLY
+if [[ "$1" =~ ^(-y|--frontend|y|Y)$ ]]; then
+  REPLY="Y"
+else
+  read -e -p "(Re)build frontend? [Y/N] " REPLY
+fi
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
@@ -21,3 +25,5 @@ export CC=aarch64-linux-gnu-gcc
 GOOS=linux GOARCH=arm64 go build .
 /usr/aarch64-linux-gnu/bin/strip untamo_server.zzz
 upx untamo_server.zzz
+mkdir -p ../build-project/untamoserver-arm64_linux
+cp untamo_server.zzz ../build-project/untamoserver-arm64_linux/untamoserver-arm64_linux

@@ -1,36 +1,20 @@
-import  useServer from './stores/serverStore' 
-import useAlarms from './stores/alarmStore'
-import useLogIn from './stores/loginStore' 
-import useFetchQR from './stores/QRStore'
-import useAdmin from './stores/adminStore'
-import useDevices from './stores/deviceStore'
-import useTimeouts from './stores/timeoutsStore'
-import usePopups from './stores/popUpStore'
-import useAudio from './stores/audioStore'
-import useSettings from './stores/settingsStore'
-import useTask from './stores/taskStore'
+import { useStore } from './stores/store'
 import { Path, SessionStatus } from './type'
 
-function getCommunicationInfo() {
-    const server = useServer.getState().address
-    const token = useLogIn.getState().token
-    return {
-        server: server,
-        token: token
-    }
-}
+export { useStore as useServer }
+export { useStore as useLogIn }
+export { useStore as useDevices }
+export { useStore as useAlarms }
+export { useStore as useSettings }
+export { useStore as useAudio }
+export { useStore as useTimeouts }
+export { useStore as usePopups }
+export { useStore as useTask }
+export { useStore as useAdmin }
+export { useStore as useFetchQR }
+export { useStore as useEmojiStore }
 
-function extend(path: Path) {
-    return useServer.getState().extend(path)
-}
-function validSession() {
-    return useLogIn.getState().sessionValid === SessionStatus.Valid
-}
-function fingerprint() {
-    return useLogIn.getState().fingerprint
-}
-export 
-    { 
-        useServer, useLogIn, useFetchQR, useAdmin, extend, fingerprint, getCommunicationInfo,
-        useDevices,useAlarms, useTimeouts, usePopups , useSettings, useAudio, useTask, validSession
-    }
+export function validSession() { return useStore.getState().sessionValid === SessionStatus.Valid }
+export function fingerprint() { return useStore.getState().fingerprint }
+export function extend(path: Path) { return useStore.getState().extend(path) }
+export { getCommunicationInfo } from './stores/api'

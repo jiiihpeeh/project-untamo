@@ -36,21 +36,22 @@ export function ToastContainer() {
   }, [])
 
   return (
-    <div className="toast-container">
-      {localToasts.map((t) => (
-        <div key={t.id} className={`toast toast-${t.type}`}>
-          <div>
-            <div className="toast-title">{t.title}</div>
-            {t.description && <div className="toast-desc">{t.description}</div>}
+    <div className="toast toast-top toast-end z-[9999]">
+      {localToasts.map((t) => {
+        const alertClass = t.type === 'success' ? 'alert-success' : t.type === 'error' ? 'alert-error' : t.type === 'warning' ? 'alert-warning' : 'alert-info'
+        return (
+          <div key={t.id} className={`alert ${alertClass} flex-row gap-3`}>
+            <div className="flex-1">
+              <div className="font-semibold text-sm">{t.title}</div>
+              {t.description && <div className="text-xs opacity-80">{t.description}</div>}
+            </div>
+            <button className="btn btn-xs btn-circle btn-ghost" onClick={() => {
+              toasts = toasts.filter((x) => x.id !== t.id)
+              notifyListeners()
+            }}>✕</button>
           </div>
-          <button className="toast-close" onClick={() => {
-            toasts = toasts.filter((x) => x.id !== t.id)
-            notifyListeners()
-          }}>
-            ×
-          </button>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

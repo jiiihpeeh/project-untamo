@@ -1,3 +1,5 @@
+import type { ComponentChildren } from 'preact'
+
 interface TableProps {
   children: ComponentChildren
   className?: string

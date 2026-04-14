@@ -1,0 +1,47 @@
+{
+  "name": "project-untamo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
+    "@evellior/react-qr-scanner": "^0.4.0",
+    "@fseehawer/react-circular-slider": "^3.3.3",
+    "@tauri-apps/api": "^2.10.1",
+    "axios": "^1.15.0",
+    "blob-util": "^2.0.2",
+    "date-fns": "^4.1.0",
+    "emoji-mart": "^5.6.0",
+    "i": "^0.3.7",
+    "katex-react": "^3.0.0",
+    "localforage": "^1.10.0",
+    "lodash": "^4.18.1",
+    "preact": "^10.29.1",
+    "qr-scanner": "^1.4.2",
+    "qrcode": "^1.5.4",
+    "react-circular-slider-svg": "^0.4.0",
+    "react-colorful": "^5.6.1",
+    "react-countdown": "^2.3.6",
+    "react-device-detect": "^2.2.3",
+    "react-icons": "^5.6.0",
+    "react-icons-kit": "^2.0.0",
+    "react-katex": "3.1.0",
+    "react-router-dom": "^7.14.0",
+    "react-use-websocket": "^4.13.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.5",
+    "@tauri-apps/cli": "^2.10.1",
+    "@types/qrcode": "^1.5.6",
+    "typescript": "^5.3.3",
+    "vite": "^5.4.14",
+    "vite-svg-loader": "^5.1.1"
+  }
+}

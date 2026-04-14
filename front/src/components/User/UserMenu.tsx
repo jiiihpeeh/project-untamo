@@ -1,7 +1,5 @@
-import React, { useEffect} from "react"
-import { Text, Modal, Button,ModalOverlay, ModalContent,
-         ModalHeader,ModalBody,  ModalCloseButton } from '@chakra-ui/react'
-import { useLogIn, usePopups, useServer } from "../../stores"
+import React, { useEffect } from "react"
+import { useLogIn, usePopups } from "../../stores"
 import { SessionStatus } from "../../type"
 import { refreshToken } from "../../stores/loginStore"
 
@@ -14,96 +12,59 @@ function UserMenu() {
     const showUserMenu = usePopups((state) => state.showUserMenu)
     const setShowUserMenu = usePopups((state) => state.setShowUserMenu)
     const sessionStatus = useLogIn((state) => state.sessionValid)
-    const [ isSessionValid, setIsSessionValid ] = React.useState(sessionStatus === SessionStatus.Valid)
-    
+    const [isSessionValid, setIsSessionValid] = React.useState(sessionStatus === SessionStatus.Valid)
+
     useEffect(() => {
-        if ( sessionStatus === SessionStatus.Valid){
-            setIsSessionValid(true)
-        }else{
-            setIsSessionValid(false)
-        }
+        setIsSessionValid(sessionStatus === SessionStatus.Valid)
     }, [sessionStatus])
-    
+
+    if (!showUserMenu) return null
     return (
-        <Modal
-            isOpen={showUserMenu}
-            onClose={() => setShowUserMenu(!showUserMenu)}
-            isCentered
-        >
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>
-                    User Actions
-                </ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    <Button
-                        onClick={() => {
-                            setShowEditProfile(true)
-                            setShowUserMenu(!showUserMenu)
-                        } }
-                        w={"100%"}
-                        m={"2%"}
-                        isDisabled={!isSessionValid}
+        <div className="modal modal-open" style={{ zIndex: 1000 }}>
+            <div className="modal-box max-w-xs">
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    onClick={() => setShowUserMenu(false)}>✕</button>
+                <h3 className="font-bold text-lg mb-4">User Actions</h3>
+                <div className="flex flex-col gap-2">
+                    <button
+                        className="btn btn-block"
+                        disabled={!isSessionValid}
+                        onClick={() => { setShowEditProfile(true); setShowUserMenu(false) }}
                     >
-                        <Text as='b'>
-                            Edit Profile
-                        </Text>
-                    </Button>
-                    {userInfo.admin && <>
-                        <Button
-                            mr={5}
-                            onClick={() => {
-                                setShowAdminLogIn(true)
-                                setShowUserMenu(!showUserMenu)
-                            } }
-                            w={"100%"}
-                            m={"2%"}
-                            bg={"red"}
-                            isDisabled={!isSessionValid}
+                        Edit Profile
+                    </button>
+                    {userInfo.admin && (
+                        <button
+                            className="btn btn-block btn-error"
+                            disabled={!isSessionValid}
+                            onClick={() => { setShowAdminLogIn(true); setShowUserMenu(false) }}
                         >
                             Admin Log In
-                        </Button></>}
-                    <Button
-                        onClick={() => {
-                            setShowLogOut(true)
-                            setShowUserMenu(!showUserMenu)
-                        } }
+                        </button>
+                    )}
+                    <button
                         id="logout-button"
-                        w={"100%"}
-                        color="red"
-                        m={"2%"}
+                        className="btn btn-block btn-error btn-outline"
+                        onClick={() => { setShowLogOut(true); setShowUserMenu(false) }}
                     >
-                        <Text as='b'>
-                            Log Out
-                        </Text>
-                    </Button>
-                    <Button
-                        onClick={() => {
-                            refreshToken(false)
-                            console.log("refreshing session credentials")
-                            setShowUserMenu(!showUserMenu)
-                        }}
-                        w={"100%"}
-                        m={"2%"}
+                        Log Out
+                    </button>
+                    <button
+                        className="btn btn-block"
+                        onClick={() => { refreshToken(false); setShowUserMenu(false) }}
                     >
-                        Check & Refresh Session
-                    </Button>
-                    <Button
-                        onClick={() => {
-                            setShowAbout(true)
-                            setShowUserMenu(!showUserMenu)
-                        } }
-                        w={"100%"}
-                        m={"2%"}
+                        Check &amp; Refresh Session
+                    </button>
+                    <button
+                        className="btn btn-block"
+                        onClick={() => { setShowAbout(true); setShowUserMenu(false) }}
                     >
-                        <Text as='b'>
-                            About Untamo
-                        </Text>
-                    </Button>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
+                        About Untamo
+                    </button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={() => setShowUserMenu(false)} />
+        </div>
     )
 }
 

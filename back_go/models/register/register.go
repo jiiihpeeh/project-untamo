@@ -135,7 +135,6 @@ func FromJsonWs(msg []byte) RegisterRequest {
 
 func (message *RegisterRequest) HandleMessage() RegisterWsResponse {
 
-	//log.Println("HandleMessage: ", message)
 	messageResponse := RegisterWsResponse{}
 
 	//convert to registerRequest

@@ -1,29 +1,19 @@
-import { Button, Drawer, DrawerBody,
-    DrawerHeader,
-    DrawerOverlay,DrawerContent,
-    DrawerCloseButton,
-    Flex, Spacer } from '@chakra-ui/react'
-import React, { useRef } from 'react'
+import React from 'react'
 import AlarmSelector from './AlarmComponents/AlarmSelector'
 import useAlarm from './AlarmComponents/alarmStates'
 import { useAlarms, usePopups } from '../../stores'
 
-
 function AddAlarm() {
-    const btnRef = useRef<HTMLButtonElement>(null)
     const addNewAlarm = useAlarms((state) => state.addNewAlarm)
-    const setShowToast = usePopups((state)=>state.setShowToast)
-    const showAddAlarm = usePopups((state)=>state.showAddAlarm)
-    const setShowAddAlarm = usePopups((state)=>state.setShowAddAlarm)
-    const alarmFromDialog = useAlarm((state)=> state.alarmFromDialog) 
-    const isMobile = usePopups((state)=> state.isMobile)
+    const setShowToast = usePopups((state) => state.setShowToast)
+    const showAddAlarm = usePopups((state) => state.showAddAlarm)
+    const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
+    const alarmFromDialog = useAlarm((state) => state.alarmFromDialog)
 
-    async function onAdd(event: any) {
-        event.currentTarget.disabled = true
-        let alarm = alarmFromDialog()
-        if (alarm) {
-            addNewAlarm(alarm)
-        }
+    async function onAdd(event: MouseEvent) {
+        (event.currentTarget as HTMLButtonElement).disabled = true
+        const alarm = alarmFromDialog()
+        if (alarm) addNewAlarm(alarm)
         setShowAddAlarm(false)
         setShowToast(true)
     }
@@ -32,43 +22,24 @@ function AddAlarm() {
         setShowAddAlarm(false)
     }
 
+    if (!showAddAlarm) return null
+
     return (
-        <Drawer
-            isOpen={showAddAlarm}
-            placement='left'
-            onClose={onDrawerClose}
-            finalFocusRef={btnRef}
-            size={(isMobile)?'full':'md'}
-        >
-        <DrawerOverlay />
-                <DrawerContent>
-                <DrawerCloseButton />
-                <DrawerHeader>
-                    Add an alarm
-                </DrawerHeader>	
-                <DrawerBody>
-                    <AlarmSelector/>
-                    <Flex m={"15%"}>
-                        <Button 
-                            variant='outline' 
-                            mr={3} 
-                            onClick={onDrawerClose} 
-                            colorScheme="red"
-                        >
-                            Cancel
-                        </Button>
-                        <Spacer/>
-                        <Button 
-                            colorScheme='green' 
-                            onClick={onAdd}
-                        >
-                                Save
-                        </Button>
-                    </Flex>
-                </DrawerBody>
-                </DrawerContent>
-            </Drawer>
-        )
+        <div className={`modal ${showAddAlarm ? 'modal-open' : ''}`} id="add_alarm_modal">
+            <div className="modal-box">
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold">Add an alarm</h2>
+                    <button className="btn btn-sm btn-circle btn-ghost" onClick={onDrawerClose}>✕</button>
+                </div>
+                <AlarmSelector />
+                <div className="flex justify-end gap-2 mt-6">
+                    <button className="btn btn-outline" onClick={onDrawerClose}>Cancel</button>
+                    <button className="btn btn-success" onClick={(e) => onAdd(e as any)}>Save</button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={onDrawerClose}></div>
+        </div>
+    )
 }
 
 export default AddAlarm

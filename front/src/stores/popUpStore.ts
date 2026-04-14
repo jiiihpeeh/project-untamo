@@ -1,361 +1,164 @@
-import { create } from 'zustand'
-import useFetchQR from './QRStore'
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
 import useAlarm from '../components/Alarms/AlarmComponents/alarmStates'
 
 export type WindowSize = {
-    width: number,
-    height: number
-    landscape:boolean
+    width:     number
+    height:    number
+    landscape: boolean
 }
 
-type Popup = {
-    showEditDevice: boolean,
-    setShowEditDevice: (to: boolean) => void,
-    showSettings: boolean,
-    setShowSettings: (to: boolean) => void,
-    showDeleteDevice: boolean,
-    setShowDeleteDevice: (to: boolean) => void,
-    showAlarmPop: boolean,
-    setShowAlarmPop: (to: boolean) => void,
-    showAdminPop: boolean,
-    setShowAdminPop: (to: boolean) => void,
-    showEditAlarm: boolean,
-    setShowEditAlarm: (to: boolean) => void,
-    showAddAlarm: boolean,
-    setShowAddAlarm: (to: boolean) => void,   
-    showDeleteAlarm: boolean,
-    setShowDeleteAlarm: (to: boolean) => void,
-    showAdminConfirm: boolean,
-    setShowAdminConfirm: (to: boolean) => void,
-    showAddDevice: boolean,
-    setShowAddDevice: (to: boolean) => void,
-    showQRDialog: boolean,
-    setShowQRDialog: (to: boolean) => void,
-    showLogOut: boolean,
-    setShowLogOut: (to: boolean) => void,
-    showEditProfile: boolean,
-    setShowEditProfile: (to: boolean) => void,
-    showAbout: boolean,
-    setShowAbout: (to: boolean) => void,
-    showAdminLogIn: boolean,
-    setShowAdminLogIn: (to: boolean) => void,
-    showServerEdit: boolean,
-    setShowServerEdit: (to: boolean) => void,
-    showUserMenu: boolean,
-    setShowUserMenu: (show: boolean ) => void,
-    showDeviceMenu: boolean,
-    setShowDeviceMenu: (show: boolean) =>void,
-    showToast: boolean,
-    setShowToast: (to:boolean) => void
-    showColor: boolean,
-    setShowColor: (to:boolean) => void
-    showTimepicker: boolean,
-    setShowTimepicker: (to:boolean) => void,
-    showTask: boolean
-    setShowTask: (to:boolean) => void,
-    isMobile: boolean
-    setMobile: (to: boolean) => void
-    windowSize: WindowSize,
-    setWindowSize: (width: number, height: number, landscape: boolean) => void
-    navigationTriggered: number,
-    setNavigationTriggered: () => void,
-    showClearSettings: boolean,
-    setShowClearSettings: (to: boolean) => void,
-    showChangeColors: boolean,
-    setShowChangeColors: (to: boolean) => void,
-    showPasswordForgot: boolean,
-    setShowPasswordForgot: (to: boolean) => void,
-    showResendActivation: boolean,
-    setShowResendActivation: (b: boolean) => void,
-    showQrCodeReader: boolean,
-    setShowQrCodeReader: (b: boolean) => void,
-    showSaveColorScheme: boolean,
-    setShowSaveColorScheme: (b: boolean) => void,
+export interface PopupSlice {
+    showEditDevice:      boolean
+    showSettings:        boolean
+    showDeleteDevice:    boolean
+    showAlarmPop:        boolean
+    showAdminPop:        boolean
+    showEditAlarm:       boolean
+    showAddAlarm:        boolean
+    showDeleteAlarm:     boolean
+    showAdminConfirm:    boolean
+    showAddDevice:       boolean
+    showQRDialog:        boolean
+    showLogOut:          boolean
+    showEditProfile:     boolean
+    showAbout:           boolean
+    showAdminLogIn:      boolean
+    showServerEdit:      boolean
+    showUserMenu:        boolean
+    showDeviceMenu:      boolean
+    showToast:           boolean
+    showColor:           boolean
+    showTimepicker:      boolean
+    showTask:            boolean
+    showClearSettings:   boolean
+    showChangeColors:    boolean
+    showPasswordForgot:  boolean
+    showResendActivation: boolean
+    showQrCodeReader:    boolean
+    showSaveColorScheme: boolean
+    isMobile:            boolean
+    windowSize:          WindowSize
+    navigationTriggered: number
+    setShowEditDevice:      (to: boolean) => void
+    setShowSettings:        (to: boolean) => void
+    setShowDeleteDevice:    (to: boolean) => void
+    setShowAlarmPop:        (to: boolean) => void
+    setShowAdminPop:        (to: boolean) => void
+    setShowEditAlarm:       (to: boolean) => void
+    setShowAddAlarm:        (to: boolean) => void
+    setShowDeleteAlarm:     (to: boolean) => void
+    setShowAdminConfirm:    (to: boolean) => void
+    setShowAddDevice:       (to: boolean) => void
+    setShowQRDialog:        (to: boolean) => void
+    setShowLogOut:          (to: boolean) => void
+    setShowEditProfile:     (to: boolean) => void
+    setShowAbout:           (to: boolean) => void
+    setShowAdminLogIn:      (to: boolean) => void
+    setShowServerEdit:      (to: boolean) => void
+    setShowUserMenu:        (to: boolean) => void
+    setShowDeviceMenu:      (to: boolean) => void
+    setShowToast:           (to: boolean) => void
+    setShowColor:           (to: boolean) => void
+    setShowTimepicker:      (to: boolean) => void
+    setShowTask:            (to: boolean) => void
+    setShowClearSettings:   (to: boolean) => void
+    setShowChangeColors:    (to: boolean) => void
+    setShowPasswordForgot:  (to: boolean) => void
+    setShowResendActivation:(to: boolean) => void
+    setShowQrCodeReader:    (to: boolean) => void
+    setShowSaveColorScheme: (to: boolean) => void
+    setMobile:              (to: boolean) => void
+    setWindowSize:          (width: number, height: number, landscape: boolean) => void
+    setNavigationTriggered: () => void
 }
 
-const usePopups = create<Popup>((set, get) => ({
-        showEditDevice: false,
-        setShowEditDevice: (to) => {
-            if(to){
-                usePopups.setState({showToast: false })
-            }else{
-                usePopups.setState({showToast: true })
-            }
-            set( 
-                {
-                    showEditDevice: to
-                }
-            )
-        },
-        showSettings: false,
-        setShowSettings: (to: boolean) => {
-            set(
-                {
-                    showSettings: to
-                }
-            )
-        },
-        showDeleteDevice: false,
-        setShowDeleteDevice: (to) => {
-            set( 
-                {
-                    showDeleteDevice: to
-                }
-            )
-        },
-        showAlarmPop: false,
-        setShowAlarmPop: (to: boolean) => {
-            set(
-                {
-                    showAlarmPop: to
-                }
-            )
-        },
-        showAdminPop: false,
-        setShowAdminPop: (to: boolean) => {
-            set(
-                {
-                    showAdminPop: to
-                }
-            )
-        },
-        showAddAlarm: false,
-        setShowAddAlarm: (to) =>{
-            if(to){
-                useAlarm.getState().onAddOpen()
-                usePopups.setState({showToast: false })
-            }else{
-                usePopups.setState({showToast: true })
-            }
-            set(
-                    {
-                        showAddAlarm: to
-                    }
-                )
-        },
-        showTask: false,
-        setShowTask: (to) => {
-            set(
-                {
-                    showTask: to
-                }
-            )
-        },
-        showEditAlarm: false,
-        setShowEditAlarm: (to) => {
-            if(to){
-                usePopups.setState({showToast: false })
-            }else{
-                usePopups.setState({showToast: true })
-            }
-            set( 
-                {
-                    showEditAlarm: to
-                }
-            )
-        },
-        showAdminConfirm: false,
-        setShowAdminConfirm:(to) => set(
-            {
-                showAdminConfirm: to
-            }
-        ),
-        showDeleteAlarm: false,
-        setShowDeleteAlarm: (to) => {
-            set( 
-                {
-                    showDeleteAlarm: to
-                }
-            )
-        },
-        showAddDevice: false,
-        setShowAddDevice: (to) => {
-            if(to){
-                usePopups.setState({ showToast: false })
-            }else{
-                usePopups.setState({ showToast: true })
-            }
-            set( 
-                {
-                    showAddDevice: to
-                }
-            )
-        },
-        showQRDialog: false,
-        setShowQRDialog: (to) => {
-            if(to){
-                useFetchQR.getState().setFetchQR(true)
-            }else{
-                useFetchQR.getState().setFetchQR(false)
-            }
-            set( 
-                {
-                    showQRDialog: to
-                }
-            )
-        },
-        showLogOut: false,
-        setShowLogOut: (to) => {
-            set( 
-                {
-                    showLogOut: to
-                }
-            )
-        },
-        showEditProfile: false,
-        setShowEditProfile: (to) => {
-            if(to){
-                usePopups.setState({showToast: false })
-            }else{
-                usePopups.setState({showToast: true })
-            }
-            set( 
-                {
-                    showEditProfile: to
-                }
-            )
-        },
-        showAbout: false,
-        setShowAbout: (to) => {
-            set( 
-                {
-                    showAbout: to
-                }
-            )
-        },
-        showAdminLogIn: false,
-        setShowAdminLogIn: (to) => {
-            set( 
-                {
-                    showAdminLogIn: to
-                }
-            )
-        },
-        showServerEdit: false,
-        setShowServerEdit: (to) => {
-            set( 
-                {
-                    showServerEdit: to
-                }
-            )
-        },
-        showUserMenu: false,
-        setShowUserMenu: (show) => {
-            set(
-                {
-                    showUserMenu: show
-                }
-            )
-        },
-        showColor: false,
-        setShowColor: (show) => {
-            set(
-                {
-                    showColor: show
-                }
-            )
-        },
-        showDeviceMenu: false,
-        setShowDeviceMenu: (show ) => {
-            set(
-                    {
-                        showDeviceMenu: show
-                    }
-                )
-        },
-        showToast: true,
-        setShowToast: (to:boolean) => {
-            set(
-                    {
-                        showToast: to
-                    }
-                )
-        },
-        showTimepicker: false,
-        setShowTimepicker: (to:boolean) => {
-            set(
-                {
-                    showTimepicker : to
-                }
-            )
-        },
-        isMobile: false,
-        setMobile: (to: boolean) => {
-            set(
-                {
-                    isMobile: to
-                }
-            )
-        },
-        windowSize: {width: window.screen.width, height: window.screen.height, landscape: [-90,90].includes(window.orientation)},
-        setWindowSize: (width , height , landscape) => {
-            set(
-                { windowSize:
-                                {
-                                    width: width,
-                                    height: height,
-                                    landscape: landscape
-                                }
-                }
-            )
+export const createPopupSlice: StateCreator<BoundStore, [], [], PopupSlice> = (set, get) => {
+    // Hides the toast bar whenever a dialog opens
+    const withToast = (key: keyof BoundStore, to: boolean) =>
+        set({ showToast: !to, [key]: to } as Partial<BoundStore>)
+
+    return {
+        showEditDevice:      false,
+        showSettings:        false,
+        showDeleteDevice:    false,
+        showAlarmPop:        false,
+        showAdminPop:        false,
+        showAddAlarm:        false,
+        showTask:            false,
+        showEditAlarm:       false,
+        showAdminConfirm:    false,
+        showDeleteAlarm:     false,
+        showAddDevice:       false,
+        showQRDialog:        false,
+        showLogOut:          false,
+        showEditProfile:     false,
+        showAbout:           false,
+        showAdminLogIn:      false,
+        showServerEdit:      false,
+        showUserMenu:        false,
+        showColor:           false,
+        showDeviceMenu:      false,
+        showTimepicker:      false,
+        showClearSettings:   false,
+        showChangeColors:    false,
+        showPasswordForgot:  false,
+        showResendActivation: false,
+        showQrCodeReader:    false,
+        showSaveColorScheme: false,
+        showToast:  true,
+        isMobile:   false,
+        windowSize: {
+            width:     window.innerWidth,
+            height:    window.innerHeight,
+            landscape: [-90, 90].includes(window.orientation as number),
         },
         navigationTriggered: 0,
-        setNavigationTriggered:() =>{
-            set (
-                {
-                    navigationTriggered: (get().navigationTriggered + 1 % 2)
-                }
-            )
-        },
-        showClearSettings: false,
-        setShowClearSettings: (to: boolean) => {
-            set(
-                {
-                    showClearSettings: to
-                }
-            )
-        },
-        showChangeColors:false,
-        setShowChangeColors: (to: boolean) => {
-            set(
-                {
-                    showChangeColors: to
-                }
-            )
-        },
-        showPasswordForgot: false,
-        setShowPasswordForgot: (to: boolean) => {
-            set(
-                {
-                    showPasswordForgot: to
-                }
-            )
-        },
-        showResendActivation: false,
-        setShowResendActivation: (b) => {
-            set(
-                {
-                    showResendActivation: b
-                }
-            )
-        },
-        showQrCodeReader: false,
-        setShowQrCodeReader: (b) => {
-            set(
-                {
-                    showQrCodeReader: b
-                }
-            )
-        },
-        showSaveColorScheme: false,
-        setShowSaveColorScheme: (b) => {
-            set(
-                {
-                    showSaveColorScheme: b
-                }
-            )
-        }
-    }
-))
 
-export default usePopups
+        // Simple setters
+        setShowSettings:        (to) => set({ showSettings: to }),
+        setShowDeleteDevice:    (to) => set({ showDeleteDevice: to }),
+        setShowAlarmPop:        (to) => set({ showAlarmPop: to }),
+        setShowAdminPop:        (to) => set({ showAdminPop: to }),
+        setShowAdminConfirm:    (to) => set({ showAdminConfirm: to }),
+        setShowDeleteAlarm:     (to) => set({ showDeleteAlarm: to }),
+        setShowLogOut:          (to) => set({ showLogOut: to }),
+        setShowAbout:           (to) => set({ showAbout: to }),
+        setShowAdminLogIn:      (to) => set({ showAdminLogIn: to }),
+        setShowServerEdit:      (to) => set({ showServerEdit: to }),
+        setShowUserMenu:        (to) => set({ showUserMenu: to }),
+        setShowColor:           (to) => set({ showColor: to }),
+        setShowDeviceMenu:      (to) => set({ showDeviceMenu: to }),
+        setShowToast:           (to) => set({ showToast: to }),
+        setShowTimepicker:      (to) => set({ showTimepicker: to }),
+        setShowTask:            (to) => set({ showTask: to }),
+        setMobile:              (to) => set({ isMobile: to }),
+        setShowClearSettings:   (to) => set({ showClearSettings: to }),
+        setShowChangeColors:    (to) => set({ showChangeColors: to }),
+        setShowPasswordForgot:  (to) => set({ showPasswordForgot: to }),
+        setShowResendActivation:(to) => set({ showResendActivation: to }),
+        setShowQrCodeReader:    (to) => set({ showQrCodeReader: to }),
+        setShowSaveColorScheme: (to) => set({ showSaveColorScheme: to }),
+
+        // Setters that hide the toast bar when a dialog opens
+        setShowEditDevice:  (to) => withToast('showEditDevice', to),
+        setShowEditAlarm:   (to) => withToast('showEditAlarm', to),
+        setShowAddDevice:   (to) => withToast('showAddDevice', to),
+        setShowEditProfile: (to) => withToast('showEditProfile', to),
+        setShowAddAlarm: (to) => {
+            if (to) useAlarm.getState().onAddOpen()
+            withToast('showAddAlarm', to)
+        },
+
+        // Setter with side effect
+        setShowQRDialog: (to) => {
+            get().setFetchQR(to)
+            set({ showQRDialog: to })
+        },
+
+        setWindowSize: (width, height, landscape) => set({ windowSize: { width, height, landscape } }),
+        setNavigationTriggered: () => set(state => ({
+            navigationTriggered: (state.navigationTriggered + 1) % 2
+        })),
+    }
+}

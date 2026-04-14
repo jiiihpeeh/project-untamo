@@ -1,0 +1,21 @@
+import { Center, FormLabel, Switch} from "../../ui"
+import React from "react";
+import useAlarm from "./alarmStates"
+
+function AlarmTask() {
+    const setCloseTask = useAlarm((state) => state.setCloseTask);
+    const closeTask = useAlarm((state) => state.closeTask);
+    return (
+        <Center>
+            <FormLabel>
+                Closing Task
+                <Switch
+                    m={"1%"}
+                    isChecked={closeTask}
+                    onChange={() => setCloseTask(!closeTask)}
+                    size={"lg"} />
+            </FormLabel>
+        </Center>
+    );
+}
+export default AlarmTask

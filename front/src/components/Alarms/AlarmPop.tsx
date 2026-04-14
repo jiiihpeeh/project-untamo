@@ -1,8 +1,5 @@
-import {  Popover,  Button, Portal, PopoverContent, HStack,
-          PopoverHeader, PopoverArrow, PopoverBody, PopoverAnchor, 
-          PopoverFooter, Text, VStack, Box, Center } from '@chakra-ui/react'
-import { useAudio,  useDevices, useAlarms, usePopups, useLogIn, useSettings } from '../../stores'
-import { shallow } from 'zustand/shallow'
+import { useAudio, useDevices, useAlarms, usePopups, useLogIn, useSettings } from '../../stores'
+import { useShallow } from 'zustand/react/shallow'
 import { timePadding, time24hToTime12h } from '../../utils'
 import { timeToUnits, timeForNextAlarm, timeToNextAlarm } from './calcAlarmTime'
 import React, { useState, useEffect } from 'react'
@@ -17,114 +14,77 @@ function AlarmPop() {
     const userInfo = useLogIn((state) => state.user)
     const plays = useAudio((state) => state.plays)
     const stop = useAudio((state) => state.stop)
-    const [alarms, runAlarm, setToEdit, timeForNextLaunch, resetSnooze] = useAlarms(state => [state.alarms, state.runAlarm, state.setToEdit, state.timeForNextLaunch, state.resetSnooze], shallow)
+    const [alarms, runAlarm, setToEdit, timeForNextLaunch, resetSnooze] = useAlarms(useShallow(state => [state.alarms, state.runAlarm, state.setAlarmToEdit, state.timeForNextLaunch, state.resetSnooze] as const))
     const currentDevice = useDevices(state => state.currentDevice)
     const devices = useDevices(state => state.devices)
-    const [showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups((state) => [state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered], shallow)
+    const [showAlarmPop, setShowAlarmPop, setShowEdit, navigationTriggered] = usePopups(useShallow((state) => [state.showAlarmPop, state.setShowAlarmPop, state.setShowEditAlarm, state.navigationTriggered] as const))
     const [noSnooze, setNoSnooze] = useState(true)
     const setShowAddAlarm = usePopups((state) => state.setShowAddAlarm)
     const [posStyle, setPosStyle] = useState<React.CSSProperties>({})
 
     function footerText() {
-        let addBtn = (
-            <Button
-                onClick={() => setShowAddAlarm(true)}
-                width="100%"
-                backgroundColor={(colorMode === ColorMode.Light) ? "gray.400" : "#303f9f"}
-            >
+        const addBtn = (
+            <button className="btn btn-sm w-full mt-2" onClick={() => setShowAddAlarm(true)}>
                 Add an Alarm
-            </Button>
+            </button>
         )
         if (!runAlarm || !currentDevice || !(runAlarm.devices).includes(currentDevice) || timeForNextLaunch < 0) {
-            return (<Box>
-                <Text
-                    alignContent={"center"}
-                    backgroundColor="black"
-                >
-                    No alarms for this device
-                </Text>
-                {addBtn}
-            </Box>)
+            return (
+                <div>
+                    <div className="text-sm text-center">No alarms for this device</div>
+                    {addBtn}
+                </div>
+            )
         }
         const units = timeToUnits(timeForNextLaunch)
+        let timeLeftText = ""
         if (units.days === 0) {
-            if (units.hours === 0) {
-                return (<Box>
-                    <Text
-                        alignContent={"center"}
-                    >
-                        Time left to next alarm: {timePadding(units.minutes)}:{timePadding(units.seconds)}
-                    </Text>
-                    {addBtn}
-                </Box>)
-            }
-            return (<Box>
-                <Text
-                    alignContent={"center"}
-                >
-                    Time left to next alarm: {timePadding(units.hours)}:{timePadding(units.minutes)}
-                </Text>{addBtn}
-            </Box>)
+            if (units.hours === 0) timeLeftText = `${timePadding(units.minutes)}:${timePadding(units.seconds)}`
+            else timeLeftText = `${timePadding(units.hours)}:${timePadding(units.minutes)}`
+        } else {
+            timeLeftText = `${units.days} days ${timePadding(units.hours)}:${timePadding(units.minutes)}`
         }
-        return (<Box>
-            <Text
-                alignContent={"center"}
-            >
-                Time left to next alarm:  {units.days} days {timePadding(units.hours)}:{timePadding(units.minutes)}
-            </Text>
-            {addBtn}
-        </Box>)
+        return (
+            <div>
+                <div className="text-sm text-center">Time left to next alarm: {timeLeftText}</div>
+                {addBtn}
+            </div>
+        )
     }
 
     function timerInfo() {
         let postFix = ""
-        let timeInfo = runAlarm?.time?timePadding(runAlarm.time[0])+":"+timePadding(runAlarm.time[1]):""
+        let timeInfo = runAlarm?.time ? timePadding(runAlarm.time[0]) + ":" + timePadding(runAlarm.time[1]) : ""
         if (!clock24 && timeInfo) {
-            let convertedTime = time24hToTime12h(runAlarm?.time?runAlarm.time:[0,0])
-            timeInfo = timePadding(convertedTime.time[0])+":"+timePadding(convertedTime.time[1])
+            const convertedTime = time24hToTime12h(runAlarm?.time ? runAlarm.time : [0, 0])
+            timeInfo = timePadding(convertedTime.time[0]) + ":" + timePadding(convertedTime.time[1])
             postFix = convertedTime['12h']
         }
         return (
-            <VStack>
-                <Text as="b">
-                    Coming Up: {(runAlarm) ? `${timeInfo}` : ""} {postFix}
-                </Text>
-                <HStack>
-                    {runAlarm && <Button
-                        backgroundColor={(colorMode === ColorMode.Light) ? "gray.300" : "#1565c0"}
-                        onClick={() => {
-                            if (runAlarm) {
-                                setToEdit(runAlarm.id)
-                                setShowEdit(true)
-                            }
-                        } }
-                    >
-                        Edit the Alarm
-                    </Button>}
-                    {(!noSnooze) && <Button
-                        onClick={resetSnooze}
-                    >
-                        Reset Snooze
-                    </Button>}
-                </HStack>
-            </VStack>
+            <div className="flex flex-col gap-2">
+                <div className="font-bold text-sm text-center">
+                    Coming Up: {runAlarm ? timeInfo : ""} {postFix}
+                </div>
+                <div className="flex gap-2 justify-center">
+                    {runAlarm && (
+                        <button className="btn btn-xs btn-primary" onClick={() => {
+                            if (runAlarm) { setToEdit(runAlarm.id); setShowEdit(true) }
+                        }}>Edit the Alarm</button>
+                    )}
+                    {!noSnooze && (
+                        <button className="btn btn-xs" onClick={resetSnooze}>Reset Snooze</button>
+                    )}
+                </div>
+            </div>
         )
     }
     function turnOff() {
-        if (plays) {
-            return (
-                <Center>
-                    <Button
-                        onClick={stop}
-                        m={"3px"}
-                    >
-                        Turn off Sound
-                    </Button>
-                </Center>
-            )
-        } else {
-            return (<></>)
-        }
+        if (!plays) return null
+        return (
+            <div className="flex justify-center mt-2">
+                <button className="btn btn-sm" onClick={stop}>Turn off Sound</button>
+            </div>
+        )
     }
 
     useEffect(() => {
@@ -139,7 +99,7 @@ function AlarmPop() {
         let navBar = document.getElementById("NavBar")
         if (elem && navBar) {
             let coords = elem.getBoundingClientRect()
-            setPosStyle({ left: coords.left + coords.width / 2, top: (navBarTop) ? navHeight : windowSize.height - navHeight, position: "fixed" })
+            setPosStyle({ left: coords.left - 100, top: (navBarTop) ? navHeight : windowSize.height - navHeight, position: "fixed" })
         }
     }, [navigationTriggered])
 
@@ -150,39 +110,26 @@ function AlarmPop() {
         }
         return ""
     }
+    if (!showAlarmPop) return null
     return (
-        <Popover
-            isOpen={showAlarmPop}
-            onClose={() => setShowAlarmPop(false)}
+        <div
+            className="fixed z-50 bg-base-100 rounded-box shadow-lg border border-base-300 min-w-52 max-w-xs"
+            style={posStyle}
+            onMouseDown={e => e.preventDefault()}
         >
-            <PopoverAnchor>
-                <Box style={posStyle} />
-            </PopoverAnchor>
-            <Portal>
-                <PopoverContent
-                    onMouseDown={e => e.preventDefault()}
-                >
-                    <PopoverArrow />
-                    <PopoverHeader>
-                        <Center>
-                            Alarms for {userInfo.screenName} on {getCurrentDevice()}
-                        </Center>
-                    </PopoverHeader>
-                    {runAlarm &&
-                        <PopoverBody
-                            backgroundColor={(colorMode === ColorMode.Light) ? "blue.300" : "blackAlpha.500"}
-                        >
-                            {timerInfo()}
-                            {turnOff()}
-                        </PopoverBody>}
-                    <PopoverFooter
-                        backgroundColor={(colorMode === ColorMode.Light) ? "gray.300" : "black.100"}
-                    >
-                        {footerText()}
-                    </PopoverFooter>
-                </PopoverContent>
-            </Portal>
-        </Popover>
+            <div className="p-3 border-b border-base-200 text-center font-semibold text-sm">
+                Alarms for {userInfo.screenName} on {getCurrentDevice()}
+            </div>
+            {runAlarm && (
+                <div className="p-3">
+                    {timerInfo()}
+                    {turnOff()}
+                </div>
+            )}
+            <div className="p-3 border-t border-base-200">
+                {footerText()}
+            </div>
+        </div>
     )
 }
 

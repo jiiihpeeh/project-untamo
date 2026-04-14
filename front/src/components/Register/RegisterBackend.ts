@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import axios from 'axios'
 import { useServer } from '../../stores'
 import { notification, Status } from '../notification'
 
@@ -149,7 +148,11 @@ async function onRegister() {
     const server = useServer.getState().address
     const formData = useRegister.getState().formData()
     try {
-        const res = await axios.post(`${server}/register`, formData)
+        const res = await fetch(`${server}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+        })
         //console.log(res.data)
         notification("Registration", "User was registered")
         useRegister.setState({ registered: true })

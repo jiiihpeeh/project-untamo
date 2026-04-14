@@ -133,7 +133,6 @@ const useAlarm = create<AlarmStates>((set, get) => (
         occurrence: AlarmCases.Once,
         dateFormat: '',
         modified: 0,
-        fingerprint: fingerprint(),
         setOccurrence: (occurrence) => set( 
             {
                 occurrence: occurrence,

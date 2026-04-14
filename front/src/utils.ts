@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { notification, Status } from './components/notification'
 import { Path } from './type'
 
@@ -6,7 +5,7 @@ import { Path } from './type'
 export async function sleep (ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
-export function isEqual(obj1 :any, obj2 : any) {
+export function isEqual<T extends object>(obj1: T | null | undefined, obj2: T | null | undefined): boolean {
     if(obj1 === null && obj2 === null){
         return true
     }
@@ -78,16 +77,16 @@ export async function calculateSHA512(blob: Blob): Promise<string> {
 
 export async function pingServer(server: string, notify = true) {
     try {
-      const res = await axios.get(`${server}/ping`)
-      if (res.status === 200) {
-        notify  ? notification('Server Ping', 'Server is online', Status.Success ) : null
+      const res = await fetch(`${server}/ping`)
+      if (res.ok) {
+        notify ? notification('Server Ping', 'Server is online', Status.Success) : null
         return true
       } else {
-        notify ? notification('Server Ping', 'Server is not responding', Status.Error ) : null
+        notify ? notification('Server Ping', 'Server is not responding', Status.Error) : null
         return false
       }
-    } catch (e) {
-        notify ? notification('Server Ping', 'Server is not responding', Status.Error ) : null
+    } catch {
+        notify ? notification('Server Ping', 'Server is not responding', Status.Error) : null
         return false
     }
 }

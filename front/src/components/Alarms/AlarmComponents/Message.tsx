@@ -1,9 +1,8 @@
-import { FormLabel , Input, Center, Flex, HStack, VStack, Button } from "@chakra-ui/react"
 import React, { useState} from "react"
 import useAlarm  from "./alarmStates"
 import Picker from '@emoji-mart/react'
-import  useSettings  from "../../../stores/settingsStore"
-import  useEmojiStore, { Skin }  from "../../../stores/emojiStore"
+import { useSettings, useEmojiStore } from "../../../stores"
+import { Skin } from "../../../stores/emojiStore"
 
 const Message = () => {
     const label= useAlarm((state)=> state.label)
@@ -17,27 +16,25 @@ const Message = () => {
     }
 
     return(
-        <Center>
-            <Flex 
-                m={"1%"}
-            >
-                <FormLabel
-                    onMouseDown={e=>e.preventDefault()}
-                >
+        <div className="center">
+            <div className="flex" style={{ margin: "1%" }}>
+                <label className="form-label" onMouseDown={e=>e.preventDefault()}>
                     Message
-                </FormLabel>
-                <VStack>
-                    <HStack>
-                        <Input 
+                </label>
+                <div className="vstack">
+                    <div className="hstack">
+                        <input 
+                            className="input"
                             value={label} 
-                            onChange={(e) => setLabel(e.target.value)} 
+                            onChange={(e) => setLabel((e.target as HTMLInputElement).value)}
                         />
-                        <Button
+                        <button
+                            className="btn"
                             onClick={()=>setShowEmoji(!showEmoji)}
                         >
                             ⏰
-                        </Button>
-                    </HStack>
+                        </button>
+                    </div>
                     {  showEmoji ?
                     <Picker 
                         data={data} 
@@ -48,9 +45,9 @@ const Message = () => {
                     :
                     <></>
                     }
-                </VStack>
-            </Flex>
-        </Center>          
+                </div>
+            </div>
+        </div>          
     )
 }
 export default Message

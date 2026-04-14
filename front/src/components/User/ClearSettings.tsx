@@ -1,60 +1,30 @@
-import {  Button, AlertDialog, 
-          AlertDialogBody,AlertDialogFooter, 
-          AlertDialogHeader,AlertDialogContent, 
-          AlertDialogOverlay } from '@chakra-ui/react'
-import React, { useRef } from 'react'
-import { usePopups,useLogIn } from '../../stores'
-
+import React from 'react'
+import { usePopups, useLogIn } from '../../stores'
 
 function ClearSettings() {
     const logOut = useLogIn((state) => state.logOut)
     const setShowSettings = usePopups((state) => state.setShowSettings)
     const setShowClearSettings = usePopups((state) => state.setShowClearSettings)
     const showClearSettings = usePopups((state) => state.showClearSettings)
-    const cancelRef = useRef<HTMLButtonElement>(null)
 
-    return (  
-            <AlertDialog
-                isOpen={showClearSettings}
-                leastDestructiveRef={cancelRef}
-                onClose={() => setShowClearSettings(false)}
-                isCentered
-            >
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader 
-                            fontSize='lg' 
-                            fontWeight='bold'
-                        >
-                            Clear settings and Log Out
-                        </AlertDialogHeader>
-                        <AlertDialogBody>
-                            Are you sure?
-                        </AlertDialogBody>
-                        <AlertDialogFooter>
-                            <Button 
-                                ref={cancelRef} 
-                                onClick={() => {setShowClearSettings(false)}}
-                            >
-                                Cancel
-                            </Button>
-                            <Button 
-                                colorScheme='red' 
-                                onClick= {() => {
-                                                    logOut()
-                                                    localStorage.clear()
-                                                    setShowSettings(false)
-                                                    window.location.reload()
-                                                }
-                                         } 
-                                ml={3}
-                            >
-                                OK
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
+    if (!showClearSettings) return null
+    return (
+        <div className="modal modal-open" style={{ zIndex: 1010 }}>
+            <div className="modal-box max-w-sm">
+                <h3 className="font-bold text-lg mb-4">Clear settings and Log Out</h3>
+                <p>Are you sure?</p>
+                <div className="modal-action">
+                    <button className="btn" onClick={() => setShowClearSettings(false)}>Cancel</button>
+                    <button className="btn btn-error" onClick={() => {
+                        logOut()
+                        localStorage.clear()
+                        setShowSettings(false)
+                        window.location.reload()
+                    }}>OK</button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={() => setShowClearSettings(false)} />
+        </div>
     )
 }
 

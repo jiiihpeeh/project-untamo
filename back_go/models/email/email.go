@@ -58,7 +58,6 @@ type Email struct {
 // 	msg := []byte("Subject:" + subject + "\n" + body)
 // 	err := smtp.SendMail(address, auth, config.EmailServer, to, msg)
 // 	if err != nil {
-// 		log.Println(err)
 // 	}
 // }
 

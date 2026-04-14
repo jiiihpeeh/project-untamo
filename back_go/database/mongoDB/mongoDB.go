@@ -130,7 +130,6 @@ func (m *MongoDB) GetSessionFromToken(token string) (*session.Session, *user.Use
 	}
 
 	userInSession := m.GetUserFromID(uID.Hex())
-	//fmt.Println("User in session: ", userInSession)
 	if userInSession == nil {
 		return nil, nil
 	}
@@ -146,18 +145,15 @@ func (m *MongoDB) GetSessionFromTokenActivate(token string) (*session.Session, *
 	session := &session.Session{}
 	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"token": token}).Decode(&session)
-	//fmt.Println("Session check: ", session, token)
 	if err != nil {
 		return nil, nil
 	}
 	uID := id.IdFromString(session.UserId)
 
 	userInSession := m.GetUserFromID(uID.Hex())
-	//fmt.Println("User in session: ", userInSession)
 	if userInSession == nil {
 		return nil, nil
 	}
-	//fmt.Println("User in session: ", userInSession)
 	return session, userInSession
 }
 
@@ -177,13 +173,10 @@ func (m *MongoDB) GetSession(token string) (*session.Session, *user.User) {
 	session := &session.Session{}
 	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"token": token}).Decode(&session)
-	//fmt.Println("Session check: ", session, token)
-	//fmt.Println("Session check error: ", err)
 	if err != nil {
 		m.DeleteSession(token)
 		return nil, nil
 	}
-	//fmt.Println("Session check: ", session, token)
 
 	if session.Time < time.Now().UnixMilli() {
 		m.DeleteSession(token)
@@ -192,7 +185,6 @@ func (m *MongoDB) GetSession(token string) (*session.Session, *user.User) {
 	uID := id.IdFromString(session.UserId)
 
 	user := m.GetUserFromID(uID.Hex())
-	//fmt.Println("User check: ", user)
 	if user == nil {
 		m.DeleteSession(token)
 		return nil, nil
@@ -207,7 +199,6 @@ func (m *MongoDB) GetSession(token string) (*session.Session, *user.User) {
 }
 func (m *MongoDB) GetSessionFromHeader(req *http.Request) (*session.Session, *user.User) {
 	token := GetTokenFromHeader(req)
-	//fmt.Println("Token: ", token)
 	return m.GetSession(token)
 }
 
@@ -265,7 +256,6 @@ func (m *MongoDB) AddAlarm(alarm *alarm.Alarm) (string, error) {
 
 	insert, err := collection.InsertOne(context.Background(), alarm)
 	if err != nil {
-		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID.Hex(), err
@@ -320,7 +310,6 @@ func (m *MongoDB) AddSession(session *session.Session) (string, error) {
 	//insert session and get id
 	insert, err := collection.InsertOne(context.Background(), session)
 	if err != nil {
-		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID.Hex(), err
@@ -331,7 +320,6 @@ func (m *MongoDB) AddDevice(device *device.Device) (string, error) {
 	//insert device and get id
 	insert, err := collection.InsertOne(context.Background(), device)
 	if err != nil {
-		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID.Hex(), err
@@ -339,7 +327,6 @@ func (m *MongoDB) AddDevice(device *device.Device) (string, error) {
 
 func (m *MongoDB) AddQr(qr *qr.QR) bool {
 	m.RemoveExpiredQr()
-	//fmt.Println("Adding qr: ", qr)
 	collection := m.connection.Database(DB_NAME).Collection(QRCOLL)
 	//insert qr and expire it after 5 minutes
 	_, err := collection.InsertOne(context.Background(), qr)
@@ -374,7 +361,6 @@ func (m *MongoDB) GetUserFromID(userID string) *user.User {
 	user := &user.User{}
 	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	err := collection.FindOne(context.Background(), bson.M{"_id": userIDObj}).Decode(&user)
-	//fmt.Println("User :  __ ", user, userID)
 	if err != nil {
 		return nil
 	}
@@ -435,7 +421,6 @@ func (m *MongoDB) GetAdminSessionFromHeader(req *http.Request) (*admin.Admin, *u
 	//get session
 	session, user := m.GetSession(token)
 	//if session is not found return nil
-	//fmt.Println("Session: ", session, "User: ", user)
 
 	if session == nil {
 		return nil, nil
@@ -516,7 +501,6 @@ func (m *MongoDB) AddUser(user *user.User) (string, error) {
 	//insert user and get id
 	insert, err := collection.InsertOne(context.Background(), user)
 	if err != nil {
-		//fmt.Println("Error: ", err)
 	}
 	insertedID := insert.InsertedID.(primitive.ObjectID)
 	return insertedID.Hex(), err

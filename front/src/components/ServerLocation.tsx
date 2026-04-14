@@ -1,11 +1,6 @@
-import { Modal, ModalContent,  ModalHeader, ModalFooter,
-         ModalBody, ModalCloseButton,  Button,
-         ButtonGroup,  FormLabel,Input, HStack} from '@chakra-ui/react'
-import { FocusLock } from '@chakra-ui/focus-lock'
 import React, { useState, useEffect }  from 'react'
-import { usePopups, useServer } from '../stores' 
-import  {pingServer} from '../utils'
-
+import { usePopups, useServer } from '../stores'
+import { pingServer } from '../utils'
 
 function ServerLocation() {
   const server = useServer((state) => state.address)
@@ -18,69 +13,61 @@ function ServerLocation() {
     setServer(serverString)
     setShowServerEdit(false)
   }
+
   useEffect(() => {
     if (showServerEdit) {
       setServerString(server)
     }
   }, [showServerEdit])
+
+  if (!showServerEdit) return null
   return (
-    <Modal
-      returnFocusOnClose={false}
-      isOpen={showServerEdit}
-      onClose={() => setShowServerEdit(false)}
-      isCentered
-    >
-      <ModalContent>
-        <ModalHeader
-          fontWeight='semibold'
-        >
-          Set Server Address
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <FocusLock
-            //returnFocus={true}
-            persistentFocus={false}
-          >
-            <FormLabel>
-              Address
-            </FormLabel>
-            <HStack>
-              <Input
+    <div className="modal modal-open" style={{ zIndex: 1000 }}>
+      <div className="modal-box">
+        <button
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          onClick={() => setShowServerEdit(false)}
+        >✕</button>
+        <h3 className="font-bold text-lg mb-4">Set Server Address</h3>
+        <div className="py-2">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Address</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                className="input input-bordered flex-1"
                 type="text"
                 value={serverString}
-                onChange={(e) => setServerString(e.target.value)} />
-              <Button
-                onClick={(e) => pingServer(serverString)}
+                onChange={(e) => setServerString((e.target as HTMLInputElement).value)}
+              />
+              <button
+                className="btn btn-neutral"
+                onClick={() => pingServer(serverString)}
               >
                 Test
-              </Button>
-            </HStack>
-          </FocusLock>
-        </ModalBody>
-        <ModalFooter
-          display='flex'
-          justifyContent='flex-end'
-        >
-          <ButtonGroup
-            size='sm'
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="modal-action">
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={() => setShowServerEdit(false)}
           >
-            <Button
-              variant='outline'
-              onClick={() => setShowServerEdit(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme='red'
-              onClick={onApply}
-            >
-              Apply
-            </Button>
-          </ButtonGroup>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            Cancel
+          </button>
+          <button
+            className="btn btn-error btn-sm"
+            onClick={onApply}
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+      <div className="modal-backdrop" onClick={() => setShowServerEdit(false)} />
+    </div>
   )
 }
+
 export default ServerLocation

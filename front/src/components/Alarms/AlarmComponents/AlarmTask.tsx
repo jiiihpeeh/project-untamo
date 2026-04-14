@@ -1,21 +1,17 @@
-import { Center, FormLabel, Switch} from "@chakra-ui/react"
-import React from "react";
+import React from "react"
 import useAlarm from "./alarmStates"
 
 function AlarmTask() {
     const setCloseTask = useAlarm((state) => state.setCloseTask);
     const closeTask = useAlarm((state) => state.closeTask);
     return (
-        <Center>
-            <FormLabel>
-                Closing Task
-                <Switch
-                    m={"1%"}
-                    isChecked={closeTask}
-                    onChange={() => setCloseTask(!closeTask)}
-                    size={"lg"} />
-            </FormLabel>
-        </Center>
-    );
+        <div className="flex justify-center">
+            <label className="flex items-center gap-2 cursor-pointer">
+                <span>Closing Task</span>
+                <input type="checkbox" className="toggle toggle-lg" checked={closeTask}
+                    onChange={() => setCloseTask(!closeTask)} />
+            </label>
+        </div>
+    )
 }
 export default AlarmTask

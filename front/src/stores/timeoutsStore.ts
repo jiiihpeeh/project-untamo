@@ -1,313 +1,159 @@
-import { create } from 'zustand'
-import { useAlarms, useLogIn, useDevices } from '../stores'
-import { urlEnds, sleep } from '../utils'
-import useAudio from './audioStore'
-import useServer from './serverStore'
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
 import { Path } from '../type'
+import { urlEnds, sleep } from '../utils'
+// circular import — safe: useStore only accessed inside function bodies after init
+import { useStore } from './store'
 
-async function compareTime() {
+// Daemon — exported so store.ts can call it after create()
+export async function compareTime() {
     await sleep(225)
     const currentTime = Date.now()
-    if (currentTime - useTimeouts.getState().systemTime > 6000) {
-        useTimeouts.getState().clear()
-        useAlarms.getState().setReloadAlarmList()
-        //useServer.getState().wsActionReconnect()
+    if (currentTime - useStore.getState().systemTime > 6000) {
+        useStore.getState().clearTimeouts()
+        useStore.getState().setReloadAlarmList()
     }
-    useTimeouts.getState().setSystemTime(currentTime)
+    useStore.getState().setSystemTime(currentTime)
     await sleep(5000)
     compareTime()
 }
-compareTime()
 
-type UseTimeout = {
-    id: NodeJS.Timeout|undefined,
-    setId: (to: NodeJS.Timeout) => void,
-    clearIdTimeout: () => void,
-    adminID:  NodeJS.Timeout|undefined,
-    setAdminID: (to: NodeJS.Timeout) => void,
-    clearAdminTimeout: () => void,
-    qrID: NodeJS.Timeout|undefined,
-    setQrID : (to: NodeJS.Timeout) => void,
-    clearQrTimeout: () => void,
-    runAlarmID: NodeJS.Timeout|undefined,
-    setRunAlarmID: (to: NodeJS.Timeout)=>void,
-    clearRunAlarmID: () => void,
-    alarmCounter: NodeJS.Timeout|undefined,
-    setAlarmCounter: (to: NodeJS.Timeout)=>void,
-    clearAlarmCounter: () => void,
-    snoozeIt: boolean,
-    setSnoozeIt: (status:boolean) => void,
-    wsID: NodeJS.Timeout|undefined,
-    setWsID: (to: NodeJS.Timeout) => void,
-    alarmOut : NodeJS.Timeout|null,
-    setAlarmOut: (to: NodeJS.Timeout) => void,
-    clearAlarmOutId: () => void,
-    refreshTokenTimeout : NodeJS.Timeout|undefined,
-    setRefreshTokenTimeout: (to: NodeJS.Timeout) => void,
-    systemTime: number,
-    setSystemTime: (to: number) => void,
-    clearWsID: () => void,
-    clear: () => void
-}
+// Daemon — exported so store.ts can call it after create()
+export async function locationChecker() {
+    const begins = useStore.getState().loopPlayBegins
 
-const clearAlarmTimeout = () => {
-    let delTimeOut = useTimeouts.getState().id
-        if(delTimeOut){
-            try {
-                clearTimeout(delTimeOut)
-            }catch(err){
-               // console.log(err)
+    if (urlEnds(Path.PlayAlarm)) {
+        if (begins && (Date.now() - begins) > (5 * 60 * 1000)) {
+            useStore.getState().setSnoozeIt(true)
+        }
+    } else {
+        useStore.getState().setSnoozeIt(false)
+    }
+
+    if (urlEnds(Path.Alarms)) {
+        if (begins && useStore.getState().plays) {
+            useStore.getState().stop()
         }
     }
-}
 
-function clearAdminTimeout() {
-    let delTimeOut = useTimeouts.getState().adminID
-    if (delTimeOut) {
-        try {
-            clearTimeout(delTimeOut)
-        } catch (err) {
-            //console.log(err)
-        }
+    if (urlEnds(Path.Register)) {
+        useStore.getState().wsRegisterConnect()
     }
-}
 
-function clearQrTimeout() {
-    let delTimeOut = useTimeouts.getState().qrID
-    if (delTimeOut) {
-        try {
-            clearTimeout(delTimeOut)
-        } catch (err) {
-            // console.log(err)
-        }
+    if (urlEnds(Path.LogIn)) {
+        try { useStore.getState().wsRegisterDisconnect() } catch {}
     }
-} 
 
-function clearRunAlarmID() {
-    let delTimeOut = useTimeouts.getState().runAlarmID
-    if (delTimeOut) {
-        try {
-            clearTimeout(delTimeOut)
-        } catch (err) {
-            // console.log(err)
-        }
-    }
-} 
-function clearAlarmCounter() {
-    let delTimeOut = useTimeouts.getState().alarmCounter
-    if (delTimeOut) {
-        try {
-            clearTimeout(delTimeOut)
-        } catch (err) {
-            //console.log(err)
-        }
-    }
-} 
-function clearWsId() {
-    let delTimeOut = useTimeouts.getState().wsID
-    if (delTimeOut) {
-        try {
-            clearTimeout(delTimeOut)
-        } catch (err) {
-            //console.log(err)
-        }
-    }
-}
-
-function clearAlarmOutId() {
-    let delTimeOut = useTimeouts.getState().alarmOut
-    if (delTimeOut) {
-        try {
-            clearTimeout(delTimeOut)
-        } catch (err) {
-            //console.log(err)
-        }
-    }
-}
-
-function clearRefreshTokenTimeout() {
-    let delTimeOut = useTimeouts.getState().refreshTokenTimeout
-    if (delTimeOut) {
-        try {
-            clearTimeout(delTimeOut)
-        } catch (err) {
-            //console.log(err)
-        }
-    }
-}
-
-
-const useTimeouts = create<UseTimeout>((set,get) => ({
-        id: undefined,
-        setId: (to) => {
-            set( 
-                {
-                    id: to
-                }
-            )
-        },
-        clearIdTimeout: () => {
-            clearAlarmTimeout()
-            set (
-                {
-                    id : undefined
-                }
-            )
-        },
-        adminID:  undefined,
-        setAdminID: (to: NodeJS.Timeout)  => {
-            set( 
-                {
-                    adminID: to
-                }
-            )
-        },
-        clearAdminTimeout: () => {
-            clearAdminTimeout()
-            set (
-                {
-                    adminID : undefined
-                }
-            )
-        },
-        qrID: undefined,
-        setQrID : (to: NodeJS.Timeout) => {
-            set(
-                {
-                    qrID: to
-                }
-            )
-        },
-        clearQrTimeout: () => {
-            clearQrTimeout()
-            set(
-                {
-                    qrID: undefined
-                }
-            )
-        },
-        runAlarmID: undefined,
-        setRunAlarmID: (to: NodeJS.Timeout)=>{
-            set( 
-                {
-                    runAlarmID: to
-                }
-            )
-        },
-        clearRunAlarmID: () => {
-            clearRunAlarmID()
-        },
-        alarmCounter: undefined,
-        setAlarmCounter: (to: NodeJS.Timeout)=>{
-            set( 
-                {
-                    alarmCounter: to
-                }
-            )
-        },
-        clearAlarmCounter: () => {
-            clearAlarmCounter()
-        },
-        snoozeIt: false,
-        setSnoozeIt: (status: boolean) => {
-            set(
-                {
-                    snoozeIt: status
-                }
-            )
-        },
-        wsID: undefined,
-        setWsID: (to: NodeJS.Timeout) => {
-            set(
-                {
-                    wsID: to
-                }
-            )
-        },
-        clearWsID: () => {
-            clearWsId()
-            set(
-                {
-                    wsID: undefined
-                }
-            )
-        },
-        alarmOut : null,
-        setAlarmOut: (to: NodeJS.Timeout) => {
-            clearAlarmOutId()
-            set(
-                    {
-                        alarmOut: to
-                    }
-                )
-        },
-        clearAlarmOutId: () => () =>{
-            clearAlarmOutId()
-            set({alarmOut: null})
-
-        },
-        refreshTokenTimeout : undefined,
-        setRefreshTokenTimeout: (to: NodeJS.Timeout) => {
-            clearRefreshTokenTimeout()
-            set(
-                {
-                    refreshTokenTimeout: to
-                }
-            )
-        },
-        systemTime: 0,
-        setSystemTime: (to: number) => {
-            set(
-                {
-                    systemTime: to
-                }
-            )
-        },
-        clear:() =>{
-            clearAlarmTimeout()
-            clearAdminTimeout()
-            clearQrTimeout()
-            clearRunAlarmID()
-            clearAlarmCounter()
-            clearWsId()
-        },
-
-    }
-))
-
-
-async function locationChecker() {
-    let begins = useAudio.getState().loopPlayBegins
-
-    if(urlEnds(Path.PlayAlarm)){
-        //console.log("location trigger play alarm")
-        if(begins && (Date.now() - begins) > (5 * 60 * 1000)){
-            useTimeouts.getState().setSnoozeIt(true)
-        }
-    }else if (!urlEnds(Path.PlayAlarm)){ 
-        //console.log("location trigger not play alarm")
-        useTimeouts.getState().setSnoozeIt(false)
-    }
-    if(urlEnds(Path.Alarms)){
-        //console.log("location trigger  alarm")
-        if(begins && useAudio.getState().plays ){
-            if(urlEnds(Path.Alarms)){
-                useAudio.getState().stop()
-            }
-        }
-    }
-    if(urlEnds(Path.Register)){
-        useServer.getState().wsRegisterConnect()
-    }
-    if(urlEnds(Path.LogIn)){
-        try{
-            useServer.getState().wsRegisterDisconnect()
-        }catch(err){}
-        //useLogIn.getState().setSessionValid(SessionStatus.NotValid)
-    }
     await sleep(330)
     locationChecker()
 }
-locationChecker()
 
-export default useTimeouts
+export interface TimeoutsSlice {
+    id:                    NodeJS.Timeout | undefined
+    adminID:               NodeJS.Timeout | undefined
+    qrID:                  NodeJS.Timeout | undefined
+    runAlarmID:            NodeJS.Timeout | undefined
+    alarmCounter:          NodeJS.Timeout | undefined
+    wsID:                  NodeJS.Timeout | undefined
+    alarmOut:              NodeJS.Timeout | null
+    refreshTokenTimeout:   NodeJS.Timeout | undefined
+    systemTime:            number
+    snoozeIt:              boolean
+    setId:                   (to: NodeJS.Timeout) => void
+    clearIdTimeout:          () => void
+    setAdminID:              (to: NodeJS.Timeout) => void
+    clearAdminTimeout:       () => void
+    setQrID:                 (to: NodeJS.Timeout) => void
+    clearQrTimeout:          () => void
+    setRunAlarmID:           (to: NodeJS.Timeout) => void
+    clearRunAlarmID:         () => void
+    setAlarmCounter:         (to: NodeJS.Timeout) => void
+    clearAlarmCounter:       () => void
+    setSnoozeIt:             (status: boolean) => void
+    setWsID:                 (to: NodeJS.Timeout) => void
+    clearWsID:               () => void
+    setAlarmOut:             (to: NodeJS.Timeout) => void
+    clearAlarmOutId:         () => void
+    setRefreshTokenTimeout:  (to: NodeJS.Timeout) => void
+    setSystemTime:           (to: number) => void
+    clearTimeouts:           () => void
+}
+
+export const createTimeoutsSlice: StateCreator<BoundStore, [], [], TimeoutsSlice> = (set, get) => ({
+    id:                  undefined,
+    adminID:             undefined,
+    qrID:                undefined,
+    runAlarmID:          undefined,
+    alarmCounter:        undefined,
+    wsID:                undefined,
+    alarmOut:            null,
+    refreshTokenTimeout: undefined,
+    systemTime:          0,
+    snoozeIt:            false,
+
+    setId: (to) => set({ id: to }),
+    clearIdTimeout: () => {
+        const t = get().id
+        if (t) { try { clearTimeout(t) } catch {} }
+        set({ id: undefined })
+    },
+
+    setAdminID: (to) => set({ adminID: to }),
+    clearAdminTimeout: () => {
+        const t = get().adminID
+        if (t) { try { clearTimeout(t) } catch {} }
+        set({ adminID: undefined })
+    },
+
+    setQrID: (to) => set({ qrID: to }),
+    clearQrTimeout: () => {
+        const t = get().qrID
+        if (t) { try { clearTimeout(t) } catch {} }
+        set({ qrID: undefined })
+    },
+
+    setRunAlarmID: (to) => set({ runAlarmID: to }),
+    clearRunAlarmID: () => {
+        const t = get().runAlarmID
+        if (t) { try { clearTimeout(t) } catch {} }
+    },
+
+    setAlarmCounter: (to) => set({ alarmCounter: to }),
+    clearAlarmCounter: () => {
+        const t = get().alarmCounter
+        if (t) { try { clearTimeout(t) } catch {} }
+    },
+
+    setSnoozeIt: (status) => set({ snoozeIt: status }),
+
+    setWsID: (to) => set({ wsID: to }),
+    clearWsID: () => {
+        const t = get().wsID
+        if (t) { try { clearTimeout(t) } catch {} }
+        set({ wsID: undefined })
+    },
+
+    setAlarmOut: (to) => {
+        const t = get().alarmOut
+        if (t) { try { clearTimeout(t) } catch {} }
+        set({ alarmOut: to })
+    },
+    clearAlarmOutId: () => {
+        const t = get().alarmOut
+        if (t) { try { clearTimeout(t) } catch {} }
+        set({ alarmOut: null })
+    },
+
+    setRefreshTokenTimeout: (to) => {
+        const t = get().refreshTokenTimeout
+        if (t) { try { clearTimeout(t) } catch {} }
+        set({ refreshTokenTimeout: to })
+    },
+
+    setSystemTime: (to) => set({ systemTime: to }),
+
+    clearTimeouts: () => {
+        [get().id, get().adminID, get().qrID, get().runAlarmID, get().alarmCounter, get().wsID]
+            .forEach(t => { if (t) try { clearTimeout(t) } catch {} })
+    },
+})

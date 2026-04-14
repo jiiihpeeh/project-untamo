@@ -1,9 +1,6 @@
 import { HexColorPicker } from "react-colorful"
 import React, { useState, useEffect } from "react"
 import { usePopups, useSettings } from "../../stores"
-import { Spacer, HStack, Button, VStack, Modal,
-         ModalOverlay, ModalContent, Divider,
-         ModalHeader, ModalBody, ModalCloseButton, Center } from '@chakra-ui/react'
 import { CardColors } from "../../stores/settingsStore"
 import LoadColorScheme from "./LoadColors"
 
@@ -17,85 +14,42 @@ function Color() {
     const [color, setColor] = useState(cardColors.odd)
     const [mode, setMode] = useState<keyof CardColors>("odd")
 
-    useEffect(() => {
-        setCardColors(color, mode)
-    }, [color])
-    useEffect(() => {
-        setColor(cardColors[mode])
-    }, [mode])
+    useEffect(() => { setCardColors(color, mode) }, [color])
+    useEffect(() => { setColor(cardColors[mode]) }, [mode])
 
+    if (!showColor) return null
     return (
-        <Modal
-            blockScrollOnMount={false}
-            isOpen={showColor}
-            onClose={() => setShowColor(false)}
-            isCentered
-        >
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>
-                    Set Alarm Colors
-                </ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    <HStack>
-                        <VStack>
-                            <HexColorPicker
-                                color={color}
-                                onChange={setColor} />
-                            <Center>
-                                <VStack>
-                                    <Button
-                                        onClick={() => setShowSaveColorScheme(true)}
-                                    >
-                                        Save Theme
-                                    </Button>
-                                    <LoadColorScheme />
-                                </VStack>
-                            </Center>
-                        </VStack>
-                        <VStack>
-                            <Button
-                                background={cardColors.odd}
-                                width={200}
-                                onClick={() => setMode("odd")}
+        <div className="modal modal-open" style={{ zIndex: 1010 }}>
+            <div className="modal-box">
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    onClick={() => setShowColor(false)}>✕</button>
+                <h3 className="font-bold text-lg mb-4">Set Alarm Colors</h3>
+                <div className="flex gap-4 flex-wrap">
+                    <div className="flex flex-col gap-2 items-center">
+                        <HexColorPicker color={color} onChange={setColor} />
+                        <div className="flex flex-col gap-2 items-center mt-2">
+                            <button className="btn btn-sm" onClick={() => setShowSaveColorScheme(true)}>Save Theme</button>
+                            <LoadColorScheme />
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        {(["odd", "even", "inactive", "background"] as (keyof CardColors)[]).map((key) => (
+                            <button
+                                key={key}
+                                className={`btn w-48 ${mode === key ? 'ring-2 ring-primary' : ''}`}
+                                style={{ background: cardColors[key] }}
+                                onClick={() => setMode(key)}
                             >
-                                Odd
-                            </Button>
-                            <Button
-                                background={cardColors.even}
-                                width={200}
-                                onClick={() => setMode("even")}
-                            >
-                                Even
-                            </Button>
-                            <Button
-                                background={cardColors.inactive}
-                                width={200}
-                                onClick={() => setMode("inactive")}
-                            >
-                                Inactive
-                            </Button>
-                            <Button
-                                background={cardColors.background}
-                                width={200}
-                                onClick={() => setMode("background")}
-                            >
-                                Background
-                            </Button>
-                            <Divider />
-                            <Spacer />
-                            <Button
-                                width={200}
-                                onClick={() => { setDefaultCardColors() } }
-                            >
-                                Default
-                            </Button>
-                        </VStack>
-                    </HStack>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
+                                {key.charAt(0).toUpperCase() + key.slice(1)}
+                            </button>
+                        ))}
+                        <hr className="my-1" />
+                        <button className="btn w-48" onClick={() => setDefaultCardColors()}>Default</button>
+                    </div>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={() => setShowColor(false)} />
+        </div>
     )
 }
 

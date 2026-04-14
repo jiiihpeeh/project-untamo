@@ -1,5 +1,3 @@
-import { SingleDatepicker } from "chakra-dayzed-datepicker"
-import { Center, FormLabel , Flex } from "@chakra-ui/react"
 import React from "react";
 import useAlarm from "./alarmStates"
 
@@ -7,26 +5,27 @@ const DateSelector = () => {
     const date = useAlarm((state)=>state.date)
     const dateFormat = useAlarm((state)=>state.dateFormat);
     const setDate = useAlarm((state)=>state.setDate)
+
+    const formatDateForInput = (d: Date) => {
+        return d.toISOString().split('T')[0]
+    }
+
     return(
-        <Flex
-            onMouseDown={e=>e.preventDefault()}>
-            <Center>
-                <FormLabel>
+        <div className="flex" onMouseDown={e=>e.preventDefault()}>
+            <div className="center">
+                <label className="form-label">
                     Date
-                </FormLabel>
-                <SingleDatepicker
+                </label>
+                <input
+                    type="date"
+                    className="input"
+                    style={{ width: 'auto' }}
                     name="date-input"
-                    date={date}
-                    onDateChange={setDate}
-                    configs={
-                        {
-                            dateFormat: `${dateFormat}`,
-                        }
-                    }
-                />        
-            </Center>
-        </Flex>
-        
+                    value={formatDateForInput(date)}
+                    onChange={(e) => setDate(new Date((e.target as HTMLInputElement).value))}
+                />
+            </div>
+        </div>
     )
 }
 export default DateSelector

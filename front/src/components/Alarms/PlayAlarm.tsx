@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Text, Image, IconButton, Switch,
-         Stack, Spacer, Heading, FormLabel } from "@chakra-ui/react"
-import {  useAlarms, useTimeouts, useAudio,  usePopups, useTask, useSettings, useLogIn } from '../../stores'
+import { useAlarms, useTimeouts, useAudio, usePopups, useTask, useSettings, useLogIn } from '../../stores'
 import { CloseTask, Path } from '../../type'
 import { urlEnds, sleep } from '../../utils'
 import '../../App.css'
@@ -128,64 +126,38 @@ function PlayAlarm() {
     }, [turnOffValue])
 
     return (
-        <Stack align='center'>
-            <Heading
-                as="h1"
-                size='4xl'
-                color='tomato'
-                textShadow='2px 4px #ff0000'
-                className='AlarmMessage'
-                mt={"25%"}
-            >
-                {runAlarm ? runAlarm.label : ''}    <Text
-                    fontSize='sm'
-                    textShadow='1px 1px #ff0000'
-                >
+        <div className="flex flex-col items-center gap-4 pt-20">
+            <h1 className="text-5xl font-bold text-red-500 AlarmMessage" style={{ textShadow: '2px 4px #ff0000' }}>
+                {runAlarm ? runAlarm.label : ''}
+                <span className="text-sm ml-2" style={{ textShadow: '1px 1px #ff0000' }}>
                     ({runAlarm ? `${runAlarm.time[0]}:${runAlarm.time[1]}` : ''})
-                </Text>
-            </Heading>
-            <Heading
-                as='h3'
-                size='md'
-            >
-                Snooze the Alarm by clicking the clock below
-            </Heading>
-            <IconButton
-                width={clockSize}
-                height={clockSize}
-                borderRadius="50%"
-                className="AlarmClock"
-                bgGradient="radial-gradient(circle, rgba(145,201,179,1) 0%, rgba(9,9,121,1) 0%, rgba(108,27,160,0.7945378835127801) 0%, rgba(136,32,171,1) 30%, rgba(16,23,135,1) 73%, rgba(50,96,210,1) 99%, rgba(148,182,155,1) 100%, rgba(51,175,32,0.5312325613839286) 100%)"
-                //onClick={(e)=>setSnoozeIt(true)}
-                aria-label=""
-                value=""
+                </span>
+            </h1>
+            <h3 className="text-lg font-medium">Snooze the Alarm by clicking the clock below</h3>
+            <button
                 id="Snooze-Button"
+                className="AlarmClock btn btn-circle p-2"
+                style={{
+                    width: clockSize,
+                    height: clockSize,
+                    minHeight: clockSize,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(145,201,179,1) 0%, rgba(9,9,121,1) 0%, rgba(108,27,160,0.79) 0%, rgba(136,32,171,1) 30%, rgba(16,23,135,1) 73%, rgba(50,96,210,1) 99%)',
+                }}
                 onMouseDown={userPressStart}
                 onMouseUp={userPressStop}
                 onTouchStart={userPressStart}
                 onTouchEnd={userPressStop}
             >
-                <Image
-                    src={alarmClock}
-                    width='60%'
-                    draggable="false"
-                    pointerEvents={"none"} />
-            </IconButton>
-            <Spacer />
-            <FormLabel
-                mb='0'
-            >
-                <Text
-                    as='b'
-                >
-                    Turn alarm OFF
-                </Text>
-            </FormLabel>
-            <Switch
-                size='lg'
-                isChecked={turnOffValue}
-                onChange={() => setTurnOffValue(!turnOffValue)} />
-        </Stack>
+                <img src={alarmClock} style={{ width: '60%', pointerEvents: 'none' }} draggable={false} />
+            </button>
+            <div className="flex flex-col items-center gap-2 mt-4">
+                <label className="font-bold">Turn alarm OFF</label>
+                <input type="checkbox" className="toggle toggle-lg"
+                    checked={turnOffValue}
+                    onChange={() => setTurnOffValue(!turnOffValue)} />
+            </div>
+        </div>
     )
 }
 export default PlayAlarm
