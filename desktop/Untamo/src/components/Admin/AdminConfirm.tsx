@@ -1,96 +1,45 @@
-import {
-    AlertDialog, useDisclosure,
-    AlertDialogOverlay, AlertDialogContent, 
-    AlertDialogHeader, AlertDialogBody, 
-    AlertDialogFooter, Button } from '@chakra-ui/react'
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState } from 'preact/compat'
 import { useAdmin, usePopups } from '../../stores'
 import { AdminAction } from '../../type'
 
 function AdminChangeActivity() {
     const [message, setMessage] = useState({ action: '', message: '', button: '' })
-    const { onClose } = useDisclosure()
-    const cancelRef = useRef<HTMLButtonElement>(null)
     const runAdminAction = useAdmin((state) => state.adminAction)
     const setShowAdminConfirm = usePopups((state) => state.setShowAdminConfirm)
     const showAdminConfirm = usePopups((state) => state.showAdminConfirm)
     const command = useAdmin((state) => state.command)
 
-    function cancelDialog() {
-        setShowAdminConfirm(false)
-        onClose()
-    }
+    function cancelDialog() { setShowAdminConfirm(false) }
+    async function acceptChange() { runAdminAction(); setShowAdminConfirm(false) }
 
-    async function acceptChange() {
-        runAdminAction()
-        setShowAdminConfirm(false)
-        onClose()
-    }
     useEffect(() => {
         switch (command.action) {
             case AdminAction.Delete:
-                setMessage({
-                    action: 'Delete?',
-                    message: 'Delete user? User information will be erased.',
-                    button: 'Delete user'
-                })
+                setMessage({ action: 'Delete?', message: 'Delete user? User information will be erased.', button: 'Delete user' })
                 break
             case AdminAction.Admin:
-                setMessage({
-                    action: 'Admin Status',
-                    message: 'Admin status of the user will be changed',
-                    button: "Change Admin Status"
-                })
+                setMessage({ action: 'Admin Status', message: 'Admin status of the user will be changed', button: 'Change Admin Status' })
                 break
             case AdminAction.Activity:
-                setMessage({
-                    action: 'Activity Status',
-                    message: 'Activity status of the user will be changed. Current sessions will be erased if accepted and activity is turned OFF',
-                    button: "Change Activity Status"
-                })
-                break
-            default:
+                setMessage({ action: 'Activity Status', message: 'Activity status of the user will be changed. Current sessions will be erased if accepted and activity is turned OFF', button: 'Change Activity Status' })
                 break
         }
     }, [command])
 
-
+    if (!showAdminConfirm) return null
     return (
-        <AlertDialog
-            isOpen={showAdminConfirm}
-            leastDestructiveRef={cancelRef}
-            onClose={onClose}
-        >
-            <AlertDialogOverlay>
-                <AlertDialogContent>
-                    <AlertDialogHeader
-                        fontSize='lg'
-                        fontWeight='bold'
-                    >
-                        {message.action}
-                    </AlertDialogHeader>
-                    <AlertDialogBody>
-                        {message.message}
-                    </AlertDialogBody>
-                    <AlertDialogFooter>
-                        <Button
-                            ref={cancelRef}
-                            onClick={cancelDialog}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            colorScheme='red'
-                            onClick={acceptChange}
-                            ml={3}
-                        >
-                            {message.button}
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialogOverlay>
-        </AlertDialog>
+        <div className="modal modal-open" style={{ zIndex: 1000 }}>
+            <div className="modal-box max-w-sm">
+                <h3 className="font-bold text-lg mb-4">{message.action}</h3>
+                <p>{message.message}</p>
+                <div className="modal-action">
+                    <button className="btn" onClick={cancelDialog}>Cancel</button>
+                    <button className="btn btn-error" onClick={acceptChange}>{message.button}</button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={cancelDialog} />
+        </div>
     )
 }
 
-  export default AdminChangeActivity
+export default AdminChangeActivity

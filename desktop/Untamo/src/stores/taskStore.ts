@@ -1,27 +1,22 @@
-import { create } from 'zustand'
- 
-export enum LaunchMode{
-    None="none",
-    Snooze="snooze",
-    TurnOff="turnOff",   
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
+
+export enum LaunchMode {
+    None = "none",
+    Snooze = "snooze",
+    TurnOff = "turnOff",
 }
-type UseTask = {
+
+export interface TaskSlice {
     solved: boolean
-    launchMode: LaunchMode,
+    launchMode: LaunchMode
     setLaunchMode: (launchMode: LaunchMode) => void
     setSolved: (solved: boolean) => void
 }
 
-const  useTask = create<UseTask>((set) => ({
-  solved: false,
-  launchMode: LaunchMode.None,
-  setLaunchMode: (mode) => set({ launchMode: mode }),
-  setSolved: (solved) => {
-    set(
-        {
-            solved: solved,
-        }
-    )
-  }
-}))
-export default useTask
+export const createTaskSlice: StateCreator<BoundStore, [], [], TaskSlice> = (set) => ({
+    solved: false,
+    launchMode: LaunchMode.None,
+    setLaunchMode: (mode) => set({ launchMode: mode }),
+    setSolved: (solved) => set({ solved }),
+})

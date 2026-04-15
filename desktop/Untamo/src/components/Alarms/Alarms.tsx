@@ -1,16 +1,13 @@
-import { Card, CardHeader, CardBody, StackDivider, Box, HStack, Flex, Spacer,Text, Center } from '@chakra-ui/react'
-import React, { useState, useRef, useEffect } from "react"
-import {  Container, Heading, Switch, IconButton } from '@chakra-ui/react'
+import React, { useState, useRef, useEffect } from 'preact/compat'
 import { timeForNextAlarm, dayContinuationDays, numberToWeekDay } from "./calcAlarmTime"
 import {  useDevices, useAlarms, usePopups, useSettings,  useLogIn } from "../../stores"
 import { Path, WeekDay } from "../../type"
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
+import { Trash2 as DeleteIcon, Pencil as EditIcon } from '../../ui/icons'
 import { Alarm, AlarmCases } from "../../type"
 import AddAlarmButton from "./AddAlarmButton"
 import { timeToNextAlarm } from "./calcAlarmTime"
 import { timePadding, time24hToTime12h, capitalize } from '../../utils'
-import { shallow } from 'zustand/shallow'
-import { SlideFade, Collapse } from '@chakra-ui/react'
+import { useShallow } from 'zustand/react/shallow'
 import { timeToUnits } from './calcAlarmTime'
 import { stringifyDateArr } from './AlarmComponents/stringifyDate-Time'
 
@@ -19,9 +16,9 @@ function Alarms() {
     const currentDevice = useDevices((state) => state.currentDevice)
     const cardColors = useSettings((state) => state.cardColors)
     const clock24 = useSettings((state) => state.clock24)
-    const [devices, viewableDevices] = useDevices(state => [state.devices, state.viewableDevices], shallow)
-    const [alarms, setToDelete, setToEdit, toggleActivity] = useAlarms(state => [state.alarms, state.setToDelete, state.setToEdit, state.toggleActivity], shallow)
-    const [setShowEdit, setShowDelete, setShowAlarmPop, setShowAdminPop] = usePopups((state) => [state.setShowEditAlarm, state.setShowDeleteAlarm, state.setShowAlarmPop, state.setShowAdminPop], shallow)
+    const [devices, viewableDevices] = useDevices(useShallow(state => [state.devices, state.viewableDevices] as const))
+    const [alarms, setToDelete, setToEdit, toggleActivity] = useAlarms(useShallow(state => [state.alarms, state.setAlarmToDelete, state.setAlarmToEdit, state.toggleActivity] as const))
+    const [setShowEdit, setShowDelete, setShowAlarmPop, setShowAdminPop] = usePopups(useShallow((state) => [state.setShowEditAlarm, state.setShowDeleteAlarm, state.setShowAlarmPop, state.setShowAdminPop] as const))
     const [showTiming, setShowTiming] = useState("")
     const [showButtons, setShowButtons] = useState("")
     const isLight = useSettings((state) => state.isLight)
@@ -91,235 +88,104 @@ function Alarms() {
             switch (occurrence) {
                 case AlarmCases.Weekly:
                     return (
-                        <Box>
-                            <Heading
-                                size='xs'
-                                textTransform='uppercase'
-                            >
-                                Weekdays
-                            </Heading>
-                            <Text
-                                pt='2'
-                                fontSize='sm'
-                            >
-                                {weekdayDisplay(weekdays, date)}
-                            </Text>
-                        </Box>)
+                        <div>
+                            <div className="text-xs font-semibold uppercase">Weekdays</div>
+                            <div className="pt-1 text-sm">{weekdayDisplay(weekdays, date)}</div>
+                        </div>)
                 case AlarmCases.Once:
                     return (
-                        <Box>
-                            <Heading
-                                size='xs'
-                                textTransform='uppercase'
-                            >
-                                Date
-                            </Heading>
-                            <Text pt='2' fontSize='sm'>
-                                {`${stringifyDateArr(date)} ${weekdayDisplay(weekdays, date)}`}
-                            </Text>
-                        </Box>
+                        <div>
+                            <div className="text-xs font-semibold uppercase">Date</div>
+                            <div className="pt-1 text-sm">{`${stringifyDateArr(date)} ${weekdayDisplay(weekdays, date)}`}</div>
+                        </div>
                     )
                 case AlarmCases.Daily:
                     return (
-                        <Box>
-                            <Heading
-                                size='xs'
-                                textTransform='uppercase'
-                            >
-                                Weekdays
-                            </Heading>
-                            <Text
-                                pt='2'
-                                fontSize='sm'
-                            >
-                                {weekdayDisplay(127, date)}
-                            </Text>
-                        </Box>
+                        <div>
+                            <div className="text-xs font-semibold uppercase">Weekdays</div>
+                            <div className="pt-1 text-sm">{weekdayDisplay(127, date)}</div>
+                        </div>
                     )
                 case AlarmCases.Yearly:
                     return (
-                        <Box>
-                            <Heading
-                                size='xs'
-                                textTransform='uppercase'
-                            >
-                                Date
-                            </Heading>
-                            <Text
-                                pt='2'
-                                fontSize='sm'
-                            >
-                                {`${stringifyDateArr(date)} ${weekdayDisplay(weekdays, date)}`}
-                            </Text>
-                        </Box>
+                        <div>
+                            <div className="text-xs font-semibold uppercase">Date</div>
+                            <div className="pt-1 text-sm">{`${stringifyDateArr(date)} ${weekdayDisplay(weekdays, date)}`}</div>
+                        </div>
                     )
             }
         }
         function getTime(time: [number, number]) {
             if (!clock24) {
-                let fmt = time24hToTime12h(time)
-                return (<HStack>
-                    <Text>{`${timePadding(fmt.time[0])}:${timePadding(fmt.time[1])}`}
-                        <Text
-                            fontSize='sm'
-                        >
-                            {fmt['12h']}
-                        </Text>
-                    </Text>
-                </HStack>)
+                const fmt = time24hToTime12h(time)
+                return (
+                    <span className="flex items-baseline gap-1">
+                        <span>{`${timePadding(fmt.time[0])}:${timePadding(fmt.time[1])}`}</span>
+                        <span className="text-sm">{fmt['12h']}</span>
+                    </span>
+                )
             }
-            let timeString = `${timePadding(time[0])}:${timePadding(time[1])}`
-            return (<Text>{timeString}</Text>)
+            return <span>{`${timePadding(time[0])}:${timePadding(time[1])}`}</span>
         }
         return sortedView.map(({ id, occurrence, time, weekdays, date, label, devices, active }, key) => {
+            const bg = !active ? cardColors.inactive : (key % 2 === 0 ? cardColors.odd : cardColors.even)
             return (
-                <Card
+                <div
                     key={key}
-                    backgroundColor={(!active) ? cardColors.inactive : ((key % 2 === 0) ? cardColors.odd : cardColors.even)}
-                    onMouseDownCapture={e => e.preventDefault()}
-                    onMouseLeave={() => { setShowButtons(""); timeIntervalID.current = null } }
+                    className="card shadow-sm mb-1 cursor-pointer"
+                    style={{ backgroundColor: bg }}
+                    id={`alarmCardContainer-${key}`}
+                    onMouseDown={e => e.preventDefault()}
+                    onMouseLeave={() => { setShowButtons(""); timeIntervalID.current = null }}
                     onMouseEnter={() => {
                         counterLaunched.current = false
                         setShowButtons(id)
                         timeIntervalID.current = id
                         setTimeout(() => {
-                            if (timeIntervalID.current) {
-                                setShowAlarmPop(false)
-                                setShowAdminPop(false)
-                            }
+                            if (timeIntervalID.current) { setShowAlarmPop(false); setShowAdminPop(false) }
                         }, 250)
                     }}
-                    mb={"5px"}
-                    id={`alarmCardContainer-${key}`}
-                    size={"sm"}
                 >
-                    <CardBody>
-                        <CardHeader>
-                            {(showButtons !== id) ?
-                                <Text>{`${capitalize(occurrence)}: `}
-                                    <Text
-                                        as="b"
-                                    >
-                                        {label}
-                                    </Text>
-                                </Text> :
-                                <SlideFade
-                                    in={showButtons === id}
-                                >
-                                    {`${capitalize(occurrence)}: `} <Text
-                                        as="b"
-                                    >
-                                        {label}
-                                    </Text>
-                                    {showTiming}
-                                </SlideFade>}
-                        </CardHeader>
-                        <Flex>
-                            <HStack
-                            >
-                                <Spacer />
-                                <Box>
-                                    <Heading
-                                        size='xl'
-                                        textTransform='uppercase'
-                                        mb={"25%"}
-                                    >
-                                        {getTime(time)}
-                                    </Heading>
-                                </Box>
-                                <Spacer />
-                                <Box>
-                                    <Heading
-                                        size='xs'
-                                        textTransform='uppercase'
-                                    >
-                                        Devices
-                                    </Heading>
-                                    <Text
-                                        pt='2'
-                                        fontSize='sm'
-                                    >
-                                        {mapDeviceIDsToNames(devices)}
-                                    </Text>
-                                </Box>
-                                <Spacer />
-                                {occurrenceInfo(occurrence, weekdays, date)}
-                                <Spacer />
-                            </HStack>
-                        </Flex>
-                        <Collapse
-                            in={showButtons === id}
-                            animateOpacity={true}
-                        >
-                            <Flex
-                                mt={"10px"}
-                            >
-                                <Box>
-                                    <Heading
-                                        size='xs'
-                                        textTransform='uppercase'
-                                        mb="4px"
-                                    >
-                                        Edit
-                                    </Heading>
-                                    <IconButton
-                                        size='xs'
-                                        icon={<EditIcon />}
-                                        colorScheme={(isLight ? 'orange' : 'green')}
-                                        aria-label=''
-                                        key={`edit-${key}`}
-                                        onClick={() => {
-                                            setToEdit(id)
-                                            setShowEdit(true)
-                                        } } 
-                                    />
-                                </Box>
-                                <Spacer />
-                                <Box>
-                                    <Heading
-                                        size='xs'
-                                        textTransform='uppercase'
-                                        mb="4px"
-                                    >
-                                        Active
-                                    </Heading>
-                                    <Switch
+                    <div className="card-body p-2">
+                        <div className="text-sm">
+                            {`${capitalize(occurrence)}: `}<strong>{label}</strong>
+                            {showButtons === id && <span className="text-xs ml-1 opacity-70">{showTiming}</span>}
+                        </div>
+                        <div className="flex items-center justify-around gap-2 flex-wrap">
+                            <div className="text-2xl font-bold uppercase">{getTime(time)}</div>
+                            <div>
+                                <div className="text-xs font-semibold uppercase">Devices</div>
+                                <div className="text-sm pt-1">{mapDeviceIDsToNames(devices)}</div>
+                            </div>
+                            {occurrenceInfo(occurrence, weekdays, date)}
+                        </div>
+                        {showButtons === id && (
+                            <div className="flex items-center justify-around mt-2 pt-2 border-t border-black/10">
+                                <div className="flex flex-col items-center gap-1">
+                                    <span className="text-xs font-semibold uppercase">Edit</span>
+                                    <button key={`edit-${key}`} className="btn btn-xs btn-warning"
+                                        onClick={() => { setToEdit(id); setShowEdit(true) }}>
+                                        <EditIcon size={12} />
+                                    </button>
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                    <span className="text-xs font-semibold uppercase">Active</span>
+                                    <input type="checkbox" className="toggle toggle-sm"
                                         name={`alarm-switch-${key}`}
-                                        key={`alarm-active-${key}`}
-                                        isChecked={active}
-                                        size='sm'
-                                        onChange={() => {
-                                            toggleActivity(id)
-                                            setShowEdit(false)
-                                        } } 
-                                    />
-                                </Box>
-                                <Spacer />
-                                <Box>
-                                    <Heading
-                                        size='xs'
-                                        textTransform='uppercase'
-                                        mb="4px"
-                                    >
-                                        Delete
-                                    </Heading>
-                                    <IconButton
-                                        size='xs'
-                                        icon={<DeleteIcon />}
-                                        colorScheme={(isLight ? 'red' : 'purple')}
-                                        aria-label=''
-                                        onClick={() => {
-                                            setShowEdit(false)
-                                            setToDelete(id)
-                                            setShowDelete(true)
-                                        } }
-                                        key={`delete-${id}-${key}`} 
-                                    />
-                                </Box>
-                            </Flex>
-                        </Collapse>
-                    </CardBody>
-                </Card>
+                                        checked={active}
+                                        onChange={() => { toggleActivity(id); setShowEdit(false) }} />
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                    <span className="text-xs font-semibold uppercase">Delete</span>
+                                    <button key={`delete-${id}-${key}`} className="btn btn-xs btn-error"
+                                        onClick={() => { setShowEdit(false); setToDelete(id); setShowDelete(true) }}>
+                                        <DeleteIcon size={12} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
             )
         })
     }
@@ -359,12 +225,13 @@ function Alarms() {
     }, [currentDevice])
     return (
         <>
-            <Container
+            <div
                 id={`alarmCardContainer`}
                 ref={containerRef}
+                className="mx-auto w-full max-w-[80%] px-4"
             >
                 {renderCards()}
-            </Container>
+            </div>
             <AddAlarmButton
                 mounting={containerRef} />
         </>

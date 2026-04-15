@@ -1,27 +1,32 @@
-export enum WeekDay  {
-    Monday="Monday",
-    Tuesday="Tuesday",
-    Wednesday="Wednesday",
-    Thursday="Thursday",
-    Friday="Friday",
-    Saturday="Saturday",
-    Sunday="Sunday"
+
+export enum WeekDay {
+    Monday = "Monday",
+    Tuesday = "Tuesday",
+    Wednesday = "Wednesday",
+    Thursday = "Thursday",
+    Friday = "Friday",
+    Saturday = "Saturday",
+    Sunday = "Sunday"
 }
 
-export enum Path  {
-    PlayAlarm="play-alarm",
+export enum Path {
+    PlayAlarm = "play-alarm",
     Alarms = "alarms",
     Welcome = "welcome",
     LogIn = "login",
     Register = "register",
     Admin = "admin",
-    Clueless="clueless",
-    Base= "",
+    Clueless = "clueless",
+    Base = "",
     Activate = "activate",
     Owner = "owner",
-    ResetPassword = "reset-password"
+    ResetPassword = "reset-password",
 }
-
+export enum ColorMode {
+    System = "system",
+    Light = "light",
+    Dark = "dark"
+}
 export enum SessionStatus {
     Activate = "activate",
     NotValid = "not-valid",
@@ -36,7 +41,7 @@ export enum DeviceType {
     Phone = "Phone",
     Tablet = "Tablet",
     Desktop = "Desktop",
-    Other = "Other",
+    Other = "Other"
 }
 
 export type Device = {
@@ -44,30 +49,26 @@ export type Device = {
     deviceName: string,
     type: DeviceType
 }
-export enum ColorMode{
-    System = "system",
-    Light="light",
-    Dark="dark"
-}
-export interface FormData{
+
+export interface FormData {
     firstName: string,
     lastName: string,
     email: string,
     screenName: string,
     password: string,
-    change_password: string,
-    confirm_password: string
+    changePassword: string,
+    confirmPassword: string
 }
 
-export enum OpenDeviceDialog{
+export enum OpenDeviceDialog {
     Menu = "menu",
     Other = "other"
 }
 
 export enum AdminAction {
-    Activity= 'activity',
-    Admin= "admin",
-    Delete="delete"
+    Activity = 'activity',
+    Admin = "admin",
+    Delete = "delete"
 }
 
 export declare type UserInfo = {
@@ -77,7 +78,7 @@ export declare type UserInfo = {
     lastName: string,
     admin: boolean,
     owner: boolean,
-    active: boolean,
+    active: boolean
 }
 
 export enum AlarmCases {
@@ -88,7 +89,7 @@ export enum AlarmCases {
 }
 
 export type Alarm = {
-    occurrence : AlarmCases,
+    occurrence: AlarmCases,
     time: [number, number],
     date: [number, number, number],
     devices: Array<string>,
@@ -100,7 +101,7 @@ export type Alarm = {
     tune: string,
     fingerprint: string,
     modified: number,
-    closeTask:boolean,
+    closeTask: boolean,
     offline: boolean
 }
 
@@ -114,7 +115,7 @@ export type PasswordReset = {
     email: string,
     password: string,
     confirmPassword:  string,
-    passwordResetToken: string,
+    passwordResetToken: string
 }
 
 export type QrLoginScan = {

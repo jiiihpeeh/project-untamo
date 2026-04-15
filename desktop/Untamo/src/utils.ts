@@ -1,13 +1,12 @@
-import { ResponseType, getClient } from '@tauri-apps/api/http';
+import { notification, Status } from './components/notification'
 import { Path } from './type'
-import { invoke } from '@tauri-apps/api';
-import { Status, notification } from './components/notification';
+import { fetch } from '@tauri-apps/plugin-http'
 
-export async function sleep(ms: number) {
-    return await  invoke("sleep", {millis: ms}) as boolean;
+
+export async function sleep (ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
-
-export function isEqual(obj1 :any, obj2 : any) {
+export function isEqual<T extends object>(obj1: T | null | undefined, obj2: T | null | undefined): boolean {
     if(obj1 === null && obj2 === null){
         return true
     }
@@ -27,25 +26,25 @@ export function isEqual(obj1 :any, obj2 : any) {
     return false
 }
 export function capitalize(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
+    return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 export function urlEnds(path: Path) {
-    const urlParts = window.location.pathname.split("/").filter(u => u !== "");
-    return urlParts[urlParts.length - 1] === path;
+    const urlParts = window.location.pathname.split("/").filter(u => u !== "")
+    return urlParts[urlParts.length - 1] === path
 }
 
 export function timePadding(number: number, numbers = 2) {
-    let numberStr = `${number}`;
+    let numberStr = `${number}`
     while (numberStr.length < numbers) {
-        numberStr = `0${numberStr}`;
+        numberStr = `0${numberStr}`
     }
-    return numberStr;
+    return numberStr
 }
 
 export function h24ToH12(n: number) {
-    const m = n % 12;
-    return (m === 0) ? 12 : m;
+    const m = n % 12
+    return (m === 0) ? 12 : m
 }
 
 export function time24hToTime12h(time: [number, number]) {
@@ -55,15 +54,7 @@ export function time24hToTime12h(time: [number, number]) {
         '12h': (hours > 11 && hours <= 23) ? "PM" : "AM"
     }
 }
-
-interface HttpResponse {
-    status: number
-}
-export function isSuccess(response: HttpResponse) {
-    if(!response || response.status < 200 || response.status > 299){
-        throw new Error(`Request failed with status code ${response.status}`)
-    }
-}
+//generate cryptographically secure random string
 export function generateRandomString(length: number): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     const charactersLength = characters.length
@@ -85,29 +76,19 @@ export async function calculateSHA512(blob: Blob): Promise<string> {
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-
 export async function pingServer(server: string, notify = true) {
     try {
-      const client = await getClient()
-      const res = await client.request(
-        {
-          method: "GET",
-          url: `${server}/ping`,
-          responseType: ResponseType.Text
-        }
-      )
-      if ( res.status === 200) {
-        //check if notification is enabled using unary operator
-
-        notify ?  notification('Server Ping', 'Server is online', Status.Success ) : null
+      const res = await fetch(`${server}/ping`)
+      if (res.ok) {
+        notify ? notification('Server Ping', 'Server is online', Status.Success) : null
         return true
       } else {
-        notify ?  notification('Server Ping', `Server is not responding ${res.status}`, Status.Error) : null
+        notify ? notification('Server Ping', 'Server is not responding', Status.Error) : null
         return false
       }
-    } catch (e) {
-      notify ? notification('Server Ping', `Server is not responding ${e}`, Status.Error ) : null
-      return false
+    } catch {
+        notify ? notification('Server Ping', 'Server is not responding', Status.Error) : null
+        return false
     }
 }
 
@@ -116,7 +97,6 @@ export function enumValues<T extends Record<string, string | number>>(
   ): Array<T[keyof T]> {
     return Object.values(enumObject) as Array<T[keyof T]>
 }
-
 
 export function getKeyByValue<T>(object: { [key: string]: T }, value: T): string  {
     const k = Object.keys(object).find((key) => object[key] === value)

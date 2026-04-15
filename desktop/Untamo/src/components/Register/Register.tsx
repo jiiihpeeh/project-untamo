@@ -1,10 +1,7 @@
-import React, {  useEffect } from 'react'
-import { Input, InputGroup,Box, VisuallyHidden,
-         InputRightAddon, FormControl,
-         FormLabel, Text, Button } from '@chakra-ui/react'
-import { useServer, usePopups, useSettings, useLogIn } from '../../stores'
+import React, {  useEffect } from 'preact/compat'
+import { useServer,  usePopups, useSettings, useLogIn } from '../../stores'
 import useRegister from './RegisterBackend'
-import { CheckCircleIcon, NotAllowedIcon, WarningTwoIcon  } from '@chakra-ui/icons'
+import { CheckCircle as CheckCircleIcon, Ban as NotAllowedIcon, AlertTriangle as WarningTwoIcon } from '../../ui/icons'
 import { Path, ColorMode } from '../../type'
 import '../../App.css'
 
@@ -37,22 +34,18 @@ function Register() {
     const setQuestion = useRegister((state) => state.setQuestion)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
 
-
     function PasswordMatch() {
-        let checkmark = (password.length > 5 && password === confirmPassword) ? <CheckCircleIcon /> : <NotAllowedIcon />
-        return (
-            <Text>
-                {checkmark}
-            </Text>
-        )
+        let checkmark = (password.length > 5 && password === confirmPassword)
+            ? <CheckCircleIcon size={16} />
+            : <NotAllowedIcon size={16} />
+        return <span>{checkmark}</span>
     }
+
     function PasswordCheck() {
-        let checkmark = (password.length > 5 && formCheck) ? <CheckCircleIcon /> : <WarningTwoIcon />
-        return (
-            <Text>
-                {checkmark}
-            </Text>
-        )
+        let checkmark = (password.length > 5 && formCheck)
+            ? <CheckCircleIcon size={16} />
+            : <WarningTwoIcon size={16} />
+        return <span>{checkmark}</span>
     }
 
     useEffect(() => {
@@ -73,126 +66,119 @@ function Register() {
         setFormTimeout(query)
     }, [firstName, lastName, email, password])
 
-
-
     useEffect(() => {
         console.log("wsRegisterMessage", wsRegisterMessage)
         if (!wsRegisterMessage) {
             return
         }
         setFormCheck(wsRegisterMessage.formPass)
-
     }, [wsRegisterMessage])
 
     return (
-        <Box
-            //bg='lightgray' 
-            width={(isMobile) ? windowSize.width * 0.90 : Math.min(500, windowSize.width * 0.90)}
-            mt={"30%"}
+        <div
+            style={{
+                width: (isMobile) ? windowSize.width * 0.90 : Math.min(500, windowSize.width * 0.90),
+                marginTop: "30%"
+            }}
             className={(colorMode === ColorMode.Light) ? 'UserForm' : "UserFormDark"}
         >
-            <FormControl
-                width="95%"
-                margin="0 auto"
-            >
-                <FormLabel
-                    htmlFor="firstName"
-                >
-                    First name (Optional)
-                </FormLabel>
-                <Input
-                    type="text"
-                    name="firstName"
-                    id="firstName"
-                    onChange={(e) => setFirstName(e.target.value)}
-                    value={firstName}
-                    bgColor="GhostWhite" />
-                <FormLabel
-                    htmlFor="lastName"
-                >
-                    Last name (Optional)
-                </FormLabel>
-                <Input
-                    type="text"
-                    name="lastName"
-                    id="lastName"
-                    onChange={(e) => setLastName(e.target.value)}
-                    value={lastName}
-                    bgColor="GhostWhite" />
-                <FormLabel
-                    htmlFor="email"
-                >
-                    Email (Required)
-                </FormLabel>
-                <Input
-                    type="email"
-                    name="email"
-                    id="email"
-                    onChange={(e) => setEmail(e.target.value)}
-                    value={email}
-                    bgColor="GhostWhite" />
-                <FormLabel
-                    htmlFor='password'
-                >
-                    Password
-                </FormLabel>
-                <InputGroup>
-                    <Input
-                        type="password"
-                        name="password"
-                        id="password"
-                        onChange={(e) => setPassword(e.target.value)}
-                        value={password}
-                        bgColor="GhostWhite" />
-                    <InputRightAddon
-                        children={<PasswordCheck />} />
-                </InputGroup>
-
-                <FormLabel
-                    htmlFor='confirm_password'
-                >
-                    Confirm Password
-                </FormLabel>
-                <InputGroup>
-                    <Input
-                        type="password"
-                        name="confirmPassword"
-                        id="confirmPassword"
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        value={confirmPassword}
-                        bgColor="GhostWhite" />
-                    <InputRightAddon
-                        children={<PasswordMatch />} />
-                </InputGroup>
-                <VisuallyHidden>
-                    <FormLabel
-                        htmlFor='question'
-                    >
-                        What is 2+7?
-                    </FormLabel>
-                    <Input
+            <div style={{ width: "95%", margin: "0 auto" }}>
+                <div className="form-control">
+                    <label className="label" htmlFor="firstName">
+                        <span className="label-text">First name (Optional)</span>
+                    </label>
+                    <input
+                        className="input input-bordered w-full"
+                        type="text"
+                        name="firstName"
+                        id="firstName"
+                        onChange={(e) => setFirstName((e.target as HTMLInputElement).value)}
+                        value={firstName}
+                    />
+                </div>
+                <div className="form-control">
+                    <label className="label" htmlFor="lastName">
+                        <span className="label-text">Last name (Optional)</span>
+                    </label>
+                    <input
+                        className="input input-bordered w-full"
+                        type="text"
+                        name="lastName"
+                        id="lastName"
+                        onChange={(e) => setLastName((e.target as HTMLInputElement).value)}
+                        value={lastName}
+                    />
+                </div>
+                <div className="form-control">
+                    <label className="label" htmlFor="email">
+                        <span className="label-text">Email (Required)</span>
+                    </label>
+                    <input
+                        className="input input-bordered w-full"
+                        type="email"
+                        name="email"
+                        id="email"
+                        onChange={(e) => setEmail((e.target as HTMLInputElement).value)}
+                        value={email}
+                    />
+                </div>
+                <div className="form-control">
+                    <label className="label" htmlFor="password">
+                        <span className="label-text">Password</span>
+                    </label>
+                    <div className="flex items-center gap-0">
+                        <input
+                            className="input input-bordered flex-1"
+                            type="password"
+                            name="password"
+                            id="password"
+                            onChange={(e) => setPassword((e.target as HTMLInputElement).value)}
+                            value={password}
+                        />
+                        <span className="input input-bordered flex items-center justify-center px-3">
+                            <PasswordCheck />
+                        </span>
+                    </div>
+                </div>
+                <div className="form-control">
+                    <label className="label" htmlFor="confirmPassword">
+                        <span className="label-text">Confirm Password</span>
+                    </label>
+                    <div className="flex items-center gap-0">
+                        <input
+                            className="input input-bordered flex-1"
+                            type="password"
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            onChange={(e) => setConfirmPassword((e.target as HTMLInputElement).value)}
+                            value={confirmPassword}
+                        />
+                        <span className="input input-bordered flex items-center justify-center px-3">
+                            <PasswordMatch />
+                        </span>
+                    </div>
+                </div>
+                {/* Honeypot field — visually hidden */}
+                <div style={{ display: "none" }}>
+                    <label htmlFor="question">What is 2+7?</label>
+                    <input
                         type="text"
                         name="question"
                         id="question"
-                        onChange={(e) => setQuestion(e.target.value)}
+                        onChange={(e) => setQuestion((e.target as HTMLInputElement).value)}
                         value={question}
-                        bgColor="GhostWhite"
                     />
-                    <FormLabel>
-                        Accept Terms and Conditions
-                    </FormLabel>
-                </VisuallyHidden>
-                <Button
-                    m="5px"
+                </div>
+                <button
+                    className="btn btn-primary"
+                    style={{ margin: "5px" }}
                     onClick={() => register()}
-                    //colorScheme={(colorMode === ColorMode.Dark)?"blue":"blueGray"}
-                    color={(colorMode === ColorMode.Dark) ? "blue" : "black"}
-                    isDisabled={!( formCheck && password === confirmPassword )}
+                    disabled={!( formCheck && password === confirmPassword )}
                 >
                     Register
-                </Button>
-            </FormControl>
-        </Box>
+                </button>
+            </div>
+        </div>
     )
 }
 

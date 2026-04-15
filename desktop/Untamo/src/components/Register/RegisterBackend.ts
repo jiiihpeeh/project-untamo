@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
 import { useServer } from '../../stores'
 import { notification, Status } from '../notification'
+import { fetch } from '@tauri-apps/plugin-http'
 
 
 type FormData = {
@@ -149,15 +149,12 @@ async function onRegister() {
     const server = useServer.getState().address
     const formData = useRegister.getState().formData()
     try {
-        const client = await getClient()
-        const res = await client.request(
-            {
-                url: `${server}/register`,
-                method: "POST",
-                body: Body.json(formData)
-            }
-        )
-
+        const res = await fetch(`${server}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+        })
+        //console.log(res.data)
         notification("Registration", "User was registered")
         useRegister.setState({ registered: true })
     } catch (err) {

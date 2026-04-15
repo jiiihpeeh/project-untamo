@@ -1,18 +1,25 @@
-     
-
-import {  Table, Tbody, Tr, Td, Modal,ModalOverlay, Heading,
-    ModalContent, ModalHeader, Center, Text,
-    ModalFooter, ModalBody, VStack,
-    ModalCloseButton, Button, IconButton } from '@chakra-ui/react'
-//import CircularSlider from '@fseehawer/react-circular-slider'
 import CircularSlider from "react-circular-slider-svg";
 import { timePadding } from '../../../utils'
 import useAlarm from './alarmStates'
-import React, { useEffect, useState, useRef } from 'react'
-import { usePopups } from '../../../stores'
-import { ChevronDownIcon as Down,ChevronUpIcon as Up } from '@chakra-ui/icons'
-import { useSettings } from '../../../stores'
-import { h24ToH12, sleep } from '../../../utils'
+import React, { useEffect, useState } from 'preact/compat'
+import { usePopups, useSettings } from '../../../stores'
+import { h24ToH12 } from '../../../utils'
+
+function UpIcon() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    )
+}
+
+function DownIcon() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+    )
+}
 
 function ClockWindow() {
     const time = useAlarm((state)=> state.time)
@@ -31,154 +38,134 @@ function ClockWindow() {
                 return {
                     hours: Math.round(time[0]),
                     minutes: Math.round(time[1])
-                }
-            })
+                };
+            }
+            );
         }
         if(showTimepicker){
             setParsed()
-    }
+        }
     }, [time, showTimepicker])
 
+    if (!showTimepicker) return null
 
     return (
-    <Modal 
-        isOpen={showTimepicker} 
-        onClose={()=>setShowTimepicker(false)}
-        id="ClockWindow"
-        isCentered
-    >
-        <ModalOverlay />
-        <ModalContent>
-            <ModalHeader>
+        <div className="modal-overlay" onClick={()=>setShowTimepicker(false)}>
+          <div className="modal-box" onClick={e=>e.stopPropagation()}>
+            <div className="modal-header">
                 Set Time
-            </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody
-            onMouseDown={e=>e.preventDefault()}
-        >
-            <Table size="sm">
-                <Tbody>
-                    <Tr>
-                        <Td>
-                            <Center>
-                                <CircularSlider
-                                    handle1={{
-                                        value: parsedTime.hours*25/6,
-                                        onChange: v => setParsedTime({...parsedTime, hours: 5.999*v/25})
-                                    }}
-                                    arcColor="#690"
-                                    coerceToInt={false}
-                                    size={125}
-                                />
-                            </Center>
-                        </Td>
-                        <Td></Td>
-                        <Td>
-                            <Center>
-                                <CircularSlider
-                                    handle1={{
-                                        value: parsedTime.minutes*5/3,
-                                        onChange: v => setParsedTime({...parsedTime, minutes: 2.99*v/5})
-                                    }}
-                                    coerceToInt={false}
-                                    arcBackgroundColor="gray"
-                                    arcColor="blue"
-                                    size={125}
-                                />
-                            </Center>
-                        </Td>
-                    </Tr>
-                    <Tr>
-                        <Td>
-                            <Center>
-                                <Heading
-                                    as="b"
-                                    size={"2xl"}
-                                    //style={hourStyle}
-                                >
-                                    {clock24?timePadding(Math.floor(parsedTime.hours)):timePadding(h24ToH12(Math.floor(parsedTime.hours)))}
-                                </Heading>
-                                <VStack ml={"2%"}>
-                                <IconButton 
-                                    icon={<Up/>}
-                                    aria-label=""
-                                    size={"sm"}
-                                    rounded={"md"}
-                                    onClick={()=>setParsedTime({...parsedTime, hours: (parsedTime.hours + 1 ) % 24 })}
-                                />
-                                <IconButton 
-                                    icon={<Down/>}
-                                    aria-label=""
-                                    size={"sm"}
-                                    rounded={"md"}
-                                    onClick={()=>setParsedTime({...parsedTime, hours: (parsedTime.hours === 0 )?23:Math.abs((parsedTime.hours - 1 ) % 24)  })}
-                                />
-                                </VStack>
-                            </Center>
-                        </Td>
-                        <Td>
-                            <Center>
-                                <Heading
-                                    as="b"
-                                    size={"2xl"}
-                                    //style={hourStyle}
-                                >
-                                :
-                                </Heading>
-                            </Center>
-                        </Td>
-                        <Td>
-                            <Center>
-                                <Heading 
-                                    as="b"
-                                    size={"2xl"}
-                                    //style={minuteStyle}
-                                >   
-                                    {timePadding(Math.floor(parsedTime.minutes))}
-                                </Heading>
-                                <VStack ml={"2%"}>
-                                <IconButton 
-                                    icon={<Up/>}
-                                    aria-label=""
-                                    size={"sm"}
-                                    rounded={"md"}
-                                    onClick={()=>setParsedTime({...parsedTime, minutes: (parsedTime.minutes + 1) % 60})}
-                                />
-                                <IconButton 
-                                    icon={<Down/>}
-                                    aria-label=""
-                                    size={"sm"}
-                                    rounded={"md"}
-                                    onClick={()=>setParsedTime({...parsedTime, minutes: (parsedTime.minutes === 0)?59:Math.max(0,parsedTime.minutes - 1)})}
-                                />
-                                </VStack>
-                                {!clock24 && <Text as="b">
-                                    {(Math.floor(parsedTime.hours) >= 12)?"  PM":"  AM"}
-                                </Text>}
-                            </Center>  
-                        </Td>
-
-                    </Tr>
-                </Tbody>
-            </Table>
-        </ModalBody>
-        <ModalFooter>
-            <Button 
-                colorScheme='blue' 
-                mr={3} 
-                onClick={()=>{acceptTime(); setShowTimepicker(false)}}
+                <button className="modal-close" onClick={()=>setShowTimepicker(false)}>×</button>
+            </div>
+            <div
+                className="modal-body"
+                onMouseDown={e=>e.preventDefault()}
             >
-                OK
-            </Button>
-            <Button 
-                variant='ghost'
-                onClick={()=>setShowTimepicker(false)}
-            >
-                Cancel
-            </Button>
-        </ModalFooter>
-        </ModalContent>
-    </Modal>
+                <table className="ui-table" style={{ width: 'auto' }}>
+                    <tbody>
+                       <tr>
+                            <td>
+                                <div className="center">
+                                    <CircularSlider
+                                        handle1={{
+                                            value: parsedTime.hours*25/6,
+                                            onChange: v => setParsedTime({...parsedTime, hours: 5.999*v/25})
+                                        }}
+                                        arcColor="#690"
+                                        coerceToInt={false}
+                                        size={125}
+                                    />
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>
+                                <div className="center">
+                                    <CircularSlider
+                                        handle1={{
+                                            value: parsedTime.minutes*5/3,
+                                            onChange: v => setParsedTime({...parsedTime, minutes: 2.99*v/5})
+                                        }}
+                                        coerceToInt={false}
+                                        arcBackgroundColor="gray"
+                                        arcColor="blue"
+                                        size={125}
+                                    />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div className="center">
+                                    <span style={{ fontSize: "2rem", fontWeight: "bold" }}>
+                                        {clock24?timePadding(Math.floor(parsedTime.hours)):timePadding(h24ToH12(Math.floor(parsedTime.hours)))}
+                                    </span>
+                                    <div style={{ marginLeft: "2%", display: "flex", flexDirection: "column", gap: "4px" }}>
+                                        <button 
+                                            className="btn btn-sm"
+                                            onClick={()=>setParsedTime({...parsedTime, hours: (parsedTime.hours + 1 ) % 24 })}
+                                        >
+                                            <UpIcon />
+                                        </button>
+                                        <button 
+                                            className="btn btn-sm"
+                                            onClick={()=>setParsedTime({...parsedTime, hours: (parsedTime.hours === 0 )?23:Math.abs((parsedTime.hours - 1 ) % 24)  })}
+                                        >
+                                            <DownIcon />
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div className="center">
+                                    <span style={{ fontSize: "2rem", fontWeight: "bold" }}>
+                                    :
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div className="center">
+                                    <span style={{ fontSize: "2rem", fontWeight: "bold" }}>   
+                                        {timePadding(Math.floor(parsedTime.minutes))}
+                                    </span>
+                                    <div style={{ marginLeft: "2%", display: "flex", flexDirection: "column", gap: "4px" }}>
+                                        <button 
+                                            className="btn btn-sm"
+                                            onClick={()=>setParsedTime({...parsedTime, minutes: (parsedTime.minutes + 1) % 60})}
+                                        >
+                                            <UpIcon />
+                                        </button>
+                                        <button 
+                                            className="btn btn-sm"
+                                            onClick={()=>setParsedTime({...parsedTime, minutes: (parsedTime.minutes === 0)?59:Math.max(0,parsedTime.minutes - 1)})}
+                                        >
+                                            <DownIcon />
+                                        </button>
+                                    </div>
+                                    {!clock24 && <span style={{ fontWeight: "bold" }}>
+                                        {(Math.floor(parsedTime.hours) >= 12)?"  PM":"  AM"}
+                                    </span>}
+                                </div>  
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div className="modal-footer">
+                <button 
+                    className="btn btn-primary" 
+                    style={{ marginRight: "12px" }}
+                    onClick={()=>{acceptTime(); setShowTimepicker(false)}}
+                >
+                    OK
+                </button>
+                <button 
+                    className="btn btn-ghost"
+                    onClick={()=>setShowTimepicker(false)}
+                >
+                    Cancel
+                </button>
+            </div>
+          </div>
+        </div>
     )
 }
 

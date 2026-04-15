@@ -1,74 +1,38 @@
-import { AlertDialog,AlertDialogOverlay,
-         AlertDialogContent,AlertDialogHeader,
-         AlertDialogBody,AlertDialogFooter,
-         Button,Text } from "@chakra-ui/react" 
-import React, { useRef, useEffect,useState } from "react"
+import React, { useEffect, useState } from 'preact/compat'
 import { useDevices, usePopups } from "../../stores"
 
 function DeviceDelete() {
-  const cancelRef = useRef<HTMLButtonElement>(null)
-  const deleteDevice = useDevices((state) => state.deleteDevice)
-  const showDelete = usePopups((state) => state.showDeleteDevice)
-  const setShowDelete = usePopups((state) => state.setShowDeleteDevice)
-  const toDelete = useDevices((state) => state.toDelete)
-  const setToDelete = useDevices((state) => state.setToDelete)
-  const [deleteID, setDeleteId] = useState<null | string>(null)
+    const deleteDevice = useDevices((state) => state.deleteDevice)
+    const showDelete = usePopups((state) => state.showDeleteDevice)
+    const setShowDelete = usePopups((state) => state.setShowDeleteDevice)
+    const toDelete = useDevices((state) => state.deviceToDelete)
+    const setToDelete = useDevices((state) => state.setDeviceToDelete)
+    const [deleteID, setDeleteId] = useState<null | string>(null)
 
-  function cancel() {
-    setShowDelete(false)
-    setToDelete(null)
-  }
-  useEffect(() => {
-    if (toDelete) {
-      setDeleteId(toDelete.id)
-    }
-  }, [toDelete])
-  return (
-    <AlertDialog
-      isOpen={showDelete}
-      leastDestructiveRef={cancelRef}
-      onClose={() => setShowDelete(false)}
-      id="DeviceDeletePopUp"
-      isCentered
-    >
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader
-            fontSize='lg'
-            fontWeight='bold'
-          >
-            Delete device <Text
-              as='b'
-            >
-              {toDelete ? toDelete.deviceName : ''}
-            </Text>?
-          </AlertDialogHeader>
+    function cancel() { setShowDelete(false); setToDelete(null) }
 
-          <AlertDialogBody>
-            Are you sure?
-          </AlertDialogBody>
+    useEffect(() => {
+        if (toDelete) setDeleteId(toDelete.id)
+    }, [toDelete])
 
-          <AlertDialogFooter>
-            <Button
-              ref={cancelRef}
-              onClick={cancel}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme='red'
-              onClick={() => {
-                deleteDevice(deleteID ? deleteID : '')
-                setShowDelete(false)
-              } }
-              ml={3}
-            >
-              Delete
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
-  )
+    if (!showDelete) return null
+    return (
+        <div className="modal modal-open" style={{ zIndex: 1010 }} id="DeviceDeletePopUp">
+            <div className="modal-box max-w-sm">
+                <h3 className="font-bold text-lg mb-4">
+                    Delete device <strong>{toDelete ? toDelete.deviceName : ''}</strong>?
+                </h3>
+                <p>Are you sure?</p>
+                <div className="modal-action">
+                    <button className="btn" onClick={cancel}>Cancel</button>
+                    <button className="btn btn-error" onClick={() => {
+                        deleteDevice(deleteID ?? '')
+                        setShowDelete(false)
+                    }}>Delete</button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={cancel} />
+        </div>
+    )
 }
-export default DeviceDelete  
+export default DeviceDelete

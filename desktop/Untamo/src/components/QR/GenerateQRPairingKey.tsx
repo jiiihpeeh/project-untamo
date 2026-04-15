@@ -1,6 +1,6 @@
-import React,{  useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core'
+import React, { useEffect } from 'preact/compat'
 import { useServer, useFetchQR, useTimeouts } from '../../stores'
-import { invoke } from '@tauri-apps/api/tauri'
 
 function GenerateQRPairingKey() {
   const fetchQR = useFetchQR((state) => state.fetchQR)
@@ -10,22 +10,24 @@ function GenerateQRPairingKey() {
   const timeOut = useTimeouts((state) => state.qrID)
   const clearQrTimeout = useTimeouts((state) => state.clearQrTimeout)
   const setQrTimeout = useTimeouts((state) => state.setQrID)
-  const setQrUrl = useFetchQR((state) => state.setQrUrl)
 
   async function fetchKey() {
     if (fetchQR) {
       getQrKey()
-      let timeOut = setTimeout(fetchKey, 15000)
-      setQrTimeout(timeOut)
+      const t = setTimeout(fetchKey, 15000)
+      setQrTimeout(t)
     }
   }
 
   useEffect(() => {
-    async function renderQrKey() {
+    const renderQrKey = async () => {
       if (qrKey && qrKey !== '') {
-        let qrCode = { token: qrKey, server: server}
-        let qrString = await (invoke('get_qr_svg', { qrString: JSON.stringify(qrCode) }) as Promise<string>)
-        setQrUrl(qrString)
+        const container = document.getElementById('qrPairCanvas')
+        if (container) {
+          const qrObject = JSON.stringify({ token: qrKey, server })
+          const svg = await invoke<string>('get_qr_svg', { qrString: qrObject })
+          container.innerHTML = svg
+        }
       }
     }
     renderQrKey()
@@ -34,15 +36,14 @@ function GenerateQRPairingKey() {
   useEffect(() => {
     if (fetchQR && !timeOut) {
       fetchKey()
-    }
-    else if (fetchQR === false) {
+    } else if (fetchQR === false) {
       if (timeOut) {
         clearQrTimeout()
       }
     }
   }, [fetchQR])
+
   return (<></>)
 }
 
 export default GenerateQRPairingKey
-

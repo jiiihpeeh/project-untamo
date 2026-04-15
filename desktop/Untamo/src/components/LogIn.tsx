@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react"
-import { Input , FormControl,FormLabel, Center, HStack, Spacer,
-        Button, Box,Divider, Spinner, VStack, IconButton, Icon } from '@chakra-ui/react'
-import { useLogIn, usePopups, useSettings } from "../stores"
+import { useEffect, useState } from "preact/hooks"
+import { useLogIn,  usePopups, useSettings } from "../stores"
 import { SessionStatus, Path, ColorMode } from "../type"
-import { BsQrCodeScan as QrCodeIcon } from 'react-icons/bs'
+import { QrCode as QrCodeIcon } from '../ui/icons'
+
 import '../App.css'
 
 function LogIn() {
@@ -14,17 +13,19 @@ function LogIn() {
     const navBarTop = useSettings((state) => state.navBarTop)
     const navBarHeight = useSettings((state) => state.height)
     const colorMode = useSettings((state) => state.colorMode)
-    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const setShowPasswordForgot = usePopups((state) => state.setShowPasswordForgot)
+    const setNavigateTo = useLogIn((state) => state.setNavigateTo)
     const setShowResendActivation = usePopups((state) => state.setShowResendActivation)
     const setShowQrCodeReader = usePopups((state) => state.setShowQrCodeReader)
+
+
     const [formData, setFormData] = useState({
         email: "",
         password: ""
     })
     const [canSubmit, setCanSubmit] = useState(false)
 
-    function onChange(event: React.ChangeEvent<HTMLInputElement>) {
+    function onChange(event: Event & { target: HTMLInputElement }) {
         setFormData((formData) => {
             return {
                 ...formData,
@@ -37,7 +38,6 @@ function LogIn() {
         logIn(formData.email, formData.password)
         setNavigateTo(Path.Welcome)
     }
-
 
     useEffect(() => {
         if (sessionStatus == SessionStatus.Valid) {
@@ -64,122 +64,103 @@ function LogIn() {
             case SessionStatus.Validating:
                 const radius = Math.min(windowSize.width / 2, windowSize.height / 2)
                 const top = navBarTop ? windowSize.height / 2 - radius + navBarHeight : windowSize.height / 2 - radius - navBarHeight
-                return (<Spinner
-                    thickness='8px'
-                    speed='0.65s'
-                    emptyColor='gray.200'
-                    color='blue.500'
-                    size='xl'
-                    style={{ width: radius, height: radius, left: windowSize.width / 2 - radius / 2, top: top, position: "absolute" }} />)
+                return (
+                    <span
+                        className="loading loading-spinner"
+                        style={{ width: radius, height: radius, left: windowSize.width / 2 - radius / 2, top: top, position: "absolute" }}
+                    />
+                )
             case SessionStatus.Activate:
                 setNavigateTo(Path.Activate)
                 break
             default:
                 return (
-                    <Box>
+                    <div>
                         <form>
-                            <Box
+                            <div
                                 className={(colorMode === ColorMode.Light) ? 'UserForm' : "UserFormDark"}
-                                width={(isMobile) ? windowSize.width * 0.90 : Math.min(500, windowSize.width * 0.90)}
-                                mt="35%"
+                                style={{ width: (isMobile) ? windowSize.width * 0.90 : Math.min(500, windowSize.width * 0.90), marginTop: "35%" }}
                             >
-                                <FormControl
-                                    onSubmit={onSubmit}
-                                    width="95%"
-                                    margin="0 auto"
-                                    mt="15%"
+                                <div
+                                    style={{ width: "95%", margin: "0 auto", marginTop: "15%" }}
                                 >
-                                    <FormLabel
-                                        htmlFor="email"
-                                        className="FormLabel"
-                                        mt="1%"
-                                        mb="1%"
-                                    >
-                                        Email
-                                    </FormLabel>
-                                    <Input
-                                        type="email"
-                                        name="email"
-                                        id="email"
-                                        onChange={(e) => onChange(e)}
-                                        value={formData.email}
-                                        bgColor="GhostWhite"
-                                        className="Register" />
-                                    <FormLabel
-                                        htmlFor='password'
-                                        className="FormLabel"
-                                    >
-                                        Password
-                                    </FormLabel>
-                                    <Input
-                                        type="password"
-                                        name="password"
-                                        id="password"
-                                        onChange={(e) => onChange(e)}
-                                        value={formData.password}
-                                        bgColor="GhostWhite"
-                                        className="Register" />
-                                    <Divider />
-                                    <Button
+                                    <div className="form-control">
+                                        <label className="label" htmlFor="email">
+                                            <span className="label-text">Email</span>
+                                        </label>
+                                        <input
+                                            className="input input-bordered w-full"
+                                            type="email"
+                                            name="email"
+                                            id="email"
+                                            onChange={(e) => onChange(e as unknown as Event & { target: HTMLInputElement })}
+                                            value={formData.email}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label" htmlFor="password">
+                                            <span className="label-text">Password</span>
+                                        </label>
+                                        <input
+                                            className="input input-bordered w-full"
+                                            type="password"
+                                            name="password"
+                                            id="password"
+                                            onChange={(e) => onChange(e as unknown as Event & { target: HTMLInputElement })}
+                                            value={formData.password}
+                                        />
+                                    </div>
+                                    <div className="divider my-1" />
+                                    <button
                                         type="submit"
                                         id="submit"
+                                        className={"btn " + ((colorMode === ColorMode.Dark) ? "btn-primary" : "btn-neutral")}
                                         onClick={() => onSubmit()}
-                                        mt="1%"
-                                        mb="1%"
-                                        colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
-                                        isDisabled={!canSubmit}
+                                        style={{ marginTop: "1%", marginBottom: "1%" }}
+                                        disabled={!canSubmit}
                                     >
                                         Log In
-                                    </Button>
-                                </FormControl>
-                            </Box>
+                                    </button>
+                                </div>
+                            </div>
                         </form>
-                        <Center>
-                            <VStack>
-                            <HStack
-                                mt="50px"
-                            >
-                            
-                                <Button
-                                    size="xs"
-                                    colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
-                                    onClick={() => setShowPasswordForgot(true)}
+                        <div className="flex items-center justify-center">
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-2" style={{ marginTop: "50px" }}>
+                                    <button
+                                        className={"btn btn-xs " + ((colorMode === ColorMode.Dark) ? "btn-primary" : "btn-neutral")}
+                                        onClick={() => setShowPasswordForgot(true)}
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                    <div className="flex-1" />
+                                    <button
+                                        className="btn btn-xs btn-warning"
+                                        style={{ marginLeft: "10px" }}
+                                        onClick={() => setNavigateTo(Path.ResetPassword)}
+                                    >
+                                        Reset Password
+                                    </button>
+                                </div>
+                                <button
+                                    className="btn btn-xs btn-success"
+                                    onClick={() => setShowResendActivation(true)}
                                 >
-                                    Forgot Password?
-                                </Button>
-                                <Spacer/>
-                                <Button
-                                    ml="10px"
-                                    size="xs"
-                                    colorScheme={"orange"}
-                                    onClick={() => setNavigateTo(Path.ResetPassword)}
-                                >
-                                    Reset Password
-                                </Button>
-                            </HStack>
-                            <Button
-                                size="xs"
-                                colorScheme= "green"
-                                onClick={() => setShowResendActivation(true)}
-                            >
-                                Didn't receive an activation email?
-                            </Button>
-                            </VStack>
-                        </Center>
-                        <Center>
-                        <IconButton
+                                    Didn't receive an activation email?
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-center" style={{ marginTop: "10px", marginBottom: "10px" }}>
+                            <button
+                                className={"btn btn-lg btn-square " + ((colorMode === ColorMode.Dark) ? "btn-primary" : "btn-neutral")}
                                 aria-label="Scan QR code"
-                                icon={<Icon as={QrCodeIcon} />}
                                 onClick={() => setShowQrCodeReader(true)}
-                                colorScheme={(colorMode === ColorMode.Dark) ? "blue" : "gray"}
-                                size="lg"
-                                mt="10px"
-                                mb="10px"
-                                scale={5.4}
-                            />
-                        </Center>
-                </Box>
-            )
+                            >
+                                <QrCodeIcon size={32} />
+                            </button>
+                        </div>
+                    </div>
+                )
         }
     }
     return (<>

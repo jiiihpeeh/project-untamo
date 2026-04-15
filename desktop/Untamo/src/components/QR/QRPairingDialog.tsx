@@ -1,44 +1,23 @@
-import React from 'react'
-import {  Modal, ModalOverlay,
-          ModalContent, ModalHeader,
-          ModalBody, ModalCloseButton,
-          Link, Center , Image
-        } from '@chakra-ui/react'
-import { usePopups, useFetchQR } from '../../stores'
+import React from 'preact/compat'
+import { usePopups } from '../../stores'
 
 function QRPairingDialog() {
-  const setShowQRDialog = usePopups((state) => state.setShowQRDialog)
-  const showQRDialog = usePopups((state) => state.showQRDialog)
-  const qrUrl = useFetchQR((state) => state.qrUrl)
+    const setShowQRDialog = usePopups((state) => state.setShowQRDialog)
+    const showQRDialog = usePopups((state) => state.showQRDialog)
 
-  return (
-      <Modal
-        closeOnOverlayClick={false}
-        isOpen={showQRDialog}
-        onClose={() => setShowQRDialog(false)}
-        size="sm"
-        isCentered
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            Scan QR code
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody
-            pb={6}
-          >
-            <Center>
-              <Image
-                src={qrUrl}
-                height={290}
-                alt='QR' />
-            </Center>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-  )
+    if (!showQRDialog) return null
+    return (
+        <div className="modal modal-open" style={{ zIndex: 1010 }}>
+            <div className="modal-box max-w-xs">
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    onClick={() => setShowQRDialog(false)}>✕</button>
+                <h3 className="font-bold text-lg mb-4">Scan QR code</h3>
+                <div className="flex justify-center pb-4">
+                    <div id="qrPairCanvas" className="w-57 h-57" />
+                </div>
+            </div>
+        </div>
+    )
 }
 
 export default QRPairingDialog
-

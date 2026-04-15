@@ -1,172 +1,42 @@
-//<DeviceContext.Provider value={{ currentDevice, setCurrentDevice, devices, setDevices, viewableDevices, setViewableDevices }}>
-import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
-import { DeviceType }  from '../type'
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
+import { DeviceType, Device } from '../type'
 import { notification, Status } from '../components/notification'
-import { getCommunicationInfo, validSession } from "../stores"
-import useAlarms from './alarmStore'
-import useLogIn from './loginStore'
-import {Device} from '../type'
-import { isSuccess } from '../utils'
-import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
+import { getCommunicationInfo, apiGet, apiPost, apiPut, apiDelete } from './api'
+// circular import — safe: useStore only accessed inside function bodies after init
+import { useStore } from './store'
 
-type UseDevices = {
-    devices: Array<Device>,
-    viewableDevices: Array<string>,
-    currentDevice: string| null,
-    toEdit: Device| null,
-    toDelete: Device| null,
-    setToEdit: (d:Device|null) => void,
-    setToDelete: (d:Device|null) => void,
-    editDevice: (id: string, name: string, type: DeviceType) => void,
-    deleteDevice: (id:string) => void,
-    fetchDevices: () => void,
-    setViewableDevices: (ids: Array<string>) => void, 
-    toggleViewableDevices:(id:string) => void,
-    setCurrentDevice: (id:string) => void,
-    addDevice: (deviceName: string, type: DeviceType) => void,
-    clear: () => void,
-}
-const useDevices = create<UseDevices>()(
-    persist(
-      (set) => (
-            {
-                devices: [] as Array<Device>,
-                viewableDevices: [],
-                currentDevice: null,
-                toEdit: null,
-                toDelete: null,
-                setToEdit: (d) => set(
-                    {
-                        toEdit: d
-                    }
-                ),
-                setToDelete: (d) => set(
-                    {
-                        toDelete: d
-                    }
-                ),
-                editDevice: async(id, name, type) => {
-                    await deviceEdit(id, name, type)
-                },
-                deleteDevice: async(id) => {
-                    await deleteDevice(id)
-                },
-                fetchDevices: async() => {
-                    await fetchDevices()
-                },
-                setViewableDevices: (ids) => set (
-                    state => (
-                            {
-                                viewableDevices: state.devices.filter(device => ids.includes(device.id) === true).map(device => device.id)
-                            }
-                    )
-                ),
-                toggleViewableDevices: (id) => set(
-                    state =>(
-                        {
-                            viewableDevices: toggleViewableDevices(id, state.viewableDevices)
-                        }
-                    )
-                ),
-                setCurrentDevice: (id) => {
-                    useAlarms.getState().setReloadAlarmList()
-                    useAlarms.getState()
-                    set (
-                        state => (
-                            {
-                                currentDevice: state.devices.filter(device => device.id  ===id).map(device => device.id)[0]
-                            }
-                        )
-                    )
-                },
-                addDevice: async (name, type) => {
-                    addDevice(name, type)
-                },
-                clear: () => set(
-                    {
-                        devices: [] as Array<Device>,
-                        viewableDevices: [] as Array<string>,
-                        currentDevice: null,
-                    }
-                ),
-            }
-        ),
-
-        {
-            name: 'devices', 
-            storage: createJSONStorage(() => localStorage), 
-            partialize: (state) => (
-                { 
-                    devices: state.devices,
-                    viewableDevices: state.viewableDevices,
-                    currentDevice: state.currentDevice
-                }
-            ),
-        }
-    )
-)
-
-//only unique devices
 export function uniqueDevices(devices: Array<Device>) {
-    let uniqueDevices = [] as Array<Device>
-    devices.forEach(device => {
-        if (!uniqueDevices.some(uniqueDevice => uniqueDevice.id === device.id)) {
-            uniqueDevices.push(device)
-        }
+    const unique: Array<Device> = []
+    devices.forEach(d => {
+        if (!unique.some(u => u.id === d.id)) unique.push(d)
     })
-    return uniqueDevices
+    return unique
 }
 
+function toggleViewableDevicesHelper(id: string, viewableDevices: Array<string>) {
+    return viewableDevices.includes(id)
+        ? [...viewableDevices.filter(v => v !== id)]
+        : [...viewableDevices, id]
+}
 
 async function addDevice(name: string, type: DeviceType) {
-    const { server, token } = getCommunicationInfo()
-    const devices = useDevices.getState().devices
-    let deviceSameName = devices.filter(device => device.deviceName === name)
-    if (name.length < 1 || deviceSameName.length > 0) {
+    const devices = useStore.getState().devices
+    if (name.length < 1 || devices.some(d => d.deviceName === name)) {
         notification("Device", "Name taken or too short", Status.Error)
         return
     }
     try {
-        const client = await getClient()
-        const response = await client.request(
-            {
-                url: `${server}/api/device`,
-                method: "POST",
-                body: Body.json({
-                    deviceName: name,
-                    type: type
-                }),
-                headers: {
-                    token: token
-                },
-                responseType: ResponseType.JSON
-            }
-        )
-        interface Resp {
-            id: string
-            type: DeviceType
-            deviceName: string
-        }
-        isSuccess(response)
-        let deviceData = response.data as Resp
-        let newDevice: Device = {
-            id: deviceData.id,
-            type: deviceData.type,
-            deviceName: deviceData.deviceName
-        }
-        if (newDevice.deviceName !== name && newDevice.type !== type) {
-            return
-        }
+        interface Resp { id: string; type: DeviceType; deviceName: string }
+        const deviceData = await apiPost<Resp>('/api/device', { deviceName: name, type })
+        const newDevice: Device = { id: deviceData.id, type: deviceData.type, deviceName: deviceData.deviceName }
+        if (newDevice.deviceName !== name && newDevice.type !== type) return
         if (devices.length === 0) {
-            useDevices.setState({ currentDevice: newDevice.id })
+            useStore.setState({ currentDevice: newDevice.id })
         }
-        //console.log([...devices, newDevice])
-        useDevices.setState({ devices: uniqueDevices([...devices, newDevice]) })
-        let viewableDevices = useDevices.getState().viewableDevices
-        viewableDevices = [...viewableDevices, newDevice.id]
-        useDevices.setState({ viewableDevices: viewableDevices })
-
+        useStore.setState({ devices: uniqueDevices([...devices, newDevice]) })
+        const viewableDevices = useStore.getState().viewableDevices
+        useStore.setState({ viewableDevices: [...viewableDevices, newDevice.id] })
         notification("Device", "A new device was added")
     } catch (err) {
         notification("Device", "Failed to add a device", Status.Error)
@@ -174,161 +44,127 @@ async function addDevice(name: string, type: DeviceType) {
 }
 
 async function fetchDevices() {
-    const { server, token } = getCommunicationInfo()
-    if (token.length < 3) {
-        return
-    }
-    let fetchedDevices = [] as Array<Device>
+    const { token } = getCommunicationInfo()
+    if (token.length < 3) return
     try {
-        const client = await getClient()
-        const response = await client.request(
-            {
-                url: `${server}/api/devices`,
-                method: "GET",
-                headers: {
-                    token: token
-                },
-                responseType: ResponseType.JSON
-            }
-        )
-        isSuccess(response)
-        let devices = response.data as Array<Device>
-        useDevices.setState(
-            {
-                devices: devices
-            }
-        )
-        let viewableDevices = useDevices.getState().viewableDevices
-        if (viewableDevices.length === 0) {
-            let currentDevice = useDevices.getState().currentDevice
-            if (!currentDevice) {
-                useDevices.setState({ viewableDevices: [...devices.map(device => device.id)] })
-            }
+        const devices = await apiGet<Array<Device>>('/api/devices')
+        useStore.setState({ devices })
+        const viewableDevices = useStore.getState().viewableDevices
+        if (viewableDevices.length === 0 && !useStore.getState().currentDevice) {
+            useStore.setState({ viewableDevices: devices.map(d => d.id) })
         }
-    } catch (err: any) {
-        (validSession()) ? notification("Devices", "Couldn't fetch the device list", Status.Error) : {}
+    } catch {
+        const state = useStore.getState()
+        if (state.sessionValid !== undefined) {
+            notification("Devices", "Couldn't fetch the device list", Status.Error)
+        }
     }
 }
 
 async function deviceEdit(id: string, name: string, type: DeviceType) {
-    const { server, token } = getCommunicationInfo()
-    const editDevice: Device = {
-        id: id,
-        deviceName: name,
-        type: type
+    const editDevice: Device = { id, deviceName: name, type }
+    const devices = useStore.getState().devices
+    if (!devices.some(d => d.id === editDevice.id)) {
+        notification("Device", "Unknown device", Status.Error)
+        return
     }
-    const devices = useDevices.getState().devices
-    if (editDevice) {
-        let deviceObject = devices.filter(device => device.id === editDevice.id)
-        if (deviceObject.length !== 1) {
-            notification("Device", "Unknown device", Status.Error)
-            return
-        }
-        if (editDevice.deviceName.length < 1) {
-            notification("Device", "Name too short", Status.Error)
-            return
-        }
-        let deviceMatchName = devices.filter(device => device.deviceName === editDevice.deviceName)
-        if (deviceMatchName.length > 1) {
-            notification("Device", "Name taken", Status.Error)
-            return
-        }
-        if ((deviceMatchName.length === 1) && (deviceMatchName[0].deviceName !== editDevice.deviceName)) {
-            notification("Device", "Name taken", Status.Error)
-            return
-        }
-
-        try {
-            const client = await getClient()
-            const response = await client.request(
-                {
-                    url: `${server}/api/device/` + editDevice.id,
-                    method: "PUT",
-                    body: Body.json({
-                        deviceName: editDevice.deviceName,
-                        type: editDevice.type,
-                        id: editDevice.id
-                    }),
-                    headers: {
-                        token: token
-                    },
-                    responseType: ResponseType.JSON
-                }
-            )
-            isSuccess(response)
-            let devicesFiltered = devices.filter(device => device.id !== editDevice.id)
-            notification("Device", "A device was updated")
-
-            useDevices.setState(
-                {
-                    devices:  uniqueDevices([...devicesFiltered, editDevice]),
-                    toEdit: null
-                }
-            )
-
-        } catch (err) {
-            notification("Device", "Failed to update a device", Status.Error)
-        }
+    if (editDevice.deviceName.length < 1) {
+        notification("Device", "Name too short", Status.Error)
+        return
+    }
+    const nameMatches = devices.filter(d => d.deviceName === editDevice.deviceName)
+    if (nameMatches.length > 1 || (nameMatches.length === 1 && nameMatches[0].id !== editDevice.id)) {
+        notification("Device", "Name taken", Status.Error)
+        return
+    }
+    try {
+        await apiPut(`/api/device/${editDevice.id}`, {
+            deviceName: editDevice.deviceName,
+            type:       editDevice.type,
+            id:         editDevice.id,
+        })
+        const filtered = devices.filter(d => d.id !== editDevice.id)
+        notification("Device", "A device was updated")
+        useStore.setState({ devices: uniqueDevices([...filtered, editDevice]), deviceToEdit: null })
+    } catch (err) {
+        notification("Device", "Failed to update a device", Status.Error)
     }
 }
 
 async function deleteDevice(id: string) {
-    const { server, token } = getCommunicationInfo()
-
-    const devices = useDevices.getState().devices
-    const deleteDevices = devices.filter(device => device.id === id)
-
-    if (deleteDevices.length !== 1) {
-        return
-    }
-    const deleteDevice = deleteDevices[0]
+    const devices = useStore.getState().devices
+    const target  = devices.find(d => d.id === id)
+    if (!target) return
     try {
-        const client = await getClient()
-        const response = await client.request(
-            {
-                url: `${server}/api/device/` + deleteDevice.id,
-                method: "DELETE",
-                headers: {
-                    token: token
-                },
-                responseType: ResponseType.JSON
-            }
-        )
-        isSuccess(response)
-        const currentDevice = useDevices.getState().currentDevice
-        if (currentDevice === deleteDevice.id) {
-            useDevices.setState(
-                {
-                    currentDevice: null
-                }
-            )
+        await apiDelete(`/api/device/${target.id}`)
+        if (useStore.getState().currentDevice === target.id) {
+            useStore.setState({ currentDevice: null })
         }
-        const viewableDevices = useDevices.getState().viewableDevices
-        if (viewableDevices.includes(deleteDevice.id)) {
-            let viewableDevicesFiltered = viewableDevices.filter(device => device !== deleteDevice.id)
-            useDevices.setState(
-                {
-                    viewableDevices: viewableDevicesFiltered
-                }
-            )
+        const viewableDevices = useStore.getState().viewableDevices
+        if (viewableDevices.includes(target.id)) {
+            useStore.setState({ viewableDevices: viewableDevices.filter(v => v !== target.id) })
         }
-
-        useDevices.setState(
-            {
-                devices: uniqueDevices(devices.filter(device => device.id !== deleteDevice.id)),
-                toDelete: null
-            }
-        )
+        useStore.setState({
+            devices:      uniqueDevices(devices.filter(d => d.id !== target.id)),
+            deviceToDelete: null,
+        })
     } catch (err) {
-        //console.log(err)
         notification("Device", "Can not delete device", Status.Error)
     }
 }
 
-function toggleViewableDevices(id: string, viewableDevices: Array<string>) {
-    if (viewableDevices.includes(id)) {
-        return [...viewableDevices.filter(DId => DId !== id)]
-    }
-    return [...viewableDevices, id]
+export interface DeviceSlice {
+    devices:          Array<Device>
+    viewableDevices:  Array<string>
+    currentDevice:    string | null
+    deviceToEdit:     Device | null
+    deviceToDelete:   Device | null
+    setDeviceToEdit:        (d: Device | null) => void
+    setDeviceToDelete:      (d: Device | null) => void
+    editDevice:             (id: string, name: string, type: DeviceType) => void
+    deleteDevice:           (id: string) => void
+    fetchDevices:           () => void
+    setViewableDevices:     (ids: Array<string>) => void
+    toggleViewableDevices:  (id: string) => void
+    setCurrentDevice:       (id: string) => void
+    addDevice:              (deviceName: string, type: DeviceType) => void
+    clearDevices:           () => void
 }
-export default useDevices
+
+export const createDeviceSlice: StateCreator<BoundStore, [], [], DeviceSlice> = (set, get) => ({
+    devices:        [],
+    viewableDevices: [],
+    currentDevice:  null,
+    deviceToEdit:   null,
+    deviceToDelete: null,
+
+    setDeviceToEdit:   (d) => set({ deviceToEdit: d }),
+    setDeviceToDelete: (d) => set({ deviceToDelete: d }),
+
+    editDevice:  async (id, name, type) => { await deviceEdit(id, name, type) },
+    deleteDevice: async (id) => { await deleteDevice(id) },
+    fetchDevices: async () => { await fetchDevices() },
+
+    setViewableDevices: (ids) => set(state => ({
+        viewableDevices: state.devices.filter(d => ids.includes(d.id)).map(d => d.id)
+    })),
+
+    toggleViewableDevices: (id) => set(state => ({
+        viewableDevices: toggleViewableDevicesHelper(id, state.viewableDevices)
+    })),
+
+    setCurrentDevice: (id) => {
+        get().setReloadAlarmList()
+        set(state => ({
+            currentDevice: state.devices.find(d => d.id === id)?.id ?? null
+        }))
+    },
+
+    addDevice: async (name, type) => { await addDevice(name, type) },
+
+    clearDevices: () => set({
+        devices:        [] as Array<Device>,
+        viewableDevices: [] as Array<string>,
+        currentDevice:  null,
+    }),
+})

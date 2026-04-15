@@ -1,17 +1,14 @@
 import { create } from "zustand"
-import { ColorMode, useColorMode } from '@chakra-ui/react'
-import React, {useEffect, useRef } from "react"
-import { usePopups,  useSettings } from "../../stores"
+import { useEffect } from 'preact/compat'
+import { usePopups, useSettings } from "../../stores"
 import { ColorMode as ColorModeType } from "../../type"
 
 type ThemeStore = {
   theme: ColorModeType
   setTheme: (theme: ColorModeType) => void
   colorMode: ColorModeType
-  setColorMode: (colorMode: ColorModeType) => void
   toggled: boolean
-  toggle: () => void
-  _init : boolean
+  _init: boolean
   _setInit: (init: boolean) => void
 }
 
@@ -23,63 +20,55 @@ function getUITheme() {
   return localStorage.getItem("ui-theme") || ""
 }
 
+function applyColorMode(mode: ColorModeType) {
+  const isDark = mode === ColorModeType.Dark
+  document.documentElement.classList.toggle('dark', isDark)
+  document.body.classList.toggle('dark', isDark)
+}
 
 export const useTheme = create<ThemeStore>()(
   (set, get) => ({
     theme: ColorModeType.Light,
-    setTheme: (theme: ColorModeType) => {
+    setTheme: (theme) => {
       if (theme === ColorModeType.System) {
         const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-        let mode = (isDark) ? ColorModeType.Dark : ColorModeType.Light
-        set({ colorMode: mode,theme: ColorModeType.System })
+        const mode = isDark ? ColorModeType.Dark : ColorModeType.Light
+        set({ colorMode: mode, theme: ColorModeType.System, toggled: !get().toggled })
+        applyColorMode(mode)
       } else {
-        set({ colorMode: theme, theme: theme})
+        set({ colorMode: theme, theme, toggled: !get().toggled })
+        applyColorMode(theme)
       }
-      set({  toggled: !get().toggled })
       setUITheme(theme)
     },
     colorMode: ColorModeType.Light,
-    setColorMode: (colorMode: ColorModeType) => {
-      set({ colorMode: colorMode, toggled: !get().toggled })
-    },
     toggled: false,
-    toggle: () => set({ toggled: !get().toggled }),
     _init: false,
-    _setInit: (init: boolean) => set({_init: init}),
+    _setInit: (init) => set({ _init: init }),
   })
 )
 
-
-//eventlistener and initializer for system theme
+// Initialise theme from localStorage and watch for system changes
 function themeWatcher() {
-    const { setTheme } = useTheme.getState()
-    switch (getUITheme()) {
-      case ColorModeType.Light:
-        setTheme(ColorModeType.Light)
-        break
-      case ColorModeType.Dark:
-        setTheme(ColorModeType.Dark)
-        break
-      default:          
-        setTheme(ColorModeType.System)
-        break
+  const { setTheme } = useTheme.getState()
+  switch (getUITheme()) {
+    case ColorModeType.Light:  setTheme(ColorModeType.Light);  break
+    case ColorModeType.Dark:   setTheme(ColorModeType.Dark);   break
+    default:                   setTheme(ColorModeType.System);  break
+  }
+  const mq = window.matchMedia("(prefers-color-scheme: dark)")
+  function handleChange() {
+    if (useTheme.getState().theme === ColorModeType.System) {
+      setTheme(ColorModeType.System)
     }
-    
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-    function handleChange() {
-      const thm = useTheme.getState().theme 
-      if (thm === ColorModeType.System) {
-        setTheme(ColorModeType.System)
-      }
-    }
-    mediaQuery.addEventListener("change", handleChange)
-    return () => mediaQuery.removeEventListener("change", handleChange)
+  }
+  mq.addEventListener("change", handleChange)
+  return () => mq.removeEventListener("change", handleChange)
 }
 themeWatcher()
 
-export default function ThemeComponent(){
+export default function ThemeComponent() {
   const color = useTheme((state) => state.colorMode)
-  const { colorMode, toggleColorMode } = useColorMode()
   const toggled = useTheme((state) => state.toggled)
   const setShowChangeColors = usePopups((state) => state.setShowChangeColors)
   const setSettingsColorMode = useSettings((state) => state.setColorMode)
@@ -87,12 +76,11 @@ export default function ThemeComponent(){
   const _setInit = useTheme((state) => state._setInit)
 
   useEffect(() => {
-    if (colorMode !== color){
-      toggleColorMode()
-      setSettingsColorMode(color as unknown as ColorModeType)
-      _init ? setShowChangeColors(true): null
-    }
+    applyColorMode(color)
+    setSettingsColorMode(color as unknown as ColorModeType)
+    if (_init) setShowChangeColors(true)
     _setInit(true)
   }, [toggled])
+
   return null
 }

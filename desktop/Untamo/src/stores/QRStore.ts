@@ -1,187 +1,69 @@
-import { create } from 'zustand'
-import { getCommunicationInfo } from '../stores'
-import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
-import { isSuccess, sleep } from '../utils'
-import QrScanner from 'qr-scanner'
+import { create, StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
+import { apiGet } from './api'
+import { Command } from '@tauri-apps/plugin-shell'
 import { QrLoginScan } from '../type'
-import { platform } from '@tauri-apps/api/os'
-import { Command } from '@tauri-apps/api/shell'
-import { notification, Status } from '../components/notification'
-
-type UseFetchQR = {
-    fetchQR: boolean,
-    qrKey: string,
-    setFetchQR: (b: boolean) => void,
-    getQrKey: () => void,
-    qrUrl: string,
-    setQrUrl: (svg: string) => void 
-}
+// circular import — safe: useStore only accessed inside function bodies after init
+import { useStore } from './store'
 
 async function fetchQRKey() {
-    const { server, token } = getCommunicationInfo()
     try {
-        const client = await getClient()
-        let res = await client.request(
-            {
-                url: `${server}/api/qr-token`,
-                method: "GET",
-                responseType: ResponseType.JSON,
-                headers: {
-                    token: token
-                }
-            }
-        )
-        isSuccess(res)
-        interface QRKey {
-            qrToken: string
-        }
-        let keyJson = res.data as QRKey
-        //console.log(keyJson.qrToken)                      
-        useFetchQR.setState({ qrKey: keyJson.qrToken })
-
-    } catch (err: any) {
-        //console.log(err)
+        interface QRKey { qrToken: string }
+        const keyJson = await apiGet<QRKey>('/api/qr-token')
+        useStore.setState({ qrKey: keyJson.qrToken })
+    } catch {
+        //
     }
 }
 
-const useFetchQR = create<UseFetchQR>((set,get) => (
-    {
-        fetchQR: false,
-        qrKey: '',
-        setFetchQR: (b) => set( 
-                {
-                    fetchQR: b
-                }
-        ),
-        getQrKey: async() => {
-            await fetchQRKey()
-        },
-        qrUrl: "",
-        setQrUrl: (svg: string) => {
-            let svgUrl = URL.createObjectURL(new Blob([svg], {type: 'image/svg+xml'}))
-            try{
-                URL.revokeObjectURL(get().qrUrl)
-                
-            }catch(e:any){}
-            set(
-                {
-                    qrUrl: svgUrl
-                }
-            )
-        }
-    }
-))
-
-type useQrScanner = {
-    qrScanner: null | QrScanner,
-    cameras: QrScanner.Camera[] | null,
-    scannedToken: QrLoginScan | null,
-    startScanner: () => void,
-    stopScanner: () => void,
-    setQrScanner: () => void,
-    getCameras: () => Promise<QrScanner.Camera[]>,
-    setCamera: (index:number) => void,
-    setScannedToken: (t: QrLoginScan|null) => void,
+export interface QRSlice {
+    fetchQR: boolean
+    qrKey:   string
+    setFetchQR: (b: boolean) => void
+    getQrKey:   () => void
 }
 
-export const useQrScanner = create<useQrScanner>((set, get) => (
-    {
-        qrScanner: null,
-        startScanner: async () => {
-            let os = await platform()
-            if (["linux", "freebsd", "dragonfly","netbsd", "openbsd", "solaris", ].includes(os)){
-                //notify user to install zbar-tools
-                notification("Running zbarcam","Please install zbar-tools to use QR code scanner if nothing happens", Status.Info)
-                //run zbarcam
-                const output = await new Command('zbarcam', ['-1']).execute()
-                try{
-                    //extract qr code by taking off "QR-Code:"
-                    let qrPart = output.stdout.split("QR-Code:")[1]
-                    //console.log(qrPart)
-                    let qrCode = JSON.parse(qrPart) as QrLoginScan
-                    get().setScannedToken(qrCode)
-                    //console.log(qrCode)
-                }catch(err){
-                    console.log(err)
-                }
-                return
-            }
-            get().setQrScanner()
-            let count = 0
-            while(!get().qrScanner){
-                await sleep(50)
-                count++
-                if(count > 30){
-                    break
-                }
-            }
-            await get().qrScanner?.start()
-        },
-        stopScanner: () => {
-            get().qrScanner?.stop()
-            get().qrScanner?.destroy()
-            set({qrScanner: null})
-        },
-        setQrScanner: async () => {
-            //await  navigator.mediaDevices.getUserMedia({ video: true })
-            await get().getCameras()
-            get().stopScanner()
-            let videoElement = document.getElementById('qrScanReader') as HTMLVideoElement | null
-            let count = 0
-            while(!videoElement ){
-                await sleep(50)
-                videoElement = document.getElementById('qrScanReader') as HTMLVideoElement | null
-                count++
-                if(count > 30){
-                    break
-                }
-            }
-            count = 0
-            while (get().cameras == null){
-                await sleep(50)
-                count++
-                if(count > 30){
-                    break
-                }
-            }
-            if(videoElement){
-                set({qrScanner: new QrScanner(
-                                        videoElement,
-                                        result => {
-                                            //console.log('decoded qr code:', result)
-                                            set({scannedToken: JSON.parse(result.data) as QrLoginScan})
-                                            get().qrScanner?.stop()
-                                        },
-                                        { /* your options or returnDetailedScanResult: true if you're not specifying any other options */ },
-                                    )
-                                }
-                    )
-            }
-        },
-        cameras: null,
-        getCameras: async () => {
-            let scan = await QrScanner.hasCamera()
-            if(scan){
-                let cams = await QrScanner.listCameras()
-                set({cameras: cams})
-                return cams
-            }
-            return [] as QrScanner.Camera[]
-        },
-        setCamera: (c) => {
-            let cams = get().cameras
-            get().stopScanner()
+export const createQRSlice: StateCreator<BoundStore, [], [], QRSlice> = (set) => ({
+    fetchQR: false,
+    qrKey:   '',
+    setFetchQR: (b) => set({ fetchQR: b }),
+    getQrKey: async () => { await fetchQRKey() },
+})
 
-            if(cams){
-                get().qrScanner?.setCamera(cams[c].id)
-            }
-            get().startScanner()
-        },
-        scannedToken: null,
-        setScannedToken: (t) => {
-            set({scannedToken: t})
-        },
-    }
-))
+// QR scanner using zbarcam sidecar via Tauri shell plugin
+type UseQrScanner = {
+    scanning:       boolean
+    scannedToken:   QrLoginScan | null
+    startScanner:   () => Promise<void>
+    stopScanner:    () => void
+    setScannedToken:(t: QrLoginScan | null) => void
+}
 
-export default useFetchQR
+export const useQrScanner = create<UseQrScanner>((set, get) => ({
+    scanning: false,
+    scannedToken: null,
+    startScanner: async () => {
+        if (get().scanning) return
+        set({ scanning: true, scannedToken: null })
+        try {
+            // zbarcam -1 opens the camera, scans one QR code, prints
+            // "QR-Code:<data>" to stdout, then exits
+            const { stdout } = await Command.create('zbarcam', ['-1']).execute()
+            const line = stdout.trim()
+            if (line.startsWith('QR-Code:')) {
+                const raw = line.slice('QR-Code:'.length)
+                set({ scannedToken: JSON.parse(raw) as QrLoginScan })
+            }
+        } catch {
+            // zbarcam unavailable or user closed the window
+        }
+        set({ scanning: false })
+    },
+    stopScanner: () => {
+        // zbarcam manages its own window; resetting state is sufficient
+        set({ scanning: false })
+    },
+    setScannedToken: (t) => set({ scannedToken: t }),
+}))
+
+export default useQrScanner

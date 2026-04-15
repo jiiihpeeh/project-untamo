@@ -1,17 +1,5 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
+import { render } from 'preact'
 import App from './App'
 import './index.css'
-import { BrowserRouter } from 'react-router-dom'
-import { ChakraProvider } from '@chakra-ui/react'
-import useSettings from './stores/settingsStore'
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <ChakraProvider theme={useSettings.getState().theme}>
-    <React.StrictMode>
-      <BrowserRouter>
-       <App />
-       </BrowserRouter>
-    </React.StrictMode>
-  </ChakraProvider>,
-)
+render(<App />, document.getElementById('root') as HTMLElement)

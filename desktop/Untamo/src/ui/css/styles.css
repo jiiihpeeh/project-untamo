@@ -1,0 +1,47 @@
+/* Layout helpers (still used as class names in ui.tsx) */
+.hstack { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.vstack { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.flex   { display: flex; }
+.center { display: flex; align-items: center; justify-content: center; }
+.spacer { flex: 1; }
+
+/* Heading size scale */
+.heading { font-weight: 700; line-height: 1.2; }
+.heading-xs  { font-size: 0.75rem; }
+.heading-sm  { font-size: 0.875rem; }
+.heading-md  { font-size: 1rem; }
+.heading-lg  { font-size: 1.125rem; }
+.heading-xl  { font-size: 1.25rem; }
+.heading-2xl { font-size: 1.5rem; }
+.heading-3xl { font-size: 1.875rem; }
+.heading-4xl { font-size: 2.25rem; }
+
+/* Avatar (not replaced by DaisyUI avatar since we use custom sizes) */
+.avatar {
+  border-radius: 50%;
+  background: oklch(var(--p));
+  color: oklch(var(--pc));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; user-select: none;
+}
+.avatar-2xs { width: 18px;  height: 18px;  font-size: 0.6rem; }
+.avatar-xs  { width: 24px;  height: 24px;  font-size: 0.7rem; }
+.avatar-sm  { width: 32px;  height: 32px;  font-size: 0.8rem; }
+.avatar-md  { width: 40px;  height: 40px;  font-size: 0.875rem; }
+.avatar-lg  { width: 48px;  height: 48px;  font-size: 1rem; }
+
+/* Link */
+.ui-link { color: oklch(var(--p)); cursor: pointer; text-decoration: none; }
+.ui-link:hover { text-decoration: underline; }
+
+/* sr-only */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* InputGroup join fix — input inside join needs rounded corners removed */
+.join .input { border-radius: 0; }
+.join .input:first-child { border-radius: var(--rounded-btn) 0 0 var(--rounded-btn); }
+.join .input:last-child  { border-radius: 0 var(--rounded-btn) var(--rounded-btn) 0; }

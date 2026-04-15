@@ -45,7 +45,7 @@ function AlarmCase() {
   }, [isOpen])
 
   return (
-    <div className="flex justify-center mb-4">
+    <div className="flex flex-col justify-center">
       <div className="w-full" onWheel={e => mouseSelect(e.deltaY)}>
         <button ref={btnRef} type="button"
           className="btn w-full flex justify-between items-center"

@@ -1,73 +1,41 @@
-import {  Modal, ModalContent,
-          ModalHeader, ModalFooter,
-          ModalBody, ModalCloseButton,
-          Button, ButtonGroup, 
-          FormLabel,Input } from '@chakra-ui/react'
-import { FocusLock } from '@chakra-ui/focus-lock'
-import React  from 'react'
+import React from 'preact/compat'
 import { useAdmin, usePopups } from '../../stores'
 
-function AdminLogin() {
-  const adminPassword = useAdmin((state) => state.password)
-  const setAdminPassword = useAdmin((state) => state.setPassword)
-  const adminLogIn = useAdmin((state) => state.logIn)
-  const setShowAdminLogIn = usePopups((state) => state.setShowAdminLogIn)
-  const showAdminLogIn = usePopups((state) => state.showAdminLogIn)
+const AdminLogin = () => {
+    const adminPassword = useAdmin((state) => state.password)
+    const setAdminPassword = useAdmin((state) => state.setPassword)
+    const adminLogIn = useAdmin((state) => state.adminLogIn)
+    const setShowAdminLogIn = usePopups((state) => state.setShowAdminLogIn)
+    const showAdminLogIn = usePopups((state) => state.showAdminLogIn)
 
+    const onLogIn = async () => {
+        adminLogIn()
+        setShowAdminLogIn(false)
+    }
 
-  async function onLogIn() {
-    adminLogIn()
-    setShowAdminLogIn(false)
-  }
-
-  return (
-    <Modal
-      returnFocusOnClose={false}
-      isOpen={showAdminLogIn}
-      onClose={() => setShowAdminLogIn(false)}
-      isCentered
-    >
-      <ModalContent>
-        <ModalHeader
-          fontWeight='semibold'
-        >
-          Request admin rights?
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <FocusLock
-            //returnFocus={true}
-            persistentFocus={false}
-          >
-            <FormLabel>Password</FormLabel>
-            <Input type="password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)} />
-          </FocusLock>
-        </ModalBody>
-        <ModalFooter
-          display='flex'
-          justifyContent='flex-end'
-        >
-          <ButtonGroup
-            size='sm'
-          >
-            <Button
-              variant='outline'
-              onClick={() => setShowAdminLogIn(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme='red'
-              onClick={onLogIn}
-            >
-              Apply
-            </Button>
-          </ButtonGroup>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  )
+    if (!showAdminLogIn) return null
+    return (
+        <div className="modal modal-open" style={{ zIndex: 1000 }}>
+            <div className="modal-box max-w-sm">
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    onClick={() => setShowAdminLogIn(false)}>✕</button>
+                <h3 className="font-semibold text-lg mb-4">Request admin rights?</h3>
+                <div className="form-control">
+                    <label className="label"><span className="label-text">Password</span></label>
+                    <input
+                        className="input input-bordered w-full"
+                        type="password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword((e.target as HTMLInputElement).value)}
+                    />
+                </div>
+                <div className="modal-action">
+                    <button className="btn btn-outline btn-sm" onClick={() => setShowAdminLogIn(false)}>Cancel</button>
+                    <button className="btn btn-error btn-sm" onClick={onLogIn}>Apply</button>
+                </div>
+            </div>
+            <div className="modal-backdrop" onClick={() => setShowAdminLogIn(false)} />
+        </div>
+    )
 }
 export default AdminLogin

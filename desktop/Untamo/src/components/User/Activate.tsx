@@ -1,100 +1,40 @@
-import React, { useEffect, useState } from 'react'
-import { Text,Button, RadioGroup, Radio, HStack,  VStack, Heading, Input, FormLabel, VisuallyHidden, Image  } from '@chakra-ui/react'
+import React, { useEffect, useState } from 'preact/compat'
 import { useLogIn } from "../../stores"
+
 function Activate() {
     const captcha = useLogIn((state) => state.captcha)
     const fetchCaptcha = useLogIn((state) => state.fetchCaptcha)
     const activate = useLogIn((state) => state.activate)
-    const [ accept, setAccept ] = useState(false)
-    const [ captchaText, setCaptchaText ] = useState("")
-    const [ verificationCode, setVerificationCode ] = useState("")
-    const [ password, setPassword ] = useState("")
+    const [captchaText, setCaptchaText] = useState("")
+    const [verificationCode, setVerificationCode] = useState("")
 
     useEffect(() => {
-        if (!captcha){
-            fetchCaptcha()
-        }
+        if (!captcha) fetchCaptcha()
     }, [])
-    return (<>
-                <Heading
-                    m={"20px"}
+
+    return (
+        <div className="flex flex-col items-center gap-4 p-5">
+            <h1 className="text-2xl font-bold">Activate</h1>
+            <form className="flex flex-col gap-3 w-full max-w-sm">
+                <div className="form-control">
+                    <label className="label"><span className="label-text">Enter Activation Code</span></label>
+                    <input
+                        className="input input-bordered w-full"
+                        type="text"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode((e.target as HTMLInputElement).value)}
+                    />
+                </div>
+                <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => activate(verificationCode, captchaText, false)}
                 >
                     Activate
-                </Heading>
-                <form>
-                    <FormLabel>
-                        Enter Activation Code
-                    </FormLabel>    
-                    <Input
-                        type={"text"}
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value)}
-                    >
-                    </Input>
-                    <VisuallyHidden> 
-                        <FormLabel>
-                            Confirm Password
-                        </FormLabel>
-                        <Input
-                            type={"password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        >
-                        </Input>
-                        <FormLabel>
-                            Do you accept the terms and conditions?*
-                        </FormLabel>
-                        <RadioGroup
-                            defaultValue='no'
-                            onChange={(e) => {
-                                if (e == 'yes') {
-                                    setAccept(true)
-                                } else {
-                                    setAccept(false)
-                                }
-                            }}
-                        >
-                            <HStack>
-                                <Radio
-                                    value='no'
-                                >
-                                    No
-                                </Radio>
-                                <Radio
-                                    value='yes'
-                                >
-                                    Yes
-                                </Radio>
-                            </HStack>
-                        </RadioGroup>
-                        <VStack>
-                            {/* check if image is not null */}
-                            <Image src={captcha?.src} alt={"captcha"} />
-                            <FormLabel>
-                                Enter Captcha
-                            </FormLabel>
-                            <Input
-                                type={"text"}
-                                value={captchaText}
-                                onChange={(e) => setCaptchaText(e.target.value)}
-                            >
-                            </Input>
-                        </VStack>
-                        <Text>
-                            *to use a fridge vending service.
-                        </Text>
-                    </VisuallyHidden>
-                    <Button
-                        m={"10px"}
-                        onClick={() => {
-                            activate(verificationCode, captchaText, accept)
-                        }}
-                    >
-                        Activate
-                    </Button>
-                </form>
-        </>
-  )
+                </button>
+            </form>
+        </div>
+    )
 }
 
 export default Activate

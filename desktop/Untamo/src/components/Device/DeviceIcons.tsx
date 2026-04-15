@@ -1,29 +1,23 @@
-import { IconType } from 'react-icons'
-import { Icon } from '@chakra-ui/react'
-import { GoBrowser as Browser } from 'react-icons/go'
-import { MdComputer as Desktop, MdOutlineDevicesOther as Other, MdDeviceUnknown as IoT } from 'react-icons/md'
-import { FiTablet as Tablet } from 'react-icons/fi'
-import { GoDeviceMobile as Phone } from 'react-icons/go'
-import React from 'react'
+import { LucideIcon, Globe as Browser, Monitor as Desktop, LayoutGrid as Other, Cpu as IoT, Tablet, Smartphone as Phone } from '../../ui/icons'
+import React from 'preact/compat'
 import { DeviceType } from '../../type'
 
 interface Props {
-  device: DeviceType
+    device: DeviceType
 }
 
-const deviceIcons: Record<DeviceType, IconType> = {
-  [DeviceType.Browser]: Browser,
-  [DeviceType.IoT]: IoT,
-  [DeviceType.Phone]: Phone,
-  [DeviceType.Tablet]: Tablet,
-  [DeviceType.Desktop]: Desktop,
-  [DeviceType.Other]: Other,
+const deviceIcons: Record<DeviceType, LucideIcon> = {
+    [DeviceType.Browser]: Browser,
+    [DeviceType.IoT]: IoT,
+    [DeviceType.Phone]: Phone,
+    [DeviceType.Tablet]: Tablet,
+    [DeviceType.Desktop]: Desktop,
+    [DeviceType.Other]: Other,
 }
 
 function DeviceIcons(props: Props) {
-  const IconComponent = deviceIcons[props.device] || Other
-
-  return <Icon as={IconComponent} />
+    const IconComponent = deviceIcons[props.device] || Other
+    return <IconComponent size={16} className="inline align-middle" />
 }
 
 export default DeviceIcons

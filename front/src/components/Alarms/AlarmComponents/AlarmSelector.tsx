@@ -3,7 +3,6 @@ import AlarmOnce from "./AlarmOnce"
 import AlarmWeekly from "./AlarmWeekly"
 import AlarmDaily from "./AlarmDaily"
 import AlarmYearly from "./AlarmYearly"
-import AlarmCase from "./AlarmCase"
 import useAlarm from "./alarmStates"
 import { AlarmCases }  from "../../../type"
 
@@ -22,8 +21,6 @@ function AlarmSelector() {
         }
     }
     return (<>
-        <AlarmCase />
-        <hr className="my-1" />
         {renderCase()}
     </>
     )

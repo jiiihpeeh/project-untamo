@@ -1,98 +1,75 @@
-import { notification, Status } from '../components/notification';
-import useLogIn from './loginStore'
-import useServer from './serverStore'
-import useAudio from './audioStore'
-import { Body, getClient, ResponseType } from "@tauri-apps/api/http"
-import { writeBinaryFile } from '@tauri-apps/api/fs'
-import { join } from '@tauri-apps/api/path';
-import { invoke } from '@tauri-apps/api/tauri'
-import { isSuccess, sleep } from '../utils'
-import { SessionStatus } from '../type';
+import { writeFile, readFile, exists, readDir, remove, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs'
+import { getCommunicationInfo, apiGet } from './api'
+import { fetch } from '@tauri-apps/plugin-http'
+import { notification, Status } from '../components/notification'
+import rooster from './rooster.json'
+import { useStore } from './store'
+import { SessionStatus } from '../type'
 
-function getLocals() {
-    const token = useLogIn.getState().token;
-    const server = useServer.getState().address;
-    return { token: token, server: server };
+const AUDIO_DIR = 'audio'
+const BASE = BaseDirectory.AppLocalData
+
+async function ensureAudioDir() {
+    await mkdir(AUDIO_DIR, { baseDir: BASE, recursive: true })
 }
 
-export async function getAudioPath(key: string){
-    return await invoke("get_track_path", {track: key})
+export async function getAudio(key: string): Promise<Blob> {
+    const data = await readFile(`${AUDIO_DIR}/${key}.opus`, { baseDir: BASE })
+    return new Blob([data], { type: 'audio/ogg; codecs=opus' })
 }
 
-async function getAudioDir(){
-    let audio_path = await (invoke("get_audio_app_path") as Promise<string>)
-    return audio_path
-}
-
-export async function storeAudio(key: string, val:Uint8Array){
-    let resp = await  invoke("save_track", {track: key, data: val}) as boolean
-    //const audioDir = await getAudioDir()
-    //const audioFile = await join(audioDir, `${key}.flac`)
-    // try{
-    //     await writeBinaryFile(audioFile, val)
-    // }catch(err){
-    //     console.log(err)
-    // }
-    return resp
+async function storeAudioBytes(key: string, data: Uint8Array) {
+    await ensureAudioDir()
+    await writeFile(`${AUDIO_DIR}/${key}.opus`, data, { baseDir: BASE })
 }
 
 export async function delAudio(key: string) {
-    interface ResponseData {
-        deleted: boolean,
-        tracks: Array<string>
-    }
-    let resp = await ( invoke("delete_track", {track: key}) as Promise<ResponseData>)
-    useAudio.setState({ tracks: resp.tracks })
-
-    return resp.deleted
+    await remove(`${AUDIO_DIR}/${key}.opus`, { baseDir: BASE })
 }
 
-export async function keysAudio(){
-    let tracks = await invoke("get_tracks") as Array<string>
-    //console.log(tracks)
-    if(tracks.length === 0){
-        await fetchAudioFiles()
-        tracks = await invoke("get_tracks")
+export async function keysAudio(): Promise<string[]> {
+    try {
+        await ensureAudioDir()
+        const entries = await readDir(AUDIO_DIR, { baseDir: BASE })
+        return entries
+            .filter(e => e.name?.endsWith('.opus'))
+            .map(e => e.name!.slice(0, -5))
+    } catch {
+        return []
     }
-    return tracks
 }
 
-export async function hasAudio(key: string) {
-    let existing = await keysAudio()
-    return existing.includes(key)
+export async function hasAudio(key: string): Promise<boolean> {
+    try {
+        return await exists(`${AUDIO_DIR}/${key}.opus`, { baseDir: BASE })
+    } catch {
+        return false
+    }
 }
 
 export async function fetchAudio(audio: string) {
-    const { token: token, server: server } = getLocals()
-    if( useLogIn.getState().sessionValid !== SessionStatus.Valid){
-        return
-    }
+    const { server, token } = getCommunicationInfo()
     if (token.length > 0 && audio.length > 0) {
         try {
-            const client = await getClient();
-            const response = await client.request(
-                {
-                    method: 'GET',
-                    url: `${server}/audio-resources/${audio}.flac`,
-                    responseType: ResponseType.Binary,
-                    headers: { 'token': token }
-                }
-            )
-            isSuccess(response)
-            await storeAudio(audio, response.data as Uint8Array)
-            return true
+            const res = await fetch(`${server}/audio-resources/${audio}.opus`, {
+                headers: { token },
+            })
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            const buffer = await res.arrayBuffer()
+            await storeAudioBytes(audio, new Uint8Array(buffer))
         } catch (err) {
-            notification("Audio File", `Couldn't download a file ${audio}`, Status.Error)    
+            if (useStore.getState().sessionValid === SessionStatus.Valid) {
+                notification('Audio File', `Couldn't download a file ${audio}`, Status.Error)
+            }
         }
     }
-    return false
 }
 
-export async function hasOrFetchAudio(audio: string) {
+export async function hasOrFetchAudio(audio: string): Promise<boolean> {
     if (!await hasAudio(audio)) {
         try {
-            return await fetchAudio(audio);
-        } catch (err) {
+            await fetchAudio(audio)
+        } catch {
             return false
         }
     }
@@ -100,55 +77,37 @@ export async function hasOrFetchAudio(audio: string) {
 }
 
 export async function fetchAudioFiles() {
-    const { token, server } = getLocals()
-    //check session status
-    await sleep(3)
-    let status = useLogIn.getState().sessionValid
-    //console.log(status)
-    if( status !== SessionStatus.Valid){
-        return
-    }
+    const { token } = getCommunicationInfo()
     if (token) {
         try {
-            const client = await getClient();
-            const response = await client.request(
-                                                    {
-                                                        method: 'GET',
-                                                        url: `${server}/audio-resources/resource_list.json`,
-                                                        responseType: ResponseType.JSON,
-                                                        headers: { 'token': token }
-                                                    }
-                                                )
-            isSuccess(response)
-            const data = response.data as Array<string>
-            let audioTracks: Array<string> = []
-            if (data.length > 0) {
-                for (const audio of data) {
-                    await hasOrFetchAudio(audio) && audioTracks.push(audio)
-                }
+            const audioList = await apiGet<Array<string>>('/audio-resources/resource_list.json')
+            const audioTracks: Array<string> = []
+            for (const audio of audioList) {
+                await hasOrFetchAudio(audio)
+                audioTracks.push(audio)
             }
-            useAudio.setState({ tracks: audioTracks })
-        } catch (err) {
-            //console.log(err);
-            notification("Alarm sounds", "Failed to get a listing", Status.Error)
+            useStore.setState({ tracks: audioTracks })
+        } catch {
+            if (useStore.getState().sessionValid === SessionStatus.Valid) {
+                notification('Alarm sounds', 'Failed to get a listing', Status.Error)
+            }
         }
     }
 }
 
 export async function deleteAudioDB() {
-    let keys = await keysAudio()
-    if(!keys){
-        return
-    }
-    for(const key of keys){
-        try{
-            key?await delAudio(key):{}
-        }catch(err){
-            //console.log(err)
-        }
+    const keys = await keysAudio()
+    for (const key of keys) {
+        await delAudio(key).catch(() => {})
     }
 }
 
-export const initAudioDB = async () => {
-    //await localForage.setItem('rooster', rooster.data64);
-} 
+export async function initAudioDB() {
+    await ensureAudioDir()
+    if (!await hasAudio('rooster')) {
+        const binaryStr = atob(rooster.data64)
+        const bytes = new Uint8Array(binaryStr.length)
+        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i)
+        await storeAudioBytes('rooster', bytes)
+    }
+}

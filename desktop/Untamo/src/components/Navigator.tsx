@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router-dom"
-import React, { useEffect } from "react"
+import React, { useEffect } from 'preact/compat'
 import { useDevices, useLogIn, useAdmin, extend } from "../stores"
 import { SessionStatus, Path } from "../type"
 
@@ -10,10 +9,7 @@ function Navigator() {
     const navigateTo = useLogIn((state) => state.navigateTo)
     const setNavigateTo = useLogIn((state) => state.setNavigateTo)
 
-    const navigate = useNavigate()
-
     useEffect(() => {
-        //console.log(sessionStatus, currentDevice,adminNavigate)        
         if (sessionStatus !== SessionStatus.Valid) {
             setNavigateTo(Path.LogIn)
         } else if (sessionStatus === SessionStatus.Valid && !currentDevice) {
@@ -21,8 +17,8 @@ function Navigator() {
         } else if (sessionStatus === SessionStatus.Valid && currentDevice) {
             setNavigateTo(Path.Alarms)
         }
-
     }, [sessionStatus, currentDevice])
+
     useEffect(() => {
         if (sessionStatus === SessionStatus.Valid && adminNavigate) {
             setNavigateTo(Path.Admin)
@@ -32,10 +28,13 @@ function Navigator() {
 
     useEffect(() => {
         if (navigateTo) {
-            navigate(extend(navigateTo))
+            window.history.pushState(null, '', extend(navigateTo))
+            window.dispatchEvent(new PopStateEvent('popstate'))
             setNavigateTo(null)
         }
-    },[navigateTo])
+    }, [navigateTo])
+
     return (<></>)
 }
+
 export default Navigator

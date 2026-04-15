@@ -1,60 +1,61 @@
-import { Center, Checkbox, HStack, Text, Table,
-         Thead, Tbody,Tr,Th,Td,TableContainer } from "@chakra-ui/react" 
-import React from 'react'
+import React from 'preact/compat'
 import { useDevices } from "../../../stores"
 import useAlarm from "./alarmStates"
 
-function DeviceChecker() {
-    const devices = useDevices((state) => state.devices)
-    const selectedDevices = useAlarm((state) => state.devices)
-    const toggleDevices = useAlarm((state) => state.toggleDevices)
+const DeviceChecker = () => {
+    const devices  = useDevices((state)=>state.devices);
+    const selectedDevices = useAlarm((state) => state.devices);
+    const toggleDevices = useAlarm((state)=> state.toggleDevices);
 
-    function deviceLister() {
-        return devices.map(device => {
-            return (
-                <Tr
-                    key={`deviceList-${device.id}`}
-                >
-                    <Td>
-                        <HStack>
-                            <Checkbox
-                                isChecked={selectedDevices.includes(device.id)}
-                                onChange={() => toggleDevices(device.id)}
-                                size={"lg"} />
-                            <Text>
-                                {device.deviceName}
-                            </Text>
-                        </HStack>
-                    </Td>
-                    <Td>
-                        <Text>
-                            {device.type}
-                        </Text>
-                    </Td>
-                </Tr>
+    const deviceLister = () => {
+        return devices.map(device =>
+                {
+                    return(
+                            <tr 
+                                key={`deviceList-${device.id}`} 
+                            >
+                                <td>
+                                    <div className='hstack'>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedDevices.includes(device.id)} 
+                                            onChange={() => toggleDevices(device.id)}
+                                        /> 
+                                        <span>
+                                            {device.deviceName}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span>
+                                        {device.type}
+                                    </span>
+                                </td>
+                            </tr> 
+                    )
+                }
             )
-        }
-        )
     }
 
-    return (
-        <Center
-            onMouseDown={e => e.preventDefault()}
+    return(
+        <div
+            className="center"
+            onMouseDown={e=>e.preventDefault()}
         >
-            <TableContainer>
-                <Table>
-                    <Thead>
-                        <Tr>
-                            <Th>Device</Th>
-                            <Th>Type</Th>
-                        </Tr>
-                    </Thead>
-                    <Tbody>
-                        {deviceLister()}
-                    </Tbody>
-                </Table>
-            </TableContainer>
-        </Center>
+            <div>
+            <table className="ui-table">
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {deviceLister()}
+                </tbody>
+            </table>
+            </div>
+        </div>
     )
 }
 export default DeviceChecker

@@ -1,383 +1,284 @@
-import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
 import { Alarm, Device, Path, SessionStatus, UserInfo } from '../type'
-//import WebSocket from 'tauri-plugin-websocket-api'
-import { sleep, urlEnds } from '../utils'
-import useLogIn from './loginStore'
-import useAlarms from './alarmStore'
-import useDevices from './deviceStore'
-import { useAudio } from '../stores'
-import useSettings, { UserColors, defaultWebColors } from './settingsStore'
+import { urlEnds, sleep } from '../utils'
+import { defaultWebColors, UserColors } from './settingsStore'
+// circular import — safe: useStore only accessed inside function bodies after init
+import { useStore } from './store'
 
-type wsActionMsg = {
-  url?: string,
-  mode?: string,
-}
-enum WsMessage {
-  AlarmAdd = "alarmAdd",
-  AlarmDelete = "alarmDelete",
-  AlarmEdit = "alarmEdit",
-  DeviceAdd = "deviceAdd",
-  DeviceDelete = "deviceDelete",
-  DeviceEdit = "deviceEdit",
-  UserEdit = "userEdit",
-  WebColors = "webColors",
-}
+type wsActionMsg  = { url?: string; mode?: string }
 type wsRegisterMsg = {
-  formPass : boolean,
-  password: string,
-  guesses: number,
-  score: number,
-  serverMinimum: number,
-  feedBack: Array<string>
+    formPass:      boolean
+    password:      string
+    guesses:       number
+    score:         number
+    serverMinimum: number
+    feedBack:      Array<string>
 }
 
-type UseServer = {
-    address : string,
-    wsAddress: string,
-    wsAction: string,
-    wsRegister: string,
-    extended: string,
-    wsActionConnection: WebSocket|null,
-    wsActionMessage: wsActionMsg|null,
-    wsRegisterConnection: WebSocket|null,
-    wsRegisterMessage: wsRegisterMsg|null,
-    setWsActionConnection: (ws: WebSocket|null) => void,
-    wsActionDisconnect: () => void,
-    setWSActionMessage: (message: wsActionMsg|null) => void,
-    wsActionConnect: () => void,
-    setWsRegisterConnection: (ws: WebSocket|null) => void,
-    setWSRegisterMessage: (message: wsRegisterMsg|null) => void,
-    wsRegisterConnect: () => void,
-    wsRegisterDisconnect: () => void,
-    wsRegisterSendMessage: (message: string) => void,
-    extend: (part: Path) => string,
-    setAddress : (input:string) => void
+enum Proto {
+    Http  = "http",
+    Https = "https"
+}
+
+enum WsMessage {
+    AlarmAdd    = "alarmAdd",
+    AlarmDelete = "alarmDelete",
+    AlarmEdit   = "alarmEdit",
+    DeviceAdd   = "deviceAdd",
+    DeviceDelete= "deviceDelete",
+    DeviceEdit  = "deviceEdit",
+    UserEdit    = "userEdit",
+    WebColors   = "webColors"
+}
+
+export interface ServerSlice {
+    address:             string
+    wsAddress:           string
+    wsAction:            string
+    wsRegister:          string
+    extended:            string
+    wsActionConnection:  WebSocket | null
+    wsActionMessage:     wsActionMsg | null
+    wsRegisterConnection:WebSocket | null
+    wsRegisterMessage:   wsRegisterMsg | null
+    proto:               Proto
+    setProto:                (s: Proto) => void
+    setWsActionConnection:   (ws: WebSocket | null) => void
+    wsActionDisconnect:      () => void
+    setWSActionMessage:      (message: wsActionMsg | null) => void
+    wsActionConnect:         () => void
+    setWsRegisterConnection: (ws: WebSocket | null) => void
+    setWSRegisterMessage:    (message: wsRegisterMsg | null) => void
+    wsRegisterConnect:       () => void
+    wsRegisterDisconnect:    () => void
+    wsRegisterSendMessage:   (message: string) => void
+    extend:                  (part: Path) => string
+    setAddress:              (input: string) => void
 }
 
 function getDefaultAddress() {
-  const metaAddress = document.head.querySelector("[property~=server][address]")?.attributes.getNamedItem("address")?.value
-  const baseAddress = (metaAddress) ? metaAddress : "http://localhost:3001"
-  const metaExtend = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
-  const baseExtend = (metaExtend) ? metaExtend : ""
-  return { base: baseAddress, extend: baseExtend }
+    const metaAddress = document.head.querySelector("[property~=server][address]")?.attributes.getNamedItem("address")?.value
+    const baseAddress = metaAddress ?? "http://localhost:3001"
+    const metaExtend  = document.head.querySelector("[property~=url][extend]")?.attributes.getNamedItem("extend")?.value
+    const baseExtend  = metaExtend ?? ""
+    const proto       = baseAddress.split("://")[0] as Proto
+    return { base: baseAddress, extend: baseExtend, proto }
 }
+
 function websocketAddress(server: string) {
-  let base = server.split("://")
-  if (base[0] === "https") {
-    return "wss://" + base[1]
-  }
-  return "ws://" + base[1]
+    const base = server.split("://")
+    return base[0] === "https" ? "wss://" + base[1] : "ws://" + base[1]
 }
 
-function filterUniqueIds<T extends Device|Alarm>(array: Array<T>):Array<T> {
-  return array.filter((array, index, self) =>
-    index === self.findIndex((t) => (
-      t.id === array.id
-    ))
-  )
+function filterUniqueIds<T extends Device | Alarm>(array: Array<T>): Array<T> {
+    return array.filter((item, index, self) =>
+        index === self.findIndex(t => t.id === item.id)
+    )
 }
 
-function alarmAdd(alarm: Alarm) {
-  let alarms = useAlarms.getState().alarms
-  alarms.push(alarm)
-  //only unique alarms
-  alarms = filterUniqueIds(alarms)
-  useAlarms.setState({ alarms: [...alarms] })
-}
-function alarmDelete(id: string) {
-  let alarms = useAlarms.getState().alarms
-  let filtered = alarms.filter((alarm) => alarm.id !== id)
-  useAlarms.setState({ alarms: [...filtered] })
-}
-
-function alarmEdit(alarm: Alarm) {
-  let alarms = useAlarms.getState().alarms
-  let filtered = alarms.filter((a) => a.id !== alarm.id)
-  filtered.push(alarm)
-  //check if the aram is playing in the background and stop it
-  let playing = useAudio.getState().plays
-  //check URL Path
-  if(urlEnds(Path.PlayAlarm) && playing ){
-    if (useAudio.getState().playingAlarm === alarm.id){
-      useAudio.getState().stop()
-      useLogIn.getState().setNavigateTo(Path.Alarms)
-    }
-  }
-  useAlarms.setState({ alarms: [...filtered] })
-}
-
-
-function deviceAdd(device: Device) {
-  let devices = useDevices.getState().devices
-  devices.push(device)
-  //only unique devices
-  devices = filterUniqueIds(devices)
-  //set as viewable
-  let viewable = useDevices.getState().viewableDevices
-  useDevices.getState().setViewableDevices([...viewable, device.id])
-  useDevices.setState({ devices: [...devices] })
-}
-
-function deviceDelete(id: string) {
-  let devices = useDevices.getState().devices
-  let filtered = devices.filter((device) => device.id !== id)
-  useDevices.setState({ devices: [...filtered] })
-  //remove from viewable
-  let viewable = useDevices.getState().viewableDevices
-  let filteredViewable = viewable.filter((view) => view !== id)
-  useDevices.getState().setViewableDevices([...filteredViewable])
-}
-
-function deviceEdit(device: Device) {
-  let devices = useDevices.getState().devices
-  let filtered = devices.filter((d) => d.id !== device.id)
-  filtered.push(device)
-
-  useDevices.setState({ devices: [...filtered] })
-}
-function userEdit(user: UserInfo) {
-  useLogIn.setState({ user: user })
-}
-
-function wsActionListener(data: any) {
-  //console.log(data)
-  if (typeof data === 'object') {
+function wsActionListener(data: unknown) {
+    if (typeof data !== 'object' || data === null) return
+    if (!('type' in data) || !('data' in data)) return
+    const msg = data as { type: string; data: unknown }
     try {
-      if (data.hasOwnProperty('type') && data.hasOwnProperty('data')) {
-        let dataType = data.type as WsMessage
+        const dataType = msg.type as WsMessage
         switch (dataType) {
-          case WsMessage.AlarmAdd:
-            alarmAdd(data.data as Alarm)
-            break
-          case WsMessage.AlarmDelete:
-            alarmDelete(data.data as string)
-            break
-          case WsMessage.AlarmEdit:
-            alarmEdit(data.data as Alarm)
-            break
-          case WsMessage.DeviceAdd:
-            deviceAdd(data.data as Device)
-            break
-          case WsMessage.DeviceDelete:
-            deviceDelete(data.data as string)
-            break
-          case WsMessage.DeviceEdit:
-            deviceEdit(data.data as Device)
-            break
-          case WsMessage.UserEdit:
-            userEdit(data.data as UserInfo)
-            break
-          case WsMessage.WebColors:
-            const defaultColors = defaultWebColors()
-            const cols = data.data as UserColors
-            useSettings.setState({webColors: {...defaultColors, ...cols}})
-            break
-          default:
-            break
+            case WsMessage.AlarmAdd: {
+                const alarm  = msg.data as Alarm
+                const alarms = filterUniqueIds([...useStore.getState().alarms, alarm])
+                useStore.setState({ alarms: [...alarms] })
+                break
+            }
+            case WsMessage.AlarmDelete: {
+                const id = msg.data as string
+                useStore.setState({ alarms: useStore.getState().alarms.filter(a => a.id !== id) })
+                break
+            }
+            case WsMessage.AlarmEdit: {
+                const alarm   = msg.data as Alarm
+                const alarms  = useStore.getState().alarms.filter(a => a.id !== alarm.id)
+                alarms.push(alarm)
+                if (urlEnds(Path.PlayAlarm) && useStore.getState().plays) {
+                    if (useStore.getState().playingAlarm === alarm.id) {
+                        useStore.getState().stop()
+                        useStore.getState().setNavigateTo(Path.Alarms)
+                    }
+                }
+                useStore.setState({ alarms: [...alarms] })
+                break
+            }
+            case WsMessage.DeviceAdd: {
+                const device  = msg.data as Device
+                const devices = filterUniqueIds([...useStore.getState().devices, device])
+                const viewable = useStore.getState().viewableDevices
+                useStore.getState().setViewableDevices([...viewable, device.id])
+                useStore.setState({ devices: [...devices] })
+                break
+            }
+            case WsMessage.DeviceDelete: {
+                const id      = data.data as string
+                const devices = useStore.getState().devices.filter(d => d.id !== id)
+                useStore.setState({ devices: [...devices] })
+                const viewable = useStore.getState().viewableDevices.filter(v => v !== id)
+                useStore.getState().setViewableDevices([...viewable])
+                break
+            }
+            case WsMessage.DeviceEdit: {
+                const device  = msg.data as Device
+                const devices = useStore.getState().devices.filter(d => d.id !== device.id)
+                devices.push(device)
+                useStore.setState({ devices: [...devices] })
+                break
+            }
+            case WsMessage.UserEdit: {
+                useStore.setState({ user: msg.data as UserInfo })
+                break
+            }
+            case WsMessage.WebColors: {
+                const cols         = msg.data as UserColors
+                const defaultColors = defaultWebColors()
+                useStore.setState({ webColors: { ...defaultColors, ...cols } })
+                break
+            }
+            default:
+                break
         }
-      }
     } catch (e) {
-      useServer.getState().wsActionConnection?.close()
-      useServer.getState().setWsActionConnection(null)
-    } 
-  }
+        useStore.getState().wsActionConnection?.close()
+        useStore.getState().setWsActionConnection(null)
+    }
 }
-
 
 async function registerConnecting() {
-  if(!urlEnds(Path.Register)){
-    useServer.getState().wsActionConnection?.close()
-    return null
-  }
-  await sleep(200)
-  if(!useServer.getState().wsRegisterConnection){
-    let ws  = new WebSocket(useServer.getState().wsRegister)
-    ws.onmessage = (event : MessageEvent) => {
-      try{
-        useServer.getState().setWSRegisterMessage(JSON.parse(event.data))
-      }catch(e){
-        //console.log(e)
-      }    
+    if (!urlEnds(Path.Register)) {
+        useStore.getState().wsActionConnection?.close()
+        return null
     }
-    ws.onclose = (event : CloseEvent) => {
-      useServer.getState().setWsRegisterConnection(null)
-    }
-    return ws
-  }
-  return useServer.getState().wsRegisterConnection
-}
-
-
-async function checkIfConnected() {
-  let conn = useServer.getState().wsActionConnection
-  if (conn) {
-    conn.send("test")
-    await sleep(2000)
-    conn.send("test")
     await sleep(200)
-    if (conn.readyState === 1) {
-      return true
+    if (!useStore.getState().wsRegisterConnection) {
+        const ws = new WebSocket(useStore.getState().wsRegister)
+        ws.onmessage = (event: MessageEvent) => {
+            try { useStore.getState().setWSRegisterMessage(JSON.parse(event.data)) } catch {}
+        }
+        ws.onclose = () => { useStore.getState().setWsRegisterConnection(null) }
+        return ws
     }
-  }
-  return false
+    return useStore.getState().wsRegisterConnection
 }
-async function onOpenRoutine(ws: WebSocket) {
-  if (!checkIfConnected){
-    return
-  }
-  await sleep(1000)
-  //check if ws is still open
-  if (ws.readyState !== 1) {
-    return
-  }
 
-  ws.send(useLogIn.getState().wsPair)
-  useLogIn.getState().updateState()
+async function onOpenRoutine(ws: WebSocket) {
+    if (!checkIfConnected) return
+    await sleep(1000)
+    if (ws.readyState !== 1) return
+    ws.send(useStore.getState().wsPair)
+    useStore.getState().updateState()
 }
 
 function actionConnecting() {
-  if (useLogIn.getState().token.length < 10) {
-    return null
-  }
-  if(useLogIn.getState().sessionValid === SessionStatus.Activate){
-    return null
-  }
-  let wsToken =  useLogIn.getState().getWsToken()
-  if (!wsToken || wsToken.length < 10) {
-    return null
-  }
-  let socketAddress = `${useServer.getState().wsAction}/${wsToken}`
-  let ws = new WebSocket(socketAddress)
-  ws.onopen = (event: Event) => {
-    onOpenRoutine(ws)
-  }
-  ws.onmessage = (event: MessageEvent) => {
-    try {
-      wsActionListener(JSON.parse(event.data))
-    } catch (e) {
-
+    const state = useStore.getState()
+    if (state.token.length < 10) return null
+    if (state.sessionValid === SessionStatus.Activate) return null
+    const wsToken = state.getWsToken()
+    if (!wsToken || wsToken.length < 10) return null
+    const socketAddress = `${state.wsAction}/${wsToken}`
+    const ws = new WebSocket(socketAddress)
+    ws.onopen    = () => { onOpenRoutine(ws) }
+    ws.onmessage = (event: MessageEvent) => {
+        try { wsActionListener(JSON.parse(event.data)) } catch {}
+        try { ws.send(".") } catch {}
     }
-    try {
-      ws.send(".")
-    } catch (e) { }
-  }
-  ws.onerror = (event: Event) => {
-
-  }
-  ws.onclose = (event: CloseEvent) => {
-    ws.removeEventListener("message", wsActionListener)
- 
-  }
-  return ws
+    ws.onerror = () => {}
+    ws.onclose = () => { ws.removeEventListener("message", wsActionListener) }
+    return ws
 }
 
-
-const useServer = create<UseServer>()(
-    persist(
-      (set, get) => (
-          {
-            address: getDefaultAddress().base,
-            wsAddress: websocketAddress(getDefaultAddress().base),
-            wsAction: websocketAddress(getDefaultAddress().base) + '/action',
-            wsRegister: websocketAddress(getDefaultAddress().base) + '/register-check',
-            wsActionConnection: null,
-            wsActionMessage: null,
-            wsRegisterConnection: null,
-            wsRegisterMessage: null,
-            wsRegisterConnect: async () => {
-              let ws = await registerConnecting()
-              set(
-                  {
-                    wsRegisterConnection: ws
-                  }
-                )
-            },
-            wsRegisterDisconnect: () => {
-              get().wsRegisterConnection?.close()
-              set(
-                  {
-                    wsRegisterConnection: null,
-                  }
-                )
-            },
-            setWsRegisterConnection: (ws) => set({wsRegisterConnection: ws}),
-            setWSRegisterMessage: (message) => set({wsRegisterMessage: message}),
-            wsRegisterSendMessage: (message) => { 
-              get().wsRegisterConnection?.send(message)
-            },
-            setWsActionConnection: (ws) => set({wsActionConnection: ws}),
-            setWSActionMessage: (message) => set({wsActionMessage: message}),
-            wsActionConnect: async () => {
-              let wsAction = get().wsActionConnection
-              let continueConnecting = true
-              if (wsAction) {
-                continueConnecting =  [0,1].includes(wsAction.readyState)
-              }else{
-                continueConnecting = false
-              }
-              if (continueConnecting) {
-                return
-              }
-              let ws =  actionConnecting()
-              set(
-                {
-                  wsActionConnection: ws,
-                }
-              )
-            },
-            wsActionDisconnect: () => {
-              get().wsActionConnection?.close()
-              set(
-                {
-                  wsActionConnection: null,
-                }
-              )
-            },
-            setAddress: (s) => set(
-                  { 
-                    address: s,
-                    wsAddress: websocketAddress(s),
-                    wsAction: websocketAddress(s) + '/action',
-                    wsRegister: websocketAddress(s) + '/register-check'
-                  }
-            ),
-            extended: getDefaultAddress().extend,
-            extend: (part) => {
-               return `${get().extended}/${part}`
-            },
-          }
-      ),
-      {
-          name: 'server', 
-          storage: createJSONStorage(() => localStorage), 
-          partialize: (state) => (
-              { 
-                address: state.address,
-                wsAddress: state.wsAddress,
-                wsAction: state.wsAction,
-                wsRegister: state.wsRegister
-              }
-          ),
-      }
-    )
-)
-
-async function actionChecker(){
-  while(true){
-    await sleep(500)
-    let conn = useServer.getState().wsActionConnection
-    if (conn){
-      if (![0,1].includes(conn.readyState)){
-        useServer.getState().wsActionConnect()
-      }
-    } else {
-      useServer.getState().wsActionConnect()
+async function checkIfConnected() {
+    const conn = useStore.getState().wsActionConnection
+    if (conn) {
+        conn.send("test")
+        await sleep(2000)
+        conn.send("test")
+        await sleep(200)
+        if (conn.readyState === 1) return true
     }
-    await sleep(15000)
-  }
+    return false
 }
-actionChecker()
 
+// Daemon — exported so store.ts can call it after create()
+export async function actionChecker() {
+    while (true) {
+        await sleep(15000)
+        const conn = useStore.getState().wsActionConnection
+        if (conn) {
+            if (![0, 1].includes(conn.readyState)) {
+                useStore.getState().wsActionConnect()
+            }
+        } else {
+            useStore.getState().wsActionConnect()
+        }
+    }
+}
 
-export default useServer
+const defaults = getDefaultAddress()
+
+export const createServerSlice: StateCreator<BoundStore, [], [], ServerSlice> = (set, get) => ({
+    address:              defaults.base,
+    wsAddress:            websocketAddress(defaults.base),
+    wsAction:             websocketAddress(defaults.base) + '/action',
+    wsRegister:           websocketAddress(defaults.base) + '/register-check',
+    extended:             defaults.extend,
+    wsActionConnection:   null,
+    wsActionMessage:      null,
+    wsRegisterConnection: null,
+    wsRegisterMessage:    null,
+    proto:                defaults.proto,
+
+    setProto: (s) => set({ proto: s }),
+
+    wsActionDisconnect: () => {
+        get().wsActionConnection?.close()
+        set({ wsActionConnection: null })
+    },
+
+    wsRegisterConnect: async () => {
+        const ws = await registerConnecting()
+        set({ wsRegisterConnection: ws })
+    },
+
+    wsRegisterDisconnect: () => {
+        get().wsRegisterConnection?.close()
+        set({ wsRegisterConnection: null })
+    },
+
+    setWsRegisterConnection: (ws) => set({ wsRegisterConnection: ws }),
+    setWSRegisterMessage:    (message) => set({ wsRegisterMessage: message }),
+    wsRegisterSendMessage:   (message) => get().wsRegisterConnection?.send(message),
+
+    setWsActionConnection: (ws) => set({ wsActionConnection: ws }),
+    setWSActionMessage:    (message) => set({ wsActionMessage: message }),
+
+    wsActionConnect: () => {
+        console.log("Reconnecting")
+        const wsAction = get().wsActionConnection
+        let continueConnecting = true
+        if (wsAction) {
+            continueConnecting = [0, 1].includes(wsAction.readyState)
+        } else {
+            continueConnecting = false
+        }
+        if (continueConnecting) return
+        const ws = actionConnecting()
+        set({ wsActionConnection: ws })
+    },
+
+    setAddress: (s) => set({
+        address:   s,
+        wsAddress: websocketAddress(s),
+        wsAction:  websocketAddress(s) + '/action',
+        wsRegister: websocketAddress(s) + '/register-check',
+        proto:     s.split("://")[0] as Proto,
+    }),
+
+    extend: (part) => `${get().extended}/${part}`,
+})

@@ -1,148 +1,51 @@
-import { create } from 'zustand'
-import { keysAudio, getAudioPath } from './audioDatabase' 
-import { Child, Command } from '@tauri-apps/api/shell'
-import  useSettings  from './settingsStore'
-import { sleep } from '../utils'
+import { StateCreator } from 'zustand'
+import type { BoundStore } from './storeTypes'
+import { hasOrFetchAudio } from './audioDatabase'
+import { invoke } from '@tauri-apps/api/core'
 
-
-type UseAudio = {
-    track: string,
-    tracks: Array<string>,
-    setTrack: (track: string)=>void,
-    play: ()=> void,
-    plays:  boolean,
-    stop: ()=> void,
-    loop: boolean,
-    setLoop: (to:boolean)=>void,
-    loopPlayBegins: number| null,
-    setLoopPlayBegins: (playTime: number| null)=>void,
-    audioProcess: Array<Child> | null
-    playingAlarm: string,
-    setPlayingAlarm: (alarm: string)=>void
+export interface AudioSlice {
+    track: string
+    tracks: string[]
+    plays: boolean
+    loop: boolean
+    loopPlayBegins: number | null
+    playingAlarm: string
+    setTrack: (track: string) => void
+    setLoop: (to: boolean) => void
+    setPlayingAlarm: (alarm: string) => void
+    setLoopPlayBegins: (playTime: number | null) => void
+    play: () => Promise<void>
+    stop: () => void
 }
 
-async function play(track: string, loop: boolean) {
-    let track_path = await (getAudioPath(track) as Promise<string>)
-
-    const command = Command.sidecar('bins/untamo_audio_play',
-        [
-            track_path,
-            `${loop}`,
-            `${useSettings.getState().volume}`
-        ]
-    )
-    command.on('close', data => {
-        //console.log(`command finished with code ${data.code} and signal ${data.signal}`)
-        useAudio.setState({ plays: false })
-        stop()
-    }
-    )
-    command.on('error', error => {
-        //console.error(`command error: "${error}"`)
-        useAudio.setState({ plays: false })
-        stop()
-    }
-    )
-    //command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-    //useAudio.setState({plays: true})
-    let out = await command.spawn()
-    //useAudio.setState({audioProcess: out})
-    return out
-}
-
-async function stop() {
-    let children: Array<Child> = []
-    if (useAudio.getState().plays) {
-        useAudio.getState().audioProcess?.map(c => { c.kill(); children.push(c) })
-        await sleep(30)
-        useAudio.getState().audioProcess?.map(c => { c.kill(); children.push(c) })
-    }
-    return children
-}
-
-async function reloadTracks(track: string) {
-    let tracks = await keysAudio()
-    let newTrack = (tracks).includes(track) ? track : "rooster"
-    useAudio.setState({ tracks: tracks, track: newTrack })
-}
-
-const useAudio = create<UseAudio>((set, get) => (
-    {
-        track: "rooster",
-        tracks: [],
-        setTrack: (track)=> {
-            let newTrack = (get().tracks).includes(track)?track:"rooster"
-            set(
-                { 
-                    track: newTrack 
-                }
-            )
-            if(track !== newTrack || get().tracks.length === 0){
-                reloadTracks(track)
-            }
-        },
-        plays: false,
-        play: async() =>{
-            let plays = get().plays
-            let audioProcess = get().audioProcess
-            let killed : Array<Child> = []
-            if(plays || audioProcess !== null){
-                get().audioProcess?.map(c => {c.kill(); killed.push(c)})
-            }
-            let process = await play(get().track, get().loop)
-            let remaining = audioProcess?.filter(c => !killed.includes(c))
-            set(
-                {
-                    audioProcess: [...(remaining)?remaining:[],process],
-                    plays: true
-                }
-            )
-        },
-        stop: () => {
-            let children = stop()
-            let audioProcess = get().audioProcess
-            let avail = audioProcess?.filter(async c => !(await children).includes(c))
-            set(
-                {
-                    audioProcess: avail?avail:null,
-                    plays: false
-                }
-            )
-        },
-        loop: false,
-        setLoop: (to)=> {
-            set(
-                { 
-                    loop: to 
-                }
-            )
-        },
-        playingAlarm: "",
-        setPlayingAlarm: (alarm: string)=>{
-            set(
-                {
-                    playingAlarm: alarm
-                }
-            )
-        },
-        loopPlayBegins: null,
-        setLoopPlayBegins: (playTime)=> {
-            set(
-                {
-                    loopPlayBegins: playTime
-                }
-            )
-        },
-        audioProcess: null,
-    }
-))
-// const requestAudioPermission = async () => {
-//     try{
-//         let perm = navigator.permissions.query({name:'notifications'})
-//         console.log(perm)
-//     }catch(err:any){
-//         console.log(err)
-//     }
-// }
-// requestAudioPermission()
-export default useAudio
+export const createAudioSlice: StateCreator<BoundStore, [], [], AudioSlice> = (set, get) => ({
+    track: "rooster",
+    tracks: [],
+    plays: false,
+    loop: false,
+    loopPlayBegins: null,
+    playingAlarm: "",
+    setTrack: (track: string) => {
+        const newTrack = get().tracks.includes(track) ? track : "rooster"
+        set({ track: newTrack })
+    },
+    setLoop: (to: boolean) => set({ loop: to }),
+    setPlayingAlarm: (alarm: string) => set({ playingAlarm: alarm }),
+    setLoopPlayBegins: (playTime: number | null) => set({ loopPlayBegins: playTime }),
+    play: async () => {
+        const { track, loop } = get()
+        const vol = get().volume ?? 1.0
+        await hasOrFetchAudio(track)
+        const path = await invoke<string>('get_track_path', { track })
+        if (!path) {
+            console.error('[audio] no file found for track', track)
+            return
+        }
+        await invoke('audio_play', { path, loopAudio: loop, volume: vol })
+    },
+    stop: () => {
+        const { loop } = get()
+        invoke('audio_stop').catch(console.error)
+        if (loop) { set({ loopPlayBegins: null }) }
+    },
+})

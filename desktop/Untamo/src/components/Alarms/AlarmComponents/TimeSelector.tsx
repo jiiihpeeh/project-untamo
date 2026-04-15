@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { Input, FormLabel, Box,Center, Text } from "@chakra-ui/react"
+import React, { useRef, useEffect, useState } from 'preact/compat'
 import useAlarm, { Direction } from "./alarmStates"
 import ClockWindow from './ClockWindow'
 import { usePopups, useSettings } from '../../../stores'
@@ -28,7 +27,6 @@ function TimeSelector() {
     const inputRef = useRef<HTMLInputElement>(null)
     const inputTime = useRef<number>(Date.now())
     const wheelTimes = useRef<Array<number>>([])
-  
 
     function ChangeTimeWheel(message: number, position: number){
         const now = Date.now()
@@ -74,38 +72,41 @@ function TimeSelector() {
         }
     },[time])
     return (
-            <Box 
+            <div 
                 className='timepicker-ui' 
                 ref={tmRef}
-                alignContent="center"
+                style={{ alignContent: "center" }}
                 onMouseDown={e=>e.preventDefault()}
             >
-                <Center>
-                    <FormLabel>
+                <div className='center'>
+                    <label className='form-label'>
                         Time
-                    </FormLabel>
-                    <Input
+                    </label>
+                    <input
                         type='text'
-                        fontSize="50px" 
-                        width="170px" 
-                        height="70px"
-                        borderRadius="md"
-                        borderStyle="solid"
-                        borderWidth="5px"
-                        textShadow='1px 2px gray'
-                        textAlign={"center"}
+                        className='input'
+                        style={{ 
+                            fontSize: "50px", 
+                            width: "170px", 
+                            height: "70px",
+                            borderRadius: "6px",
+                            borderStyle: "solid",
+                            borderWidth: "5px",
+                            textShadow: '1px 2px gray',
+                            textAlign: "center",
+                        }}
                         value={clockTime}
                         ref={inputRef}
                         onWheel={e =>{ChangeTimeWheel(e.deltaY, e.pageX)}}
                         onClick={()=>setShowTimepicker(true)}
                         readOnly
                     />
-                    {!clock24 && <Text as ="b" m={"3px"} textShadow={'1px 1px gray'}>
+                    {!clock24 && <b style={{ margin: "3px", textShadow: '1px 1px gray' }}>
                         {amPm}
-                    </Text>}
+                    </b>}
                     <ClockWindow/>
-                </Center>
-            </Box>
+                </div>
+            </div>
     )
 }
 export default TimeSelector

@@ -1,44 +1,34 @@
-import { createStandaloneToast } from "@chakra-ui/react"
-import { useSettings } from "../stores"
-//import tauri's notification api
-import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/api/notification'
+import { toast } from '../ui/Toast'
+import { useServer, useSettings, useAlarms } from "../stores"
 import { NotificationType } from "../stores/settingsStore"
 
 export enum Status {
-    Success ="success", 
-    Error = "error",
-    Warning = "warning", 
-    Info = "info"
+    Success = "success",
+    Error   = "error",
+    Warning = "warning",
+    Info    = "info"
 }
 
-export async function notification(title: string, description: string, info: Status = Status.Success, duration = 2500, isClosable = true) {
+export function notification(title: string, description: string, info: Status = Status.Success, duration = 2500, isClosable = true) {
     const notificationType = useSettings.getState().notificationType
-    if (notificationType === NotificationType.None) {
-        return
-    }
-    if ([NotificationType.Both, NotificationType.Desktop].includes(notificationType)) {
-        //check if permission is granted
-        if ( await isPermissionGranted() === true) {
-            sendNotification({title: title, body: description})
+    if (notificationType === NotificationType.None) return
+
+    const serverAddress = useServer.getState().address
+    const isSecure = serverAddress.startsWith("https")
+
+    if ([NotificationType.Both, NotificationType.Desktop].includes(notificationType) && isSecure) {
+        if (!window.Notification) {
+            console.log('Browser does not support notifications.')
+        } else if (Notification.permission === 'granted') {
+            new Notification(title, { body: description, icon: useAlarms.getState().logo })
         } else {
-            //if not, request permission
-            let perm = await requestPermission()
-            if (perm !== "granted") {
-                sendNotification({title: title, body: description})
-            }
+            Notification.requestPermission().then(p => {
+                if (p === 'granted') new Notification(title, { body: description, icon: useAlarms.getState().logo })
+            }).catch(console.error)
         }
     }
-    if ([NotificationType.Both, NotificationType.Toast].includes(notificationType)) {
-        const { toast } = createStandaloneToast()
-        const navBarTop = useSettings.getState().navBarTop
-        toast({
-            title: title,
-            description: description,
-            status: info,
-            duration: duration,
-            isClosable: isClosable,
-            position: (navBarTop) ? "bottom" : "top",
-        })
-    }
 
+    if (!isSecure || [NotificationType.Both, NotificationType.Toast].includes(notificationType)) {
+        toast({ type: info as 'success' | 'error' | 'warning' | 'info', title, description })
+    }
 }

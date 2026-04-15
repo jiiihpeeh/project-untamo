@@ -5,8 +5,8 @@ import { dateToArr, arrToDate } from './stringifyDate-Time'
 import { Alarm } from '../../../type'
 
 export const enum Direction {
-    Increase="inc",
-    Decrease="dec"
+    Increase=1,
+    Decrease=2
 }
 function toggleWeekdays(day:number, weekdays:number) {
     const bitmask = 1 << day
@@ -133,7 +133,6 @@ const useAlarm = create<AlarmStates>((set, get) => (
         occurrence: AlarmCases.Once,
         dateFormat: '',
         modified: 0,
-        fingerprint: fingerprint(),
         setOccurrence: (occurrence) => set( 
             {
                 occurrence: occurrence,

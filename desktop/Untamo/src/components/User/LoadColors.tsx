@@ -1,19 +1,20 @@
-//create dropdown menu for color schemes and insert delete button for each
-import React, { useState, useEffect } from 'react'
-import { usePopups, useSettings } from '../../stores'
-import {  Button, IconButton,  Menu, MenuButton, MenuList, MenuItem, Table, Tr, Td, Tbody, Center, Spacer,  } from '@chakra-ui/react'
-import { DeleteIcon, ChevronDownIcon } from '@chakra-ui/icons'
+import React, { useRef, useState, useEffect } from 'preact/compat'
+import { createPortal } from 'preact/compat'
+import { useSettings } from '../../stores'
+import { ChevronDown as ChevronDownIcon, Trash2 as DeleteIcon } from '../../ui/icons'
 
 interface Props {
     setter?: ((value: boolean) => void) | null
     setterValue?: boolean
 }
 
-function LoadColorScheme({ setter , setterValue }: Props) {
+function LoadColorScheme({ setter, setterValue }: Props) {
     const webColors = useSettings((state) => state.webColors)
     const setWebColors = useSettings((state) => state.setWebColors)
     const loadColorScheme = useSettings((state) => state.loadColorScheme)
-
+    const [isOpen, setIsOpen] = useState(false)
+    const btnRef = useRef<HTMLButtonElement>(null)
+    const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({})
 
     function deleteColorScheme(colorSchemeName: string) {
         const newWebColors = { ...webColors }
@@ -21,64 +22,60 @@ function LoadColorScheme({ setter , setterValue }: Props) {
         setWebColors(newWebColors)
     }
 
+    function handleOpen() {
+        if (btnRef.current) {
+            const rect = btnRef.current.getBoundingClientRect()
+            const spaceBelow = window.innerHeight - rect.bottom
+            if (spaceBelow < 150) {
+                setMenuStyle({ position: 'fixed', bottom: window.innerHeight - rect.top, left: rect.left, minWidth: rect.width, zIndex: 9999 })
+            } else {
+                setMenuStyle({ position: 'fixed', top: rect.bottom, left: rect.left, minWidth: rect.width, zIndex: 9999 })
+            }
+        }
+        setIsOpen(prev => !prev)
+    }
+
+    useEffect(() => {
+        if (!isOpen) return
+        function handleClick(e: MouseEvent) {
+            if (btnRef.current && btnRef.current.contains(e.target as Node)) return
+            setIsOpen(false)
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [isOpen])
+
     return (
-        <Center>
-            <Menu matchWidth={true}>
-                <MenuButton 
-                    as={Button} 
-                    colorScheme="blue" 
-                    rightIcon={<ChevronDownIcon/>} 
-                >
-                    Load Theme
-                </MenuButton>
-                <MenuList>
+        <div>
+            <button ref={btnRef} type="button" className="btn btn-primary" onClick={handleOpen}>
+                Load Theme <ChevronDownIcon size={14} className="ml-1" />
+            </button>
+            {isOpen && createPortal(
+                <ul className="menu p-1 shadow bg-base-100 rounded-box w-52" style={menuStyle}>
                     {Object.keys(webColors).map((colorSchemeName) => (
-                        <MenuItem 
-                            w="100%"
-                            key={`col-${colorSchemeName}`}
-                        >
-                            <Table
-                                size={"sm"}
-                                variant="unstyled"
-                                mb={"0px"}
-                                mt={"0px"}
-                            >
-                                <Tbody>
-                                    <Tr>
-                                        <Td
-                                            onClick={() => {
-                                                loadColorScheme(colorSchemeName)
-                                                if(setter && setterValue !== undefined ){
-                                                    setter(setterValue)
-                                                }
-                                            }}
-                                        >
-                                            {colorSchemeName}
-                                        </Td>
-                                        <Td
-                                            alignContent={"right"}
-                                            mr={"0px"}
-                                        >
-                                            <Spacer />
-                                            <Button
-                                                onClick={() => deleteColorScheme(colorSchemeName)}
-                                                colorScheme="red"
-                                                isDisabled={["Light", "Dark"].includes(colorSchemeName)}
-                                                size={"xs"}
-                                                alignContent="right"
-                                                mr={"0px"}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </Td>                                
-                                    </Tr>
-                                </Tbody>
-                            </Table>
-                        </MenuItem>
+                        <li key={`col-${colorSchemeName}`}>
+                            <div className="flex items-center justify-between gap-2 px-2 py-1">
+                                <span className="flex-1 cursor-pointer" onMouseDown={() => {
+                                    loadColorScheme(colorSchemeName)
+                                    if (setter && setterValue !== undefined) setter(setterValue)
+                                    setIsOpen(false)
+                                }}>
+                                    {colorSchemeName}
+                                </span>
+                                <button
+                                    className="btn btn-xs btn-error"
+                                    disabled={["Light", "Dark"].includes(colorSchemeName)}
+                                    onMouseDown={(e) => { e.stopPropagation(); deleteColorScheme(colorSchemeName) }}
+                                >
+                                    <DeleteIcon size={12} />
+                                </button>
+                            </div>
+                        </li>
                     ))}
-                </MenuList>
-            </Menu>
-        </Center>
+                </ul>,
+                document.body
+            )}
+        </div>
     )
 }
 
