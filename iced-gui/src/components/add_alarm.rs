@@ -3,33 +3,45 @@ use crate::state::AddAlarmState;
 use crate::theme::{
     card_container_style, danger_button, primary_button, secondary_button, text_input_style, COLORS,
 };
-use iced::{
-    widget::{button, column, container, row, slider, text, text_input},
-    Element, Length,
-};
+use iced::widget::{button, column, container, row, text, text_input};
+use iced::Element;
+use iced_aw::helpers::{date_picker, time_picker};
 
 pub fn add_alarm_dialog<'a>(state: &'a AddAlarmState) -> Element<'a, Message> {
-    let title = text("Add Alarm").size(24).color(COLORS.text);
+    let is_editing = state.editing_alarm_id.is_some();
+    let title_text = if is_editing {
+        "Edit Alarm"
+    } else {
+        "Add Alarm"
+    };
+    let title = text(title_text).size(24).color(COLORS.text);
+    let submit_text = if is_editing {
+        "Save Changes"
+    } else {
+        "Add Alarm"
+    };
 
     let label_input = text_input("Alarm label", &state.label)
         .on_input(Message::SetAlarmLabel)
         .padding(10)
-        .width(Length::Fixed(250.0))
+        .width(iced::Length::Fixed(250.0))
         .style(text_input_style());
 
     let time_display = text(format!("{:02}:{:02}", state.time_hour, state.time_minute))
         .size(48)
         .color(COLORS.primary);
 
-    let hour_slider = slider(0.0..=23.0, state.time_hour as f32, |v| {
-        Message::SetAlarmHour(v as u8)
-    })
-    .width(Length::Fixed(250.0));
+    let time_btn = button(text("Set Time"))
+        .on_press(Message::OpenTimePicker)
+        .style(primary_button());
 
-    let minute_slider = slider(0.0..=59.0, state.time_minute as f32, |v| {
-        Message::SetAlarmMinute(v as u8)
-    })
-    .width(Length::Fixed(250.0));
+    let time_picker_overlay = time_picker(
+        state.show_time_picker,
+        state.time_picker_value,
+        time_btn,
+        Message::CancelTimePicker,
+        |t| Message::SubmitTimePicker(t),
+    );
 
     let weekdays_label = text("Repeat:").size(14).color(COLORS.text);
 
@@ -71,7 +83,19 @@ pub fn add_alarm_dialog<'a>(state: &'a AddAlarmState) -> Element<'a, Message> {
         .on_press(Message::SetAlarmWeekday(64))
         .style(weekday_btn_style(sun_active));
 
-    let submit_btn = button(text("Add Alarm"))
+    let date_btn = button(text("Set Date"))
+        .on_press(Message::OpenDatePicker)
+        .style(secondary_button());
+
+    let date_picker_overlay = date_picker(
+        state.show_date_picker,
+        state.date_picker_value,
+        date_btn,
+        Message::CancelDatePicker,
+        |d| Message::SubmitDatePicker(d),
+    );
+
+    let submit_btn = button(text(submit_text))
         .on_press(Message::SubmitAddAlarm)
         .style(primary_button());
 
@@ -84,19 +108,13 @@ pub fn add_alarm_dialog<'a>(state: &'a AddAlarmState) -> Element<'a, Message> {
         text("").size(16),
         time_display,
         text("").size(12),
-        hour_slider,
-        text(format!("Hour: {}", state.time_hour))
-            .size(12)
-            .color(COLORS.text_secondary),
-        text("").size(8),
-        minute_slider,
-        text(format!("Minute: {:02}", state.time_minute))
-            .size(12)
-            .color(COLORS.text_secondary),
+        time_picker_overlay,
         text("").size(16),
         weekdays_label,
         text("").size(8),
         row![mon_btn, tue_btn, wed_btn, thu_btn, fri_btn, sat_btn, sun_btn].spacing(6),
+        text("").size(8),
+        date_picker_overlay,
         text("").size(8),
         label_input,
         text("").size(24),

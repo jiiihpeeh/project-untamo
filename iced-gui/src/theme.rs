@@ -192,6 +192,28 @@ pub fn error_container_style(
     })
 }
 
+pub fn pick_list_style() -> Box<
+    dyn Fn(&iced::Theme, iced::widget::pick_list::Status) -> iced::widget::pick_list::Style
+        + 'static,
+> {
+    Box::new(
+        move |_theme: &iced::Theme, status: iced::widget::pick_list::Status| {
+            let is_hovered = matches!(status, iced::widget::pick_list::Status::Hovered);
+            iced::widget::pick_list::Style {
+                background: Background::Color(COLORS.bg_secondary),
+                text_color: COLORS.text,
+                placeholder_color: COLORS.text_secondary,
+                handle_color: COLORS.text_secondary,
+                border: iced::Border {
+                    color: COLORS.border,
+                    width: if is_hovered { 2.0 } else { 1.0 },
+                    radius: radius(),
+                },
+            }
+        },
+    )
+}
+
 pub fn text_input_style() -> Box<
     dyn Fn(&iced::Theme, iced::widget::text_input::Status) -> iced::widget::text_input::Style
         + 'static,

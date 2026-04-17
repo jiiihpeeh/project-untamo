@@ -1,13 +1,17 @@
 use crate::messages::Message;
-use crate::state::{AppPage, LoginState, WelcomeState};
-use crate::theme::{flat_container_style, secondary_button, COLORS};
+use crate::state::{AppPage, Device, DeviceSelect, LoginState, WelcomeState};
+use crate::theme::{flat_container_style, pick_list_style, secondary_button, COLORS};
 use iced::widget::svg::{Handle, Svg};
 use iced::{
-    widget::{button, column, container, radio, row, text},
+    widget::{button, column, container, pick_list, radio, row, text},
     Element, Length,
 };
 
-pub fn welcome_view<'a>(login: &'a LoginState, welcome: &'a WelcomeState) -> Element<'a, Message> {
+pub fn welcome_view<'a>(
+    login: &'a LoginState,
+    welcome: &'a WelcomeState,
+    devices: &'a [Device],
+) -> Element<'a, Message> {
     let screen_name = login
         .user_info
         .as_ref()
@@ -38,7 +42,58 @@ pub fn welcome_view<'a>(login: &'a LoginState, welcome: &'a WelcomeState) -> Ele
     ]
     .spacing(20);
 
-    let content = column![
+    let device_section: Element<'a, Message> = if devices.is_empty() {
+        column![
+            text("Add your first device to get started")
+                .size(14)
+                .color(COLORS.text_secondary),
+            button(text("Add Device"))
+                .on_press(Message::NavigateTo(AppPage::Devices))
+                .style(secondary_button()),
+        ]
+        .spacing(8)
+        .into()
+    } else {
+        let device_options: Vec<DeviceSelect> = devices
+            .iter()
+            .map(|d| DeviceSelect::Device(d.clone()))
+            .collect();
+
+        let selected = match &welcome.selected_device {
+            DeviceSelect::Device(d) => devices
+                .iter()
+                .find(|dev| dev.id == d.id)
+                .map(|dev| DeviceSelect::Device(dev.clone())),
+            DeviceSelect::None => None,
+        };
+
+        let device_dropdown = pick_list(device_options, selected, |selection: DeviceSelect| {
+            Message::SelectWelcomeDevice(selection)
+        })
+        .width(Length::Fixed(200.0))
+        .style(pick_list_style());
+
+        let edit_btn = if let DeviceSelect::Device(ref d) = welcome.selected_device {
+            button(text("Edit Device"))
+                .on_press(Message::EditDevice(d.id.clone()))
+                .style(secondary_button())
+        } else {
+            button(text("Edit Device")).style(secondary_button())
+        };
+
+        column![
+            text("Your Devices").size(14).color(COLORS.text),
+            device_dropdown,
+            edit_btn,
+            button(text("Add Device"))
+                .on_press(Message::NavigateTo(AppPage::Devices))
+                .style(secondary_button()),
+        ]
+        .spacing(8)
+        .into()
+    };
+
+    let content: Element<'a, Message> = column![
         logo,
         text("").size(8),
         greeting,
@@ -46,16 +101,12 @@ pub fn welcome_view<'a>(login: &'a LoginState, welcome: &'a WelcomeState) -> Ele
         time_format_label,
         clock24_option,
         text("").size(16),
-        text("Add your first device to get started")
-            .size(14)
-            .color(COLORS.text_secondary),
-        button(text("Add Device"))
-            .on_press(Message::NavigateTo(AppPage::Alarms))
-            .style(secondary_button()),
+        device_section,
     ]
     .spacing(12)
     .padding(20)
-    .align_x(iced::Alignment::Center);
+    .align_x(iced::Alignment::Center)
+    .into();
 
     container(content)
         .width(Length::Fill)

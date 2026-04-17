@@ -1,11 +1,19 @@
-use crate::state::{AppPage, ColorMode, LoginResponse};
+use crate::state::{
+    Alarm, AppPage, ColorMode, DeviceSelect, DeviceType, LoginResponse, UpdateResponse,
+};
 use crate::websocket::WsMessage;
+use iced::Color;
+use iced_aw::date_picker::Date;
+use iced_aw::time_picker::Time;
 
 #[derive(Clone, Debug)]
 pub enum Message {
     ServerAddressChanged(String),
     CameraError(String),
     FrameTick,
+    FetchUpdate,
+    UpdateReceived(UpdateResponse),
+    UpdateError(String),
     EmailChanged(String),
     PasswordChanged(String),
     Submit,
@@ -43,6 +51,9 @@ pub enum Message {
     SetCardColorInactive(String),
     SetCardColorBackground(String),
     SetDefaultCardColors,
+    OpenColorPicker,
+    SubmitColorPicker(Color),
+    CancelColorPicker,
     WsConnect,
     WsDisconnect,
     WsMessageReceived(Result<WsMessage, String>),
@@ -55,6 +66,12 @@ pub enum Message {
     SetAlarmWeekday(u8),
     SubmitAddAlarm,
     CancelAddAlarm,
+    OpenTimePicker,
+    SubmitTimePicker(Time),
+    CancelTimePicker,
+    OpenDatePicker,
+    SubmitDatePicker(Date),
+    CancelDatePicker,
     TriggerAlarm(String),
     SnoozeAlarm,
     DismissAlarm,
@@ -65,9 +82,16 @@ pub enum Message {
     EditAlarm(String),
     DeleteAlarm(String),
     ToggleAlarmActive(String),
+    AlarmAddResult(Result<Option<Alarm>, String>),
+    AlarmEditResult(Result<Option<Alarm>, String>),
+    AlarmDeleteResult(Result<(), String>),
     AddDevice,
     EditDevice(String),
+    SelectWelcomeDevice(DeviceSelect),
+    SetEditingDeviceName(String),
+    SetEditingDeviceType(DeviceType),
     DeleteDevice(String),
+    CloseDeviceEdit,
     ToggleEditProfile,
     SetEditScreenName(String),
     SetEditFirstName(String),

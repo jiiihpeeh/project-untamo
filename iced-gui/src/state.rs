@@ -1,3 +1,6 @@
+use iced::Color;
+use iced_aw::date_picker::Date;
+use iced_aw::time_picker::{Period, Time};
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, AtomicU64};
 
@@ -6,8 +9,10 @@ pub static LATEST_FRAME: std::sync::Mutex<Option<(u32, u32, Vec<u8>)>> =
 pub static FRAME_VERSION: AtomicU64 = AtomicU64::new(0);
 pub static FRAME_READY: AtomicBool = AtomicBool::new(false);
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserInfo {
+    pub user: String,
     pub email: String,
     pub screen_name: String,
     pub first_name: String,
@@ -15,25 +20,23 @@ pub struct UserInfo {
     pub admin: bool,
     pub owner: bool,
     pub active: bool,
+    pub registered: i64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LoginResponse {
-    #[allow(dead_code)]
-    pub ws_token: String,
-    #[allow(dead_code)]
     pub token: String,
+    pub ws_token: String,
+    pub email: String,
     pub screen_name: String,
     pub first_name: String,
     pub last_name: String,
     pub admin: bool,
-    pub email: String,
-    #[allow(dead_code)]
-    pub time: i64,
     pub owner: bool,
-    #[allow(dead_code)]
-    pub ws_pair: String,
     pub active: bool,
+    pub time: i64,
+    pub ws_pair: String,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -130,14 +133,39 @@ impl Default for RegisterState {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum DeviceSelect {
+    None,
+    Device(Device),
+}
+
+impl Default for DeviceSelect {
+    fn default() -> Self {
+        DeviceSelect::None
+    }
+}
+
+impl std::fmt::Display for DeviceSelect {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DeviceSelect::None => write!(f, ""),
+            DeviceSelect::Device(d) => write!(f, "{}", d.device_name),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct WelcomeState {
     pub clock24: bool,
+    pub selected_device: DeviceSelect,
 }
 
 impl WelcomeState {
     pub fn new() -> Self {
-        WelcomeState { clock24: true }
+        WelcomeState {
+            clock24: true,
+            selected_device: DeviceSelect::None,
+        }
     }
 }
 
@@ -147,29 +175,106 @@ impl Default for WelcomeState {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Alarm {
     pub id: String,
     pub occurrence: String,
     pub time: Vec<u8>,
-    #[allow(dead_code)]
     pub weekdays: u8,
-    #[allow(dead_code)]
-    pub date: Vec<u8>,
+    pub date: Vec<u16>,
     pub label: String,
-    #[allow(dead_code)]
     pub devices: Vec<String>,
-    pub active: bool,
+    pub snooze: Vec<i64>,
     pub tune: String,
-    #[allow(dead_code)]
-    pub message: String,
+    pub active: bool,
+    pub modified: i64,
+    pub fingerprint: String,
+    pub close_task: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Device {
     pub id: String,
     pub device_name: String,
+    #[serde(rename = "type")]
     pub device_type: String,
+}
+
+impl PartialEq for Device {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum DeviceType {
+    Browser,
+    Tablet,
+    Phone,
+    Desktop,
+    IoT,
+    Other,
+}
+
+impl Default for DeviceType {
+    fn default() -> Self {
+        DeviceType::Other
+    }
+}
+
+impl From<&str> for DeviceType {
+    fn from(s: &str) -> Self {
+        match s {
+            "Browser" => DeviceType::Browser,
+            "Tablet" => DeviceType::Tablet,
+            "Phone" => DeviceType::Phone,
+            "Desktop" => DeviceType::Desktop,
+            "IoT" => DeviceType::IoT,
+            _ => DeviceType::Other,
+        }
+    }
+}
+
+impl From<DeviceType> for String {
+    fn from(dt: DeviceType) -> String {
+        match dt {
+            DeviceType::Browser => "Browser".to_string(),
+            DeviceType::Tablet => "Tablet".to_string(),
+            DeviceType::Phone => "Phone".to_string(),
+            DeviceType::Desktop => "Desktop".to_string(),
+            DeviceType::IoT => "IoT".to_string(),
+            DeviceType::Other => "Other".to_string(),
+        }
+    }
+}
+
+impl std::fmt::Display for DeviceType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DeviceType::Browser => write!(f, "Browser"),
+            DeviceType::Tablet => write!(f, "Tablet"),
+            DeviceType::Phone => write!(f, "Phone"),
+            DeviceType::Desktop => write!(f, "Desktop"),
+            DeviceType::IoT => write!(f, "IoT"),
+            DeviceType::Other => write!(f, "Other"),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateResponse {
+    pub user: UserInfo,
+    pub alarms: Vec<Alarm>,
+    pub devices: Vec<Device>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct AuthToken {
+    pub token: String,
+    pub ws_token: String,
 }
 
 #[derive(Clone, Debug)]
@@ -252,6 +357,8 @@ pub struct SettingsState {
     pub dialog_size: u32,
     pub show_settings: bool,
     pub show_colors: bool,
+    pub show_color_picker: bool,
+    pub color_picker_value: Color,
     pub web_colors: WebColors,
     pub card_colors: CardColors,
     pub color_mode: ColorMode,
@@ -267,6 +374,8 @@ impl SettingsState {
             dialog_size: 1,
             show_settings: false,
             show_colors: false,
+            show_color_picker: false,
+            color_picker_value: Color::from_rgb(1.0, 1.0, 0.5),
             web_colors: WebColors::default(),
             card_colors: CardColors::default(),
             color_mode: ColorMode::Odd,
@@ -282,6 +391,7 @@ impl Default for SettingsState {
 
 #[derive(Clone, Debug)]
 pub struct WsState {
+    pub token: String,
     pub ws_token: String,
     pub ws_pair: String,
     pub connected: bool,
@@ -290,6 +400,7 @@ pub struct WsState {
 impl WsState {
     pub fn new() -> Self {
         WsState {
+            token: String::new(),
             ws_token: String::new(),
             ws_pair: String::new(),
             connected: false,
@@ -315,24 +426,69 @@ pub struct Notification {
 pub struct AddAlarmState {
     #[allow(dead_code)]
     pub show: bool,
+    pub editing_alarm_id: Option<String>,
     pub label: String,
     pub time_hour: u8,
     pub time_minute: u8,
     pub weekdays: u8,
     pub occurrence: String,
     pub tune: String,
+    pub show_time_picker: bool,
+    pub time_picker_value: Time,
+    pub show_date_picker: bool,
+    pub date_picker_value: Date,
 }
 
 impl AddAlarmState {
     pub fn new() -> Self {
         AddAlarmState {
             show: false,
+            editing_alarm_id: None,
             label: String::new(),
             time_hour: 8,
             time_minute: 0,
             weekdays: 0,
             occurrence: "Daily".to_string(),
             tune: String::new(),
+            show_time_picker: false,
+            time_picker_value: Time::Hm {
+                hour: 8,
+                minute: 0,
+                period: Period::H24,
+            },
+            show_date_picker: false,
+            date_picker_value: Date::default(),
+        }
+    }
+
+    pub fn from_alarm(alarm: &Alarm) -> Self {
+        let time_hour = if alarm.time.len() >= 2 {
+            alarm.time[0] as u32
+        } else {
+            8
+        };
+        let time_minute = if alarm.time.len() >= 2 {
+            alarm.time[1] as u32
+        } else {
+            0
+        };
+        AddAlarmState {
+            show: true,
+            editing_alarm_id: Some(alarm.id.clone()),
+            label: alarm.label.clone(),
+            time_hour: time_hour as u8,
+            time_minute: time_minute as u8,
+            weekdays: alarm.weekdays,
+            occurrence: alarm.occurrence.clone(),
+            tune: alarm.tune.clone(),
+            show_time_picker: false,
+            time_picker_value: Time::Hm {
+                hour: time_hour,
+                minute: time_minute,
+                period: Period::H24,
+            },
+            show_date_picker: false,
+            date_picker_value: Date::default(),
         }
     }
 }
@@ -423,20 +579,63 @@ pub struct AppState {
     pub turn_off: bool,
     pub notifications: Vec<Notification>,
     pub edit_profile: EditProfileState,
+    pub editing_device: Option<Device>,
+    pub editing_device_name: String,
+    pub editing_device_type: DeviceType,
 }
 
 impl AppState {
     pub fn new() -> Self {
+        let settings = crate::storage::load_settings();
+        let saved_session = crate::storage::load_session();
+
+        let mut login = LoginState::new();
+        let mut ws = WsState::new();
+
+        let session_valid = if let Some(session) = saved_session {
+            login.session_status = SessionStatus::Valid;
+            login.user_info = Some(crate::state::UserInfo {
+                user: String::new(),
+                email: session.email,
+                screen_name: session.screen_name,
+                first_name: session.first_name,
+                last_name: session.last_name,
+                admin: session.admin,
+                owner: session.owner,
+                active: session.active,
+                registered: 0,
+            });
+            ws.token = session.token;
+            ws.ws_token = session.ws_token;
+            ws.ws_pair = session.ws_pair;
+            true
+        } else {
+            false
+        };
+
         AppState {
-            page: AppPage::Login,
-            login: LoginState::new(),
+            page: if session_valid {
+                AppPage::Welcome
+            } else {
+                AppPage::Login
+            },
+            login,
             register: RegisterState::new(),
-            welcome: WelcomeState::new(),
-            settings: SettingsState::new(),
-            ws: WsState::new(),
+            welcome: WelcomeState {
+                clock24: settings.clock24,
+                selected_device: DeviceSelect::None,
+            },
+            settings: SettingsState {
+                clock24: settings.clock24,
+                volume: settings.volume,
+                nav_bar_top: settings.nav_bar_top,
+                panel_size: settings.panel_size,
+                ..SettingsState::new()
+            },
+            ws,
             alarms: Vec::new(),
             devices: Vec::new(),
-            server_address: String::from("http://localhost:8080"),
+            server_address: String::from("http://localhost:3001"),
             show_qr_scanner: false,
             qr_error: None,
             qr_scanning: false,
@@ -451,6 +650,9 @@ impl AppState {
             turn_off: false,
             notifications: Vec::new(),
             edit_profile: EditProfileState::new(),
+            editing_device: None,
+            editing_device_name: String::new(),
+            editing_device_type: DeviceType::default(),
         }
     }
 }

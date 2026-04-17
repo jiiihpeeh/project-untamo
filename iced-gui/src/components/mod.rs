@@ -16,7 +16,7 @@ pub mod welcome;
 pub use add_alarm::add_alarm_dialog;
 pub use alarms::alarms_view;
 pub use colors::colors_dialog;
-pub use devices::devices_view;
+pub use devices::{devices_view, edit_device_dialog};
 pub use edit_profile::edit_profile_dialog;
 pub use login::login_form;
 pub use navbar::navbar;

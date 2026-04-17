@@ -1,12 +1,28 @@
 use crate::messages::Message;
-use crate::state::{AppState, Device};
+use crate::state::{AppState, Device, DeviceType};
 use crate::theme::{
-    card_container_style, flat_container_style, primary_button, secondary_button, COLORS,
+    card_container_style, flat_container_style, pick_list_style, primary_button, secondary_button,
+    text_input_style, COLORS,
 };
 use iced::{
-    widget::{button, container, row, text, Column},
+    widget::{button, container, pick_list, row, text, text_input, Column},
     Element, Length,
 };
+
+#[derive(Clone)]
+pub struct EditDeviceState {
+    pub device_name: String,
+    pub device_type: String,
+}
+
+impl Default for EditDeviceState {
+    fn default() -> Self {
+        Self {
+            device_name: String::new(),
+            device_type: String::new(),
+        }
+    }
+}
 
 fn device_card<'a>(device: &'a Device) -> Element<'a, Message> {
     let device_info = row![
@@ -78,6 +94,66 @@ pub fn devices_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     container(content.align_x(iced::Alignment::Center))
         .width(Length::Fill)
         .height(Length::Fill)
+        .style(flat_container_style())
+        .into()
+}
+
+pub fn edit_device_dialog<'a>(
+    device_id: &str,
+    name: &str,
+    device_type: &DeviceType,
+) -> Element<'a, Message> {
+    let title = text("Edit Device").size(20).color(COLORS.text);
+
+    let name_input = text_input("Device Name", name)
+        .padding(10)
+        .width(Length::Fixed(300.0))
+        .style(text_input_style())
+        .on_input(Message::SetEditingDeviceName);
+
+    let device_types = vec![
+        DeviceType::Browser,
+        DeviceType::Tablet,
+        DeviceType::Phone,
+        DeviceType::Desktop,
+        DeviceType::IoT,
+        DeviceType::Other,
+    ];
+
+    let type_picker = pick_list(
+        device_types,
+        Some(device_type.clone()),
+        Message::SetEditingDeviceType,
+    )
+    .width(Length::Fixed(300.0))
+    .style(pick_list_style());
+
+    let buttons = row![
+        button(text("Save"))
+            .on_press(Message::CloseDeviceEdit)
+            .style(primary_button()),
+        button(text("Cancel"))
+            .on_press(Message::CloseDeviceEdit)
+            .style(secondary_button()),
+    ]
+    .spacing(10);
+
+    let content = Column::with_children([
+        title.into(),
+        text("").size(8).into(),
+        text("Name").size(12).color(COLORS.text_secondary).into(),
+        name_input.into(),
+        text("").size(4).into(),
+        text("Type").size(12).color(COLORS.text_secondary).into(),
+        type_picker.into(),
+        text("").size(16).into(),
+        buttons.into(),
+    ])
+    .spacing(10)
+    .padding(20);
+
+    container(content)
+        .width(Length::Fixed(350.0))
         .style(flat_container_style())
         .into()
 }

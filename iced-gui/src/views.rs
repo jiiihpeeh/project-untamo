@@ -1,7 +1,7 @@
 use crate::components::{
-    add_alarm_dialog, alarms_view, colors_dialog, devices_view, edit_profile_dialog, login_form,
-    navbar, notifications_view, play_alarm_view, qr_scanner, register_form, settings_dialog,
-    user_menu_view, welcome_view,
+    add_alarm_dialog, alarms_view, colors_dialog, devices_view, edit_device_dialog,
+    edit_profile_dialog, login_form, navbar, notifications_view, play_alarm_view, qr_scanner,
+    register_form, settings_dialog, user_menu_view, welcome_view,
 };
 use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
@@ -50,9 +50,13 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
     let nav = navbar(&page, logged_in);
 
     let main_content: Element<Message> = match page {
-        AppPage::Login => login_form(&state.login, &state.server_address).into(),
-        AppPage::Register => register_form(&state.register).into(),
-        AppPage::Welcome => welcome_view(&state.login, &state.welcome).into(),
+        AppPage::Login => container(login_form(&state.login, &state.server_address))
+            .center_x(Length::Fill)
+            .into(),
+        AppPage::Register => container(register_form(&state.register))
+            .center_x(Length::Fill)
+            .into(),
+        AppPage::Welcome => welcome_view(&state.login, &state.welcome, &state.devices).into(),
         AppPage::Alarms => alarms_view(state).into(),
         AppPage::Devices => devices_view(state).into(),
         AppPage::User => user_menu_view(state).into(),
@@ -75,6 +79,21 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
 
     if state.edit_profile.show {
         column_content.push(edit_profile_dialog(&state.edit_profile).into());
+    }
+
+    if state.editing_device.is_some() {
+        column_content.push(
+            edit_device_dialog(
+                &state
+                    .editing_device
+                    .as_ref()
+                    .map(|d| d.id.clone())
+                    .unwrap_or_default(),
+                &state.editing_device_name,
+                &state.editing_device_type,
+            )
+            .into(),
+        );
     }
 
     if !state.notifications.is_empty() {

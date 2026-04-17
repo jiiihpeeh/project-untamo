@@ -9,75 +9,135 @@ enum AudioCommand {
     Play(String, f32, bool),
     Stop,
     SetVolume(f32),
+    CheckFinished,
 }
 
-#[allow(dead_code)]
-fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
-    let (_stream, stream_handle) = match OutputStream::try_default() {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("[audio] Failed to open audio output: {}", e);
-            return;
-        }
-    };
+struct AudioState {
+    stream: Option<OutputStream>,
+    stream_handle: Option<rodio::OutputStreamHandle>,
+    sink: Option<Sink>,
+    looping: bool,
+}
 
-    let mut sink: Option<Sink> = None;
+impl AudioState {
+    fn new() -> Self {
+        Self {
+            stream: None,
+            stream_handle: None,
+            sink: None,
+            looping: false,
+        }
+    }
+
+    fn ensure_output(&mut self) -> bool {
+        if self.stream.is_none() {
+            match OutputStream::try_default() {
+                Ok((stream, handle)) => {
+                    self.stream = Some(stream);
+                    self.stream_handle = Some(handle);
+                    true
+                }
+                Err(e) => {
+                    eprintln!("[audio] Failed to open audio output: {}", e);
+                    false
+                }
+            }
+        } else {
+            true
+        }
+    }
+}
+
+fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
+    let mut state = AudioState::new();
 
     loop {
-        match rx.recv() {
+        match rx.recv_timeout(Duration::from_millis(100)) {
             Ok(AudioCommand::Play(path, volume, repeat)) => {
-                if let Some(ref s) = sink {
+                if !state.ensure_output() {
+                    continue;
+                }
+
+                if let Some(ref s) = state.sink {
                     s.stop();
                 }
-                sink = None;
+                state.sink = None;
 
-                if let Ok(file) = File::open(&path) {
-                    if let Ok(source) = Decoder::new(BufReader::new(file)) {
-                        match Sink::try_new(&stream_handle) {
-                            Ok(new_sink) => {
-                                if repeat {
-                                    new_sink.append(source.repeat_infinite());
-                                } else {
-                                    new_sink.append(source);
+                if let Some(ref handle) = state.stream_handle {
+                    if let Ok(file) = File::open(&path) {
+                        if let Ok(source) = Decoder::new(BufReader::new(file)) {
+                            match Sink::try_new(handle) {
+                                Ok(new_sink) => {
+                                    if repeat {
+                                        new_sink.append(source.repeat_infinite());
+                                    } else {
+                                        new_sink.append(source);
+                                    }
+
+                                    new_sink.set_volume(0.0);
+                                    new_sink.play();
+
+                                    let target_volume = volume;
+                                    let steps = 20;
+                                    let step_duration = 50;
+
+                                    for i in 1..=steps {
+                                        thread::sleep(Duration::from_millis(step_duration));
+                                        let vol = (target_volume * i as f32) / steps as f32;
+                                        new_sink.set_volume(vol);
+                                    }
+                                    new_sink.set_volume(target_volume);
+
+                                    state.sink = Some(new_sink);
+                                    state.looping = repeat;
                                 }
-
-                                new_sink.set_volume(0.0);
-                                new_sink.play();
-
-                                let target_volume = volume;
-                                let steps = 20;
-                                let step_duration = 50;
-
-                                for i in 1..=steps {
-                                    thread::sleep(Duration::from_millis(step_duration));
-                                    let vol = (target_volume * i as f32) / steps as f32;
-                                    new_sink.set_volume(vol);
+                                Err(e) => {
+                                    eprintln!("[audio] Failed to create sink: {}", e);
                                 }
-                                new_sink.set_volume(target_volume);
-
-                                sink = Some(new_sink);
                             }
-                            Err(e) => {
-                                eprintln!("[audio] Failed to create sink: {}", e);
-                            }
+                        } else {
+                            eprintln!("[audio] Failed to decode: {}", path);
                         }
                     } else {
-                        eprintln!("[audio] Failed to decode: {}", path);
+                        eprintln!("[audio] Failed to open file: {}", path);
                     }
-                } else {
-                    eprintln!("[audio] Failed to open file: {}", path);
+                }
+            }
+            Ok(AudioCommand::CheckFinished) => {
+                if let Some(ref s) = state.sink {
+                    if s.empty() && !s.is_paused() {
+                        drop(state.sink.take());
+                        drop(state.stream.take());
+                        drop(state.stream_handle.take());
+                    }
                 }
             }
             Ok(AudioCommand::Stop) => {
-                if let Some(ref s) = sink {
+                if let Some(ref s) = state.sink {
                     s.stop();
                 }
-                sink = None;
+                state.sink = None;
+                state.looping = false;
+                drop(state.stream.take());
+                drop(state.stream_handle.take());
             }
             Ok(AudioCommand::SetVolume(volume)) => {
-                if let Some(ref s) = sink {
+                if let Some(ref s) = state.sink {
                     s.set_volume(volume);
                 }
+            }
+            Ok(AudioCommand::CheckFinished) | Err(mpsc::RecvTimeoutError::Timeout) => {
+                if let Some(ref s) = state.sink {
+                    if s.empty() && !s.is_paused() && !state.looping {
+                        drop(state.sink.take());
+                        drop(state.stream.take());
+                        drop(state.stream_handle.take());
+                        state.looping = false;
+                    }
+                }
+            }
+            Err(mpsc::RecvTimeoutError::Disconnected) => {
+                break;
             }
             Err(_) => {
                 break;
@@ -121,5 +181,12 @@ pub fn set_audio_volume(volume: f32) {
     let tx = AUDIO_TX.lock().unwrap();
     if let Some(ref sender) = *tx {
         let _ = sender.send(AudioCommand::SetVolume(volume));
+    }
+}
+
+pub fn check_audio_finished() {
+    let tx = AUDIO_TX.lock().unwrap();
+    if let Some(ref sender) = *tx {
+        let _ = sender.send(AudioCommand::CheckFinished);
     }
 }

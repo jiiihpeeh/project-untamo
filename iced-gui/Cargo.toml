@@ -10,6 +10,7 @@ path = "src/main.rs"
 [dependencies]
 iced = { version = "0.14", features = ["image", "svg", "tokio"] }
 iced_widget = { version = "0.14", features = ["svg"] }
+iced_aw = { version = "0.13", features = ["color_picker", "date_picker", "time_picker", "selection_list", "menu"] }
 reqwest = { version = "0.13", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
@@ -24,4 +25,10 @@ async-stream = "0.3"
 crossbeam-channel = "0.5"
 url = "2"
 rodio = { version = "0.17", features = ["symphonia-all"] }
+machineid-rs = "1.2.4"
+dirs = "5"
+aes = "0.8"
+cbc = "0.1"
+getrandom = "0.2"
+base64 = "0.21"
 

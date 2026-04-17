@@ -98,7 +98,17 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
     }
     
     match message {
-        Message::FrameTick => Task::none(),
+        Message::FrameTick => {
+            if let Ok(mut guard) = crate::websocket::WS_MSG_QUEUE.lock() {
+                let messages: Vec<_> = guard.drain(..).collect();
+                for result in messages {
+                    if let Ok(msg) = result {
+                        handle_ws_message(state, msg);
+                    }
+                }
+            }
+            Task::none()
+        }
         Message::ServerAddressChanged(address) => {
             state.server_address = address;
             Task::none()
@@ -151,6 +161,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 Ok(resp) => {
                     state.login.session_status = SessionStatus::Valid;
                     state.login.user_info = Some(UserInfo {
+                        user: String::new(),
                         email: resp.email,
                         screen_name: resp.screen_name,
                         first_name: resp.first_name,
@@ -158,6 +169,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                         admin: resp.admin,
                         owner: resp.owner,
                         active: resp.active,
+                        registered: 0,
                     });
                     state.page = AppPage::Welcome;
                 }
@@ -220,6 +232,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 Ok(resp) => {
                     state.login.session_status = SessionStatus::Valid;
                     state.login.user_info = Some(UserInfo {
+                        user: String::new(),
                         email: resp.email,
                         screen_name: resp.screen_name,
                         first_name: resp.first_name,
@@ -227,6 +240,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                         admin: resp.admin,
                         owner: resp.owner,
                         active: resp.active,
+                        registered: 0,
                     });
                     state.page = AppPage::Welcome;
                 }
@@ -438,12 +452,14 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             let ws_token = state.ws.ws_token.clone();
             let ws_pair = state.ws.ws_pair.clone();
             let (tx, _rx) = mpsc::channel(100);
+            let (send_tx, send_rx) = mpsc::channel::<String>(100);
+            let _ = crate::websocket::WS_SEND_TX.set(send_tx);
             
             tokio::spawn(async move {
-                websocket::ws_connect(&server, &ws_token, &ws_pair, tx).await;
+                websocket::ws_connect(&server, &ws_token, &ws_pair, tx, send_rx).await;
             });
             
-            Task::none()
+            iced::Task::perform(async { Message::FetchUpdate }, |m| m)
         }
         Message::WsDisconnect => {
             websocket::disconnect();
@@ -526,23 +542,101 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::SubmitAddAlarm => {
-            let new_alarm = Alarm {
-                id: uuid_simple(),
-                occurrence: state.add_alarm.occurrence.clone(),
-                time: vec![state.add_alarm.time_hour, state.add_alarm.time_minute],
-                weekdays: state.add_alarm.weekdays,
-                date: vec![],
-                label: state.add_alarm.label.clone(),
-                devices: vec![],
-                active: true,
-                tune: state.add_alarm.tune.clone(),
-                message: String::new(),
+            let is_edit = state.add_alarm.editing_alarm_id.is_some();
+            let new_alarm = if let Some(ref edit_id) = state.add_alarm.editing_alarm_id {
+                if let Some(existing) = state.alarms.iter().find(|a| a.id == *edit_id) {
+                    let mut updated = existing.clone();
+                    updated.time = vec![state.add_alarm.time_hour, state.add_alarm.time_minute];
+                    updated.weekdays = state.add_alarm.weekdays;
+                    updated.label = state.add_alarm.label.clone();
+                    updated.tune = state.add_alarm.tune.clone();
+                    updated
+                } else {
+                    Alarm {
+                        id: edit_id.clone(),
+                        occurrence: state.add_alarm.occurrence.clone(),
+                        time: vec![state.add_alarm.time_hour, state.add_alarm.time_minute],
+                        weekdays: state.add_alarm.weekdays,
+                        date: vec![],
+                        label: state.add_alarm.label.clone(),
+                        devices: vec![],
+                        snooze: vec![],
+                        tune: state.add_alarm.tune.clone(),
+                        active: true,
+                        modified: 0,
+                        fingerprint: String::new(),
+                        close_task: false,
+                    }
+                }
+            } else {
+                Alarm {
+                    id: uuid_simple(),
+                    occurrence: state.add_alarm.occurrence.clone(),
+                    time: vec![state.add_alarm.time_hour, state.add_alarm.time_minute],
+                    weekdays: state.add_alarm.weekdays,
+                    date: vec![],
+                    label: state.add_alarm.label.clone(),
+                    devices: vec![],
+                    snooze: vec![],
+                    tune: state.add_alarm.tune.clone(),
+                    active: true,
+                    modified: 0,
+                    fingerprint: String::new(),
+                    close_task: false,
+                }
             };
-            state.alarms.push(new_alarm);
+
             state.show_add_alarm = false;
             state.add_alarm = crate::state::AddAlarmState::new();
-            add_notification(state, "Alarm", "Alarm added".to_string());
-            Task::none()
+
+            if is_edit {
+                if let Some(existing) = state.alarms.iter_mut().find(|a| a.id == new_alarm.id) {
+                    *existing = new_alarm.clone();
+                }
+                add_notification(state, "Alarm", "Alarm updated".to_string());
+            } else {
+                state.alarms.push(new_alarm.clone());
+                add_notification(state, "Alarm", "Alarm added".to_string());
+            }
+
+            let msg_type = if is_edit { "alarmEdit" } else { "alarmAdd" };
+            let ws_msg = websocket::alarm_to_json(&new_alarm, msg_type);
+
+            if websocket::ws_send(&ws_msg) {
+                Task::none()
+            } else {
+                let server = state.server_address.clone();
+                let token = state.ws.token.clone();
+                let alarm_id = new_alarm.id.clone();
+                let body_alarm = new_alarm;
+                iced::Task::perform(
+                    async move {
+                        let client = reqwest::Client::new();
+                        let url = if is_edit {
+                            format!("{}/api/alarm/{}", server, alarm_id)
+                        } else {
+                            format!("{}/api/alarm", server)
+                        };
+                        let req = if is_edit {
+                            client.put(&url).header("token", &token).json(&body_alarm)
+                        } else {
+                            client.post(&url).header("token", &token).json(&body_alarm)
+                        };
+                        match req.send().await {
+                            Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                            Ok(resp) => {
+                                eprintln!("Alarm save failed: HTTP {}", resp.status());
+                                Message::AlarmAddResult(Err(format!("HTTP {}", resp.status())))
+                            }
+                            Err(e) => {
+                                eprintln!("Alarm save failed: {}", e);
+                                Message::AlarmAddResult(Err(e.to_string()))
+                            }
+                        }
+                    },
+                    |m| m,
+                )
+            }
         }
         Message::CancelAddAlarm => {
             state.show_add_alarm = false;
@@ -600,21 +694,75 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::EditAlarm(id) => {
-            add_notification(state, "Edit Alarm", format!("Editing alarm {}", id));
+            if let Some(alarm) = state.alarms.iter().find(|a| a.id == id) {
+                state.add_alarm = crate::state::AddAlarmState::from_alarm(alarm);
+                state.show_add_alarm = true;
+            }
             Task::none()
         }
         Message::DeleteAlarm(id) => {
-            if let Some(pos) = state.alarms.iter().position(|a| a.id == id) {
-                state.alarms.remove(pos);
-                add_notification(state, "Alarm Deleted", "Alarm removed successfully".to_string());
+            let delete_msg = serde_json::json!({
+                "type": "alarmDelete",
+                "data": id
+            }).to_string();
+
+            state.alarms.retain(|a| a.id != id);
+            add_notification(state, "Alarm Deleted", "Alarm removed successfully".to_string());
+
+            if websocket::ws_send(&delete_msg) {
+                Task::none()
+            } else {
+                let server = state.server_address.clone();
+                let token = state.ws.token.clone();
+                iced::Task::perform(
+                    async move {
+                        let client = reqwest::Client::new();
+                        match client
+                            .delete(format!("{}/api/alarm/{}", server, id))
+                            .header("token", token)
+                            .send()
+                            .await
+                        {
+                            Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                            Ok(resp) => Message::AlarmDeleteResult(Err(format!("HTTP {}", resp.status()))),
+                            Err(e) => Message::AlarmDeleteResult(Err(e.to_string())),
+                        }
+                    },
+                    |m| m,
+                )
             }
-            Task::none()
         }
         Message::ToggleAlarmActive(id) => {
             if let Some(alarm) = state.alarms.iter_mut().find(|a| a.id == id) {
                 alarm.active = !alarm.active;
+                let updated = alarm.clone();
+                let ws_msg = websocket::alarm_to_json(&updated, "alarmEdit");
+                if websocket::ws_send(&ws_msg) {
+                    Task::none()
+                } else {
+                    let server = state.server_address.clone();
+                    let token = state.ws.token.clone();
+                    iced::Task::perform(
+                        async move {
+                            let client = reqwest::Client::new();
+                            match client
+                                .put(format!("{}/api/alarm/{}", server, updated.id))
+                                .header("token", token)
+                                .json(&updated)
+                                .send()
+                                .await
+                            {
+                                Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                                Ok(resp) => Message::AlarmEditResult(Err(format!("HTTP {}", resp.status()))),
+                                Err(e) => Message::AlarmEditResult(Err(e.to_string())),
+                            }
+                        },
+                        |m| m,
+                    )
+                }
+            } else {
+                Task::none()
             }
-            Task::none()
         }
         Message::AddDevice => {
             add_notification(state, "Add Device", "Device pairing not yet implemented".to_string());
@@ -699,6 +847,28 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.edit_profile.show = false;
             Task::none()
         }
+        Message::AlarmAddResult(Ok(_)) => {
+            Task::none()
+        }
+        Message::AlarmAddResult(Err(e)) => {
+            add_notification(state, "Alarm Error", format!("Failed to add alarm: {}", e));
+            Task::none()
+        }
+        Message::AlarmEditResult(Ok(_)) => {
+            Task::none()
+        }
+        Message::AlarmEditResult(Err(e)) => {
+            add_notification(state, "Alarm Error", format!("Failed to update alarm: {}", e));
+            Task::none()
+        }
+        Message::AlarmDeleteResult(Ok(())) => {
+            Task::none()
+        }
+        Message::AlarmDeleteResult(Err(e)) => {
+            add_notification(state, "Alarm Error", format!("Failed to delete alarm: {}", e));
+            Task::none()
+        }
+        _ => Task::none()
     }
 }
 
@@ -781,12 +951,15 @@ fn parse_alarm(value: &serde_json::Value) -> Option<Alarm> {
         occurrence: value.get("occurrence")?.as_str()?.to_string(),
         time: value.get("time")?.as_array()?.iter().filter_map(|v| v.as_u64()).map(|n| n as u8).collect(),
         weekdays: value.get("weekdays")?.as_u64()? as u8,
-        date: value.get("date")?.as_array()?.iter().filter_map(|v| v.as_u64()).map(|n| n as u8).collect(),
+        date: value.get("date")?.as_array()?.iter().filter_map(|v| v.as_u64()).map(|n| n as u16).collect(),
         label: value.get("label")?.as_str()?.to_string(),
         devices: value.get("devices")?.as_array()?.iter().filter_map(|v| v.as_str()).map(|s| s.to_string()).collect(),
+        snooze: value.get("snooze")?.as_array()?.iter().filter_map(|v| v.as_i64()).collect(),
         active: value.get("active")?.as_bool()?,
         tune: value.get("tune")?.as_str()?.to_string(),
-        message: value.get("message")?.as_str()?.to_string(),
+        modified: value.get("modified")?.as_i64().unwrap_or(0),
+        fingerprint: value.get("fingerprint")?.as_str()?.to_string(),
+        close_task: value.get("closeTask")?.as_bool().unwrap_or(false),
     })
 }
 
@@ -800,6 +973,7 @@ fn parse_device(value: &serde_json::Value) -> Option<Device> {
 
 fn parse_user_info(value: &serde_json::Value) -> Option<UserInfo> {
     Some(UserInfo {
+        user: value.get("user")?.as_str()?.to_string(),
         email: value.get("email")?.as_str()?.to_string(),
         screen_name: value.get("screenName").or_else(|| value.get("screen_name"))?.as_str()?.to_string(),
         first_name: value.get("firstName").or_else(|| value.get("first_name"))?.as_str()?.to_string(),
@@ -807,6 +981,7 @@ fn parse_user_info(value: &serde_json::Value) -> Option<UserInfo> {
         admin: value.get("admin")?.as_bool()?,
         owner: value.get("owner")?.as_bool()?,
         active: value.get("active")?.as_bool()?,
+        registered: value.get("registered")?.as_i64().unwrap_or(0),
     })
 }
 
