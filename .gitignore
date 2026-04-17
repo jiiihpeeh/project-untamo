@@ -1,2 +1,47 @@
 node_modules/
 build-project/
+
+# Rust
+/target/
+**/target/
+Cargo.lock
+**/Cargo.lock
+**/*.rs.bk
+*.pdb
+*.rlib
+*.rmeta
+*.so
+*.d
+!.cargo/
+!.rustfmt.toml
+!.clippy.toml
+!.github/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.vscode/
+.vs/
+*.code-workspace
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.app
+*.ipa
+*.apk
+*.aab

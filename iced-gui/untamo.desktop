@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Untamo
+Comment=Alarm Clock Application
+Exec=untamo
+Icon=untamo
+Terminal=false
+Type=Application
+Categories=Utility;
