@@ -13,8 +13,10 @@ use iced_widget::rule;
 pub const POP_WIDTH: f32 = 264.0;
 pub const TAIL_H: f32 = 11.0;
 const TAIL_W: f32 = 20.0;
-// Rough x-center of the "Alarms" button within the popup canvas (left-biased).
-const TAIL_X: f32 = POP_WIDTH * 0.32;
+// Tail tip x-position inside the popup canvas.
+// The popup is right-anchored below/above the navbar's Alarms button, so the tail
+// sits near the right edge of the card (the card extends leftward from the button).
+pub const TAIL_X: f32 = POP_WIDTH - 60.0; // 60 px from the right edge
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

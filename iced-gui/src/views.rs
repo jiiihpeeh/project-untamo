@@ -3,7 +3,7 @@ use crate::components::{
     devices_view, edit_device_dialog, edit_profile_dialog, login_form, navbar, notifications_view,
     play_alarm_view, qr_scanner, register_form, settings_dialog, user_menu_view, welcome_view,
 };
-use crate::components::alarm_pop::{POP_WIDTH, TAIL_H};
+use crate::components::alarm_pop::{POP_WIDTH, TAIL_H, TAIL_X};
 use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
 use iced::{
@@ -170,38 +170,54 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
 
     // Alarm pop-bubble — anchored just below/above the navbar near the Alarms button
     if state.show_alarm_pop && state.page == AppPage::Alarms {
-        // Approximate left offset so the bubble tail lines up with the Alarms nav link.
-        // TAIL_X inside the popup is ~32% of POP_WIDTH, so we shift the popup left by that
-        // amount from the estimated Alarms-button center (≈ panel_size * 2.5).
         let ps = state.settings.panel_size as f32;
-        let approx_alarms_cx = ps * 2.5;
-        let left = (approx_alarms_cx - POP_WIDTH * 0.32).max(4.0);
+        let nav_font = (ps * 0.25).round();
 
-        // Overlap the tail tip into the navbar by (TAIL_H - 4) px so the bubble
-        // is visually connected to the Alarms button.
+        // Compute the Alarms button center distance from the RIGHT screen edge,
+        // using the exact same layout constants as navbar.rs:
+        //   nav_row right padding  : ps * 0.21
+        //   avatar button width    : nav_font * 1.9
+        //   item spacing           : ps * 0.07  (×2, between avatar/Devices and Devices/Alarms)
+        //   "Devices" button width : pad_h + text.  pad_h = nav_font * 0.9;
+        //                            text ≈ 7 chars × 0.55 em = 3.85 × nav_font → ~1.1 × ps
+        //   "Alarms" button center : half of (pad_h + text ≈ 6 × 0.55 em = 3.3 × nav_font) → ~0.5 × ps
+        let item_spacing = (ps * 0.07).round();
+        let avatar_w = (nav_font * 1.9).round();
+        let nav_pad_right = (ps * 0.21).round();
+        let devices_w = (nav_font * 0.9).round() + (nav_font * 3.85).round(); // pad_h + text
+        let alarms_half_w = ((nav_font * 0.9).round() + (nav_font * 3.3).round()) / 2.0;
+        let alarms_cx_from_right =
+            nav_pad_right + avatar_w + item_spacing + devices_w + item_spacing + alarms_half_w;
+
+        // The tail tip is (POP_WIDTH − TAIL_X) px from the popup's right edge.
+        // Right-align the popup so the tail tip lands on the Alarms button center.
+        let tail_from_right = POP_WIDTH - TAIL_X;
+        let right = (alarms_cx_from_right - tail_from_right).max(4.0);
+
+        // Overlap the tail tip into the navbar so the bubble looks connected to the button.
         let tail_overlap = ps - TAIL_H + 4.0;
 
         let pop_layer: Element<Message> = if state.settings.nav_bar_top {
             // Navbar at top → tail tip overlaps up into navbar, card hangs below
             container(alarm_pop_view(state, true))
-                .align_left(Length::Fill)
+                .align_right(Length::Fill)
                 .align_top(Length::Fill)
                 .padding(iced::Padding {
                     top: tail_overlap,
-                    left,
-                    right: 0.0,
+                    left: 0.0,
+                    right,
                     bottom: 0.0,
                 })
                 .into()
         } else {
             // Navbar at bottom → card above navbar, tail tip overlaps down into navbar
             container(alarm_pop_view(state, false))
-                .align_left(Length::Fill)
+                .align_right(Length::Fill)
                 .align_bottom(Length::Fill)
                 .padding(iced::Padding {
                     top: 0.0,
-                    left,
-                    right: 0.0,
+                    left: 0.0,
+                    right,
                     bottom: tail_overlap,
                 })
                 .into()
