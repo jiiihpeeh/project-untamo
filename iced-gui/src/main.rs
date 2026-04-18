@@ -17,6 +17,9 @@ use update::update_app;
 use views::view;
 
 pub fn main() -> iced::Result {
+    #[cfg(target_os = "linux")]
+    gtk::init().expect("Failed to initialize GTK");
+
     audio::start_audio_thread();
     tray::init_tray();
 
@@ -30,7 +33,7 @@ pub fn main() -> iced::Result {
 
     iced::application(
         move || {
-            let fetch_window_id = iced::window::get_oldest().map(Message::WindowIdReceived);
+            let fetch_window_id = iced::window::oldest().map(Message::WindowIdReceived);
             if let Some(session) = saved_session.clone() {
                 let mut app_state = AppState::default();
                 app_state.ws.token.clone_from(&session.token);
@@ -56,6 +59,7 @@ pub fn main() -> iced::Result {
         Subscription::batch([
             frame_tick_subscription(),
             window::close_requests().map(Message::CloseRequested),
+            tray::subscription(),
         ])
     })
     .window(window::Settings {

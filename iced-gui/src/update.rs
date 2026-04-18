@@ -1,6 +1,6 @@
 use crate::audio;
 use crate::messages::Message;
-use crate::state::{Alarm, AppState, AppPage, CardColors, Device, LoginRequest, LoginResponse, QrLoginRequest, SessionStatus, LATEST_FRAME, FRAME_VERSION, FRAME_READY, UserInfo, WebColors};
+use crate::state::{Alarm, AppState, AppPage, CardColors, Device, LoginRequest, LoginResponse, PendingDelete, QrLoginRequest, SessionStatus, LATEST_FRAME, FRAME_VERSION, FRAME_READY, UserInfo, WebColors};
 use crate::websocket::{self, WsMessage as WsMsg};
 use iced::Task;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -131,20 +131,10 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.notifications.retain(|n| {
                 now.duration_since(n.timestamp).as_millis() < 4000
             });
-            // Poll system tray events
-            if let Some(action) = crate::tray::poll_events() {
-                return match action {
-                    crate::tray::TrayAction::ShowWindow => {
-                        if let Some(id) = state.window_id {
-                            iced::window::set_mode(id, iced::window::Mode::Windowed)
-                        } else {
-                            Task::none()
-                        }
-                    }
-                    crate::tray::TrayAction::Quit => {
-                        std::process::exit(0);
-                    }
-                };
+            // Reset preview button when track finishes naturally
+            if state.add_alarm.preview_started && !crate::audio::is_audio_playing() {
+                state.add_alarm.previewing_tune = None;
+                state.add_alarm.preview_started = false;
             }
             Task::none()
         }
@@ -210,6 +200,18 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.login.user_info = Some(response.user);
             state.alarms = response.alarms;
             state.devices = response.devices;
+
+            // If we have a saved device selection and the device still exists,
+            // skip the welcome screen and go straight to Alarms.
+            if state.page == AppPage::Welcome {
+                if let Some(ref saved_id) = state.saved_device_id.clone() {
+                    if let Some(device) = state.devices.iter().find(|d| &d.id == saved_id) {
+                        state.welcome.selected_device = crate::state::DeviceSelect::Device(device.clone());
+                        state.page = AppPage::Alarms;
+                    }
+                }
+            }
+
             Task::none()
         }
         Message::UpdateError(error) => {
@@ -670,6 +672,59 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             audio::stop_audio();
             Task::none()
         }
+        Message::StopPreviewTune => {
+            audio::stop_audio();
+            state.add_alarm.previewing_tune = None;
+            state.add_alarm.preview_started = false;
+            Task::none()
+        }
+        Message::PlayPreviewAudio(path) => {
+            let volume = state.settings.volume;
+            if let Err(e) = audio::play_audio_file(&path, volume, false) {
+                println!("Preview play error: {}", e);
+                state.add_alarm.previewing_tune = None;
+            }
+            state.add_alarm.preview_started = true;
+            Task::none()
+        }
+        Message::PreviewTune(tune) => {
+            if state.add_alarm.previewing_tune.as_deref() == Some(tune.as_str()) {
+                // Toggle off
+                audio::stop_audio();
+                state.add_alarm.previewing_tune = None;
+                state.add_alarm.preview_started = false;
+                return Task::none();
+            }
+            audio::stop_audio();
+            state.add_alarm.previewing_tune = Some(tune.clone());
+            state.add_alarm.preview_started = false;
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    for ext in &["wav", "opus", "flac"] {
+                        let url = format!("{}/audio-resources/{}.{}", server, tune, ext);
+                        if let Ok(resp) = client.get(&url).header("token", &token).send().await {
+                            if resp.status().is_success() {
+                                if let Ok(bytes) = resp.bytes().await {
+                                    let tmp = std::env::temp_dir()
+                                        .join(format!("untamo_preview.{}", ext));
+                                    if std::fs::write(&tmp, &bytes).is_ok() {
+                                        return Ok(tmp.to_string_lossy().into_owned());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Err(())
+                },
+                |result| match result {
+                    Ok(path) => Message::PlayPreviewAudio(path),
+                    Err(_) => Message::StopPreviewTune,
+                },
+            )
+        }
         Message::ToggleAddAlarm => {
             state.show_add_alarm = !state.show_add_alarm;
             if state.show_add_alarm {
@@ -749,6 +804,9 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::SubmitAddAlarm => {
+            audio::stop_audio();
+            state.add_alarm.previewing_tune = None;
+            state.add_alarm.preview_started = false;
             let is_edit = state.add_alarm.editing_alarm_id.is_some();
             let occ_str = state.add_alarm.occurrence.as_str().to_string();
             let date_vec: Vec<u16> = {
@@ -849,6 +907,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             )
         }
         Message::CancelAddAlarm => {
+            audio::stop_audio();
             state.show_add_alarm = false;
             state.add_alarm = crate::state::AddAlarmState::new();
             Task::none()
@@ -895,10 +954,19 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             add_notification(state, &title, msg);
             Task::none()
         }
+        Message::ToggleUserMenu => {
+            state.show_user_menu = !state.show_user_menu;
+            Task::none()
+        }
+        Message::ToggleDevicesModal => {
+            state.show_devices_modal = !state.show_devices_modal;
+            Task::none()
+        }
         Message::GoToLogout => {
+            state.show_user_menu = false;
             let server = state.server_address.clone();
             let token = state.ws.token.clone();
-            
+
             websocket::disconnect();
             crate::storage::clear_session();
             
@@ -926,6 +994,14 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 |_| Message::ClearError,
             )
         }
+        Message::AlarmHovered(id) => {
+            state.hovered_alarm = Some(id);
+            Task::none()
+        }
+        Message::AlarmUnhovered => {
+            state.hovered_alarm = None;
+            Task::none()
+        }
         Message::EditAlarm(id) => {
             if let Some(alarm) = state.alarms.iter().find(|a| a.id == id) {
                 state.add_alarm = crate::state::AddAlarmState::from_alarm(alarm);
@@ -935,27 +1011,8 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::DeleteAlarm(id) => {
-            state.alarms.retain(|a| a.id != id);
-            add_notification(state, "Alarm Deleted", "Alarm removed successfully".to_string());
-
-            let server = state.server_address.clone();
-            let token = state.ws.token.clone();
-            iced::Task::perform(
-                async move {
-                    let client = reqwest::Client::new();
-                    match client
-                        .delete(format!("{}/api/alarm/{}", server, id))
-                        .header("token", token)
-                        .send()
-                        .await
-                    {
-                        Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
-                        Ok(resp) => Message::AlarmDeleteResult(Err(format!("HTTP {}", resp.status()))),
-                        Err(e) => Message::AlarmDeleteResult(Err(e.to_string())),
-                    }
-                },
-                |m| m,
-            )
+            state.pending_delete = Some(PendingDelete::Alarm(id));
+            Task::none()
         }
         Message::ToggleAlarmActive(id) => {
             if let Some(alarm) = state.alarms.iter_mut().find(|a| a.id == id) {
@@ -984,8 +1041,30 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 Task::none()
             }
         }
+        Message::SelectWelcomeDevice(selection) => {
+            // Persist the chosen device so we skip the welcome screen next launch.
+            let device_id = match &selection {
+                crate::state::DeviceSelect::Device(d) => Some(d.id.clone()),
+                crate::state::DeviceSelect::None => None,
+            };
+            state.saved_device_id = device_id.clone();
+            state.welcome.selected_device = selection;
+
+            let mut s = crate::storage::load_settings();
+            s.device_id = device_id;
+            if let Err(e) = crate::storage::save_settings(&s) {
+                eprintln!("Failed to save settings: {}", e);
+            }
+
+            // Navigate straight to alarms once a device is picked.
+            state.page = AppPage::Alarms;
+            Task::none()
+        }
         Message::AddDevice => {
-            add_notification(state, "Add Device", "Device pairing not yet implemented".to_string());
+            state.adding_device = true;
+            state.editing_device = None;
+            state.editing_device_name = String::new();
+            state.editing_device_type = crate::state::DeviceType::default();
             Task::none()
         }
         Message::EditDevice(id) => {
@@ -1006,26 +1085,48 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::SaveDeviceEdit => {
-            if let Some(ref device) = state.editing_device {
+            #[derive(serde::Serialize)]
+            struct DeviceOut {
+                id: String,
+                #[serde(rename = "deviceName")]
+                device_name: String,
+                #[serde(rename = "type")]
+                device_type: String,
+            }
+            let new_name = state.editing_device_name.clone();
+            let new_type = String::from(state.editing_device_type.clone());
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+
+            if state.adding_device {
+                // POST new device
+                state.adding_device = false;
+                let payload = DeviceOut { id: String::new(), device_name: new_name, device_type: new_type };
+                return iced::Task::perform(
+                    async move {
+                        let client = reqwest::Client::new();
+                        match client
+                            .post(format!("{}/api/device", server))
+                            .header("token", &token)
+                            .json(&payload)
+                            .send()
+                            .await
+                        {
+                            Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                            Ok(resp) => Message::DeviceAddResult(Err(format!("HTTP {}", resp.status()))),
+                            Err(e) => Message::DeviceAddResult(Err(e.to_string())),
+                        }
+                    },
+                    |m| m,
+                );
+            } else if let Some(ref device) = state.editing_device {
+                // PUT existing device
                 let id = device.id.clone();
-                let new_name = state.editing_device_name.clone();
-                let new_type = String::from(state.editing_device_type.clone());
-                // Update locally
                 if let Some(d) = state.devices.iter_mut().find(|d| d.id == id) {
                     d.device_name = new_name.clone();
                     d.device_type = new_type.clone();
                 }
                 state.editing_device = None;
-                let server = state.server_address.clone();
-                let token = state.ws.token.clone();
-                #[derive(serde::Serialize)]
-                struct DeviceOut {
-                    id: String,
-                    #[serde(rename = "deviceName")]
-                    device_name: String,
-                    #[serde(rename = "type")]
-                    device_type: String,
-                }
                 let payload = DeviceOut { id: id.clone(), device_name: new_name, device_type: new_type };
                 return iced::Task::perform(
                     async move {
@@ -1049,30 +1150,24 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
         }
         Message::CloseDeviceEdit => {
             state.editing_device = None;
+            state.adding_device = false;
+            Task::none()
+        }
+        Message::DeviceAddResult(Ok(())) => {
+            Task::none()
+        }
+        Message::DeviceAddResult(Err(e)) => {
+            add_notification_kind(state, "Device Error", format!("Failed to add device: {}", e), crate::state::NotificationKind::Error);
             Task::none()
         }
         Message::DeleteDevice(id) => {
-            if let Some(pos) = state.devices.iter().position(|d| d.id == id) {
-                state.devices.remove(pos);
-                add_notification_kind(state, "Device Deleted", "Device removed".to_string(), crate::state::NotificationKind::Success);
-            }
-            let server = state.server_address.clone();
-            let token = state.ws.token.clone();
-            return iced::Task::perform(
-                async move {
-                    let client = reqwest::Client::new();
-                    let _ = client
-                        .delete(format!("{}/api/device/{}", server, id))
-                        .header("token", &token)
-                        .send()
-                        .await;
-                },
-                |_| Message::FetchUpdate,
-            );
+            state.pending_delete = Some(PendingDelete::Device(id));
+            Task::none()
         }
         Message::ToggleEditProfile => {
             state.edit_profile.show = !state.edit_profile.show;
             if state.edit_profile.show {
+                state.show_user_menu = false;
                 if let Some(ref user) = state.login.user_info {
                     state.edit_profile.screen_name = user.screen_name.clone();
                     state.edit_profile.first_name = user.first_name.clone();
@@ -1226,6 +1321,61 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             add_notification_kind(state, "Alarm Error", format!("Failed to delete alarm: {}", e), crate::state::NotificationKind::Error);
             Task::none()
         }
+        Message::RequestDelete(pending) => {
+            state.pending_delete = Some(pending);
+            Task::none()
+        }
+        Message::CancelDelete => {
+            state.pending_delete = None;
+            Task::none()
+        }
+        Message::ConfirmDelete => {
+            let pending = state.pending_delete.take();
+            match pending {
+                Some(PendingDelete::Alarm(id)) => {
+                    state.alarms.retain(|a| a.id != id);
+                    add_notification(state, "Alarm Deleted", "Alarm removed successfully".to_string());
+                    let server = state.server_address.clone();
+                    let token = state.ws.token.clone();
+                    iced::Task::perform(
+                        async move {
+                            let client = reqwest::Client::new();
+                            match client
+                                .delete(format!("{}/api/alarm/{}", server, id))
+                                .header("token", token)
+                                .send()
+                                .await
+                            {
+                                Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                                Ok(resp) => Message::AlarmDeleteResult(Err(format!("HTTP {}", resp.status()))),
+                                Err(e) => Message::AlarmDeleteResult(Err(e.to_string())),
+                            }
+                        },
+                        |m| m,
+                    )
+                }
+                Some(PendingDelete::Device(id)) => {
+                    if let Some(pos) = state.devices.iter().position(|d| d.id == id) {
+                        state.devices.remove(pos);
+                        add_notification_kind(state, "Device Deleted", "Device removed".to_string(), crate::state::NotificationKind::Success);
+                    }
+                    let server = state.server_address.clone();
+                    let token = state.ws.token.clone();
+                    iced::Task::perform(
+                        async move {
+                            let client = reqwest::Client::new();
+                            let _ = client
+                                .delete(format!("{}/api/device/{}", server, id))
+                                .header("token", &token)
+                                .send()
+                                .await;
+                        },
+                        |_| Message::FetchUpdate,
+                    )
+                }
+                None => Task::none(),
+            }
+        }
         Message::SetCloseTaskBehavior(behavior) => {
             state.settings.close_task_behavior = behavior;
             Task::none()
@@ -1332,6 +1482,7 @@ fn save_settings_from_state(state: &AppState) {
         volume: state.settings.volume,
         nav_bar_top: state.settings.nav_bar_top,
         panel_size: state.settings.panel_size,
+        device_id: state.saved_device_id.clone(),
     };
     let _ = crate::storage::save_settings(&s);
 }

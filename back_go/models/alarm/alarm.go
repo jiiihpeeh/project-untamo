@@ -1,10 +1,8 @@
 package alarm
 
 import (
+	"github.com/oklog/ulid"
 	"github.com/thoas/go-funk"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"untamo_server.zzz/utils/dbConnection"
-	"untamo_server.zzz/utils/id"
 	"untamo_server.zzz/utils/tools"
 )
 
@@ -19,40 +17,39 @@ const (
 )
 
 type Alarm struct {
-	MongoID     primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	SQLiteID    uint64             `json:"id"`
-	Occurrence  string             `bson:"occurrence,omitempty" json:"occurrence"`
-	Time        [2]uint8           `bson:"time,omitempty"`
-	Weekdays    uint8              `bson:"weekdays,omitempty" json:"weekdays"`
-	Date        [3]uint16          `bson:"date,omitempty"`
-	Label       string             `bson:"label,omitempty" json:"label"`
-	Devices     []string           `bson:"devices"`
-	Snooze      []int64            `bson:"snooze"`
-	Tune        string             `bson:"tune,omitempty" json:"tune"`
-	Active      bool               `bson:"active" json:"active"`
-	User        string             `bson:"user" json:"user"`
-	Modified    int64              `bson:"modified,omitempty" json:"modified"`
-	Fingerprint string             `bson:"fingerprint,omitempty" json:"fingerprint"`
-	CloseTask   bool               `bson:"close_task" json:"closeTask"`
-	Offline     bool               `bson:"offline,omitempty" json:"offline"`
+	ID          ulid.ULID `bson:"_id,omitempty" json:"-"`
+	Occurrence  string    `bson:"occurrence,omitempty" json:"occurrence"`
+	Time        [2]uint8  `bson:"time,omitempty"`
+	Weekdays    uint8     `bson:"weekdays,omitempty" json:"weekdays"`
+	Date        [3]uint16 `bson:"date,omitempty"`
+	Label       string    `bson:"label,omitempty" json:"label"`
+	Devices     []string  `bson:"devices"`
+	Snooze      []int64   `bson:"snooze"`
+	Tune        string    `bson:"tune,omitempty" json:"tune"`
+	Active      bool      `bson:"active" json:"active"`
+	User        string    `bson:"user" json:"user"`
+	Modified    int64     `bson:"modified,omitempty" json:"modified"`
+	Fingerprint string    `bson:"fingerprint,omitempty" json:"fingerprint"`
+	CloseTask   bool      `bson:"close_task" json:"closeTask"`
+	Offline     bool      `bson:"offline,omitempty" json:"offline"`
 }
 
 type AlarmSQL struct {
-	SQLiteID    uint64 `json:"id"`
-	Occurrence  string `bson:"occurrence,omitempty" json:"occurrence"`
-	Time        int16  `bson:"time,omitempty"`
-	Weekdays    uint8  `bson:"weekdays,omitempty" json:"weekdays"`
-	Date        int32  `bson:"date,omitempty"`
-	Label       string `bson:"label,omitempty" json:"label"`
-	Devices     string `bson:"devices"`
-	Snooze      string `bson:"snooze"`
-	Tune        string `bson:"tune,omitempty" json:"tune"`
-	Active      bool   `bson:"active" json:"active"`
-	User        string `bson:"user" json:"user"`
-	Modified    int64  `bson:"modified,omitempty" json:"modified"`
-	Fingerprint string `bson:"fingerprint,omitempty" json:"fingerprint"`
-	CloseTask   bool   `bson:"close_task" json:"closeTask"`
-	Offline     bool   `bson:"offline,omitempty" json:"offline"`
+	ID          ulid.ULID `json:"id"`
+	Occurrence  string    `bson:"occurrence,omitempty" json:"occurrence"`
+	Time        int16     `bson:"time,omitempty"`
+	Weekdays    uint8     `bson:"weekdays,omitempty" json:"weekdays"`
+	Date        int32     `bson:"date,omitempty"`
+	Label       string    `bson:"label,omitempty" json:"label"`
+	Devices     string    `bson:"devices"`
+	Snooze      string    `bson:"snooze"`
+	Tune        string    `bson:"tune,omitempty" json:"tune"`
+	Active      bool      `bson:"active" json:"active"`
+	User        string    `bson:"user" json:"user"`
+	Modified    int64     `bson:"modified,omitempty" json:"modified"`
+	Fingerprint string    `bson:"fingerprint,omitempty" json:"fingerprint"`
+	CloseTask   bool      `bson:"close_task" json:"closeTask"`
+	Offline     bool      `bson:"offline,omitempty" json:"offline"`
 }
 
 // make unique by converting  array to set to array
@@ -79,7 +76,7 @@ type AlarmOut struct {
 
 func (a *Alarm) ToSQLForm() AlarmSQL {
 	return AlarmSQL{
-		SQLiteID:    a.SQLiteID,
+		ID:          a.ID,
 		Occurrence:  a.Occurrence,
 		Time:        tools.TimeArrayToInteger(a.Time),
 		Weekdays:    a.Weekdays,
@@ -99,7 +96,7 @@ func (a *Alarm) ToSQLForm() AlarmSQL {
 
 func (s *AlarmSQL) ToAlarm() Alarm {
 	return Alarm{
-		SQLiteID:    s.SQLiteID,
+		ID:          s.ID,
 		Occurrence:  s.Occurrence,
 		Time:        tools.IntegerToTimeArray(s.Time),
 		Weekdays:    s.Weekdays,
@@ -117,15 +114,7 @@ func (s *AlarmSQL) ToAlarm() Alarm {
 	}
 }
 
-// convert Alarm to AlarmOutput
 func (a *Alarm) ToAlarmOut() AlarmOut {
-	var id string
-	if dbConnection.UseSQLite {
-		id = tools.IntToRadix(a.SQLiteID)
-	} else {
-		id = a.MongoID.Hex()
-	}
-
 	if a.Snooze == nil {
 		a.Snooze = []int64{}
 	}
@@ -135,7 +124,7 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 	}
 
 	return AlarmOut{
-		ID:          id,
+		ID:          a.ID.String(),
 		Occurrence:  a.Occurrence,
 		Time:        a.Time,
 		Weekdays:    a.Weekdays,
@@ -151,42 +140,20 @@ func (a *Alarm) ToAlarmOut() AlarmOut {
 	}
 }
 
-// convert AlarmOutput to Alarm ask user Id
 func (a *AlarmOut) ToAlarm(userId string) Alarm {
-
-	//check ID type and convert to string
-	if dbConnection.UseSQLite {
-
-		return Alarm{
-			SQLiteID:    tools.RadixToInt(a.ID),
-			Occurrence:  a.Occurrence,
-			Time:        a.Time,
-			Weekdays:    a.Weekdays,
-			Date:        a.Date,
-			Label:       a.Label,
-			Devices:     a.Devices,
-			User:        userId,
-			Snooze:      a.Snooze,
-			Tune:        a.Tune,
-			Active:      a.Active,
-			Modified:    a.Modified,
-			Fingerprint: a.Fingerprint,
-			CloseTask:   a.CloseTask,
-		}
-	}
-
+	parsed, _ := ulid.Parse(a.ID)
 	return Alarm{
-		MongoID:     id.IdFromString(a.ID),
+		ID:          parsed,
 		Occurrence:  a.Occurrence,
 		Time:        a.Time,
 		Weekdays:    a.Weekdays,
 		Date:        a.Date,
 		Label:       a.Label,
 		Devices:     a.Devices,
+		User:        userId,
 		Snooze:      a.Snooze,
 		Tune:        a.Tune,
 		Active:      a.Active,
-		User:        userId,
 		Modified:    a.Modified,
 		Fingerprint: a.Fingerprint,
 		CloseTask:   a.CloseTask,

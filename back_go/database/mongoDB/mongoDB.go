@@ -3,11 +3,12 @@ package mongoDB
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
+	"github.com/oklog/ulid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"untamo_server.zzz/models/admin"
@@ -124,18 +125,12 @@ func (m *MongoDB) GetSessionFromToken(token string) (*session.Session, *user.Use
 	if err != nil {
 		return nil, nil
 	}
-	uID := id.IdFromString(session.UserId)
-	if err != nil {
-		return nil, nil
-	}
 
-	userInSession := m.GetUserFromID(uID.Hex())
+	userInSession := m.GetUserFromID(session.UserId)
 	if userInSession == nil {
 		return nil, nil
 	}
-	//check if user is active
 	if !userInSession.Active {
-		//DeleteSession(token, client)
 		return nil, nil
 	}
 	return session, userInSession
@@ -148,9 +143,8 @@ func (m *MongoDB) GetSessionFromTokenActivate(token string) (*session.Session, *
 	if err != nil {
 		return nil, nil
 	}
-	uID := id.IdFromString(session.UserId)
 
-	userInSession := m.GetUserFromID(uID.Hex())
+	userInSession := m.GetUserFromID(session.UserId)
 	if userInSession == nil {
 		return nil, nil
 	}
@@ -182,9 +176,8 @@ func (m *MongoDB) GetSession(token string) (*session.Session, *user.User) {
 		m.DeleteSession(token)
 		return nil, nil
 	}
-	uID := id.IdFromString(session.UserId)
 
-	user := m.GetUserFromID(uID.Hex())
+	user := m.GetUserFromID(session.UserId)
 	if user == nil {
 		m.DeleteSession(token)
 		return nil, nil
@@ -223,7 +216,7 @@ func (m *MongoDB) GetUserAlarms(userID string) []*alarm.Alarm {
 		alarm := &alarm.Alarm{}
 		err := cursor.Decode(&alarm)
 		if err != nil {
-			go m.DeleteAlarm(alarm.MongoID.Hex(), userID)
+			go m.DeleteAlarm(alarm.ID.String(), userID)
 			continue
 		}
 		alarms = append(alarms, alarm)
@@ -242,7 +235,7 @@ func (m *MongoDB) GetDevices(userID string) []*device.Device {
 		device := &device.Device{}
 		err := cursor.Decode(&device)
 		if err != nil {
-			go m.DeleteDevice(device.MongoID.Hex(), userID)
+			go m.DeleteDevice(device.ID.String(), userID)
 			continue
 		}
 		devices = append(devices, device)
@@ -252,34 +245,33 @@ func (m *MongoDB) GetDevices(userID string) []*device.Device {
 
 func (m *MongoDB) AddAlarm(alarm *alarm.Alarm) (string, error) {
 	collection := m.connection.Database(DB_NAME).Collection(ALARMCOLL)
-	//insert alarm and get id
-
-	insert, err := collection.InsertOne(context.Background(), alarm)
-	if err != nil {
+	if alarm.ID == (ulid.ULID{}) {
+		entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+		alarm.ID = ulid.MustNew(ulid.Timestamp(time.Now()), ulid.Monotonic(entropy, 0))
 	}
-	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID.Hex(), err
+
+	_, err := collection.InsertOne(context.Background(), alarm)
+	if err != nil {
+		return "", err
+	}
+	return alarm.ID.String(), nil
 }
 
 func (m *MongoDB) EditAlarm(alarm *alarm.Alarm) bool {
 	collection := m.connection.Database(DB_NAME).Collection(ALARMCOLL)
-	//replace alarm by alarm id and user id
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": alarm.MongoID, "user": alarm.User}, alarm)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": alarm.ID, "user": alarm.User}, alarm)
 
 	return err == nil
 }
 
 func (m *MongoDB) EditDevice(device *device.Device) bool {
 	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
-	//_, err := collection.UpdateOne(context.Background(), bson.M{"_id": device.ID, "user": device.User}, bson.M{"$set": device})
-	//replace device
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": device.MongoID, "user": device.User}, device)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": device.ID, "user": device.User}, device)
 	return err == nil
 }
 
 func (m *MongoDB) DeleteAlarm(alarmID string, userID string) bool {
-	//convert alarmID to primitive.ObjectID
-	alarmIDObj := id.IdFromString(alarmID)
+	alarmIDObj, _ := ulid.Parse(alarmID)
 
 	collection := m.connection.Database(DB_NAME).Collection(ALARMCOLL)
 	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": alarmIDObj, "user": userID})
@@ -287,10 +279,9 @@ func (m *MongoDB) DeleteAlarm(alarmID string, userID string) bool {
 }
 
 func (m *MongoDB) DeleteDevice(deviceID string, userID string) bool {
-	//convert deviceID to primitive.ObjectID
-	deviceIDObj := id.IdFromString(deviceID)
+	deviceIDObj, _ := ulid.Parse(deviceID)
 	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
-	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": deviceID, "user": deviceIDObj})
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": deviceIDObj, "user": userID})
 	return err == nil
 }
 
@@ -306,23 +297,31 @@ func (m *MongoDB) GetUserFromEmail(email string) *user.User {
 }
 
 func (m *MongoDB) AddSession(session *session.Session) (string, error) {
-	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
-	//insert session and get id
-	insert, err := collection.InsertOne(context.Background(), session)
-	if err != nil {
+	if session.ID == (ulid.ULID{}) {
+		entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+		session.ID = ulid.MustNew(ulid.Timestamp(time.Now()), ulid.Monotonic(entropy, 0))
 	}
-	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID.Hex(), err
+
+	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
+	_, err := collection.InsertOne(context.Background(), session)
+	if err != nil {
+		return "", err
+	}
+	return session.ID.String(), nil
 }
 
 func (m *MongoDB) AddDevice(device *device.Device) (string, error) {
-	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
-	//insert device and get id
-	insert, err := collection.InsertOne(context.Background(), device)
-	if err != nil {
+	if device.ID == (ulid.ULID{}) {
+		entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+		device.ID = ulid.MustNew(ulid.Timestamp(time.Now()), ulid.Monotonic(entropy, 0))
 	}
-	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID.Hex(), err
+
+	collection := m.connection.Database(DB_NAME).Collection(DEVICECOLL)
+	_, err := collection.InsertOne(context.Background(), device)
+	if err != nil {
+		return "", err
+	}
+	return device.ID.String(), nil
 }
 
 func (m *MongoDB) AddQr(qr *qr.QR) bool {
@@ -355,8 +354,7 @@ func (m *MongoDB) GetQrData(token string) *qr.QR {
 }
 
 func (m *MongoDB) GetUserFromID(userID string) *user.User {
-	//convert userID to primitive.ObjectID
-	userIDObj := id.IdFromString(userID)
+	userIDObj, _ := ulid.Parse(userID)
 
 	user := &user.User{}
 	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
@@ -454,24 +452,18 @@ func (m *MongoDB) GetUsers() []*user.User {
 
 func (m *MongoDB) UpdateUser(user *user.User) bool {
 	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
-	// replace user
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": user.MongoID}, user)
-	//_, err := collection.UpdateOne(context.Background(), bson.M{"_id": user.ID}, bson.M{"$set": user})
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": user.ID}, user)
 	return err == nil
 }
 
 func (m *MongoDB) DeleteUserSessions(userID string) bool {
-	//convert userID to primitive.ObjectID
-	userIDObj := id.IdFromString(userID)
-
 	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
-	_, err := collection.DeleteMany(context.Background(), bson.M{"user_id": userIDObj})
+	_, err := collection.DeleteMany(context.Background(), bson.M{"user_id": userID})
 	return err == nil
 }
 
 func (m *MongoDB) DeleteUser(userID string) bool {
-	//convert userID to primitive.ObjectID
-	userIDObj := id.IdFromString(userID)
+	userIDObj, _ := ulid.Parse(userID)
 
 	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
 	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": userIDObj})
@@ -480,8 +472,7 @@ func (m *MongoDB) DeleteUser(userID string) bool {
 
 func (m *MongoDB) UpdateSession(session *session.Session) bool {
 	collection := m.connection.Database(DB_NAME).Collection(SESSIONCOLL)
-	//replace session by session id and user id
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": session.MongoID, "user_id": session.UserId}, session)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"_id": session.ID, "user_id": session.UserId}, session)
 	return err == nil
 }
 
@@ -497,13 +488,17 @@ func (m *MongoDB) CountUsers() int64 {
 
 // add user to db
 func (m *MongoDB) AddUser(user *user.User) (string, error) {
-	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
-	//insert user and get id
-	insert, err := collection.InsertOne(context.Background(), user)
-	if err != nil {
+	if user.ID == (ulid.ULID{}) {
+		entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+		user.ID = ulid.MustNew(ulid.Timestamp(time.Now()), ulid.Monotonic(entropy, 0))
 	}
-	insertedID := insert.InsertedID.(primitive.ObjectID)
-	return insertedID.Hex(), err
+
+	collection := m.connection.Database(DB_NAME).Collection(USERCOLL)
+	_, err := collection.InsertOne(context.Background(), user)
+	if err != nil {
+		return "", err
+	}
+	return user.ID.String(), nil
 }
 
 // check if email is already in use
@@ -525,9 +520,8 @@ func (m *MongoDB) GetUserAndSessionFromWsToken(wsToken string) (*session.Session
 	if err != nil {
 		return nil, nil
 	}
-	uID := id.IdFromString(session.UserId)
 
-	user := m.GetUserFromID(uID.Hex())
+	user := m.GetUserFromID(session.UserId)
 	if user == nil {
 		return nil, nil
 	}
@@ -541,7 +535,7 @@ func (m *MongoDB) GetOwnerID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return user.MongoID.Hex(), nil
+	return user.ID.String(), nil
 }
 
 func (m *MongoDB) StoreEmail(mail email.Email) bool {
@@ -596,7 +590,7 @@ func (m *MongoDB) RemoveAlarmsWithNoDevices() bool {
 		if err != nil {
 			return false
 		}
-		deviceIDs = append(deviceIDs, device.MongoID.Hex())
+		deviceIDs = append(deviceIDs, device.ID.String())
 	}
 	//check that alarm has at least one device
 	collection = m.connection.Database(DB_NAME).Collection(ALARMCOLL)
@@ -606,26 +600,24 @@ func (m *MongoDB) RemoveAlarmsWithNoDevices() bool {
 }
 
 type WebColorsUser struct {
-	User   primitive.ObjectID `bson:"user"`
-	Colors string             `bson:"colors"`
+	User   ulid.ULID `bson:"user"`
+	Colors string    `bson:"colors"`
 }
 
 func (m *MongoDB) AddWebColors(userIn *user.User, webColors string) bool {
 	collection := m.connection.Database(DB_NAME).Collection(WEBCOLORS)
-	//add user id to webColors
 	insert := WebColorsUser{
-		User:   userIn.MongoID,
+		User:   userIn.ID,
 		Colors: webColors,
 	}
-	//insert or replace webColors
-	_, err := collection.ReplaceOne(context.Background(), bson.M{"user": userIn.MongoID}, insert)
+	_, err := collection.ReplaceOne(context.Background(), bson.M{"user": userIn.ID}, insert)
 	return err == nil
 }
 
 func (m *MongoDB) GetWebColors(userIn *user.User) string {
 	webColorsUser := &WebColorsUser{}
 	collection := m.connection.Database(DB_NAME).Collection(WEBCOLORS)
-	err := collection.FindOne(context.Background(), bson.M{"user": userIn.MongoID}).Decode(&webColorsUser)
+	err := collection.FindOne(context.Background(), bson.M{"user": userIn.ID}).Decode(&webColorsUser)
 	if err != nil {
 		return ""
 	}

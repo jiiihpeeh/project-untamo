@@ -63,17 +63,17 @@ fn device_card<'a>(device: &'a Device) -> Element<'a, Message> {
 }
 
 pub fn devices_view<'a>(state: &'a AppState) -> Element<'a, Message> {
-    let logo = iced::widget::svg::Svg::new(iced::widget::svg::Handle::from_memory(include_bytes!(
-        "../assets/logo.svg"
-    )))
-    .width(Length::Fixed(60.0))
-    .height(Length::Fixed(60.0));
-
-    let title = text("Devices").size(20).color(COLORS.text);
-
-    let add_device_btn = button(text("+ Add Device"))
-        .on_press(Message::AddDevice)
-        .style(primary_button());
+    let header = row![
+        text("Devices").size(20).color(COLORS.text).width(Length::Fill),
+        button(text("+ Add").size(13))
+            .on_press(Message::AddDevice)
+            .style(primary_button()),
+        button(text("✕").size(14))
+            .on_press(Message::ToggleDevicesModal)
+            .style(secondary_button()),
+    ]
+    .align_y(Alignment::Center)
+    .spacing(8);
 
     let devices_list: Element<Message> = if state.devices.is_empty() {
         text("No devices registered. Add your first device!")
@@ -82,37 +82,29 @@ pub fn devices_view<'a>(state: &'a AppState) -> Element<'a, Message> {
             .into()
     } else {
         let cards: Vec<Element<Message>> = state.devices.iter().map(|d| device_card(d)).collect();
-
         let mut col = Column::new();
         for card in cards {
             col = col.push(card);
         }
-        col.spacing(10).into()
+        col.spacing(8).into()
     };
 
-    let content = Column::with_children([
-        logo.into(),
-        title.into(),
-        add_device_btn.into(),
-        text("").size(8).into(),
-        devices_list,
-    ])
-    .spacing(10)
-    .padding(15);
+    let card = Column::with_children([header.into(), devices_list])
+        .spacing(16)
+        .padding(24)
+        .width(Length::Fixed(420.0));
 
-    container(content.align_x(iced::Alignment::Center))
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .style(flat_container_style())
-        .into()
+    container(card).style(card_container_style()).into()
 }
 
 pub fn edit_device_dialog<'a>(
+    is_add: bool,
     device_id: &str,
     name: &str,
     device_type: &DeviceType,
 ) -> Element<'a, Message> {
-    let title = text("Edit Device").size(20).color(COLORS.text);
+    let title_str = if is_add { "Add Device" } else { "Edit Device" };
+    let title = text(title_str).size(20).color(COLORS.text);
 
     let name_input = text_input("Device Name", name)
         .padding(10)

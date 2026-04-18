@@ -83,6 +83,8 @@ pub struct AppSettings {
     pub volume: f32,
     pub nav_bar_top: bool,
     pub panel_size: u32,
+    #[serde(default)]
+    pub device_id: Option<String>,
 }
 
 impl Default for AppSettings {
@@ -92,6 +94,7 @@ impl Default for AppSettings {
             volume: 0.9,
             nav_bar_top: true,
             panel_size: 56,
+            device_id: None,
         }
     }
 }

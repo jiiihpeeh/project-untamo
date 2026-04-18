@@ -54,12 +54,10 @@ pub fn navbar<'a>(
 
     let right_items: Vec<Element<Message>> = if logged_in {
         let alarms_active = matches!(current_page, AppPage::Alarms);
-        let devices_active = matches!(current_page, AppPage::Devices);
-        let user_active = matches!(current_page, AppPage::User);
         vec![
             nav_btn("Alarms", Message::NavigateTo(AppPage::Alarms), alarms_active).into(),
-            nav_btn("Devices", Message::NavigateTo(AppPage::Devices), devices_active).into(),
-            nav_btn(&user_initials, Message::NavigateTo(AppPage::User), user_active).into(),
+            nav_btn("Devices", Message::ToggleDevicesModal, false).into(),
+            nav_btn(&user_initials, Message::ToggleUserMenu, false).into(),
         ]
     } else {
         let login_active = matches!(current_page, AppPage::Login);

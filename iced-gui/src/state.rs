@@ -520,6 +520,8 @@ pub struct AddAlarmState {
     #[allow(dead_code)]
     pub show: bool,
     pub editing_alarm_id: Option<String>,
+    pub previewing_tune: Option<String>,
+    pub preview_started: bool,
     pub label: String,
     pub time_hour: u8,
     pub time_minute: u8,
@@ -540,6 +542,8 @@ impl AddAlarmState {
         AddAlarmState {
             show: false,
             editing_alarm_id: None,
+            previewing_tune: None,
+            preview_started: false,
             label: "Alarm".to_string(),
             time_hour: 8,
             time_minute: 0,
@@ -579,6 +583,8 @@ impl AddAlarmState {
         AddAlarmState {
             show: true,
             editing_alarm_id: Some(alarm.id.clone()),
+            previewing_tune: None,
+            preview_started: false,
             label: alarm.label.clone(),
             time_hour: time_hour as u8,
             time_minute: time_minute as u8,
@@ -661,7 +667,13 @@ impl Default for EditProfileState {
     }
 }
 
+/// What the user is being asked to confirm deleting.
 #[derive(Clone, Debug)]
+pub enum PendingDelete {
+    Alarm(String),
+    Device(String),
+}
+
 pub struct AppState {
     pub page: AppPage,
     pub login: LoginState,
@@ -691,6 +703,13 @@ pub struct AppState {
     pub editing_device_type: DeviceType,
     pub available_tunes: Vec<String>,
     pub window_id: Option<iced::window::Id>,
+    pub pending_delete: Option<PendingDelete>,
+    pub show_user_menu: bool,
+    pub hovered_alarm: Option<String>,
+    pub show_devices_modal: bool,
+    pub adding_device: bool,
+    /// Device ID persisted from last session; used to skip the welcome screen.
+    pub saved_device_id: Option<String>,
 }
 
 impl AppState {
@@ -721,6 +740,8 @@ impl AppState {
         } else {
             false
         };
+
+        let saved_device_id = settings.device_id.clone();
 
         AppState {
             page: if session_valid {
@@ -764,6 +785,12 @@ impl AppState {
             editing_device_type: DeviceType::default(),
             available_tunes: vec!["rooster".to_string()],
             window_id: None,
+            pending_delete: None,
+            show_user_menu: false,
+            show_devices_modal: false,
+            hovered_alarm: None,
+            adding_device: false,
+            saved_device_id,
         }
     }
 }

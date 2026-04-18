@@ -1,5 +1,5 @@
 use crate::components::{
-    add_alarm_dialog, alarms_view, colors_dialog, devices_view, edit_device_dialog,
+    add_alarm_dialog, alarms_view, colors_dialog, confirm_dialog, devices_view, edit_device_dialog,
     edit_profile_dialog, login_form, navbar, notifications_view, play_alarm_view, qr_scanner,
     register_form, settings_dialog, user_menu_view, welcome_view,
 };
@@ -82,7 +82,7 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
         AppPage::Welcome => welcome_view(&state.login, &state.welcome, &state.devices).into(),
         AppPage::Alarms => alarms_view(state).into(),
         AppPage::Devices => devices_view(state).into(),
-        AppPage::User => user_menu_view(state).into(),
+        AppPage::User => alarms_view(state).into(), // fallback: User page is now modal
         AppPage::PlayAlarm => play_alarm_view(state).into(),
     };
 
@@ -114,15 +114,29 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
             &state.add_alarm,
             &state.devices,
             &state.available_tunes,
+            state.settings.clock24,
         )));
+    }
+
+    if state.show_devices_modal {
+        layers.push(modal(devices_view(state)));
+    }
+
+    if state.show_user_menu {
+        layers.push(modal(user_menu_view(state)));
     }
 
     if state.edit_profile.show {
         layers.push(modal(edit_profile_dialog(&state.edit_profile)));
     }
 
-    if state.editing_device.is_some() {
+    if let Some(pending) = &state.pending_delete {
+        layers.push(modal(confirm_dialog(pending)));
+    }
+
+    if state.editing_device.is_some() || state.adding_device {
         layers.push(modal(edit_device_dialog(
+            state.adding_device,
             &state
                 .editing_device
                 .as_ref()

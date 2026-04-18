@@ -170,7 +170,7 @@ func Action(c *gin.Context, db *database.Database) {
 	if userInSession == nil {
 		return
 	}
-	uID := userInSession.GetUid()
+	uID := userInSession.ID.String()
 
 	WsServing.echo(c.Writer, c.Request, wsToken, uID, session.WsPair)
 }

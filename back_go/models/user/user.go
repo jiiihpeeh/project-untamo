@@ -5,27 +5,24 @@ import (
 
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/oklog/ulid"
 	"untamo_server.zzz/models/register"
-	"untamo_server.zzz/utils/dbConnection"
-	"untamo_server.zzz/utils/tools"
 )
 
 type User struct {
-	MongoID                  primitive.ObjectID `bson:"_id,omitempty" json:"-"`
-	SQLiteID                 int64              `json:"id"`
-	Email                    string             `bson:"email" json:"email"`
-	FirstName                string             `bson:"first_name,omitempty" json:"firstName"`
-	LastName                 string             `bson:"last_name,omitempty" json:"lastName"`
-	ScreenName               string             `bson:"screen_name" json:"screenName"`
-	Admin                    bool               `bson:"admin" json:"admin"`
-	Owner                    bool               `bson:"owner" json:"owner"`
-	Active                   bool               `bson:"active" json:"active"`
-	Password                 string             `bson:"password" json:"password"`
-	Activate                 string             `bson:"activate,omitempty" json:"activate"`
-	Registered               int64              `bson:"registered,omitempty" json:"registered"`
-	PasswordResetRequestTime int64              `bson:"password_reset_request_time,omitempty" json:"passwordResetRequestTime"`
-	PasswordResetToken       string             `bson:"password_reset_token,omitempty" json:"passwordResetToken"`
+	ID                       ulid.ULID `bson:"_id,omitempty" json:"-"`
+	Email                    string    `bson:"email" json:"email"`
+	FirstName                string    `bson:"first_name,omitempty" json:"firstName"`
+	LastName                 string    `bson:"last_name,omitempty" json:"lastName"`
+	ScreenName               string    `bson:"screen_name" json:"screenName"`
+	Admin                    bool      `bson:"admin" json:"admin"`
+	Owner                    bool      `bson:"owner" json:"owner"`
+	Active                   bool      `bson:"active" json:"active"`
+	Password                 string    `bson:"password" json:"password"`
+	Activate                 string    `bson:"activate,omitempty" json:"activate"`
+	Registered               int64     `bson:"registered,omitempty" json:"registered"`
+	PasswordResetRequestTime int64     `bson:"password_reset_request_time,omitempty" json:"passwordResetRequestTime"`
+	PasswordResetToken       string    `bson:"password_reset_token,omitempty" json:"passwordResetToken"`
 }
 
 type UserOut struct {
@@ -41,10 +38,8 @@ type UserOut struct {
 }
 
 func (u *User) ToUserOut() UserOut {
-
-	id := u.GetUid()
 	return UserOut{
-		User:       id,
+		User:       u.ID.String(),
 		Email:      u.Email,
 		FirstName:  u.FirstName,
 		LastName:   u.LastName,
@@ -81,7 +76,6 @@ type CardColors struct {
 
 type WebColors map[string]CardColors
 
-// email is valid
 func (u *EditUser) CheckEmail() bool {
 	return register.EmailRegexp.MatchString(u.Email)
 }
@@ -89,16 +83,11 @@ func (u *EditUser) CheckEmail() bool {
 func (r *EditUser) CheckPassword() bool {
 	password := strings.ToLower(r.Password)
 	passwordLeet := register.LeetSpeak(password)
-	//lowercase fields into an array
 	lowerFields := []string{strings.ToLower(r.Email), strings.ToLower(r.FirstName), strings.ToLower(r.LastName), strings.ToLower(r.ScreenName)}
-	//split email at @ and append to lowerFields by lowercasing
 	split := strings.Split(r.Email, "@")
 	lowerFields = append(lowerFields, strings.ToLower(split[0]))
-	//combine first and last name and append to lowerFields by lowercasing
 	lowerFields = append(lowerFields, strings.ToLower(r.FirstName+r.LastName))
-	//combine last and first name and append to lowerFields by lowercasing
 	lowerFields = append(lowerFields, strings.ToLower(r.LastName+" "+r.FirstName))
-	//loop through array and check similarity
 	for _, field := range lowerFields {
 		scoreNorm := strutil.Similarity(password, field, metrics.NewLevenshtein())
 		if scoreNorm > register.MaxPasswordSimilarity {
@@ -110,12 +99,4 @@ func (r *EditUser) CheckPassword() bool {
 		}
 	}
 	return true
-}
-
-func (u *User) GetUid() string {
-	if dbConnection.UseSQLite {
-		return tools.IntToRadix(u.SQLiteID)
-	}
-	return u.MongoID.Hex()
-
 }

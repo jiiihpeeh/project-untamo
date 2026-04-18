@@ -5,6 +5,9 @@ use tray_icon::{
     Icon as TrayIconInner, TrayIcon, TrayIconBuilder,
 };
 
+use iced::Subscription;
+use crate::messages::Message;
+
 // TrayIcon is !Send so we keep it on the main thread only
 thread_local! {
     static TRAY: RefCell<Option<TrayIcon>> = RefCell::new(None);
@@ -42,25 +45,32 @@ pub fn init_tray() {
     }
 }
 
-pub enum TrayAction {
-    ShowWindow,
-    Quit,
+/// Iced subscription that streams tray menu events as Messages.
+pub fn subscription() -> Subscription<Message> {
+    Subscription::run(tray_event_stream)
 }
 
-/// Call from FrameTick (main thread) to check for tray menu events.
-pub fn poll_events() -> Option<TrayAction> {
-    let show_id = SHOW_ID.get()?;
-    let quit_id = QUIT_ID.get()?;
-
-    if let Ok(event) = MenuEvent::receiver().try_recv() {
-        if event.id == *quit_id {
-            return Some(TrayAction::Quit);
-        }
-        if event.id == *show_id {
-            return Some(TrayAction::ShowWindow);
+fn tray_event_stream() -> impl futures::Stream<Item = Message> {
+    async_stream::stream! {
+        let receiver = MenuEvent::receiver();
+        loop {
+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+            // Pump the GTK event loop so tray menus render on Linux
+            #[cfg(target_os = "linux")]
+            while gtk::events_pending() {
+                gtk::main_iteration_do(false);
+            }
+            let show_id = SHOW_ID.get();
+            let quit_id = QUIT_ID.get();
+            while let Ok(event) = receiver.try_recv() {
+                if quit_id.is_some_and(|id| event.id == *id) {
+                    yield Message::TrayQuit;
+                } else if show_id.is_some_and(|id| event.id == *id) {
+                    yield Message::TrayShowWindow;
+                }
+            }
         }
     }
-    None
 }
 
 fn load_tray_icon() -> TrayIconInner {

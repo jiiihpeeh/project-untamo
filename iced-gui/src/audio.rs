@@ -48,6 +48,10 @@ impl AudioState {
     }
 }
 
+fn set_playing(val: bool) {
+    AUDIO_PLAYING.store(val, std::sync::atomic::Ordering::SeqCst);
+}
+
 fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
     let mut state = AudioState::new();
 
@@ -90,6 +94,7 @@ fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
 
                                     state.sink = Some(new_sink);
                                     state.looping = repeat;
+                                    set_playing(true);
                                 }
                                 Err(e) => {
                                     eprintln!("[audio] Failed to create sink: {}", e);
@@ -120,6 +125,7 @@ fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
                 state.looping = false;
                 drop(state.stream.take());
                 drop(state.stream_handle.take());
+                set_playing(false);
             }
             Ok(AudioCommand::SetVolume(volume)) => {
                 if let Some(ref s) = state.sink {
@@ -133,6 +139,7 @@ fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
                         drop(state.stream.take());
                         drop(state.stream_handle.take());
                         state.looping = false;
+                        set_playing(false);
                     }
                 }
             }
@@ -147,6 +154,7 @@ fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
 }
 
 static AUDIO_TX: std::sync::Mutex<Option<mpsc::Sender<AudioCommand>>> = std::sync::Mutex::new(None);
+static AUDIO_PLAYING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 pub fn start_audio_thread() {
     let (tx, rx) = mpsc::channel();
@@ -167,6 +175,10 @@ pub fn play_audio_file(file_path: &str, volume: f32, loop_audio: bool) -> Result
     } else {
         Err("Audio thread not started".to_string())
     }
+}
+
+pub fn is_audio_playing() -> bool {
+    AUDIO_PLAYING.load(std::sync::atomic::Ordering::SeqCst)
 }
 
 pub fn stop_audio() {

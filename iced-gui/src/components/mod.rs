@@ -1,4 +1,5 @@
 pub mod add_alarm;
+pub mod confirm_dialog;
 pub mod icons;
 pub mod alarms;
 pub mod colors;
@@ -15,6 +16,7 @@ pub mod user_menu;
 pub mod welcome;
 
 pub use add_alarm::add_alarm_dialog;
+pub use confirm_dialog::confirm_dialog;
 pub use icons::{icon_el, icon_svg, Icon};
 pub use alarms::alarms_view;
 pub use colors::colors_dialog;

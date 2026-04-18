@@ -1,8 +1,9 @@
+use crate::components::icons::{icon_svg, Icon};
 use crate::messages::Message;
 use crate::state::{AddAlarmState, AlarmOccurrence, Device};
 use crate::theme::{
-    card_container_style, danger_button, menu_style, primary_button, secondary_button,
-    text_input_style, COLORS,
+    card_container_style, danger_button, menu_style, pick_list_style, primary_button,
+    secondary_button, text_input_style, COLORS,
 };
 use iced::widget::{
     button, checkbox, column, container, pick_list, row, scrollable, text, text_input, toggler,
@@ -14,6 +15,7 @@ pub fn add_alarm_dialog<'a>(
     state: &'a AddAlarmState,
     devices: &'a [Device],
     available_tunes: &'a [String],
+    clock24: bool,
 ) -> Element<'a, Message> {
     let is_editing = state.editing_alarm_id.is_some();
     let title_text = if is_editing { "Edit Alarm" } else { "Add Alarm" };
@@ -30,13 +32,14 @@ pub fn add_alarm_dialog<'a>(
         .on_press(Message::OpenTimePicker)
         .style(secondary_button());
 
-    let time_picker_overlay = time_picker(
+    let tp = iced_aw::TimePicker::new(
         state.show_time_picker,
         state.time_picker_value,
         time_btn,
         Message::CancelTimePicker,
-        |t| Message::SubmitTimePicker(t),
+        Message::SubmitTimePicker,
     );
+    let time_picker_overlay = if clock24 { tp.use_24h() } else { tp };
 
     // --- Occurrence ---
     let occ_label = text("Type:").size(13).color(COLORS.text);
@@ -138,7 +141,26 @@ pub fn add_alarm_dialog<'a>(
     let tune_picker = pick_list(available_tunes, tune_selected, Message::SetAlarmTune)
         .width(iced::Length::Fill)
         .placeholder("Select tune")
+        .style(pick_list_style())
         .menu_style(menu_style());
+
+    let is_previewing = state.previewing_tune.is_some();
+    let preview_btn = button(icon_svg(
+        if is_previewing { Icon::Square } else { Icon::Play },
+        if is_previewing { COLORS.danger } else { COLORS.primary },
+        16.0,
+    ))
+    .on_press(if is_previewing {
+        Message::StopPreviewTune
+    } else {
+        Message::PreviewTune(state.tune.clone())
+    })
+    .style(secondary_button());
+
+    let tune_row: Element<'a, Message> = row![tune_picker, preview_btn]
+        .spacing(6)
+        .align_y(iced::Alignment::Center)
+        .into();
 
     // --- Toggles ---
     let active_toggler = toggler(state.active)
@@ -190,7 +212,7 @@ pub fn add_alarm_dialog<'a>(
         .push(devices_label)
         .push(device_list)
         .push(tune_label)
-        .push(tune_picker)
+        .push(tune_row)
         .push(toggles_row)
         .push(row![submit_btn, cancel_btn].spacing(12));
 

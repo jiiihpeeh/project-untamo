@@ -1,5 +1,5 @@
 use crate::messages::Message;
-use crate::state::{AppPage, Device, DeviceSelect, LoginState, WelcomeState};
+use crate::state::{Device, DeviceSelect, LoginState, WelcomeState};
 use crate::theme::{flat_container_style, menu_style, pick_list_style, secondary_button, COLORS};
 use iced::widget::svg::{Handle, Svg};
 use iced::{
@@ -48,7 +48,7 @@ pub fn welcome_view<'a>(
                 .size(14)
                 .color(COLORS.text_secondary),
             button(text("Add Device"))
-                .on_press(Message::NavigateTo(AppPage::Devices))
+                .on_press(Message::ToggleDevicesModal)
                 .style(secondary_button()),
         ]
         .spacing(8)
@@ -87,7 +87,7 @@ pub fn welcome_view<'a>(
             device_dropdown,
             edit_btn,
             button(text("Add Device"))
-                .on_press(Message::NavigateTo(AppPage::Devices))
+                .on_press(Message::ToggleDevicesModal)
                 .style(secondary_button()),
         ]
         .spacing(8)

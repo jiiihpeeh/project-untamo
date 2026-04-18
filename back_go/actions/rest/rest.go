@@ -14,6 +14,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
+	"github.com/oklog/ulid"
 	"github.com/steambap/captcha"
 	"github.com/thoas/go-funk"
 	"untamo_server.zzz/actions/wshandler"
@@ -31,13 +32,10 @@ import (
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/models/wsOut"
 	"untamo_server.zzz/utils/appconfig"
-	"untamo_server.zzz/utils/dbConnection"
 	"untamo_server.zzz/utils/emailer"
 	"untamo_server.zzz/utils/hash"
-	"untamo_server.zzz/utils/id"
 	"untamo_server.zzz/utils/now"
 	"untamo_server.zzz/utils/token"
-	"untamo_server.zzz/utils/tools"
 )
 
 // hashmap for token and captcha
@@ -136,10 +134,9 @@ func LogIn(c *gin.Context, db *database.Database) {
 	appconfig.AppConfigurationMutex.Unlock()
 	expires := now.Now() + int64(sessionLength)
 	if sessionLength == 0 {
-		//add 10 minutes to end time
 		expires = now.Now() + 600000
 	}
-	uID := user.GetUid()
+	uID := user.ID.String()
 
 	newSession := session.Session{
 		Time:    expires,
@@ -148,8 +145,6 @@ func LogIn(c *gin.Context, db *database.Database) {
 		WsToken: uID + token.GenerateToken(token.WsTokenStringLength),
 		WsPair:  uID + token.GenerateToken(token.WsPairLength),
 	}
-	//add session to db
-	//marshal session to json
 	sID, err := (*db).AddSession(&newSession)
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -157,11 +152,7 @@ func LogIn(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-	if dbConnection.UseSQLite {
-		newSession.SQLiteID = tools.RadixToInt(sID)
-	} else {
-		newSession.MongoID = id.IdFromString(sID)
-	}
+	newSession.ID, _ = ulid.Parse(sID)
 
 	logInResponse := login.LogInResponse{
 		Token:      newSession.Token,
@@ -218,11 +209,7 @@ func AddDevice(c *gin.Context, db *database.Database) {
 		c.JSON(500, gin.H{"message": "Failed to add device to db"})
 		return
 	}
-	if dbConnection.UseSQLite {
-		newDevice.SQLiteID = tools.RadixToInt(dID)
-	} else {
-		newDevice.MongoID = id.IdFromString(dID)
-	}
+	newDevice.ID, _ = ulid.Parse(dID)
 	deviceOut := newDevice.ToDeviceOut()
 	broadcast(sess, "deviceAdd", deviceOut)
 	c.JSON(200, deviceOut)
@@ -243,16 +230,7 @@ func EditDevice(c *gin.Context, db *database.Database) {
 		c.JSON(400, gin.H{"message": "Bad request"})
 		return
 	}
-	editedDevice := device.Device{
-		User:       sess.UserId,
-		DeviceName: deviceIn.DeviceName,
-		DeviceType: deviceIn.DeviceType,
-	}
-	if dbConnection.UseSQLite {
-		editedDevice.SQLiteID = tools.RadixToInt(deviceId)
-	} else {
-		editedDevice.MongoID = id.IdFromString(deviceId)
-	}
+	editedDevice := deviceIn.ToDevice(sess.UserId)
 	if !(*db).EditDevice(&editedDevice) {
 		c.JSON(500, gin.H{"message": "Failed to edit device in db"})
 		return
@@ -310,11 +288,8 @@ func AddAlarm(c *gin.Context, db *database.Database) {
 		c.JSON(500, gin.H{"message": "Failed to add alarm to db"})
 		return
 	}
-	if dbConnection.UseSQLite {
-		newAlarm.SQLiteID = tools.RadixToInt(alarmId)
-	} else {
-		newAlarm.MongoID = id.IdFromString(alarmId)
-	}
+	parsedID, _ := ulid.Parse(alarmId)
+	newAlarm.ID = parsedID
 	added := newAlarm.ToAlarmOut()
 	broadcast(sess, "alarmAdd", added)
 	c.JSON(200, added)
@@ -514,11 +489,7 @@ func QRLogIn(c *gin.Context, db *database.Database) {
 		})
 		return
 	}
-	if dbConnection.UseSQLite {
-		session.SQLiteID = tools.RadixToInt(sID)
-	} else {
-		session.MongoID = id.IdFromString(sID)
-	}
+	session.ID, _ = ulid.Parse(sID)
 	//delete qr from db
 	if !(*db).DeleteQr(qr.QrToken) {
 		c.JSON(500, gin.H{
@@ -617,7 +588,7 @@ func AdminLogIn(c *gin.Context, db *database.Database) {
 		//add 10 minutes to now in ms
 		Time: now.Now() + 600000,
 	}
-	uID := userInSession.GetUid()
+	uID := userInSession.ID.String()
 	adminSession.UserId = uID
 	//add admin to db
 	if !(*db).AddAdminSession(&adminSession) {
@@ -698,6 +669,7 @@ func UserEdit(c *gin.Context, db *database.Database) {
 		passwordHash = passwordHashed
 	}
 	user := user.User{
+		ID:         userInSession.ID,
 		Email:      editUser.Email,
 		Password:   passwordHash,
 		ScreenName: editUser.ScreenName,
@@ -710,11 +682,6 @@ func UserEdit(c *gin.Context, db *database.Database) {
 		Registered: userInSession.Registered,
 	}
 
-	if dbConnection.UseSQLite {
-		user.SQLiteID = userInSession.SQLiteID
-	} else {
-		user.MongoID = userInSession.MongoID
-	}
 	updated := (*db).UpdateUser(&user)
 	if !updated {
 		c.JSON(500, gin.H{
@@ -724,10 +691,9 @@ func UserEdit(c *gin.Context, db *database.Database) {
 	}
 	go func() {
 		out := user.ToUserOut()
-		//marshal out to json
 		userOut := wsOut.WsOut{Type: "userEdit", Data: out}
 		outJson, _ := json.Marshal(userOut)
-		wshandler.WsServing.ServeMessage(user.GetUid(), session.WsToken, []byte(outJson))
+		wshandler.WsServing.ServeMessage(user.ID.String(), session.WsToken, []byte(outJson))
 	}()
 
 	//return message success
@@ -757,7 +723,7 @@ func EditUserState(c *gin.Context, db *database.Database) {
 		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	uID := userEdit.GetUid()
+	uID := userEdit.ID.String()
 	userEdit.Admin = adminRequest.Admin
 	userEdit.Active = adminRequest.Active
 	if !(*db).UpdateUser(userEdit) {
@@ -795,7 +761,7 @@ func RemoveUser(c *gin.Context, db *database.Database) {
 		c.JSON(401, gin.H{"message": "Unauthorized"})
 		return
 	}
-	uID := userEdit.GetUid()
+	uID := userEdit.ID.String()
 	if !(*db).DeleteUser(uID) {
 		c.JSON(500, gin.H{"message": "Failed to delete user"})
 		return
@@ -864,7 +830,7 @@ func RefreshToken(c *gin.Context, db *database.Database) {
 		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-	uID := userInSess.GetUid()
+	uID := userInSess.ID.String()
 	sess.Token = uID + token.GenerateToken(token.TokenStringLength)
 	sess.WsPair = uID + token.GenerateToken(token.WsPairLength)
 	sess.WsToken = uID + token.GenerateToken(token.WsTokenStringLength)
@@ -996,7 +962,7 @@ func GetUser(c *gin.Context, db *database.Database) {
 		c.JSON(404, gin.H{"message": "User not found"})
 		return
 	}
-	uID := userInSess.GetUid()
+	uID := userInSess.ID.String()
 	user := (*db).GetUserFromID(uID)
 	if user == nil {
 		c.JSON(404, gin.H{"message": "User not found"})
