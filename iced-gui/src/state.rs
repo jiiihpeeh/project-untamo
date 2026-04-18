@@ -455,7 +455,11 @@ impl std::fmt::Display for CloseTaskBehavior {
 
 impl CloseTaskBehavior {
     pub fn all() -> &'static [CloseTaskBehavior] {
-        &[CloseTaskBehavior::Obey, CloseTaskBehavior::Ignore, CloseTaskBehavior::Force]
+        &[
+            CloseTaskBehavior::Obey,
+            CloseTaskBehavior::Ignore,
+            CloseTaskBehavior::Force,
+        ]
     }
 }
 
@@ -576,7 +580,11 @@ impl AddAlarmState {
             0
         };
         let date_picker_value = if alarm.date.len() >= 3 {
-            Date::from_ymd(alarm.date[0] as i32, alarm.date[1] as u32, alarm.date[2] as u32)
+            Date::from_ymd(
+                alarm.date[0] as i32,
+                alarm.date[1] as u32,
+                alarm.date[2] as u32,
+            )
         } else {
             Date::default()
         };
@@ -707,6 +715,7 @@ pub struct AppState {
     pub show_user_menu: bool,
     pub hovered_alarm: Option<String>,
     pub show_devices_modal: bool,
+    pub show_about: bool,
     pub adding_device: bool,
     /// Device ID persisted from last session; used to skip the welcome screen.
     pub saved_device_id: Option<String>,
@@ -791,6 +800,7 @@ impl AppState {
             pending_delete: None,
             show_user_menu: false,
             show_devices_modal: false,
+            show_about: false,
             hovered_alarm: None,
             adding_device: false,
             saved_device_id,

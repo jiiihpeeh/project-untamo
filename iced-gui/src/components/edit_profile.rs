@@ -9,12 +9,18 @@ use iced::{
 };
 
 fn section_label<'a>(label: &str) -> Element<'a, Message> {
-    text(label.to_string()).size(12).color(COLORS.text_secondary).into()
+    text(label.to_string())
+        .size(12)
+        .color(COLORS.text_secondary)
+        .into()
 }
 
 pub fn edit_profile_dialog<'a>(state: &'a EditProfileState) -> Element<'a, Message> {
     let title_row = row![
-        text("Edit Profile").size(20).color(COLORS.text).width(Length::Fill),
+        text("Edit Profile")
+            .size(20)
+            .color(COLORS.text)
+            .width(Length::Fill),
         button(text("✕").size(14))
             .on_press(Message::CancelEditProfile)
             .style(secondary_button())
@@ -53,14 +59,26 @@ pub fn edit_profile_dialog<'a>(state: &'a EditProfileState) -> Element<'a, Messa
         .width(Length::Fill)
         .style(text_input_style());
 
-    let pwd_toggle_label = if state.change_password { "Change Password: ON" } else { "Change Password: OFF" };
+    let pwd_toggle_label = if state.change_password {
+        "Change Password: ON"
+    } else {
+        "Change Password: OFF"
+    };
     let pwd_toggle_btn = button(text(pwd_toggle_label).size(13))
         .on_press(Message::ToggleEditChangePassword)
-        .style(if state.change_password { primary_button() } else { secondary_button() });
+        .style(if state.change_password {
+            primary_button()
+        } else {
+            secondary_button()
+        });
 
     let save_btn = button(text("Save"))
         .on_press(Message::SubmitEditProfile)
-        .style(if state.form_valid { primary_button() } else { secondary_button() });
+        .style(if state.form_valid {
+            primary_button()
+        } else {
+            secondary_button()
+        });
 
     let cancel_btn = button(text("Cancel"))
         .on_press(Message::CancelEditProfile)

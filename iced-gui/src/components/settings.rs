@@ -1,13 +1,18 @@
 use crate::messages::Message;
 use crate::state::{CloseTaskBehavior, SettingsState};
-use crate::theme::{card_container_style, danger_button, menu_style, pick_list_style, primary_button, secondary_button, COLORS};
+use crate::theme::{
+    card_container_style, danger_button, menu_style, pick_list_style, primary_button,
+    secondary_button, COLORS,
+};
 use iced::{
     widget::{button, column, container, pick_list, row, slider, text, toggler},
     Element, Length,
 };
 
 fn section_label(label: &str) -> iced::widget::Text<'static> {
-    text(label.to_string()).size(13).color(COLORS.text_secondary)
+    text(label.to_string())
+        .size(13)
+        .color(COLORS.text_secondary)
 }
 
 fn row_setting<'a>(
@@ -15,7 +20,10 @@ fn row_setting<'a>(
     control: Element<'a, Message>,
 ) -> Element<'a, Message> {
     row![
-        text(label.into()).size(14).color(COLORS.text).width(Length::Fixed(200.0)),
+        text(label.into())
+            .size(14)
+            .color(COLORS.text)
+            .width(Length::Fixed(200.0)),
         control,
     ]
     .align_y(iced::Alignment::Center)
@@ -25,7 +33,10 @@ fn row_setting<'a>(
 
 pub fn settings_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
     let title = row![
-        text("Settings").size(20).color(COLORS.text).width(Length::Fill),
+        text("Settings")
+            .size(20)
+            .color(COLORS.text)
+            .width(Length::Fill),
         button(text("✕").size(14))
             .on_press(Message::ToggleSettings)
             .style(secondary_button())
@@ -36,10 +47,18 @@ pub fn settings_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
     // --- Toolbar position ---
     let nav_top_btn = button(text("Top").size(13))
         .on_press(Message::SetNavBarTop(true))
-        .style(if state.nav_bar_top { primary_button() } else { secondary_button() });
+        .style(if state.nav_bar_top {
+            primary_button()
+        } else {
+            secondary_button()
+        });
     let nav_bot_btn = button(text("Bottom").size(13))
         .on_press(Message::SetNavBarTop(false))
-        .style(if !state.nav_bar_top { primary_button() } else { secondary_button() });
+        .style(if !state.nav_bar_top {
+            primary_button()
+        } else {
+            secondary_button()
+        });
     let nav_row = row![nav_top_btn, nav_bot_btn].spacing(6);
 
     // --- Panel size ---
@@ -54,18 +73,25 @@ pub fn settings_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
     // --- Time format ---
     let clock_24_btn = button(text("24 h").size(13))
         .on_press(Message::ToggleClock24)
-        .style(if state.clock24 { primary_button() } else { secondary_button() });
+        .style(if state.clock24 {
+            primary_button()
+        } else {
+            secondary_button()
+        });
     let clock_12_btn = button(text("12 h").size(13))
         .on_press(Message::ToggleClock24)
-        .style(if !state.clock24 { primary_button() } else { secondary_button() });
+        .style(if !state.clock24 {
+            primary_button()
+        } else {
+            secondary_button()
+        });
     let clock_row = row![clock_24_btn, clock_12_btn].spacing(6);
 
     // --- Volume ---
     let vol_label = text(format!("Volume: {:.0}%", state.volume * 100.0))
         .size(14)
         .color(COLORS.text);
-    let vol_slider = slider(0.0..=1.0, state.volume, Message::SetVolume)
-        .width(Length::Fill);
+    let vol_slider = slider(0.0..=1.0, state.volume, Message::SetVolume).width(Length::Fill);
 
     // --- Snooze press time ---
     let snooze_label = text(format!("Snooze hold: {} ms", state.snooze_press_ms))
@@ -88,7 +114,11 @@ pub fn settings_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
 
     // --- Notifications ---
     let notif_toggler = toggler(state.notifications_enabled)
-        .label(if state.notifications_enabled { "Toast" } else { "None" })
+        .label(if state.notifications_enabled {
+            "Toast"
+        } else {
+            "None"
+        })
         .on_toggle(Message::SetNotificationsEnabled);
 
     // --- Alarm colors ---

@@ -6,7 +6,9 @@ use crate::theme::{
     primary_button, secondary_button, text_input_style, COLORS,
 };
 use iced::{
-    widget::{button, checkbox, column, container, radio, row, scrollable, text, text_input, Column},
+    widget::{
+        button, checkbox, column, container, radio, row, scrollable, text, text_input, Column,
+    },
     Alignment, Element, Length,
 };
 
@@ -40,8 +42,7 @@ fn device_row<'a>(
 
     let id = device.id.clone();
     let show_col = container(
-        checkbox(is_viewable)
-            .on_toggle(move |_| Message::ToggleViewableDevice(id.clone())),
+        checkbox(is_viewable).on_toggle(move |_| Message::ToggleViewableDevice(id.clone())),
     )
     .width(Length::Fixed(52.0))
     .center_x(Length::Fixed(52.0));
@@ -49,15 +50,13 @@ fn device_row<'a>(
     let id2 = device.id.clone();
     let name2 = device.device_name.clone();
     let typ2 = device.device_type.clone();
-    let opt_col = container(
-        radio("", idx, selected_idx, move |_| {
-            Message::SelectWelcomeDevice(DeviceSelect::Device(crate::state::Device {
-                id: id2.clone(),
-                device_name: name2.clone(),
-                device_type: typ2.clone(),
-            }))
-        }),
-    )
+    let opt_col = container(radio("", idx, selected_idx, move |_| {
+        Message::SelectWelcomeDevice(DeviceSelect::Device(crate::state::Device {
+            id: id2.clone(),
+            device_name: name2.clone(),
+            device_type: typ2.clone(),
+        }))
+    }))
     .width(Length::Fixed(44.0))
     .center_x(Length::Fixed(44.0));
 
@@ -96,10 +95,7 @@ pub fn devices_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     .align_y(Alignment::Center);
 
     let current_id = state.saved_device_id.as_deref().unwrap_or("");
-    let selected_idx = state
-        .devices
-        .iter()
-        .position(|d| d.id == current_id);
+    let selected_idx = state.devices.iter().position(|d| d.id == current_id);
 
     let rows: Vec<Element<Message>> = state
         .devices
@@ -136,12 +132,10 @@ pub fn devices_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     .align_y(Alignment::Center)
     .spacing(8);
 
-    let bottom_btns = column![
-        button(text("Add a device").size(13).width(Length::Fill))
-            .on_press(Message::AddDevice)
-            .width(Length::Fill)
-            .style(secondary_button()),
-    ]
+    let bottom_btns = column![button(text("Add a device").size(13).width(Length::Fill))
+        .on_press(Message::AddDevice)
+        .width(Length::Fill)
+        .style(secondary_button()),]
     .spacing(8);
 
     let card = Column::with_children([

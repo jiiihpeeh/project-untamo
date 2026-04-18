@@ -34,23 +34,25 @@ fn toast_item<'a>(notif: &'a Notification, index: usize) -> Element<'a, Message>
     let dismiss_btn = button(text("✕").size(12).color(Color::WHITE))
         .on_press(Message::DismissNotification(index))
         .padding([2, 6])
-        .style(move |_theme: &iced::Theme, status: iced::widget::button::Status| {
-            let alpha = match status {
-                iced::widget::button::Status::Hovered => 0.25,
-                _ => 0.12,
-            };
-            iced::widget::button::Style {
-                background: Some(Background::Color(Color::from_rgba(1.0, 1.0, 1.0, alpha))),
-                border: iced::Border {
-                    color: Color::TRANSPARENT,
-                    width: 0.0,
-                    radius: iced::border::Radius::new(4.0),
-                },
-                shadow: iced::Shadow::default(),
-                text_color: Color::WHITE,
-                snap: false,
-            }
-        });
+        .style(
+            move |_theme: &iced::Theme, status: iced::widget::button::Status| {
+                let alpha = match status {
+                    iced::widget::button::Status::Hovered => 0.25,
+                    _ => 0.12,
+                };
+                iced::widget::button::Style {
+                    background: Some(Background::Color(Color::from_rgba(1.0, 1.0, 1.0, alpha))),
+                    border: iced::Border {
+                        color: Color::TRANSPARENT,
+                        width: 0.0,
+                        radius: iced::border::Radius::new(4.0),
+                    },
+                    shadow: iced::Shadow::default(),
+                    text_color: Color::WHITE,
+                    snap: false,
+                }
+            },
+        );
 
     let header = row![
         text(&notif.title).size(13).color(Color::WHITE),

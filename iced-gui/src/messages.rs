@@ -123,6 +123,8 @@ pub enum Message {
     ToggleUserMenu,
     ToggleDevicesModal,
     ToggleEditProfile,
+    ToggleAbout,
+    RefreshSession,
     SetEditScreenName(String),
     SetEditFirstName(String),
     SetEditLastName(String),

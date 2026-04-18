@@ -1,7 +1,7 @@
 use crate::components::{
-    add_alarm_dialog, alarms_view, colors_dialog, confirm_dialog, devices_view, edit_device_dialog,
-    edit_profile_dialog, login_form, navbar, notifications_view, play_alarm_view, qr_scanner,
-    register_form, settings_dialog, user_menu_view, welcome_view,
+    about_view, add_alarm_dialog, alarms_view, colors_dialog, confirm_dialog, devices_view,
+    edit_device_dialog, edit_profile_dialog, login_form, navbar, notifications_view,
+    play_alarm_view, qr_scanner, register_form, settings_dialog, user_menu_view, welcome_view,
 };
 use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
@@ -139,6 +139,10 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
 
     if state.show_user_menu {
         layers.push(modal(user_menu_view(state)));
+    }
+
+    if state.show_about {
+        layers.push(modal(about_view()));
     }
 
     if state.edit_profile.show {

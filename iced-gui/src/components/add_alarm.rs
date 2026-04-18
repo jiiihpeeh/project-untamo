@@ -18,8 +18,16 @@ pub fn add_alarm_dialog<'a>(
     clock24: bool,
 ) -> Element<'a, Message> {
     let is_editing = state.editing_alarm_id.is_some();
-    let title_text = if is_editing { "Edit Alarm" } else { "Add Alarm" };
-    let submit_text = if is_editing { "Save Changes" } else { "Add Alarm" };
+    let title_text = if is_editing {
+        "Edit Alarm"
+    } else {
+        "Add Alarm"
+    };
+    let submit_text = if is_editing {
+        "Save Changes"
+    } else {
+        "Add Alarm"
+    };
 
     let title = text(title_text).size(20).color(COLORS.text);
 
@@ -48,7 +56,11 @@ pub fn add_alarm_dialog<'a>(
         let active = state.occurrence == occ;
         button(text(label))
             .on_press(Message::SetAlarmOccurrence(occ))
-            .style(if active { primary_button() } else { secondary_button() })
+            .style(if active {
+                primary_button()
+            } else {
+                secondary_button()
+            })
     };
     let occ_row = row![
         occ_btn(AlarmOccurrence::Once),
@@ -60,7 +72,11 @@ pub fn add_alarm_dialog<'a>(
 
     // --- Weekdays (Weekly only) ---
     let weekday_btn_style = |active: bool| {
-        if active { primary_button() } else { secondary_button() }
+        if active {
+            primary_button()
+        } else {
+            secondary_button()
+        }
     };
 
     // Front uses 0-indexed bits: Mon=bit0, Tue=bit1, ..., Sun=bit6
@@ -146,8 +162,16 @@ pub fn add_alarm_dialog<'a>(
 
     let is_previewing = state.previewing_tune.is_some();
     let preview_btn = button(icon_svg(
-        if is_previewing { Icon::Square } else { Icon::Play },
-        if is_previewing { COLORS.danger } else { COLORS.primary },
+        if is_previewing {
+            Icon::Square
+        } else {
+            Icon::Play
+        },
+        if is_previewing {
+            COLORS.danger
+        } else {
+            COLORS.primary
+        },
         16.0,
     ))
     .on_press(if is_previewing {

@@ -1197,6 +1197,29 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             }
             Task::none()
         }
+        Message::ToggleAbout => {
+            state.show_about = !state.show_about;
+            Task::none()
+        }
+        Message::RefreshSession => {
+            let token = state.ws.token.clone();
+            let server = state.server_address.clone();
+            Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    let resp = client
+                        .get(format!("{}/api/session", server))
+                        .header("token", token)
+                        .send()
+                        .await;
+                    match resp {
+                        Ok(r) if r.status().is_success() => Message::ClearError,
+                        _ => Message::ClearError,
+                    }
+                },
+                |_| Message::ClearError,
+            )
+        }
         Message::SetEditScreenName(val) => {
             state.edit_profile.screen_name = val;
             state.edit_profile.validate();

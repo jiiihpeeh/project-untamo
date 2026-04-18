@@ -8,8 +8,14 @@ use iced::{
 
 pub fn confirm_dialog<'a>(pending: &'a PendingDelete) -> Element<'a, Message> {
     let (title, body) = match pending {
-        PendingDelete::Alarm(_) => ("Delete Alarm", "Are you sure you want to delete this alarm? This action cannot be undone."),
-        PendingDelete::Device(_) => ("Delete Device", "Are you sure you want to delete this device? This action cannot be undone."),
+        PendingDelete::Alarm(_) => (
+            "Delete Alarm",
+            "Are you sure you want to delete this alarm? This action cannot be undone.",
+        ),
+        PendingDelete::Device(_) => (
+            "Delete Device",
+            "Are you sure you want to delete this device? This action cannot be undone.",
+        ),
     };
 
     let header = row![
@@ -38,7 +44,5 @@ pub fn confirm_dialog<'a>(pending: &'a PendingDelete) -> Element<'a, Message> {
         .padding(24)
         .width(Length::Fixed(360.0));
 
-    container(card)
-        .style(card_container_style())
-        .into()
+    container(card).style(card_container_style()).into()
 }
