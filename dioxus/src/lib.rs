@@ -71,7 +71,7 @@ pub struct Alarm {
     pub occurrence: String,
 }
 
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Device {
     pub id: String,
     pub device_name: String,
@@ -449,55 +449,127 @@ fn Register() -> Element {
 #[component]
 fn Welcome() -> Element {
     let mut store = use_store();
-    let has_device = store.read().current_device.is_some();
+    let user = store.read().user.clone();
     let clock_24 = store.read().clock_24;
+    let devices = store.read().devices.clone();
+    let current_device = store.read().current_device.clone();
+
+    let user_name = user
+        .as_ref()
+        .map(|u| u.screen_name.clone())
+        .unwrap_or_default();
+
+    if current_device.is_some() {
+        let mut s = store.write();
+        s.current_path = Path::Alarms;
+    }
 
     rsx! {
-        div { style: "text-align: center; padding: 40px;",
-            h1 { style: "font-size: 3rem; font-weight: bold; color: var(--primary);", "Untamo" }
-            p { style: "font-size: 1.25rem; color: #666; margin: 16px 0;", "Your synchronized alarm clock" }
+        div { style: "max-width: 400px; margin: 0 auto; padding: 24px; text-align: center;",
+            if !user_name.is_empty() {
+                h2 { style: "font-size: 1.25rem; font-weight: bold; margin-bottom: 16px;", "Welcome, ", b { "{user_name}" } }
+            }
 
-            if !has_device {
-                button {
-                    class: "btn btn-primary",
-                    style: "padding: 16px 32px; font-size: 1.125rem;",
-                    onclick: move |_| {
-                        let mut s = store.write();
-                        s.devices.push(Device { id: "demo".to_string(), device_name: "My Device".to_string() });
-                        s.current_device = Some(Device { id: "demo".to_string(), device_name: "My Device".to_string() });
-                    },
-                    "Add Device"
-                }
-            } else {
-                p { style: "margin-top: 24px; font-size: 1.125rem;", "Choose time format:" }
-                div { style: "display: flex; gap: 16px; justify-content: center; margin-top: 16px;",
-                    button {
-                        class: if clock_24 { "btn" } else { "btn btn-primary" },
-                        onclick: move |_| {
-                            let mut s = store.write();
-                            s.clock_24 = true;
-                        },
-                        "24h"
-                    }
+            div { style: "padding: 16px 0;",
+                b { style: "display: block; margin-bottom: 12px;", "Time Format" }
+                div { style: "display: flex; gap: 12px; justify-content: center;",
                     button {
                         class: if clock_24 { "btn btn-primary" } else { "btn" },
                         onclick: move |_| {
                             let mut s = store.write();
+                            s.clock_24 = true;
+                        },
+                        "24 h"
+                    }
+                    button {
+                        class: if clock_24 { "btn" } else { "btn btn-primary" },
+                        onclick: move |_| {
+                            let mut s = store.write();
                             s.clock_24 = false;
                         },
-                        "12h"
+                        "12 h"
                     }
                 }
-                button {
-                    class: "btn btn-primary",
-                    style: "padding: 16px 32px; font-size: 1.125rem; margin-top: 24px;",
-                    onclick: move |_| {
-                        let mut s = store.write();
-                        s.current_path = Path::Alarms;
-                    },
-                    "View Alarms"
+            }
+
+            div { style: "padding: 16px 0; text-align: center;",
+                if devices.is_empty() {
+                    button {
+                        class: "btn btn-primary",
+                        style: "width: 50%; padding: 12px;",
+                        onclick: move |_| {
+                            let mut s = store.write();
+                            let new_device = Device { id: "demo".to_string(), device_name: "My Device".to_string() };
+                            s.devices.push(new_device.clone());
+                            s.current_device = Some(new_device);
+                            s.current_path = Path::Alarms;
+                        },
+                        "Add a device"
+                    }
+                } else {
+                    DeviceMenuList { devices: devices.clone() }
                 }
             }
+        }
+    }
+}
+
+#[component]
+fn DeviceMenuList(devices: Vec<Device>) -> Element {
+    let mut store = use_store();
+
+    rsx! {
+        div { style: "text-align: center;",
+            div { style: "margin-bottom: 16px;", "Select a Device" }
+            DeviceButtons { devices: devices }
+            div { style: "margin: 8px 0;", "or" }
+            button {
+                class: "btn btn-primary",
+                style: "width: 50%;",
+                onclick: move |_| {
+                    let mut s = store.write();
+                    let new_device = Device { id: "demo".to_string(), device_name: "My Device".to_string() };
+                    s.devices.push(new_device.clone());
+                    s.current_device = Some(new_device);
+                    s.current_path = Path::Alarms;
+                },
+                "Add a device"
+            }
+        }
+    }
+}
+
+#[component]
+fn DeviceButtons(devices: Vec<Device>) -> Element {
+    let mut store = use_store();
+    let n = devices.len();
+
+    rsx! {
+        div { style: "display: flex; flex-direction: column; align-items: center; gap: 8px;",
+            if n > 0 {
+                DeviceButton { id: devices[0].id.clone(), name: devices[0].device_name.clone() }
+            }
+            if n > 1 {
+                DeviceButton { id: devices[1].id.clone(), name: devices[1].device_name.clone() }
+            }
+        }
+    }
+}
+
+#[component]
+fn DeviceButton(id: String, name: String) -> Element {
+    let mut store = use_store();
+
+    rsx! {
+        button {
+            class: "btn",
+            style: "width: 60%;",
+            onclick: move |_| {
+                let mut s = store.write();
+                s.current_device = Some(Device { id: id.clone(), device_name: name.clone() });
+                s.current_path = Path::Alarms;
+            },
+            "{name}"
         }
     }
 }

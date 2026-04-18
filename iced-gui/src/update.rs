@@ -136,6 +136,46 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 state.add_alarm.previewing_tune = None;
                 state.add_alarm.preview_started = false;
             }
+            // Clear logo animation after 2s
+            if let Some(start) = state.logo_anim_start {
+                if start.elapsed().as_secs_f32() >= 2.0 {
+                    state.logo_anim_start = None;
+                }
+            }
+            // Advance alarm-screen animation tick while on PlayAlarm page
+            if state.page == AppPage::PlayAlarm {
+                state.alarm_anim_tick += 0.016;
+            }
+
+            // ── Alarm scheduler: check once per minute ────────────────────────
+            let mut alarm_to_fire: Option<String> = None;
+            if state.page != AppPage::PlayAlarm && state.login.session_status == crate::state::SessionStatus::Valid {
+                use chrono::Timelike;
+                let chrono_now = chrono::Local::now();
+                let current_minute = (chrono_now.hour(), chrono_now.minute());
+                if state.last_alarm_minute != Some(current_minute) {
+                    state.last_alarm_minute = Some(current_minute);
+                    let selected_device_id = match &state.welcome.selected_device {
+                        crate::state::DeviceSelect::Device(d) => Some(d.id.clone()),
+                        crate::state::DeviceSelect::None => None,
+                    };
+                    for alarm in &state.alarms {
+                        if !alarm.active { continue; }
+                        if let Some(ref dev_id) = selected_device_id {
+                            if !alarm.devices.contains(dev_id) { continue; }
+                        }
+                        if alarm_should_fire_now(alarm, &chrono_now) {
+                            alarm_to_fire = Some(alarm.id.clone());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if let Some(alarm_id) = alarm_to_fire {
+                return Task::perform(async move { alarm_id }, Message::TriggerAlarm);
+            }
+
             Task::none()
         }
         Message::ValidateSession => {
@@ -481,6 +521,9 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             }
         }
         Message::NavigateTo(page) => {
+            if page != AppPage::Alarms {
+                state.show_alarm_pop = false;
+            }
             state.page = page;
             Task::none()
         }
@@ -594,6 +637,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
         }
         Message::SetVolume(volume) => {
             state.settings.volume = volume;
+            audio::set_audio_volume(volume);
             save_settings_from_state(state);
             Task::none()
         }
@@ -918,28 +962,141 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.add_alarm = crate::state::AddAlarmState::new();
             Task::none()
         }
+        Message::ToggleAlarmPop => {
+            state.show_alarm_pop = !state.show_alarm_pop;
+            Task::none()
+        }
+        Message::ResetSnooze(alarm_id) => {
+            if let Some(alarm) = state.alarms.iter_mut().find(|a| a.id == alarm_id) {
+                alarm.snooze.clear();
+                let updated = alarm.clone();
+                let server = state.server_address.clone();
+                let token = state.ws.token.clone();
+                return iced::Task::perform(
+                    async move {
+                        let client = reqwest::Client::new();
+                        match client
+                            .put(format!("{}/api/alarm/{}", server, updated.id))
+                            .header("token", &token)
+                            .json(&updated)
+                            .send()
+                            .await
+                        {
+                            Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                            Ok(resp) => Message::AlarmEditResult(Err(format!("HTTP {}", resp.status()))),
+                            Err(e) => Message::AlarmEditResult(Err(e.to_string())),
+                        }
+                    },
+                    |m| m,
+                );
+            }
+            Task::none()
+        }
         Message::TriggerAlarm(alarm_id) => {
             if let Some(alarm) = state.alarms.iter().find(|a| a.id == alarm_id) {
+                let tune = alarm.tune.clone();
                 state.playing_alarm = Some(alarm.clone());
+                state.alarm_anim_tick = 0.0;
                 state.page = AppPage::PlayAlarm;
-                if let Err(e) = audio::play_audio_file(&alarm.tune, state.settings.volume, true) {
-                    println!("Failed to play alarm: {}", e);
-                }
+                let server = state.server_address.clone();
+                let token = state.ws.token.clone();
+                return Task::perform(
+                    async move {
+                        let client = reqwest::Client::new();
+                        for ext in &["wav", "opus", "flac"] {
+                            let url = format!("{}/audio-resources/{}.{}", server, tune, ext);
+                            if let Ok(resp) = client.get(&url).header("token", &token).send().await {
+                                if resp.status().is_success() {
+                                    if let Ok(bytes) = resp.bytes().await {
+                                        let tmp = std::env::temp_dir()
+                                            .join(format!("untamo_alarm.{}", ext));
+                                        if std::fs::write(&tmp, &bytes).is_ok() {
+                                            return Ok(tmp.to_string_lossy().into_owned());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Err(())
+                    },
+                    |result| match result {
+                        Ok(path) => Message::PlayAlarmAudio(path),
+                        Err(_) => Message::StopAudio,
+                    },
+                );
+            }
+            Task::none()
+        }
+        Message::PlayAlarmAudio(path) => {
+            let volume = state.settings.volume;
+            if let Err(e) = audio::play_audio_file(&path, volume, true) {
+                println!("Alarm audio play error: {}", e);
             }
             Task::none()
         }
         Message::SnoozeAlarm => {
             audio::stop_audio();
             state.playing_alarm = None;
+            state.alarm_anim_tick = 0.0;
+            state.snooze_press_start = None;
             state.page = AppPage::Alarms;
             add_notification(state, "Alarm", format!("Snoozed for {} minutes", state.snooze_minutes));
             Task::none()
         }
+        Message::SnoozePressStart => {
+            state.snooze_press_start = Some(std::time::Instant::now());
+            Task::none()
+        }
+        Message::SnoozePressEnd => {
+            if let Some(start) = state.snooze_press_start.take() {
+                let required = std::time::Duration::from_millis(state.settings.snooze_press_ms as u64);
+                if start.elapsed() >= required {
+                    audio::stop_audio();
+                    state.playing_alarm = None;
+                    state.alarm_anim_tick = 0.0;
+                    state.page = AppPage::Alarms;
+                    add_notification(state, "Alarm", format!("Snoozed for {} minutes", state.snooze_minutes));
+                }
+            }
+            Task::none()
+        }
         Message::DismissAlarm => {
             audio::stop_audio();
-            state.playing_alarm = None;
+            let dismissed_alarm = state.playing_alarm.take();
+            let turn_off = state.turn_off;
             state.turn_off = false;
+            state.alarm_anim_tick = 0.0;
+            state.snooze_press_start = None;
             state.page = AppPage::Alarms;
+
+            // If "Turn alarm OFF" was checked, deactivate the alarm on the server.
+            if turn_off {
+                if let Some(mut alarm) = dismissed_alarm {
+                    alarm.active = false;
+                    if let Some(existing) = state.alarms.iter_mut().find(|a| a.id == alarm.id) {
+                        existing.active = false;
+                    }
+                    let server = state.server_address.clone();
+                    let token = state.ws.token.clone();
+                    return iced::Task::perform(
+                        async move {
+                            let client = reqwest::Client::new();
+                            match client
+                                .put(format!("{}/api/alarm/{}", server, alarm.id))
+                                .header("token", &token)
+                                .json(&alarm)
+                                .send()
+                                .await
+                            {
+                                Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                                Ok(resp) => Message::AlarmEditResult(Err(format!("HTTP {}", resp.status()))),
+                                Err(e) => Message::AlarmEditResult(Err(e.to_string())),
+                            }
+                        },
+                        |m| m,
+                    );
+                }
+            }
             Task::none()
         }
         Message::SetTurnOff(value) => {
@@ -1199,6 +1356,14 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
         }
         Message::ToggleAbout => {
             state.show_about = !state.show_about;
+            Task::none()
+        }
+        Message::LogoHovered => {
+            state.logo_anim_start = Some(std::time::Instant::now());
+            Task::none()
+        }
+        Message::LogoUnhovered => {
+            // Let the animation finish naturally; FrameTick clears it after 2s
             Task::none()
         }
         Message::RefreshSession => {
@@ -1485,7 +1650,6 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.add_alarm.date_picker_value = date;
             Task::none()
         }
-        _ => Task::none()
     }
 }
 
@@ -1577,13 +1741,20 @@ fn handle_ws_message(state: &mut AppState, msg: WsMsg) {
         WsMessageType::DeviceAdd => {
             if let Some(device) = parse_device(&msg.data) {
                 if !state.devices.iter().any(|d| d.id == device.id) {
+                    let id = device.id.clone();
                     state.devices.push(device);
+                    if !state.viewable_devices.contains(&id) {
+                        state.viewable_devices.push(id);
+                        save_settings_from_state(state);
+                    }
                 }
             }
         }
         WsMessageType::DeviceDelete => {
             if let Some(id) = msg.data.as_str() {
                 state.devices.retain(|d| d.id != id);
+                state.viewable_devices.retain(|v| v != id);
+                save_settings_from_state(state);
             }
         }
         WsMessageType::DeviceEdit => {
@@ -1653,6 +1824,42 @@ fn parse_web_colors(value: &serde_json::Value) -> Option<WebColors> {
         inactive: value.get("inactive")?.as_str()?.to_string(),
         background: value.get("background")?.as_str()?.to_string(),
     })
+}
+
+fn alarm_should_fire_now(alarm: &crate::state::Alarm, now: &chrono::DateTime<chrono::Local>) -> bool {
+    use chrono::{Datelike, Timelike};
+    if alarm.time.len() < 2 {
+        return false;
+    }
+    let h = alarm.time[0] as u32;
+    let m = alarm.time[1] as u32;
+    if now.hour() != h || now.minute() != m {
+        return false;
+    }
+    match alarm.occurrence.to_lowercase().as_str() {
+        "daily" => true,
+        "weekly" => {
+            let today_wd = now.weekday().num_days_from_monday(); // Mon=0..Sun=6
+            alarm.weekdays & (1 << today_wd) != 0
+        }
+        "once" => {
+            if alarm.date.len() >= 3 {
+                alarm.date[0] as i32 == now.year()
+                    && alarm.date[1] as u32 == now.month()
+                    && alarm.date[2] as u32 == now.day()
+            } else {
+                false
+            }
+        }
+        "yearly" => {
+            if alarm.date.len() >= 3 {
+                alarm.date[1] as u32 == now.month() && alarm.date[2] as u32 == now.day()
+            } else {
+                false
+            }
+        }
+        _ => false,
+    }
 }
 
 fn update_register_validity(state: &mut AppState) {

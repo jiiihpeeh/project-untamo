@@ -721,6 +721,16 @@ pub struct AppState {
     pub saved_device_id: Option<String>,
     /// Which device IDs should show their alarms (mirrors frontend viewableDevices).
     pub viewable_devices: Vec<String>,
+    /// When the logo hover animation started (runs for 2 s then stops).
+    pub logo_anim_start: Option<std::time::Instant>,
+    /// Accumulated tick for the play-alarm animation (seconds, wraps freely).
+    pub alarm_anim_tick: f32,
+    /// When the snooze button was first pressed (for hold-to-snooze timing).
+    pub snooze_press_start: Option<std::time::Instant>,
+    /// Last (hour, minute) when alarm scheduling was checked — avoids duplicate triggers.
+    pub last_alarm_minute: Option<(u32, u32)>,
+    /// Whether the alarm info pop-bubble is visible.
+    pub show_alarm_pop: bool,
 }
 
 impl AppState {
@@ -805,6 +815,11 @@ impl AppState {
             adding_device: false,
             saved_device_id,
             viewable_devices,
+            logo_anim_start: None,
+            alarm_anim_tick: 0.0,
+            snooze_press_start: None,
+            last_alarm_minute: None,
+            show_alarm_pop: false,
         }
     }
 }

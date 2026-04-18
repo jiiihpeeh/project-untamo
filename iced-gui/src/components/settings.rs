@@ -91,7 +91,9 @@ pub fn settings_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
     let vol_label = text(format!("Volume: {:.0}%", state.volume * 100.0))
         .size(14)
         .color(COLORS.text);
-    let vol_slider = slider(0.0..=1.0, state.volume, Message::SetVolume).width(Length::Fill);
+    let vol_slider = slider(0.0..=1.0, state.volume, Message::SetVolume)
+        .step(0.01f32)
+        .width(Length::Fill);
 
     // --- Snooze press time ---
     let snooze_label = text(format!("Snooze hold: {} ms", state.snooze_press_ms))

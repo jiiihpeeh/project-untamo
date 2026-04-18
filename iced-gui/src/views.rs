@@ -1,8 +1,9 @@
 use crate::components::{
-    about_view, add_alarm_dialog, alarms_view, colors_dialog, confirm_dialog, devices_view,
-    edit_device_dialog, edit_profile_dialog, login_form, navbar, notifications_view,
+    about_view, add_alarm_dialog, alarm_pop_view, alarms_view, colors_dialog, confirm_dialog,
+    devices_view, edit_device_dialog, edit_profile_dialog, login_form, navbar, notifications_view,
     play_alarm_view, qr_scanner, register_form, settings_dialog, user_menu_view, welcome_view,
 };
+use crate::components::alarm_pop::{POP_WIDTH, TAIL_H};
 use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
 use iced::{
@@ -85,6 +86,7 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
         state.login.user_info.as_ref(),
         state.settings.panel_size,
         state.show_devices_modal,
+        state.logo_anim_start,
     );
 
     let main_content: Element<Message> = match page {
@@ -164,6 +166,47 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
             &state.editing_device_name,
             &state.editing_device_type,
         )));
+    }
+
+    // Alarm pop-bubble — anchored just below/above the navbar near the Alarms button
+    if state.show_alarm_pop && state.page == AppPage::Alarms {
+        // Approximate left offset so the bubble tail lines up with the Alarms nav link.
+        // TAIL_X inside the popup is ~32% of POP_WIDTH, so we shift the popup left by that
+        // amount from the estimated Alarms-button center (≈ panel_size * 2.5).
+        let ps = state.settings.panel_size as f32;
+        let approx_alarms_cx = ps * 2.5;
+        let left = (approx_alarms_cx - POP_WIDTH * 0.32).max(4.0);
+
+        // Overlap the tail tip into the navbar by (TAIL_H - 4) px so the bubble
+        // is visually connected to the Alarms button.
+        let tail_overlap = ps - TAIL_H + 4.0;
+
+        let pop_layer: Element<Message> = if state.settings.nav_bar_top {
+            // Navbar at top → tail tip overlaps up into navbar, card hangs below
+            container(alarm_pop_view(state, true))
+                .align_left(Length::Fill)
+                .align_top(Length::Fill)
+                .padding(iced::Padding {
+                    top: tail_overlap,
+                    left,
+                    right: 0.0,
+                    bottom: 0.0,
+                })
+                .into()
+        } else {
+            // Navbar at bottom → card above navbar, tail tip overlaps down into navbar
+            container(alarm_pop_view(state, false))
+                .align_left(Length::Fill)
+                .align_bottom(Length::Fill)
+                .padding(iced::Padding {
+                    top: 0.0,
+                    left,
+                    right: 0.0,
+                    bottom: tail_overlap,
+                })
+                .into()
+        };
+        layers.push(pop_layer);
     }
 
     // Toast notifications — top-right overlay (always on top)

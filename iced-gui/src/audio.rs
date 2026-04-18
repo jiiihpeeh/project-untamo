@@ -110,10 +110,12 @@ fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
             }
             Ok(AudioCommand::CheckFinished) => {
                 if let Some(ref s) = state.sink {
-                    if s.empty() && !s.is_paused() {
+                    if s.empty() && !s.is_paused() && !state.looping {
                         drop(state.sink.take());
                         drop(state.stream.take());
                         drop(state.stream_handle.take());
+                        state.looping = false;
+                        set_playing(false);
                     }
                 }
             }
@@ -132,7 +134,7 @@ fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
                     s.set_volume(volume);
                 }
             }
-            Ok(AudioCommand::CheckFinished) | Err(mpsc::RecvTimeoutError::Timeout) => {
+            Err(mpsc::RecvTimeoutError::Timeout) => {
                 if let Some(ref s) = state.sink {
                     if s.empty() && !s.is_paused() && !state.looping {
                         drop(state.sink.take());
@@ -144,9 +146,6 @@ fn audio_thread(rx: mpsc::Receiver<AudioCommand>) {
                 }
             }
             Err(mpsc::RecvTimeoutError::Disconnected) => {
-                break;
-            }
-            Err(_) => {
                 break;
             }
         }

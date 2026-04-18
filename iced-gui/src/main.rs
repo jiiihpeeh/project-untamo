@@ -72,5 +72,5 @@ pub fn main() -> iced::Result {
 
 fn frame_tick_subscription() -> Subscription<messages::Message> {
     use std::time::Duration;
-    iced::time::every(Duration::from_millis(50)).map(|_| messages::Message::FrameTick)
+    iced::time::every(Duration::from_millis(16)).map(|_| messages::Message::FrameTick)
 }

@@ -9,7 +9,7 @@ use iced::{
     widget::{
         button, checkbox, column, container, radio, row, scrollable, text, text_input, Column,
     },
-    Alignment, Element, Length,
+    Alignment, Color, Element, Length,
 };
 
 // ── table header ─────────────────────────────────────────────────────────────
@@ -21,6 +21,17 @@ fn header_cell(label: &'static str, width: Length) -> Element<'static, Message> 
         .into()
 }
 
+fn device_type_icon(typ: &str) -> Icon {
+    match typ {
+        "Phone" => Icon::Smartphone,
+        "Tablet" => Icon::Tablet,
+        "Browser" => Icon::Globe,
+        "Desktop" => Icon::Monitor,
+        "IoT" => Icon::Cpu,
+        _ => Icon::LayoutGrid,
+    }
+}
+
 // ── one device row ────────────────────────────────────────────────────────────
 
 fn device_row<'a>(
@@ -29,13 +40,16 @@ fn device_row<'a>(
     is_viewable: bool,
     selected_idx: Option<usize>,
 ) -> Element<'a, Message> {
+    let icon = device_type_icon(&device.device_type);
     let name_col = container(
         row![
-            text(&device.device_name).size(13).color(COLORS.text),
-            text(format!("  {}", device.device_type))
-                .size(11)
-                .color(COLORS.text_secondary),
+            icon_svg(icon, COLORS.text_secondary, 14.0),
+            text(&device.device_name)
+                .size(13)
+                .color(COLORS.text)
+                .width(Length::Fill),
         ]
+        .spacing(6)
         .align_y(Alignment::Center),
     )
     .width(Length::Fill);
