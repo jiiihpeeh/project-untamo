@@ -362,6 +362,9 @@ pub struct SettingsState {
     pub web_colors: WebColors,
     pub card_colors: CardColors,
     pub color_mode: ColorMode,
+    pub close_task_behavior: CloseTaskBehavior,
+    pub snooze_press_ms: u32,
+    pub notifications_enabled: bool,
 }
 
 impl SettingsState {
@@ -379,6 +382,9 @@ impl SettingsState {
             web_colors: WebColors::default(),
             card_colors: CardColors::default(),
             color_mode: ColorMode::Odd,
+            close_task_behavior: CloseTaskBehavior::Obey,
+            snooze_press_ms: 200,
+            notifications_enabled: true,
         }
     }
 }
@@ -414,12 +420,99 @@ impl Default for WsState {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum NotificationKind {
+    Success,
+    Error,
+    Warning,
+    Info,
+}
+
 #[derive(Clone, Debug)]
 pub struct Notification {
     pub title: String,
     pub message: String,
-    #[allow(dead_code)]
+    pub kind: NotificationKind,
     pub timestamp: std::time::Instant,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum CloseTaskBehavior {
+    Obey,
+    Ignore,
+    Force,
+}
+
+impl std::fmt::Display for CloseTaskBehavior {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CloseTaskBehavior::Obey => write!(f, "Obey"),
+            CloseTaskBehavior::Ignore => write!(f, "Ignore"),
+            CloseTaskBehavior::Force => write!(f, "Force"),
+        }
+    }
+}
+
+impl CloseTaskBehavior {
+    pub fn all() -> &'static [CloseTaskBehavior] {
+        &[CloseTaskBehavior::Obey, CloseTaskBehavior::Ignore, CloseTaskBehavior::Force]
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum AlarmOccurrence {
+    Once,
+    Daily,
+    Weekly,
+    Yearly,
+}
+
+impl AlarmOccurrence {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            AlarmOccurrence::Once => "once",
+            AlarmOccurrence::Daily => "daily",
+            AlarmOccurrence::Weekly => "weekly",
+            AlarmOccurrence::Yearly => "yearly",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Self {
+        match s.to_lowercase().as_str() {
+            "once" => AlarmOccurrence::Once,
+            "daily" => AlarmOccurrence::Daily,
+            "yearly" => AlarmOccurrence::Yearly,
+            _ => AlarmOccurrence::Weekly,
+        }
+    }
+
+    pub fn all() -> &'static [AlarmOccurrence] {
+        &[
+            AlarmOccurrence::Once,
+            AlarmOccurrence::Daily,
+            AlarmOccurrence::Weekly,
+            AlarmOccurrence::Yearly,
+        ]
+    }
+
+    pub fn shows_date(&self) -> bool {
+        matches!(self, AlarmOccurrence::Once | AlarmOccurrence::Yearly)
+    }
+
+    pub fn shows_weekdays(&self) -> bool {
+        matches!(self, AlarmOccurrence::Weekly)
+    }
+}
+
+impl std::fmt::Display for AlarmOccurrence {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AlarmOccurrence::Once => write!(f, "Once"),
+            AlarmOccurrence::Daily => write!(f, "Daily"),
+            AlarmOccurrence::Weekly => write!(f, "Weekly"),
+            AlarmOccurrence::Yearly => write!(f, "Yearly"),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -431,8 +524,11 @@ pub struct AddAlarmState {
     pub time_hour: u8,
     pub time_minute: u8,
     pub weekdays: u8,
-    pub occurrence: String,
+    pub occurrence: AlarmOccurrence,
     pub tune: String,
+    pub active: bool,
+    pub close_task: bool,
+    pub devices: Vec<String>,
     pub show_time_picker: bool,
     pub time_picker_value: Time,
     pub show_date_picker: bool,
@@ -444,12 +540,15 @@ impl AddAlarmState {
         AddAlarmState {
             show: false,
             editing_alarm_id: None,
-            label: String::new(),
+            label: "Alarm".to_string(),
             time_hour: 8,
             time_minute: 0,
             weekdays: 0,
-            occurrence: "Daily".to_string(),
-            tune: String::new(),
+            occurrence: AlarmOccurrence::Weekly,
+            tune: "rooster".to_string(),
+            active: true,
+            close_task: false,
+            devices: Vec::new(),
             show_time_picker: false,
             time_picker_value: Time::Hm {
                 hour: 8,
@@ -472,6 +571,11 @@ impl AddAlarmState {
         } else {
             0
         };
+        let date_picker_value = if alarm.date.len() >= 3 {
+            Date::from_ymd(alarm.date[0] as i32, alarm.date[1] as u32, alarm.date[2] as u32)
+        } else {
+            Date::default()
+        };
         AddAlarmState {
             show: true,
             editing_alarm_id: Some(alarm.id.clone()),
@@ -479,8 +583,11 @@ impl AddAlarmState {
             time_hour: time_hour as u8,
             time_minute: time_minute as u8,
             weekdays: alarm.weekdays,
-            occurrence: alarm.occurrence.clone(),
+            occurrence: AlarmOccurrence::from_str(&alarm.occurrence),
             tune: alarm.tune.clone(),
+            active: alarm.active,
+            close_task: alarm.close_task,
+            devices: alarm.devices.clone(),
             show_time_picker: false,
             time_picker_value: Time::Hm {
                 hour: time_hour,
@@ -488,7 +595,7 @@ impl AddAlarmState {
                 period: Period::H24,
             },
             show_date_picker: false,
-            date_picker_value: Date::default(),
+            date_picker_value,
         }
     }
 }
@@ -582,6 +689,8 @@ pub struct AppState {
     pub editing_device: Option<Device>,
     pub editing_device_name: String,
     pub editing_device_type: DeviceType,
+    pub available_tunes: Vec<String>,
+    pub window_id: Option<iced::window::Id>,
 }
 
 impl AppState {
@@ -653,6 +762,8 @@ impl AppState {
             editing_device: None,
             editing_device_name: String::new(),
             editing_device_type: DeviceType::default(),
+            available_tunes: vec!["rooster".to_string()],
+            window_id: None,
         }
     }
 }

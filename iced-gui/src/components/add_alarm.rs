@@ -1,39 +1,34 @@
 use crate::messages::Message;
-use crate::state::AddAlarmState;
+use crate::state::{AddAlarmState, AlarmOccurrence, Device};
 use crate::theme::{
-    card_container_style, danger_button, primary_button, secondary_button, text_input_style, COLORS,
+    card_container_style, danger_button, menu_style, primary_button, secondary_button,
+    text_input_style, COLORS,
 };
-use iced::widget::{button, column, container, row, text, text_input};
+use iced::widget::{
+    button, checkbox, column, container, pick_list, row, scrollable, text, text_input, toggler,
+};
 use iced::Element;
 use iced_aw::helpers::{date_picker, time_picker};
 
-pub fn add_alarm_dialog<'a>(state: &'a AddAlarmState) -> Element<'a, Message> {
+pub fn add_alarm_dialog<'a>(
+    state: &'a AddAlarmState,
+    devices: &'a [Device],
+    available_tunes: &'a [String],
+) -> Element<'a, Message> {
     let is_editing = state.editing_alarm_id.is_some();
-    let title_text = if is_editing {
-        "Edit Alarm"
-    } else {
-        "Add Alarm"
-    };
-    let title = text(title_text).size(24).color(COLORS.text);
-    let submit_text = if is_editing {
-        "Save Changes"
-    } else {
-        "Add Alarm"
-    };
+    let title_text = if is_editing { "Edit Alarm" } else { "Add Alarm" };
+    let submit_text = if is_editing { "Save Changes" } else { "Add Alarm" };
 
-    let label_input = text_input("Alarm label", &state.label)
-        .on_input(Message::SetAlarmLabel)
-        .padding(10)
-        .width(iced::Length::Fixed(250.0))
-        .style(text_input_style());
+    let title = text(title_text).size(20).color(COLORS.text);
 
+    // --- Time ---
     let time_display = text(format!("{:02}:{:02}", state.time_hour, state.time_minute))
         .size(48)
         .color(COLORS.primary);
 
     let time_btn = button(text("Set Time"))
         .on_press(Message::OpenTimePicker)
-        .style(primary_button());
+        .style(secondary_button());
 
     let time_picker_overlay = time_picker(
         state.show_time_picker,
@@ -43,46 +38,54 @@ pub fn add_alarm_dialog<'a>(state: &'a AddAlarmState) -> Element<'a, Message> {
         |t| Message::SubmitTimePicker(t),
     );
 
-    let weekdays_label = text("Repeat:").size(14).color(COLORS.text);
+    // --- Occurrence ---
+    let occ_label = text("Type:").size(13).color(COLORS.text);
+    let occ_btn = |occ: AlarmOccurrence| {
+        let label = format!("{}", occ);
+        let active = state.occurrence == occ;
+        button(text(label))
+            .on_press(Message::SetAlarmOccurrence(occ))
+            .style(if active { primary_button() } else { secondary_button() })
+    };
+    let occ_row = row![
+        occ_btn(AlarmOccurrence::Once),
+        occ_btn(AlarmOccurrence::Daily),
+        occ_btn(AlarmOccurrence::Weekly),
+        occ_btn(AlarmOccurrence::Yearly),
+    ]
+    .spacing(6);
 
+    // --- Weekdays (Weekly only) ---
     let weekday_btn_style = |active: bool| {
-        if active {
-            primary_button()
-        } else {
-            secondary_button()
-        }
+        if active { primary_button() } else { secondary_button() }
     };
 
-    let mon_active = (state.weekdays & 1) != 0;
-    let tue_active = (state.weekdays & 2) != 0;
-    let wed_active = (state.weekdays & 4) != 0;
-    let thu_active = (state.weekdays & 8) != 0;
-    let fri_active = (state.weekdays & 16) != 0;
-    let sat_active = (state.weekdays & 32) != 0;
-    let sun_active = (state.weekdays & 64) != 0;
+    // Front uses 0-indexed bits: Mon=bit0, Tue=bit1, ..., Sun=bit6
+    let weekdays_row = {
+        let days: &[(&str, u8)] = &[
+            ("Mon", 0),
+            ("Tue", 1),
+            ("Wed", 2),
+            ("Thu", 3),
+            ("Fri", 4),
+            ("Sat", 5),
+            ("Sun", 6),
+        ];
+        let mut r = row![].spacing(4);
+        for (label, bit) in days {
+            let mask = 1u8 << bit;
+            let active = (state.weekdays & mask) != 0;
+            r = r.push(
+                button(text(*label))
+                    .on_press(Message::SetAlarmWeekday(mask))
+                    .style(weekday_btn_style(active))
+                    .width(iced::Length::Fixed(46.0)),
+            );
+        }
+        r
+    };
 
-    let mon_btn = button(text("Mon"))
-        .on_press(Message::SetAlarmWeekday(1))
-        .style(weekday_btn_style(mon_active));
-    let tue_btn = button(text("Tue"))
-        .on_press(Message::SetAlarmWeekday(2))
-        .style(weekday_btn_style(tue_active));
-    let wed_btn = button(text("Wed"))
-        .on_press(Message::SetAlarmWeekday(4))
-        .style(weekday_btn_style(wed_active));
-    let thu_btn = button(text("Thu"))
-        .on_press(Message::SetAlarmWeekday(8))
-        .style(weekday_btn_style(thu_active));
-    let fri_btn = button(text("Fri"))
-        .on_press(Message::SetAlarmWeekday(16))
-        .style(weekday_btn_style(fri_active));
-    let sat_btn = button(text("Sat"))
-        .on_press(Message::SetAlarmWeekday(32))
-        .style(weekday_btn_style(sat_active));
-    let sun_btn = button(text("Sun"))
-        .on_press(Message::SetAlarmWeekday(64))
-        .style(weekday_btn_style(sun_active));
-
+    // --- Date (Once / Yearly) ---
     let date_btn = button(text("Set Date"))
         .on_press(Message::OpenDatePicker)
         .style(secondary_button());
@@ -95,6 +98,62 @@ pub fn add_alarm_dialog<'a>(state: &'a AddAlarmState) -> Element<'a, Message> {
         |d| Message::SubmitDatePicker(d),
     );
 
+    let date_display = {
+        let d = state.date_picker_value;
+        text(format!("{:04}-{:02}-{:02}", d.year, d.month, d.day))
+            .size(14)
+            .color(COLORS.text)
+    };
+
+    // --- Label ---
+    let label_input = text_input("Alarm label", &state.label)
+        .on_input(Message::SetAlarmLabel)
+        .padding(10)
+        .width(iced::Length::Fill)
+        .style(text_input_style());
+
+    // --- Devices ---
+    let devices_label = text("Devices:").size(13).color(COLORS.text);
+    let device_list: Element<'a, Message> = if devices.is_empty() {
+        text("No devices").size(13).color(COLORS.text).into()
+    } else {
+        let mut col = column![].spacing(4);
+        for device in devices {
+            let checked = state.devices.contains(&device.id);
+            let id = device.id.clone();
+            let label = format!("{} ({})", device.device_name, device.device_type);
+            col = col.push(
+                checkbox(checked)
+                    .label(label)
+                    .on_toggle(move |_| Message::ToggleAlarmDevice(id.clone()))
+                    .size(16),
+            );
+        }
+        scrollable(col).height(iced::Length::Fixed(80.0)).into()
+    };
+
+    // --- Tune ---
+    let tune_label = text("Tune:").size(13).color(COLORS.text);
+    let tune_selected = Some(state.tune.clone());
+    let tune_picker = pick_list(available_tunes, tune_selected, Message::SetAlarmTune)
+        .width(iced::Length::Fill)
+        .placeholder("Select tune")
+        .menu_style(menu_style());
+
+    // --- Toggles ---
+    let active_toggler = toggler(state.active)
+        .label("Active")
+        .on_toggle(Message::SetAlarmActive);
+
+    let close_task_toggler = toggler(state.close_task)
+        .label("Closing Task")
+        .on_toggle(Message::SetAlarmCloseTask);
+
+    let toggles_row = row![active_toggler, close_task_toggler]
+        .spacing(24)
+        .align_y(iced::Alignment::Center);
+
+    // --- Buttons ---
     let submit_btn = button(text(submit_text))
         .on_press(Message::SubmitAddAlarm)
         .style(primary_button());
@@ -103,30 +162,41 @@ pub fn add_alarm_dialog<'a>(state: &'a AddAlarmState) -> Element<'a, Message> {
         .on_press(Message::CancelAddAlarm)
         .style(danger_button());
 
-    let content = column![
+    // --- Assemble content based on occurrence ---
+    let mut content = column![
         title,
-        text("").size(16),
-        time_display,
-        text("").size(12),
-        time_picker_overlay,
-        text("").size(16),
-        weekdays_label,
-        text("").size(8),
-        row![mon_btn, tue_btn, wed_btn, thu_btn, fri_btn, sat_btn, sun_btn].spacing(6),
-        text("").size(8),
-        date_picker_overlay,
-        text("").size(8),
-        label_input,
-        text("").size(24),
-        row![submit_btn, cancel_btn].spacing(12),
+        row![time_display, text("  "), time_picker_overlay].align_y(iced::Alignment::Center),
+        occ_label,
+        occ_row,
     ]
-    .spacing(4)
-    .padding(24)
-    .align_x(iced::Alignment::Center);
+    .spacing(8)
+    .padding(20)
+    .align_x(iced::Alignment::Start);
+
+    if state.occurrence.shows_weekdays() {
+        content = content.push(weekdays_row);
+    }
+
+    if state.occurrence.shows_date() {
+        content = content.push(
+            row![date_display, text("  "), date_picker_overlay]
+                .spacing(8)
+                .align_y(iced::Alignment::Center),
+        );
+    }
+
+    content = content
+        .push(label_input)
+        .push(devices_label)
+        .push(device_list)
+        .push(tune_label)
+        .push(tune_picker)
+        .push(toggles_row)
+        .push(row![submit_btn, cancel_btn].spacing(12));
 
     container(content)
-        .max_width(400)
-        .padding(20)
+        .max_width(560)
+        .padding(8)
         .style(card_container_style())
         .into()
 }

@@ -1,12 +1,13 @@
+use crate::components::icons::{icon_svg, Icon};
 use crate::messages::Message;
 use crate::state::{AppState, Device, DeviceType};
 use crate::theme::{
-    card_container_style, flat_container_style, pick_list_style, primary_button, secondary_button,
-    text_input_style, COLORS,
+    card_container_style, flat_container_style, menu_style, pick_list_style, primary_button,
+    secondary_button, text_input_style, COLORS,
 };
 use iced::{
     widget::{button, container, pick_list, row, text, text_input, Column},
-    Element, Length,
+    Alignment, Element, Length,
 };
 
 #[derive(Clone)]
@@ -32,13 +33,21 @@ fn device_card<'a>(device: &'a Device) -> Element<'a, Message> {
             .color(COLORS.text_secondary),
     ];
 
-    let edit_btn = button(text("Edit"))
-        .on_press(Message::EditDevice(device.id.clone()))
-        .style(secondary_button());
+    let edit_btn = button(
+        row![icon_svg(Icon::Pencil, COLORS.text, 14.0), text("Edit")]
+            .spacing(4)
+            .align_y(iced::Alignment::Center),
+    )
+    .on_press(Message::EditDevice(device.id.clone()))
+    .style(secondary_button());
 
-    let delete_btn = button(text("Delete"))
-        .on_press(Message::DeleteDevice(device.id.clone()))
-        .style(secondary_button());
+    let delete_btn = button(
+        row![icon_svg(Icon::Trash2, COLORS.danger, 14.0), text("Delete")]
+            .spacing(4)
+            .align_y(iced::Alignment::Center),
+    )
+    .on_press(Message::DeleteDevice(device.id.clone()))
+    .style(secondary_button());
 
     let inner_col = Column::with_children([
         device_info.into(),
@@ -126,11 +135,12 @@ pub fn edit_device_dialog<'a>(
         Message::SetEditingDeviceType,
     )
     .width(Length::Fixed(300.0))
-    .style(pick_list_style());
+    .style(pick_list_style())
+    .menu_style(menu_style());
 
     let buttons = row![
         button(text("Save"))
-            .on_press(Message::CloseDeviceEdit)
+            .on_press(Message::SaveDeviceEdit)
             .style(primary_button()),
         button(text("Cancel"))
             .on_press(Message::CloseDeviceEdit)

@@ -1,6 +1,6 @@
 use crate::messages::Message;
 use crate::state::{AppPage, Device, DeviceSelect, LoginState, WelcomeState};
-use crate::theme::{flat_container_style, pick_list_style, secondary_button, COLORS};
+use crate::theme::{flat_container_style, menu_style, pick_list_style, secondary_button, COLORS};
 use iced::widget::svg::{Handle, Svg};
 use iced::{
     widget::{button, column, container, pick_list, radio, row, text},
@@ -71,7 +71,8 @@ pub fn welcome_view<'a>(
             Message::SelectWelcomeDevice(selection)
         })
         .width(Length::Fixed(200.0))
-        .style(pick_list_style());
+        .style(pick_list_style())
+        .menu_style(menu_style());
 
         let edit_btn = if let DeviceSelect::Device(ref d) = welcome.selected_device {
             button(text("Edit Device"))

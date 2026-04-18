@@ -5,7 +5,10 @@ use crate::components::{
 };
 use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
-use iced::{widget::container, Element, Length};
+use iced::{
+    widget::{container, scrollable, stack},
+    Background, Color, Element, Length,
+};
 
 fn is_logged_in(state: &AppState) -> bool {
     state.login.session_status == SessionStatus::Valid && state.login.user_info.is_some()
@@ -25,6 +28,26 @@ fn current_page(state: &AppState) -> AppPage {
         }
         _ => state.page.clone(),
     }
+}
+
+/// Full-screen modal: dimmed backdrop + vertically/horizontally centered scrollable dialog.
+fn modal<'a>(dialog: Element<'a, Message>) -> Element<'a, Message> {
+    let backdrop = container(iced::widget::Space::new().width(Length::Fill).height(Length::Fill))
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .style(|_theme: &iced::Theme| iced::widget::container::Style {
+            background: Some(Background::Color(Color::from_rgba(0.0, 0.0, 0.0, 0.48))),
+            ..iced::widget::container::Style::default()
+        });
+
+    let centered = container(scrollable(dialog).height(Length::Shrink))
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x(Length::Fill)
+        .center_y(Length::Fill)
+        .padding(24);
+
+    stack([backdrop.into(), centered.into()]).into()
 }
 
 pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
@@ -47,7 +70,7 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
         .into();
     }
 
-    let nav = navbar(&page, logged_in);
+    let nav = navbar(&page, logged_in, state.login.user_info.as_ref(), state.settings.panel_size);
 
     let main_content: Element<Message> = match page {
         AppPage::Login => container(login_form(&state.login, &state.server_address))
@@ -63,47 +86,68 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
         AppPage::PlayAlarm => play_alarm_view(state).into(),
     };
 
-    let mut column_content: Vec<Element<Message>> = vec![nav.into(), main_content];
+    // Base layer: navbar + page content (nav position from settings)
+    let base_col = if state.settings.nav_bar_top {
+        iced::widget::Column::new().push(nav).push(main_content)
+    } else {
+        iced::widget::Column::new().push(main_content).push(nav)
+    };
+    let base: Element<Message> = container(base_col.height(Length::Fill))
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into();
 
+    // Collect stack layers
+    let mut layers: Vec<Element<Message>> = vec![base];
+
+    // Modal dialogs — each replaces previous so only one shows at a time
     if state.settings.show_settings {
-        column_content.push(settings_dialog(&state.settings).into());
+        layers.push(modal(settings_dialog(&state.settings)));
     }
 
     if state.settings.show_colors {
-        column_content.push(colors_dialog(&state.settings).into());
+        layers.push(modal(colors_dialog(&state.settings)));
     }
 
     if state.show_add_alarm {
-        column_content.push(add_alarm_dialog(&state.add_alarm).into());
+        layers.push(modal(add_alarm_dialog(
+            &state.add_alarm,
+            &state.devices,
+            &state.available_tunes,
+        )));
     }
 
     if state.edit_profile.show {
-        column_content.push(edit_profile_dialog(&state.edit_profile).into());
+        layers.push(modal(edit_profile_dialog(&state.edit_profile)));
     }
 
     if state.editing_device.is_some() {
-        column_content.push(
-            edit_device_dialog(
-                &state
-                    .editing_device
-                    .as_ref()
-                    .map(|d| d.id.clone())
-                    .unwrap_or_default(),
-                &state.editing_device_name,
-                &state.editing_device_type,
-            )
-            .into(),
-        );
+        layers.push(modal(edit_device_dialog(
+            &state
+                .editing_device
+                .as_ref()
+                .map(|d| d.id.clone())
+                .unwrap_or_default(),
+            &state.editing_device_name,
+            &state.editing_device_type,
+        )));
     }
 
+    // Toast notifications — top-right overlay (always on top)
     if !state.notifications.is_empty() {
-        column_content.push(notifications_view(&state.notifications).into());
+        let toasts = container(notifications_view(&state.notifications))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .align_right(Length::Fill)
+            .align_top(Length::Fill)
+            .padding(iced::Padding {
+                top: 64.0,
+                right: 16.0,
+                bottom: 0.0,
+                left: 0.0,
+            });
+        layers.push(toasts.into());
     }
 
-    container(iced::widget::Column::with_children(
-        column_content.into_iter(),
-    ))
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .into()
+    stack(layers).into()
 }

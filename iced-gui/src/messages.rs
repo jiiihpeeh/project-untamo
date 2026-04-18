@@ -1,8 +1,9 @@
 use crate::state::{
-    Alarm, AppPage, ColorMode, DeviceSelect, DeviceType, LoginResponse, UpdateResponse,
+    Alarm, AlarmOccurrence, AppPage, CloseTaskBehavior, ColorMode, DeviceSelect, DeviceType,
+    LoginResponse, UpdateResponse,
 };
 use crate::websocket::WsMessage;
-use iced::Color;
+use iced::{window, Color};
 use iced_aw::date_picker::Date;
 use iced_aw::time_picker::Time;
 
@@ -11,6 +12,8 @@ pub enum Message {
     ServerAddressChanged(String),
     CameraError(String),
     FrameTick,
+    ValidateSession,
+    SessionInvalid,
     FetchUpdate,
     UpdateReceived(UpdateResponse),
     UpdateError(String),
@@ -54,6 +57,9 @@ pub enum Message {
     OpenColorPicker,
     SubmitColorPicker(Color),
     CancelColorPicker,
+    SetCloseTaskBehavior(CloseTaskBehavior),
+    SetSnoozePressMs(u32),
+    SetNotificationsEnabled(bool),
     WsConnect,
     WsDisconnect,
     WsMessageReceived(Result<WsMessage, String>),
@@ -64,6 +70,11 @@ pub enum Message {
     SetAlarmHour(u8),
     SetAlarmMinute(u8),
     SetAlarmWeekday(u8),
+    SetAlarmOccurrence(AlarmOccurrence),
+    SetAlarmTune(String),
+    SetAlarmActive(bool),
+    SetAlarmCloseTask(bool),
+    ToggleAlarmDevice(String),
     SubmitAddAlarm,
     CancelAddAlarm,
     OpenTimePicker,
@@ -72,6 +83,8 @@ pub enum Message {
     OpenDatePicker,
     SubmitDatePicker(Date),
     CancelDatePicker,
+    FetchAlarmTunes,
+    AlarmTunesReceived(Vec<String>),
     TriggerAlarm(String),
     SnoozeAlarm,
     DismissAlarm,
@@ -91,7 +104,12 @@ pub enum Message {
     SetEditingDeviceName(String),
     SetEditingDeviceType(DeviceType),
     DeleteDevice(String),
+    SaveDeviceEdit,
     CloseDeviceEdit,
+    WindowIdReceived(Option<window::Id>),
+    CloseRequested(window::Id),
+    TrayShowWindow,
+    TrayQuit,
     ToggleEditProfile,
     SetEditScreenName(String),
     SetEditFirstName(String),

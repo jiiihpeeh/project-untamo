@@ -98,6 +98,25 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
     }
     
     match message {
+        Message::WindowIdReceived(id) => {
+            state.window_id = id;
+            Task::none()
+        }
+        Message::CloseRequested(id) => {
+            // Minimize to system tray instead of closing
+            state.window_id = Some(id);
+            iced::window::set_mode(id, iced::window::Mode::Hidden)
+        }
+        Message::TrayShowWindow => {
+            if let Some(id) = state.window_id {
+                iced::window::set_mode(id, iced::window::Mode::Windowed)
+            } else {
+                Task::none()
+            }
+        }
+        Message::TrayQuit => {
+            std::process::exit(0);
+        }
         Message::FrameTick => {
             if let Ok(mut guard) = crate::websocket::WS_MSG_QUEUE.lock() {
                 let messages: Vec<_> = guard.drain(..).collect();
@@ -107,6 +126,94 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                     }
                 }
             }
+            // Auto-dismiss notifications after 4 seconds
+            let now = std::time::Instant::now();
+            state.notifications.retain(|n| {
+                now.duration_since(n.timestamp).as_millis() < 4000
+            });
+            // Poll system tray events
+            if let Some(action) = crate::tray::poll_events() {
+                return match action {
+                    crate::tray::TrayAction::ShowWindow => {
+                        if let Some(id) = state.window_id {
+                            iced::window::set_mode(id, iced::window::Mode::Windowed)
+                        } else {
+                            Task::none()
+                        }
+                    }
+                    crate::tray::TrayAction::Quit => {
+                        std::process::exit(0);
+                    }
+                };
+            }
+            Task::none()
+        }
+        Message::ValidateSession => {
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    match client
+                        .get(format!("{}/api/is-session-valid", server))
+                        .header("token", &token)
+                        .send()
+                        .await
+                    {
+                        Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                        Ok(_) => Message::SessionInvalid,
+                        Err(_) => Message::SessionInvalid,
+                    }
+                },
+                |m| m,
+            )
+        }
+        Message::SessionInvalid => {
+            crate::storage::clear_session();
+            state.login.session_status = crate::state::SessionStatus::NotValid;
+            state.login.user_info = None;
+            state.page = AppPage::Login;
+            state.ws.token = String::new();
+            state.ws.ws_token = String::new();
+            state.ws.ws_pair = String::new();
+            Task::none()
+        }
+        Message::FetchUpdate => {
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    match client
+                        .get(format!("{}/api/update", server))
+                        .header("token", &token)
+                        .send()
+                        .await
+                    {
+                        Ok(resp) => {
+                            if resp.status().is_success() {
+                                match resp.json::<crate::state::UpdateResponse>().await {
+                                    Ok(data) => Message::UpdateReceived(data),
+                                    Err(e) => Message::UpdateError(format!("Parse error: {}", e)),
+                                }
+                            } else {
+                                Message::UpdateError(format!("HTTP {}", resp.status().as_u16()))
+                            }
+                        }
+                        Err(e) => Message::UpdateError(format!("Connection error: {}", e)),
+                    }
+                },
+                |m| m,
+            )
+        }
+        Message::UpdateReceived(response) => {
+            state.login.user_info = Some(response.user);
+            state.alarms = response.alarms;
+            state.devices = response.devices;
+            Task::none()
+        }
+        Message::UpdateError(error) => {
+            eprintln!("FetchUpdate error: {}", error);
             Task::none()
         }
         Message::ServerAddressChanged(address) => {
@@ -162,6 +269,24 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                     state.login.session_status = SessionStatus::Valid;
                     state.login.user_info = Some(UserInfo {
                         user: String::new(),
+                        email: resp.email.clone(),
+                        screen_name: resp.screen_name.clone(),
+                        first_name: resp.first_name.clone(),
+                        last_name: resp.last_name.clone(),
+                        admin: resp.admin,
+                        owner: resp.owner,
+                        active: resp.active,
+                        registered: 0,
+                    });
+                    state.ws.token = resp.token.clone();
+                    state.ws.ws_token = resp.ws_token.clone();
+                    state.ws.ws_pair = resp.ws_pair.clone();
+                    state.page = AppPage::Welcome;
+                    
+                    if let Err(e) = crate::storage::save_session(&crate::storage::SessionData {
+                        token: resp.token,
+                        ws_token: resp.ws_token,
+                        ws_pair: resp.ws_pair,
                         email: resp.email,
                         screen_name: resp.screen_name,
                         first_name: resp.first_name,
@@ -169,16 +294,18 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                         admin: resp.admin,
                         owner: resp.owner,
                         active: resp.active,
-                        registered: 0,
-                    });
-                    state.page = AppPage::Welcome;
+                    }) {
+                        eprintln!("Failed to save session: {}", e);
+                    }
+                    
+                    Task::perform(async { Message::FetchUpdate }, |m| m)
                 }
                 Err(e) => {
                     state.login.error_message = Some(e.clone());
                     state.login.session_status = SessionStatus::NotValid;
+                    Task::none()
                 }
-            };
-            Task::none()
+            }
         }
         Message::ClearError => {
             state.login.error_message = None;
@@ -233,6 +360,24 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                     state.login.session_status = SessionStatus::Valid;
                     state.login.user_info = Some(UserInfo {
                         user: String::new(),
+                        email: resp.email.clone(),
+                        screen_name: resp.screen_name.clone(),
+                        first_name: resp.first_name.clone(),
+                        last_name: resp.last_name.clone(),
+                        admin: resp.admin,
+                        owner: resp.owner,
+                        active: resp.active,
+                        registered: 0,
+                    });
+                    state.ws.token = resp.token.clone();
+                    state.ws.ws_token = resp.ws_token.clone();
+                    state.ws.ws_pair = resp.ws_pair.clone();
+                    state.page = AppPage::Welcome;
+                    
+                    if let Err(e) = crate::storage::save_session(&crate::storage::SessionData {
+                        token: resp.token,
+                        ws_token: resp.ws_token,
+                        ws_pair: resp.ws_pair,
                         email: resp.email,
                         screen_name: resp.screen_name,
                         first_name: resp.first_name,
@@ -240,16 +385,18 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                         admin: resp.admin,
                         owner: resp.owner,
                         active: resp.active,
-                        registered: 0,
-                    });
-                    state.page = AppPage::Welcome;
+                    }) {
+                        eprintln!("Failed to save session: {}", e);
+                    }
+                    
+                    Task::perform(async { Message::FetchUpdate }, |m| m)
                 }
                 Err(e) => {
                     state.qr_error = Some(e.clone());
                     state.login.session_status = SessionStatus::NotValid;
+                    Task::none()
                 }
-            };
-            Task::none()
+            }
         }
         Message::CloseQrScanner => {
             println!("DEBUG CloseQrScanner: setting CANCEL=true, show_qr_scanner=false");
@@ -418,7 +565,9 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::ToggleClock24 => {
-            state.welcome.clock24 = !state.welcome.clock24;
+            state.settings.clock24 = !state.settings.clock24;
+            state.welcome.clock24 = state.settings.clock24;
+            save_settings_from_state(state);
             Task::none()
         }
         Message::ToggleSettings => {
@@ -427,14 +576,17 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
         }
         Message::SetNavBarTop(value) => {
             state.settings.nav_bar_top = value;
+            save_settings_from_state(state);
             Task::none()
         }
         Message::SetPanelSize(size) => {
             state.settings.panel_size = size;
+            save_settings_from_state(state);
             Task::none()
         }
         Message::SetVolume(volume) => {
             state.settings.volume = volume;
+            save_settings_from_state(state);
             Task::none()
         }
         Message::SetDialogSize(size) => {
@@ -522,6 +674,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.show_add_alarm = !state.show_add_alarm;
             if state.show_add_alarm {
                 state.add_alarm = crate::state::AddAlarmState::new();
+                return Task::perform(async {}, |_| Message::FetchAlarmTunes);
             }
             Task::none()
         }
@@ -541,48 +694,112 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.add_alarm.weekdays ^= bit;
             Task::none()
         }
+        Message::SetAlarmOccurrence(occ) => {
+            state.add_alarm.occurrence = occ;
+            Task::none()
+        }
+        Message::SetAlarmTune(tune) => {
+            state.add_alarm.tune = tune;
+            Task::none()
+        }
+        Message::SetAlarmActive(val) => {
+            state.add_alarm.active = val;
+            Task::none()
+        }
+        Message::SetAlarmCloseTask(val) => {
+            state.add_alarm.close_task = val;
+            Task::none()
+        }
+        Message::ToggleAlarmDevice(id) => {
+            if state.add_alarm.devices.contains(&id) {
+                state.add_alarm.devices.retain(|d| d != &id);
+            } else {
+                state.add_alarm.devices.push(id);
+            }
+            Task::none()
+        }
+        Message::FetchAlarmTunes => {
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    match client
+                        .get(format!("{}/audio-resources/resource_list.json", server))
+                        .header("token", &token)
+                        .send()
+                        .await
+                    {
+                        Ok(resp) if resp.status().is_success() => {
+                            match resp.json::<Vec<String>>().await {
+                                Ok(tunes) => Message::AlarmTunesReceived(tunes),
+                                Err(_) => Message::AlarmTunesReceived(vec![]),
+                            }
+                        }
+                        _ => Message::AlarmTunesReceived(vec![]),
+                    }
+                },
+                |m| m,
+            )
+        }
+        Message::AlarmTunesReceived(tunes) => {
+            if !tunes.is_empty() {
+                state.available_tunes = tunes;
+            }
+            Task::none()
+        }
         Message::SubmitAddAlarm => {
             let is_edit = state.add_alarm.editing_alarm_id.is_some();
+            let occ_str = state.add_alarm.occurrence.as_str().to_string();
+            let date_vec: Vec<u16> = {
+                let d = state.add_alarm.date_picker_value;
+                vec![d.year as u16, d.month as u16, d.day as u16]
+            };
             let new_alarm = if let Some(ref edit_id) = state.add_alarm.editing_alarm_id {
                 if let Some(existing) = state.alarms.iter().find(|a| a.id == *edit_id) {
                     let mut updated = existing.clone();
+                    updated.occurrence = occ_str.clone();
                     updated.time = vec![state.add_alarm.time_hour, state.add_alarm.time_minute];
                     updated.weekdays = state.add_alarm.weekdays;
+                    updated.date = date_vec.clone();
                     updated.label = state.add_alarm.label.clone();
                     updated.tune = state.add_alarm.tune.clone();
+                    updated.active = state.add_alarm.active;
+                    updated.close_task = state.add_alarm.close_task;
+                    updated.devices = state.add_alarm.devices.clone();
                     updated
                 } else {
                     Alarm {
                         id: edit_id.clone(),
-                        occurrence: state.add_alarm.occurrence.clone(),
+                        occurrence: occ_str.clone(),
                         time: vec![state.add_alarm.time_hour, state.add_alarm.time_minute],
                         weekdays: state.add_alarm.weekdays,
-                        date: vec![],
+                        date: date_vec.clone(),
                         label: state.add_alarm.label.clone(),
-                        devices: vec![],
+                        devices: state.add_alarm.devices.clone(),
                         snooze: vec![],
                         tune: state.add_alarm.tune.clone(),
-                        active: true,
+                        active: state.add_alarm.active,
                         modified: 0,
                         fingerprint: String::new(),
-                        close_task: false,
+                        close_task: state.add_alarm.close_task,
                     }
                 }
             } else {
                 Alarm {
                     id: uuid_simple(),
-                    occurrence: state.add_alarm.occurrence.clone(),
+                    occurrence: occ_str,
                     time: vec![state.add_alarm.time_hour, state.add_alarm.time_minute],
                     weekdays: state.add_alarm.weekdays,
-                    date: vec![],
+                    date: date_vec,
                     label: state.add_alarm.label.clone(),
-                    devices: vec![],
+                    devices: state.add_alarm.devices.clone(),
                     snooze: vec![],
                     tune: state.add_alarm.tune.clone(),
-                    active: true,
+                    active: state.add_alarm.active,
                     modified: 0,
                     fingerprint: String::new(),
-                    close_task: false,
+                    close_task: state.add_alarm.close_task,
                 }
             };
 
@@ -593,50 +810,43 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 if let Some(existing) = state.alarms.iter_mut().find(|a| a.id == new_alarm.id) {
                     *existing = new_alarm.clone();
                 }
-                add_notification(state, "Alarm", "Alarm updated".to_string());
+                add_notification_kind(state, "Alarm", "Alarm updated".to_string(), crate::state::NotificationKind::Success);
             } else {
                 state.alarms.push(new_alarm.clone());
-                add_notification(state, "Alarm", "Alarm added".to_string());
+                add_notification_kind(state, "Alarm", "Alarm added".to_string(), crate::state::NotificationKind::Success);
             }
 
-            let msg_type = if is_edit { "alarmEdit" } else { "alarmAdd" };
-            let ws_msg = websocket::alarm_to_json(&new_alarm, msg_type);
-
-            if websocket::ws_send(&ws_msg) {
-                Task::none()
-            } else {
-                let server = state.server_address.clone();
-                let token = state.ws.token.clone();
-                let alarm_id = new_alarm.id.clone();
-                let body_alarm = new_alarm;
-                iced::Task::perform(
-                    async move {
-                        let client = reqwest::Client::new();
-                        let url = if is_edit {
-                            format!("{}/api/alarm/{}", server, alarm_id)
-                        } else {
-                            format!("{}/api/alarm", server)
-                        };
-                        let req = if is_edit {
-                            client.put(&url).header("token", &token).json(&body_alarm)
-                        } else {
-                            client.post(&url).header("token", &token).json(&body_alarm)
-                        };
-                        match req.send().await {
-                            Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
-                            Ok(resp) => {
-                                eprintln!("Alarm save failed: HTTP {}", resp.status());
-                                Message::AlarmAddResult(Err(format!("HTTP {}", resp.status())))
-                            }
-                            Err(e) => {
-                                eprintln!("Alarm save failed: {}", e);
-                                Message::AlarmAddResult(Err(e.to_string()))
-                            }
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            let alarm_id = new_alarm.id.clone();
+            let body_alarm = new_alarm;
+            iced::Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    let url = if is_edit {
+                        format!("{}/api/alarm/{}", server, alarm_id)
+                    } else {
+                        format!("{}/api/alarm", server)
+                    };
+                    let req = if is_edit {
+                        client.put(&url).header("token", &token).json(&body_alarm)
+                    } else {
+                        client.post(&url).header("token", &token).json(&body_alarm)
+                    };
+                    match req.send().await {
+                        Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                        Ok(resp) => {
+                            eprintln!("Alarm save failed: HTTP {}", resp.status());
+                            Message::AlarmAddResult(Err(format!("HTTP {}", resp.status())))
                         }
-                    },
-                    |m| m,
-                )
-            }
+                        Err(e) => {
+                            eprintln!("Alarm save failed: {}", e);
+                            Message::AlarmAddResult(Err(e.to_string()))
+                        }
+                    }
+                },
+                |m| m,
+            )
         }
         Message::CancelAddAlarm => {
             state.show_add_alarm = false;
@@ -686,80 +896,90 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::GoToLogout => {
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            
+            websocket::disconnect();
+            crate::storage::clear_session();
+            
             state.login.session_status = crate::state::SessionStatus::NotValid;
             state.login.user_info = None;
+            state.login.email = String::new();
+            state.login.password = String::new();
             state.page = AppPage::Login;
             state.alarms.clear();
             state.devices.clear();
-            Task::none()
+            state.ws.token = String::new();
+            state.ws.ws_token = String::new();
+            state.ws.ws_pair = String::new();
+            state.ws.connected = false;
+
+            Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    let _ = client
+                        .post(format!("{}/logout", server))
+                        .header("token", token)
+                        .send()
+                        .await;
+                },
+                |_| Message::ClearError,
+            )
         }
         Message::EditAlarm(id) => {
             if let Some(alarm) = state.alarms.iter().find(|a| a.id == id) {
                 state.add_alarm = crate::state::AddAlarmState::from_alarm(alarm);
                 state.show_add_alarm = true;
+                return Task::perform(async {}, |_| Message::FetchAlarmTunes);
             }
             Task::none()
         }
         Message::DeleteAlarm(id) => {
-            let delete_msg = serde_json::json!({
-                "type": "alarmDelete",
-                "data": id
-            }).to_string();
-
             state.alarms.retain(|a| a.id != id);
             add_notification(state, "Alarm Deleted", "Alarm removed successfully".to_string());
 
-            if websocket::ws_send(&delete_msg) {
-                Task::none()
-            } else {
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            iced::Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    match client
+                        .delete(format!("{}/api/alarm/{}", server, id))
+                        .header("token", token)
+                        .send()
+                        .await
+                    {
+                        Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                        Ok(resp) => Message::AlarmDeleteResult(Err(format!("HTTP {}", resp.status()))),
+                        Err(e) => Message::AlarmDeleteResult(Err(e.to_string())),
+                    }
+                },
+                |m| m,
+            )
+        }
+        Message::ToggleAlarmActive(id) => {
+            if let Some(alarm) = state.alarms.iter_mut().find(|a| a.id == id) {
+                alarm.active = !alarm.active;
+                let updated = alarm.clone();
                 let server = state.server_address.clone();
                 let token = state.ws.token.clone();
                 iced::Task::perform(
                     async move {
                         let client = reqwest::Client::new();
                         match client
-                            .delete(format!("{}/api/alarm/{}", server, id))
+                            .put(format!("{}/api/alarm/{}", server, updated.id))
                             .header("token", token)
+                            .json(&updated)
                             .send()
                             .await
                         {
                             Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
-                            Ok(resp) => Message::AlarmDeleteResult(Err(format!("HTTP {}", resp.status()))),
-                            Err(e) => Message::AlarmDeleteResult(Err(e.to_string())),
+                            Ok(resp) => Message::AlarmEditResult(Err(format!("HTTP {}", resp.status()))),
+                            Err(e) => Message::AlarmEditResult(Err(e.to_string())),
                         }
                     },
                     |m| m,
                 )
-            }
-        }
-        Message::ToggleAlarmActive(id) => {
-            if let Some(alarm) = state.alarms.iter_mut().find(|a| a.id == id) {
-                alarm.active = !alarm.active;
-                let updated = alarm.clone();
-                let ws_msg = websocket::alarm_to_json(&updated, "alarmEdit");
-                if websocket::ws_send(&ws_msg) {
-                    Task::none()
-                } else {
-                    let server = state.server_address.clone();
-                    let token = state.ws.token.clone();
-                    iced::Task::perform(
-                        async move {
-                            let client = reqwest::Client::new();
-                            match client
-                                .put(format!("{}/api/alarm/{}", server, updated.id))
-                                .header("token", token)
-                                .json(&updated)
-                                .send()
-                                .await
-                            {
-                                Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
-                                Ok(resp) => Message::AlarmEditResult(Err(format!("HTTP {}", resp.status()))),
-                                Err(e) => Message::AlarmEditResult(Err(e.to_string())),
-                            }
-                        },
-                        |m| m,
-                    )
-                }
             } else {
                 Task::none()
             }
@@ -769,15 +989,86 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::EditDevice(id) => {
-            add_notification(state, "Edit Device", format!("Editing device {}", id));
+            if let Some(device) = state.devices.iter().find(|d| d.id == id) {
+                let device_type = crate::state::DeviceType::from(device.device_type.as_str());
+                state.editing_device = Some(device.clone());
+                state.editing_device_name = device.device_name.clone();
+                state.editing_device_type = device_type;
+            }
+            Task::none()
+        }
+        Message::SetEditingDeviceName(name) => {
+            state.editing_device_name = name;
+            Task::none()
+        }
+        Message::SetEditingDeviceType(device_type) => {
+            state.editing_device_type = device_type;
+            Task::none()
+        }
+        Message::SaveDeviceEdit => {
+            if let Some(ref device) = state.editing_device {
+                let id = device.id.clone();
+                let new_name = state.editing_device_name.clone();
+                let new_type = String::from(state.editing_device_type.clone());
+                // Update locally
+                if let Some(d) = state.devices.iter_mut().find(|d| d.id == id) {
+                    d.device_name = new_name.clone();
+                    d.device_type = new_type.clone();
+                }
+                state.editing_device = None;
+                let server = state.server_address.clone();
+                let token = state.ws.token.clone();
+                #[derive(serde::Serialize)]
+                struct DeviceOut {
+                    id: String,
+                    #[serde(rename = "deviceName")]
+                    device_name: String,
+                    #[serde(rename = "type")]
+                    device_type: String,
+                }
+                let payload = DeviceOut { id: id.clone(), device_name: new_name, device_type: new_type };
+                return iced::Task::perform(
+                    async move {
+                        let client = reqwest::Client::new();
+                        match client
+                            .put(format!("{}/api/device/{}", server, id))
+                            .header("token", &token)
+                            .json(&payload)
+                            .send()
+                            .await
+                        {
+                            Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                            Ok(resp) => Message::UpdateError(format!("HTTP {}", resp.status())),
+                            Err(e) => Message::UpdateError(e.to_string()),
+                        }
+                    },
+                    |m| m,
+                );
+            }
+            Task::none()
+        }
+        Message::CloseDeviceEdit => {
+            state.editing_device = None;
             Task::none()
         }
         Message::DeleteDevice(id) => {
             if let Some(pos) = state.devices.iter().position(|d| d.id == id) {
                 state.devices.remove(pos);
-                add_notification(state, "Device Deleted", "Device removed successfully".to_string());
+                add_notification_kind(state, "Device Deleted", "Device removed".to_string(), crate::state::NotificationKind::Success);
             }
-            Task::none()
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            return iced::Task::perform(
+                async move {
+                    let client = reqwest::Client::new();
+                    let _ = client
+                        .delete(format!("{}/api/device/{}", server, id))
+                        .header("token", &token)
+                        .send()
+                        .await;
+                },
+                |_| Message::FetchUpdate,
+            );
         }
         Message::ToggleEditProfile => {
             state.edit_profile.show = !state.edit_profile.show;
@@ -837,11 +1128,78 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::SubmitEditProfile => {
-            if state.edit_profile.form_valid {
-                add_notification(state, "Profile Updated", "Your profile has been updated".to_string());
-                state.edit_profile.show = false;
+            if !state.edit_profile.form_valid {
+                return Task::none();
             }
-            Task::none()
+            let server = state.server_address.clone();
+            let token = state.ws.token.clone();
+            let email = state.edit_profile.email.clone();
+            let first_name = state.edit_profile.first_name.clone();
+            let last_name = state.edit_profile.last_name.clone();
+            let screen_name = state.edit_profile.screen_name.clone();
+            let password = state.edit_profile.password.clone();
+            let change_password = if state.edit_profile.change_password {
+                Some(state.edit_profile.new_password.clone())
+            } else {
+                None
+            };
+            // Optimistic local update
+            if let Some(ref mut user) = state.login.user_info {
+                user.email = email.clone();
+                user.first_name = first_name.clone();
+                user.last_name = last_name.clone();
+                user.screen_name = screen_name.clone();
+            }
+            state.edit_profile.show = false;
+            iced::Task::perform(
+                async move {
+                    #[derive(serde::Serialize)]
+                    struct EditUser {
+                        email: String,
+                        #[serde(rename = "firstName")]
+                        first_name: String,
+                        #[serde(rename = "lastName")]
+                        last_name: String,
+                        #[serde(rename = "screenName")]
+                        screen_name: String,
+                        password: String,
+                        #[serde(rename = "changePassword", skip_serializing_if = "Option::is_none")]
+                        change_password: Option<String>,
+                    }
+                    let payload = EditUser {
+                        email: email.clone(),
+                        first_name,
+                        last_name,
+                        screen_name,
+                        password,
+                        change_password,
+                    };
+                    let client = reqwest::Client::new();
+                    match client
+                        .put(format!("{}/api/edit-user/{}", server, email))
+                        .header("token", &token)
+                        .json(&payload)
+                        .send()
+                        .await
+                    {
+                        Ok(resp) if resp.status().is_success() => {
+                            Message::ShowNotification(
+                                "Profile Updated".to_string(),
+                                "Your profile has been updated".to_string(),
+                            )
+                        }
+                        Ok(resp) => Message::ShowNotification(
+                            "Profile Error".to_string(),
+                            format!("Failed to save: HTTP {}", resp.status()),
+                        ),
+                        Err(e) => Message::ShowNotification(
+                            "Profile Error".to_string(),
+                            format!("Failed to save: {}", e),
+                        ),
+                    }
+                },
+                |m| m,
+            )
         }
         Message::CancelEditProfile => {
             state.edit_profile.show = false;
@@ -851,21 +1209,92 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             Task::none()
         }
         Message::AlarmAddResult(Err(e)) => {
-            add_notification(state, "Alarm Error", format!("Failed to add alarm: {}", e));
+            add_notification_kind(state, "Alarm Error", format!("Failed to add alarm: {}", e), crate::state::NotificationKind::Error);
             Task::none()
         }
         Message::AlarmEditResult(Ok(_)) => {
             Task::none()
         }
         Message::AlarmEditResult(Err(e)) => {
-            add_notification(state, "Alarm Error", format!("Failed to update alarm: {}", e));
+            add_notification_kind(state, "Alarm Error", format!("Failed to update alarm: {}", e), crate::state::NotificationKind::Error);
             Task::none()
         }
         Message::AlarmDeleteResult(Ok(())) => {
             Task::none()
         }
         Message::AlarmDeleteResult(Err(e)) => {
-            add_notification(state, "Alarm Error", format!("Failed to delete alarm: {}", e));
+            add_notification_kind(state, "Alarm Error", format!("Failed to delete alarm: {}", e), crate::state::NotificationKind::Error);
+            Task::none()
+        }
+        Message::SetCloseTaskBehavior(behavior) => {
+            state.settings.close_task_behavior = behavior;
+            Task::none()
+        }
+        Message::SetSnoozePressMs(ms) => {
+            state.settings.snooze_press_ms = ms;
+            Task::none()
+        }
+        Message::SetNotificationsEnabled(enabled) => {
+            state.settings.notifications_enabled = enabled;
+            Task::none()
+        }
+        Message::OpenColorPicker => {
+            let hex = match state.settings.color_mode {
+                crate::state::ColorMode::Even => &state.settings.card_colors.even,
+                crate::state::ColorMode::Odd => &state.settings.card_colors.odd,
+                crate::state::ColorMode::Inactive => &state.settings.card_colors.inactive,
+                crate::state::ColorMode::Background => &state.settings.card_colors.background,
+            };
+            state.settings.color_picker_value = hex_to_color(hex);
+            state.settings.show_color_picker = true;
+            Task::none()
+        }
+        Message::CancelColorPicker => {
+            state.settings.show_color_picker = false;
+            Task::none()
+        }
+        Message::SubmitColorPicker(color) => {
+            let hex = color_to_hex(color);
+            match state.settings.color_mode {
+                crate::state::ColorMode::Even => state.settings.card_colors.even = hex,
+                crate::state::ColorMode::Odd => state.settings.card_colors.odd = hex,
+                crate::state::ColorMode::Inactive => state.settings.card_colors.inactive = hex,
+                crate::state::ColorMode::Background => state.settings.card_colors.background = hex,
+            }
+            state.settings.show_color_picker = false;
+            Task::none()
+        }
+        Message::OpenTimePicker => {
+            state.add_alarm.show_time_picker = true;
+            Task::none()
+        }
+        Message::CancelTimePicker => {
+            state.add_alarm.show_time_picker = false;
+            Task::none()
+        }
+        Message::SubmitTimePicker(time) => {
+            state.add_alarm.show_time_picker = false;
+            use iced_aw::time_picker::Time as IcedTime;
+            let (h, m) = match time {
+                IcedTime::Hm { hour, minute, .. } => (hour as u8, minute as u8),
+                IcedTime::Hms { hour, minute, .. } => (hour as u8, minute as u8),
+            };
+            state.add_alarm.time_hour = h;
+            state.add_alarm.time_minute = m;
+            state.add_alarm.time_picker_value = time;
+            Task::none()
+        }
+        Message::OpenDatePicker => {
+            state.add_alarm.show_date_picker = true;
+            Task::none()
+        }
+        Message::CancelDatePicker => {
+            state.add_alarm.show_date_picker = false;
+            Task::none()
+        }
+        Message::SubmitDatePicker(date) => {
+            state.add_alarm.show_date_picker = false;
+            state.add_alarm.date_picker_value = date;
             Task::none()
         }
         _ => Task::none()
@@ -873,14 +1302,56 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
 }
 
 fn add_notification(state: &mut AppState, title: &str, message: String) {
+    add_notification_kind(state, title, message, crate::state::NotificationKind::Info);
+}
+
+fn add_notification_kind(
+    state: &mut AppState,
+    title: &str,
+    message: String,
+    kind: crate::state::NotificationKind,
+) {
+    if !state.settings.notifications_enabled {
+        return;
+    }
     let notif = crate::state::Notification {
         title: title.to_string(),
         message,
+        kind,
         timestamp: std::time::Instant::now(),
     };
     state.notifications.push(notif);
     if state.notifications.len() > 5 {
         state.notifications.remove(0);
+    }
+}
+
+fn save_settings_from_state(state: &AppState) {
+    let s = crate::storage::AppSettings {
+        clock24: state.settings.clock24,
+        volume: state.settings.volume,
+        nav_bar_top: state.settings.nav_bar_top,
+        panel_size: state.settings.panel_size,
+    };
+    let _ = crate::storage::save_settings(&s);
+}
+
+fn color_to_hex(color: iced::Color) -> String {
+    let r = (color.r * 255.0).round() as u8;
+    let g = (color.g * 255.0).round() as u8;
+    let b = (color.b * 255.0).round() as u8;
+    format!("#{:02X}{:02X}{:02X}", r, g, b)
+}
+
+fn hex_to_color(hex: &str) -> iced::Color {
+    let hex = hex.trim_start_matches('#');
+    if hex.len() >= 6 {
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(255) as f32 / 255.0;
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(255) as f32 / 255.0;
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(255) as f32 / 255.0;
+        iced::Color::from_rgb(r, g, b)
+    } else {
+        iced::Color::WHITE
     }
 }
 

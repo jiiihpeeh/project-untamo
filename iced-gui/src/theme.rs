@@ -1,4 +1,5 @@
 use iced::{widget::button, Background, Color, Theme};
+use iced::widget::overlay::menu;
 
 pub const COLORS: ColorPalette = ColorPalette {
     primary: Color::from_rgb(0.192, 0.510, 0.812),
@@ -212,6 +213,105 @@ pub fn pick_list_style() -> Box<
             }
         },
     )
+}
+
+pub fn navbar_container_style(
+) -> Box<dyn Fn(&iced::Theme) -> iced::widget::container::Style + 'static> {
+    Box::new(move |_theme: &iced::Theme| iced::widget::container::Style {
+        text_color: None,
+        background: Some(Background::Color(Color::from_rgba(
+            0.204, 0.486, 0.895, 0.72,
+        ))),
+        border: iced::Border::default(),
+        shadow: iced::Shadow {
+            color: Color::from_rgba(0.0, 0.0, 0.0, 0.18),
+            offset: iced::Vector::new(0.0, 2.0),
+            blur_radius: 6.0,
+        },
+        snap: false,
+    })
+}
+
+pub fn nav_ghost_button() -> Box<dyn Fn(&Theme, button::Status) -> button::Style + 'static> {
+    Box::new(move |_theme: &Theme, status: button::Status| {
+        let alpha = match status {
+            button::Status::Hovered | button::Status::Pressed => 0.20,
+            _ => 0.0,
+        };
+        button::Style {
+            background: Some(Background::Color(Color::from_rgba(1.0, 1.0, 1.0, alpha))),
+            border: iced::Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: iced::border::Radius::new(6.0),
+            },
+            shadow: iced::Shadow::default(),
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    })
+}
+
+pub fn nav_active_button() -> Box<dyn Fn(&Theme, button::Status) -> button::Style + 'static> {
+    Box::new(move |_theme: &Theme, status: button::Status| {
+        let bg = match status {
+            button::Status::Hovered | button::Status::Pressed => Color::from_rgba(1.0, 1.0, 1.0, 0.35),
+            _ => Color::from_rgba(1.0, 1.0, 1.0, 0.22),
+        };
+        button::Style {
+            background: Some(Background::Color(bg)),
+            border: iced::Border {
+                color: Color::from_rgba(1.0, 1.0, 1.0, 0.5),
+                width: 1.0,
+                radius: iced::border::Radius::new(6.0),
+            },
+            shadow: iced::Shadow::default(),
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    })
+}
+
+/// Round FAB (Floating Action Button) — success green circle
+pub fn circle_fab_button() -> Box<dyn Fn(&Theme, button::Status) -> button::Style + 'static> {
+    Box::new(move |_theme: &Theme, status: button::Status| {
+        let bg = match status {
+            button::Status::Hovered | button::Status::Pressed => {
+                Color::from_rgb(0.165, 0.545, 0.322)
+            }
+            _ => COLORS.success,
+        };
+        button::Style {
+            background: Some(Background::Color(bg)),
+            border: iced::Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: iced::border::Radius::new(28.0), // half of 56px
+            },
+            shadow: iced::Shadow {
+                color: Color::from_rgba(0.0, 0.0, 0.0, 0.30),
+                offset: iced::Vector::new(0.0, 3.0),
+                blur_radius: 8.0,
+            },
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    })
+}
+
+pub fn menu_style() -> Box<dyn Fn(&iced::Theme) -> menu::Style + 'static> {
+    Box::new(move |_theme: &iced::Theme| menu::Style {
+        background: Background::Color(COLORS.bg),
+        border: iced::Border {
+            color: COLORS.border,
+            width: 1.0,
+            radius: iced::border::Radius::new(RADIUS_VAL),
+        },
+        text_color: COLORS.text,
+        selected_text_color: COLORS.text,
+        selected_background: Background::Color(COLORS.bg_secondary),
+        shadow: shadow(),
+    })
 }
 
 pub fn text_input_style() -> Box<

@@ -31,4 +31,5 @@ aes = "0.8"
 cbc = "0.1"
 getrandom = "0.2"
 base64 = "0.21"
+tray-icon = { version = "0.19", features = ["common-controls-v6"] }
 
