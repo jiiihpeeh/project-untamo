@@ -85,6 +85,8 @@ pub struct AppSettings {
     pub panel_size: u32,
     #[serde(default)]
     pub device_id: Option<String>,
+    #[serde(default)]
+    pub viewable_devices: Vec<String>,
 }
 
 impl Default for AppSettings {
@@ -95,6 +97,7 @@ impl Default for AppSettings {
             nav_bar_top: true,
             panel_size: 56,
             device_id: None,
+            viewable_devices: Vec::new(),
         }
     }
 }

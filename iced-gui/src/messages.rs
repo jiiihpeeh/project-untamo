@@ -106,6 +106,7 @@ pub enum Message {
     AddDevice,
     EditDevice(String),
     SelectWelcomeDevice(DeviceSelect),
+    ToggleViewableDevice(String),
     SetEditingDeviceName(String),
     SetEditingDeviceType(DeviceType),
     DeleteDevice(String),

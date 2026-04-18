@@ -710,6 +710,8 @@ pub struct AppState {
     pub adding_device: bool,
     /// Device ID persisted from last session; used to skip the welcome screen.
     pub saved_device_id: Option<String>,
+    /// Which device IDs should show their alarms (mirrors frontend viewableDevices).
+    pub viewable_devices: Vec<String>,
 }
 
 impl AppState {
@@ -742,6 +744,7 @@ impl AppState {
         };
 
         let saved_device_id = settings.device_id.clone();
+        let viewable_devices = settings.viewable_devices.clone();
 
         AppState {
             page: if session_valid {
@@ -791,6 +794,7 @@ impl AppState {
             hovered_alarm: None,
             adding_device: false,
             saved_device_id,
+            viewable_devices,
         }
     }
 }

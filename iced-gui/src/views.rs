@@ -32,20 +32,29 @@ fn current_page(state: &AppState) -> AppPage {
 
 /// Full-screen modal: dimmed backdrop + vertically/horizontally centered scrollable dialog.
 fn modal<'a>(dialog: Element<'a, Message>) -> Element<'a, Message> {
-    let backdrop = container(iced::widget::Space::new().width(Length::Fill).height(Length::Fill))
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .style(|_theme: &iced::Theme| iced::widget::container::Style {
-            background: Some(Background::Color(Color::from_rgba(0.0, 0.0, 0.0, 0.48))),
-            ..iced::widget::container::Style::default()
-        });
+    let backdrop = container(
+        iced::widget::Space::new()
+            .width(Length::Fill)
+            .height(Length::Fill),
+    )
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .style(|_theme: &iced::Theme| iced::widget::container::Style {
+        background: Some(Background::Color(Color::from_rgba(0.0, 0.0, 0.0, 0.48))),
+        ..iced::widget::container::Style::default()
+    });
 
-    let centered = container(scrollable(dialog).height(Length::Shrink))
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_x(Length::Fill)
-        .center_y(Length::Fill)
-        .padding(24);
+    let centered = container(
+        container(scrollable(dialog).height(Length::Shrink))
+            .width(Length::Shrink)
+            .max_width(600)
+            .center_x(Length::Fill),
+    )
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .center_x(Length::Fill)
+    .center_y(Length::Fill)
+    .padding(24);
 
     stack([backdrop.into(), centered.into()]).into()
 }
@@ -70,7 +79,13 @@ pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
         .into();
     }
 
-    let nav = navbar(&page, logged_in, state.login.user_info.as_ref(), state.settings.panel_size);
+    let nav = navbar(
+        &page,
+        logged_in,
+        state.login.user_info.as_ref(),
+        state.settings.panel_size,
+        state.show_devices_modal,
+    );
 
     let main_content: Element<Message> = match page {
         AppPage::Login => container(login_form(&state.login, &state.server_address))

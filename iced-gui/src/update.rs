@@ -201,6 +201,12 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
             state.alarms = response.alarms;
             state.devices = response.devices;
 
+            // First time: default all devices to viewable.
+            if state.viewable_devices.is_empty() {
+                state.viewable_devices = state.devices.iter().map(|d| d.id.clone()).collect();
+                save_settings_from_state(state);
+            }
+
             // If we have a saved device selection and the device still exists,
             // skip the welcome screen and go straight to Alarms.
             if state.page == AppPage::Welcome {
@@ -1041,6 +1047,15 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 Task::none()
             }
         }
+        Message::ToggleViewableDevice(id) => {
+            if let Some(pos) = state.viewable_devices.iter().position(|v| v == &id) {
+                state.viewable_devices.remove(pos);
+            } else {
+                state.viewable_devices.push(id);
+            }
+            save_settings_from_state(state);
+            Task::none()
+        }
         Message::SelectWelcomeDevice(selection) => {
             // Persist the chosen device so we skip the welcome screen next launch.
             let device_id = match &selection {
@@ -1483,6 +1498,7 @@ fn save_settings_from_state(state: &AppState) {
         nav_bar_top: state.settings.nav_bar_top,
         panel_size: state.settings.panel_size,
         device_id: state.saved_device_id.clone(),
+        viewable_devices: state.viewable_devices.clone(),
     };
     let _ = crate::storage::save_settings(&s);
 }
