@@ -362,6 +362,8 @@ pub struct SettingsState {
     pub web_colors: WebColors,
     pub card_colors: CardColors,
     pub color_mode: ColorMode,
+    /// Preserved hue (0–360°) so hue is not lost when saturation reaches 0.
+    pub picker_h: f32,
     pub close_task_behavior: CloseTaskBehavior,
     pub snooze_press_ms: u32,
     pub notifications_enabled: bool,
@@ -382,6 +384,7 @@ impl SettingsState {
             web_colors: WebColors::default(),
             card_colors: CardColors::default(),
             color_mode: ColorMode::Odd,
+            picker_h: 60.0, // default odd color (#ffff9d) is yellow ≈ 60°
             close_task_behavior: CloseTaskBehavior::Obey,
             snooze_press_ms: 200,
             notifications_enabled: true,
