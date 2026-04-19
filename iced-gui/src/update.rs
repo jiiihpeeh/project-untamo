@@ -173,9 +173,9 @@ Message::CloseRequested(id) => {
                     state.logo_anim_start = None;
                 }
             }
-            // Advance alarm-screen animation tick while on PlayAlarm page
-            if state.page == AppPage::PlayAlarm {
-                state.alarm_anim_tick += 0.016;
+            // Ensure alarm animation start is set when on PlayAlarm page
+            if state.page == AppPage::PlayAlarm && state.alarm_anim_start.is_none() {
+                state.alarm_anim_start = Some(std::time::Instant::now());
             }
 
             // ── Toggle switch animations ──────────────────────────────────────
@@ -1079,7 +1079,7 @@ Message::CloseRequested(id) => {
             if let Some(alarm) = state.alarms.iter().find(|a| a.id == alarm_id) {
                 let tune = alarm.tune.clone();
                 state.playing_alarm = Some(alarm.clone());
-                state.alarm_anim_tick = 0.0;
+                state.alarm_anim_start = Some(std::time::Instant::now());
                 state.page = AppPage::PlayAlarm;
 
                 let window_task = if let Some(id) = state.window_id {
@@ -1133,7 +1133,7 @@ Message::CloseRequested(id) => {
         Message::SnoozeAlarm => {
             audio::stop_audio();
             state.playing_alarm = None;
-            state.alarm_anim_tick = 0.0;
+            state.alarm_anim_start = Some(std::time::Instant::now());
             state.snooze_press_start = None;
             state.page = AppPage::Alarms;
             add_notification(state, "Alarm", format!("Snoozed for {} minutes", state.snooze_minutes));
@@ -1149,7 +1149,7 @@ Message::CloseRequested(id) => {
                 if start.elapsed() >= required {
                     audio::stop_audio();
                     state.playing_alarm = None;
-                    state.alarm_anim_tick = 0.0;
+                    state.alarm_anim_start = Some(std::time::Instant::now());
                     state.page = AppPage::Alarms;
                     add_notification(state, "Alarm", format!("Snoozed for {} minutes", state.snooze_minutes));
                 }
@@ -1161,7 +1161,7 @@ Message::CloseRequested(id) => {
             let dismissed_alarm = state.playing_alarm.take();
             let turn_off = state.turn_off;
             state.turn_off = false;
-            state.alarm_anim_tick = 0.0;
+            state.alarm_anim_start = Some(std::time::Instant::now());
             state.snooze_press_start = None;
             state.page = AppPage::Alarms;
 

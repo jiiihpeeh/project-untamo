@@ -127,7 +127,10 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
         .unwrap_or_else(|| "08:00".to_string());
 
     // ── Pulsing "ALARM" text (6 s cycle) ─────────────────────────────────────
-    let text_t = (state.alarm_anim_tick % 6.0) / 6.0;
+    let elapsed = state.alarm_anim_start
+        .map(|s| s.elapsed().as_secs_f32())
+        .unwrap_or(0.0);
+    let text_t = (elapsed % 6.0) / 6.0;
     let text_scale = if text_t < 0.5 {
         1.0 - 0.08 * (text_t / 0.5)
     } else {
@@ -136,7 +139,7 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     let label_size = (36.0 * text_scale).round();
 
     // ── Animated snooze circle (canvas fills the full 200 × 200 area) ────────
-    let logo_t = state.alarm_anim_tick % 1.0;
+    let logo_t = elapsed % 1.0;
     let (angle, scale) = alarm_logo_transform(logo_t);
 
     // The canvas draws both the blue circle background and the rotating logo.

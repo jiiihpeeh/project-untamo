@@ -727,8 +727,8 @@ pub struct AppState {
     pub viewable_devices: Vec<String>,
     /// When the logo hover animation started (runs for 2 s then stops).
     pub logo_anim_start: Option<std::time::Instant>,
-    /// Accumulated tick for the play-alarm animation (seconds, wraps freely).
-    pub alarm_anim_tick: f32,
+    /// Wall-clock start time of the play-alarm animation; elapsed seconds drives all animation.
+    pub alarm_anim_start: Option<std::time::Instant>,
     /// When the snooze button was first pressed (for hold-to-snooze timing).
     pub snooze_press_start: Option<std::time::Instant>,
     /// Last (hour, minute) when alarm scheduling was checked — avoids duplicate triggers.
@@ -823,7 +823,7 @@ impl AppState {
             saved_device_id,
             viewable_devices,
             logo_anim_start: None,
-            alarm_anim_tick: 0.0,
+            alarm_anim_start: None,
             snooze_press_start: None,
             last_alarm_minute: None,
             show_alarm_pop: false,
