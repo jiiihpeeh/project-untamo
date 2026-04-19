@@ -2,7 +2,7 @@ use crate::audio;
 use crate::messages::Message;
 use crate::state::{Alarm, AppState, AppPage, CardColors, Device, LoginRequest, LoginResponse, PendingDelete, QrLoginRequest, SessionStatus, LATEST_FRAME, FRAME_VERSION, FRAME_READY, UserInfo, WebColors};
 use crate::websocket::{self, WsMessage as WsMsg};
-use iced::Task;
+use iced::{window, Task};
 use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::mpsc;
 use v4l::buffer::Type;
@@ -100,18 +100,41 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
         Message::WindowIdReceived(id) => {
             state.window_id = id;
+            if let Some(id) = id {
+                if let Ok(icon) = iced::window::icon::from_file_data(
+                    include_bytes!("../resources/icons/icon_32.png"),
+                    Some(image::ImageFormat::Png),
+                ) {
+                    return iced::window::set_icon::<Message>(id, icon);
+                }
+            }
             Task::none()
         }
-        Message::CloseRequested(id) => {
-            // Minimize to system tray instead of closing
-            state.window_id = Some(id);
-            iced::window::set_mode(id, iced::window::Mode::Hidden)
+Message::CloseRequested(id) => {
+            state.window_id = None;
+            iced::window::close(id)
         }
-        Message::TrayShowWindow => {
+        Message::WindowClosed(id) => {
+            if state.window_id == Some(id) {
+                state.window_id = None;
+            }
+            Task::none()
+        }
+        Message::TrayShowWindow | Message::TrayToggle => {
             if let Some(id) = state.window_id {
-                iced::window::set_mode(id, iced::window::Mode::Windowed)
+                if matches!(message, Message::TrayToggle) {
+                    state.window_id = None;
+                    iced::window::close(id)
+                } else {
+                    iced::window::gain_focus(id)
+                }
             } else {
-                Task::none()
+                let (id, open_task) = iced::window::open(window::Settings::default());
+                state.window_id = Some(id);
+                Task::batch([
+                    open_task.map(|id| Message::WindowIdReceived(Some(id))),
+                    iced::window::gain_focus(id),
+                ])
             }
         }
         Message::TrayQuit => {
@@ -1030,9 +1053,21 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                 state.playing_alarm = Some(alarm.clone());
                 state.alarm_anim_tick = 0.0;
                 state.page = AppPage::PlayAlarm;
+
+                let window_task = if let Some(id) = state.window_id {
+                    iced::window::gain_focus(id)
+                } else {
+                    let (id, open_task) = iced::window::open(window::Settings::default());
+                    state.window_id = Some(id);
+                    Task::batch([
+                        open_task.map(|id| Message::WindowIdReceived(Some(id))),
+                        iced::window::gain_focus(id),
+                    ])
+                };
+
                 let server = state.server_address.clone();
                 let token = state.ws.token.clone();
-                return Task::perform(
+                let audio_task = Task::perform(
                     async move {
                         let client = reqwest::Client::new();
                         for ext in &["wav", "opus", "flac"] {
@@ -1056,6 +1091,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
                         Err(_) => Message::StopAudio,
                     },
                 );
+                return Task::batch([window_task, audio_task]);
             }
             Task::none()
         }

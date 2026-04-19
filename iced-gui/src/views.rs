@@ -8,7 +8,7 @@ use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
 use iced::{
     widget::{container, scrollable, stack},
-    Background, Color, Element, Length,
+    window, Background, Color, Element, Length,
 };
 
 fn is_logged_in(state: &AppState) -> bool {
@@ -60,7 +60,7 @@ fn modal<'a>(dialog: Element<'a, Message>) -> Element<'a, Message> {
     stack([backdrop.into(), centered.into()]).into()
 }
 
-pub fn view<'a>(state: &'a AppState) -> Element<'a, Message> {
+pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message> {
     let page = current_page(state);
     let logged_in = is_logged_in(state);
 

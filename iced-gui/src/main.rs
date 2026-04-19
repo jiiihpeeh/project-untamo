@@ -17,39 +17,32 @@ use update::update_app;
 use views::view;
 
 pub fn main() -> iced::Result {
-    #[cfg(target_os = "linux")]
-    gtk::init().expect("Failed to initialize GTK");
-
     audio::start_audio_thread();
     tray::init_tray();
 
-    let icon = iced::window::icon::from_file_data(
-        include_bytes!("../resources/icons/icon_32.png"),
-        Some(image::ImageFormat::Png),
-    )
-    .expect("Failed to load icon");
-
     let saved_session = crate::storage::load_session();
 
-    iced::application(
+    iced::daemon(
         move || {
-            let fetch_window_id = iced::window::oldest().map(Message::WindowIdReceived);
-            if let Some(session) = saved_session.clone() {
-                let mut app_state = AppState::default();
-                app_state.ws.token.clone_from(&session.token);
-                app_state.ws.ws_token.clone_from(&session.ws_token);
-                app_state.ws.ws_pair.clone_from(&session.ws_pair);
-                (
-                    app_state,
-                    Task::batch([
-                        fetch_window_id,
-                        Task::perform(async {}, |_| Message::ValidateSession),
-                        Task::perform(async {}, |_| Message::WsConnect),
-                    ]),
-                )
+            let (wid, open_task) = window::open(window::Settings::default());
+
+            let mut state = AppState::default();
+            state.window_id = Some(wid);
+
+            let tasks = if let Some(session) = saved_session.clone() {
+                state.ws.token.clone_from(&session.token);
+                state.ws.ws_token.clone_from(&session.ws_token);
+                state.ws.ws_pair.clone_from(&session.ws_pair);
+                Task::batch([
+                    open_task.map(|id| Message::WindowIdReceived(Some(id))),
+                    Task::perform(async {}, |_| Message::ValidateSession),
+                    Task::perform(async {}, |_| Message::WsConnect),
+                ])
             } else {
-                (AppState::default(), fetch_window_id)
-            }
+                open_task.map(|id| Message::WindowIdReceived(Some(id)))
+            };
+
+            (state, tasks)
         },
         update_app,
         view,
@@ -60,11 +53,13 @@ pub fn main() -> iced::Result {
             frame_tick_subscription(),
             window::close_requests().map(Message::CloseRequested),
             tray::subscription(),
+            iced::event::listen_with(|event, _status, window_id| match event {
+                iced::Event::Window(iced::window::Event::Closed) => {
+                    Some(Message::WindowClosed(window_id))
+                }
+                _ => None,
+            }),
         ])
-    })
-    .window(window::Settings {
-        icon: Some(icon),
-        ..window::Settings::default()
     })
     .title("Untamo")
     .run()
