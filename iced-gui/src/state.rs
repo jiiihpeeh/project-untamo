@@ -340,8 +340,8 @@ impl ColorMode {
 
     pub fn as_str(&self) -> &'static str {
         match self {
-            ColorMode::Even => "Even",
-            ColorMode::Odd => "Odd",
+            ColorMode::Even => "Color 1",
+            ColorMode::Odd => "Color 2",
             ColorMode::Inactive => "Inactive",
             ColorMode::Background => "Background",
         }
