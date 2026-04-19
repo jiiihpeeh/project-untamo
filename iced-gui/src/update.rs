@@ -100,14 +100,6 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
         Message::WindowIdReceived(id) => {
             state.window_id = id;
-            if let Some(id) = id {
-                if let Ok(icon) = iced::window::icon::from_file_data(
-                    include_bytes!("../resources/icons/icon_32.png"),
-                    Some(image::ImageFormat::Png),
-                ) {
-                    return iced::window::set_icon::<Message>(id, icon);
-                }
-            }
             Task::none()
         }
 Message::CloseRequested(id) => {
@@ -120,16 +112,24 @@ Message::CloseRequested(id) => {
             }
             Task::none()
         }
-        Message::TrayShowWindow | Message::TrayToggle => {
+        Message::TrayShowWindow => {
             if let Some(id) = state.window_id {
-                if matches!(message, Message::TrayToggle) {
-                    state.window_id = None;
-                    iced::window::close(id)
-                } else {
-                    iced::window::gain_focus(id)
-                }
+                iced::window::gain_focus(id)
             } else {
-                let (id, open_task) = iced::window::open(window::Settings::default());
+                let (id, open_task) = iced::window::open(new_window_settings());
+                state.window_id = Some(id);
+                Task::batch([
+                    open_task.map(|id| Message::WindowIdReceived(Some(id))),
+                    iced::window::gain_focus(id),
+                ])
+            }
+        }
+        Message::TrayToggle => {
+            if let Some(id) = state.window_id {
+                state.window_id = None;
+                iced::window::close(id)
+            } else {
+                let (id, open_task) = iced::window::open(new_window_settings());
                 state.window_id = Some(id);
                 Task::batch([
                     open_task.map(|id| Message::WindowIdReceived(Some(id))),
@@ -1057,7 +1057,7 @@ Message::CloseRequested(id) => {
                 let window_task = if let Some(id) = state.window_id {
                     iced::window::gain_focus(id)
                 } else {
-                    let (id, open_task) = iced::window::open(window::Settings::default());
+                    let (id, open_task) = iced::window::open(new_window_settings());
                     state.window_id = Some(id);
                     Task::batch([
                         open_task.map(|id| Message::WindowIdReceived(Some(id))),
@@ -2011,4 +2011,20 @@ fn hsv_to_hex(h: f32, s: f32, v: f32) -> String {
         ((g + m) * 255.0).round() as u8,
         ((b + m) * 255.0).round() as u8,
     )
+}
+
+fn new_window_settings() -> window::Settings {
+    let icon = iced::window::icon::from_file_data(
+        include_bytes!("../resources/icons/icon_32.png"),
+        Some(image::ImageFormat::Png),
+    )
+    .ok();
+    window::Settings {
+        icon,
+        platform_specific: window::settings::PlatformSpecific {
+            application_id: "untamo".to_string(),
+            ..Default::default()
+        },
+        ..window::Settings::default()
+    }
 }

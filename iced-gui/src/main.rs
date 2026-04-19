@@ -24,7 +24,20 @@ pub fn main() -> iced::Result {
 
     iced::daemon(
         move || {
-            let (wid, open_task) = window::open(window::Settings::default());
+            let icon = window::icon::from_file_data(
+                include_bytes!("../resources/icons/icon_32.png"),
+                Some(image::ImageFormat::Png),
+            )
+            .ok();
+
+            let (wid, open_task) = window::open(window::Settings {
+                icon,
+                platform_specific: window::settings::PlatformSpecific {
+                    application_id: "untamo".to_string(),
+                    ..Default::default()
+                },
+                ..window::Settings::default()
+            });
 
             let mut state = AppState::default();
             state.window_id = Some(wid);
@@ -53,12 +66,6 @@ pub fn main() -> iced::Result {
             frame_tick_subscription(),
             window::close_requests().map(Message::CloseRequested),
             tray::subscription(),
-            iced::event::listen_with(|event, _status, window_id| match event {
-                iced::Event::Window(iced::window::Event::Closed) => {
-                    Some(Message::WindowClosed(window_id))
-                }
-                _ => None,
-            }),
         ])
     })
     .title("Untamo")
