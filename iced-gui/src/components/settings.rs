@@ -1,7 +1,7 @@
 use crate::messages::Message;
 use crate::state::{CloseTaskBehavior, SettingsState};
 use crate::theme::{
-    card_container_style, danger_button, menu_style, pick_list_style, primary_button,
+    card_container_style_colored, danger_button, menu_style, pick_list_style, primary_button,
     secondary_button, COLORS,
 };
 use iced::{
@@ -31,7 +31,7 @@ fn row_setting<'a>(
     .into()
 }
 
-pub fn settings_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
+pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'a, Message> {
     let title = row![
         text("Settings")
             .size(20)
@@ -183,6 +183,6 @@ pub fn settings_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
     container(content)
         .max_width(440)
         .padding(8)
-        .style(card_container_style())
+        .style(card_container_style_colored(bg))
         .into()
 }

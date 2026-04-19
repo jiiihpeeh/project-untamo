@@ -1,4 +1,16 @@
 use iced::{widget::button, Background, Color, Theme};
+
+pub fn hex_to_color(hex: &str) -> Color {
+    let hex = hex.trim_start_matches('#');
+    if hex.len() >= 6 {
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(255) as f32 / 255.0;
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(255) as f32 / 255.0;
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(255) as f32 / 255.0;
+        Color::from_rgb(r, g, b)
+    } else {
+        Color::WHITE
+    }
+}
 use iced::widget::overlay::menu;
 
 pub const COLORS: ColorPalette = ColorPalette {
@@ -149,9 +161,15 @@ pub fn secondary_button() -> Box<dyn Fn(&Theme, button::Status) -> button::Style
 
 pub fn card_container_style(
 ) -> Box<dyn Fn(&iced::Theme) -> iced::widget::container::Style + 'static> {
+    card_container_style_colored(COLORS.bg)
+}
+
+pub fn card_container_style_colored(
+    bg: Color,
+) -> Box<dyn Fn(&iced::Theme) -> iced::widget::container::Style + 'static> {
     Box::new(move |_theme: &iced::Theme| iced::widget::container::Style {
         text_color: None,
-        background: Some(Background::Color(COLORS.bg)),
+        background: Some(Background::Color(bg)),
         border: iced::Border {
             color: COLORS.border,
             width: 1.0,

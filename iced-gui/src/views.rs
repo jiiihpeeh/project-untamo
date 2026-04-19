@@ -6,6 +6,7 @@ use crate::components::{
 use crate::components::alarm_pop::{POP_WIDTH, TAIL_H, TAIL_X};
 use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
+use crate::theme::hex_to_color;
 use iced::{
     widget::{container, scrollable, stack},
     window, Background, Color, Element, Length,
@@ -117,13 +118,15 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
     // Collect stack layers
     let mut layers: Vec<Element<Message>> = vec![base];
 
+    let bg = hex_to_color(&state.settings.card_colors.background);
+
     // Modal dialogs — each replaces previous so only one shows at a time
     if state.settings.show_settings {
-        layers.push(modal(settings_dialog(&state.settings)));
+        layers.push(modal(settings_dialog(&state.settings, bg)));
     }
 
     if state.settings.show_colors {
-        layers.push(modal(colors_dialog(&state.settings)));
+        layers.push(modal(colors_dialog(&state.settings, bg)));
     }
 
     if state.show_add_alarm {
@@ -132,6 +135,7 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
             &state.devices,
             &state.available_tunes,
             state.settings.clock24,
+            bg,
         )));
     }
 
@@ -144,15 +148,15 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
     }
 
     if state.show_about {
-        layers.push(modal(about_view()));
+        layers.push(modal(about_view(bg)));
     }
 
     if state.edit_profile.show {
-        layers.push(modal(edit_profile_dialog(&state.edit_profile)));
+        layers.push(modal(edit_profile_dialog(&state.edit_profile, bg)));
     }
 
     if let Some(pending) = &state.pending_delete {
-        layers.push(modal(confirm_dialog(pending)));
+        layers.push(modal(confirm_dialog(pending, bg)));
     }
 
     if state.editing_device.is_some() || state.adding_device {
@@ -165,6 +169,7 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
                 .unwrap_or_default(),
             &state.editing_device_name,
             &state.editing_device_type,
+            bg,
         )));
     }
 
@@ -243,3 +248,4 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
 
     stack(layers).into()
 }
+

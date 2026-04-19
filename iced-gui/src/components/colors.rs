@@ -1,6 +1,6 @@
 use crate::messages::Message;
 use crate::state::{ColorMode, SettingsState};
-use crate::theme::{card_container_style, secondary_button, COLORS};
+use crate::theme::{card_container_style_colored, secondary_button, COLORS};
 use iced::widget::canvas::{self, Canvas, Frame, Geometry, Path};
 use iced::widget::{button, column, container, row, text, Space};
 use iced::{Background, Border, Color, Element, Length, Point, Rectangle, Shadow, Size};
@@ -251,7 +251,7 @@ fn divider<'a>() -> Element<'a, Message> {
 
 // ── Public view ───────────────────────────────────────────────────────────────
 
-pub fn colors_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
+pub fn colors_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'a, Message> {
     let mode = &state.color_mode;
     let current_hex = match mode {
         ColorMode::Even => &state.card_colors.even,
@@ -337,7 +337,7 @@ pub fn colors_dialog<'a>(state: &'a SettingsState) -> Element<'a, Message> {
     .spacing(16)
     .padding(24);
 
-    container(content).style(card_container_style()).into()
+    container(content).style(card_container_style_colored(bg)).into()
 }
 
 // ── Color math helpers ────────────────────────────────────────────────────────

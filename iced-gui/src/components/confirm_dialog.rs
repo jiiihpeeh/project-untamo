@@ -1,12 +1,12 @@
 use crate::messages::Message;
 use crate::state::PendingDelete;
-use crate::theme::{card_container_style, danger_button, secondary_button, COLORS};
+use crate::theme::{card_container_style_colored, danger_button, secondary_button, COLORS};
 use iced::{
     widget::{button, column, container, row, text},
     Element, Length,
 };
 
-pub fn confirm_dialog<'a>(pending: &'a PendingDelete) -> Element<'a, Message> {
+pub fn confirm_dialog<'a>(pending: &'a PendingDelete, bg: iced::Color) -> Element<'a, Message> {
     let (title, body) = match pending {
         PendingDelete::Alarm(_) => (
             "Delete Alarm",
@@ -44,5 +44,5 @@ pub fn confirm_dialog<'a>(pending: &'a PendingDelete) -> Element<'a, Message> {
         .padding(24)
         .width(Length::Fixed(360.0));
 
-    container(card).style(card_container_style()).into()
+    container(card).style(card_container_style_colored(bg)).into()
 }

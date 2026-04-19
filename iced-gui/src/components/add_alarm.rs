@@ -2,7 +2,7 @@ use crate::components::icons::{icon_svg, Icon};
 use crate::messages::Message;
 use crate::state::{AddAlarmState, AlarmOccurrence, Device};
 use crate::theme::{
-    card_container_style, danger_button, menu_style, pick_list_style, primary_button,
+    card_container_style_colored, danger_button, menu_style, pick_list_style, primary_button,
     secondary_button, text_input_style, COLORS,
 };
 use iced::widget::{
@@ -16,6 +16,7 @@ pub fn add_alarm_dialog<'a>(
     devices: &'a [Device],
     available_tunes: &'a [String],
     clock24: bool,
+    bg: iced::Color,
 ) -> Element<'a, Message> {
     let is_editing = state.editing_alarm_id.is_some();
     let title_text = if is_editing {
@@ -243,6 +244,6 @@ pub fn add_alarm_dialog<'a>(
     container(content)
         .max_width(560)
         .padding(8)
-        .style(card_container_style())
+        .style(card_container_style_colored(bg))
         .into()
 }

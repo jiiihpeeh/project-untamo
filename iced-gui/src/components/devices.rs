@@ -2,7 +2,7 @@ use crate::components::icons::{icon_svg, Icon};
 use crate::messages::Message;
 use crate::state::{AppState, DeviceSelect, DeviceType};
 use crate::theme::{
-    card_container_style, danger_button, flat_container_style, menu_style, pick_list_style,
+    card_container_style_colored, danger_button, hex_to_color, menu_style, pick_list_style,
     primary_button, secondary_button, text_input_style, COLORS,
 };
 use iced::{
@@ -164,7 +164,8 @@ pub fn devices_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     .padding(20)
     .width(Length::Fixed(460.0));
 
-    container(card).style(card_container_style()).into()
+    let bg = hex_to_color(&state.settings.card_colors.background);
+    container(card).style(card_container_style_colored(bg)).into()
 }
 
 // ── add / edit dialog ─────────────────────────────────────────────────────────
@@ -174,6 +175,7 @@ pub fn edit_device_dialog<'a>(
     _device_id: &str,
     name: &str,
     device_type: &DeviceType,
+    bg: Color,
 ) -> Element<'a, Message> {
     let title_str = if is_add { "Add Device" } else { "Edit Device" };
     let title = text(title_str).size(18).color(COLORS.text);
@@ -234,6 +236,6 @@ pub fn edit_device_dialog<'a>(
 
     container(content)
         .width(Length::Fixed(350.0))
-        .style(flat_container_style())
+        .style(card_container_style_colored(bg))
         .into()
 }

@@ -1,6 +1,6 @@
 use crate::messages::Message;
 use crate::state::AppState;
-use crate::theme::{card_container_style, danger_button, primary_button, secondary_button, COLORS};
+use crate::theme::{card_container_style_colored, danger_button, primary_button, secondary_button, COLORS};
 use iced::{
     widget::{button, column, container, row, text},
     Alignment, Element, Length,
@@ -93,5 +93,6 @@ pub fn user_menu_view<'a>(state: &'a AppState) -> Element<'a, Message> {
         .padding(24)
         .width(Length::Fixed(280.0));
 
-    container(card).style(card_container_style()).into()
+    let bg = crate::theme::hex_to_color(&state.settings.card_colors.background);
+    container(card).style(card_container_style_colored(bg)).into()
 }

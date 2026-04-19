@@ -100,6 +100,14 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
     match message {
         Message::WindowIdReceived(id) => {
             state.window_id = id;
+            if let Some(wid) = id {
+                if let Ok(icon) = iced::window::icon::from_file_data(
+                    include_bytes!("../resources/icons/icon_32.png"),
+                    Some(image::ImageFormat::Png),
+                ) {
+                    return iced::window::set_icon(wid, icon);
+                }
+            }
             Task::none()
         }
 Message::CloseRequested(id) => {

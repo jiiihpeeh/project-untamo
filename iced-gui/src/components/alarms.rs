@@ -2,7 +2,7 @@ use crate::components::icons::{icon_svg, Icon};
 use crate::messages::Message;
 use crate::state::{Alarm, AppState, Device};
 use crate::theme::{
-    circle_fab_button, danger_button, flat_container_style, secondary_button, COLORS,
+    circle_fab_button, danger_button, hex_to_color, secondary_button, COLORS,
 };
 use chrono::{Datelike, Duration, Local, NaiveDateTime, NaiveTime};
 use iced::widget::svg::{Handle, Svg};
@@ -13,20 +13,6 @@ use iced::{
     Background, Border, Color, Element, Length,
 };
 use iced_widget::rule;
-
-// ── colour helpers ────────────────────────────────────────────────────────────
-
-fn hex_to_color(hex: &str) -> Color {
-    let hex = hex.trim_start_matches('#');
-    if hex.len() >= 6 {
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(255) as f32 / 255.0;
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(255) as f32 / 255.0;
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(255) as f32 / 255.0;
-        Color::from_rgb(r, g, b)
-    } else {
-        Color::WHITE
-    }
-}
 
 // ── text helpers ──────────────────────────────────────────────────────────────
 
@@ -412,9 +398,13 @@ pub fn alarms_view<'a>(state: &'a AppState) -> Element<'a, Message> {
 
     let main_stack = stack([column![header, list_area].into(), fab_overlay.into()]);
 
+    let bg = hex_to_color(&state.settings.card_colors.background);
     container(main_stack)
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(flat_container_style())
+        .style(move |_theme: &iced::Theme| iced::widget::container::Style {
+            background: Some(Background::Color(bg)),
+            ..iced::widget::container::Style::default()
+        })
         .into()
 }
