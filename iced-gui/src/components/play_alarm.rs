@@ -2,12 +2,13 @@ use crate::messages::Message;
 use crate::state::AppState;
 use crate::components::toggle::animated_toggle;
 use crate::theme::{card_container_style_colored, hex_to_color, COLORS};
-use iced::widget::canvas::{self, Canvas, Frame, Geometry, Path};
+use iced::widget::canvas::{self, Canvas, Frame, Geometry, Path, Stroke};
 use iced::widget::svg::Handle as SvgHandle;
-use iced::widget::{column, mouse_area, row, text};
+use iced::widget::{column, container, mouse_area, row, text};
 use iced::{
     Background, Border, Color, Element, Length, Point, Radians, Rectangle, Shadow, Size, Vector,
 };
+use std::f32::consts::PI;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ struct AlarmLogoCanvas {
     svg_size: f32,
     angle: f32,
     scale: f32,
+    hold_progress: f32, // 0.0..=1.0 while user holds; drives arc + press shrink
 }
 
 impl<Message> canvas::Program<Message> for AlarmLogoCanvas {
@@ -62,18 +64,22 @@ impl<Message> canvas::Program<Message> for AlarmLogoCanvas {
         let cy = bounds.height / 2.0;
         let radius = bounds.width.min(bounds.height) / 2.0;
 
+        // Press shrinks the whole circle slightly for tactile feedback
+        let press_scale = 1.0 - 0.05 * self.hold_progress;
+        let draw_radius = radius * press_scale;
+
         // ── Blue circle background ────────────────────────────────────────────
-        let circle = Path::circle(Point::new(cx, cy), radius);
+        let circle = Path::circle(Point::new(cx, cy), draw_radius);
         frame.fill(&circle, Color::from_rgb(0.18, 0.52, 0.96));
 
         // ── Animated SVG, centered and rotated around the circle centre ───────
-        let offset = (bounds.width - self.svg_size) / 2.0;
+        let svg_display = self.svg_size * press_scale;
+        let offset = (bounds.width - svg_display) / 2.0;
 
         frame.with_save(|f| {
-            // Rotate/scale around the canvas centre
             f.translate(Vector::new(cx, cy));
             f.rotate(Radians(self.angle));
-            f.scale(self.scale);
+            f.scale(self.scale * press_scale);
             f.translate(Vector::new(-cx, -cy));
 
             let handle = SvgHandle::from_memory(include_bytes!("../assets/logo.svg"));
@@ -81,12 +87,34 @@ impl<Message> canvas::Program<Message> for AlarmLogoCanvas {
                 Rectangle {
                     x: offset,
                     y: offset,
-                    width: self.svg_size,
-                    height: self.svg_size,
+                    width: svg_display,
+                    height: svg_display,
                 },
                 &handle,
             );
         });
+
+        // ── Hold-progress arc (white ring, clockwise from top) ────────────────
+        if self.hold_progress > 0.0 {
+            let arc_radius = draw_radius - 5.0;
+            let start_angle = -PI / 2.0;
+            let sweep = self.hold_progress * 2.0 * PI;
+
+            let arc = Path::new(|b| {
+                b.arc(canvas::path::Arc {
+                    center: Point::new(cx, cy),
+                    radius: arc_radius,
+                    start_angle: Radians(start_angle),
+                    end_angle: Radians(start_angle + sweep),
+                });
+            });
+            frame.stroke(
+                &arc,
+                Stroke::default()
+                    .with_color(Color::from_rgba(1.0, 1.0, 1.0, 0.9))
+                    .with_width(4.0),
+            );
+        }
 
         vec![frame.into_geometry()]
     }
@@ -142,21 +170,33 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     let logo_t = elapsed % 1.0;
     let (angle, scale) = alarm_logo_transform(logo_t);
 
+    let hold_progress = state.snooze_press_start
+        .map(|start| {
+            let elapsed_ms = start.elapsed().as_millis() as f32;
+            let required_ms = state.settings.snooze_press_ms as f32;
+            (elapsed_ms / required_ms).min(1.0)
+        })
+        .unwrap_or(0.0);
+
     // The canvas draws both the blue circle background and the rotating logo.
     // mouse_area wraps it directly — no button in the way to swallow events.
     let snooze_canvas: Element<Message> = Canvas::new(AlarmLogoCanvas {
         svg_size: LOGO_SVG_SIZE,
         angle,
         scale,
+        hold_progress,
     })
     .width(Length::Fixed(SNOOZE_SIZE))
     .height(Length::Fixed(SNOOZE_SIZE))
     .into();
 
-    let snooze_area: Element<Message> = mouse_area(snooze_canvas)
-        .on_press(Message::SnoozePressStart)
-        .on_release(Message::SnoozePressEnd)
-        .into();
+    let snooze_area: Element<Message> = container(
+        mouse_area(snooze_canvas)
+            .on_press(Message::SnoozePressStart)
+            .on_release(Message::SnoozePressEnd),
+    )
+    .center_x(Length::Fill)
+    .into();
 
     // ── Header ────────────────────────────────────────────────────────────────
     let header = column![

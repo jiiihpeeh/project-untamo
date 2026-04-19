@@ -1132,11 +1132,44 @@ Message::CloseRequested(id) => {
         }
         Message::SnoozeAlarm => {
             audio::stop_audio();
-            state.playing_alarm = None;
-            state.alarm_anim_start = Some(std::time::Instant::now());
+            let snoozed = state.playing_alarm.take();
+            state.alarm_anim_start = None;
             state.snooze_press_start = None;
             state.page = AppPage::Alarms;
-            add_notification(state, "Alarm", format!("Snoozed for {} minutes", state.snooze_minutes));
+
+            if let Some(mut alarm) = snoozed {
+                let now_ms = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_millis() as i64;
+                // Keep only snooze timestamps from the last hour (mirrors frontend)
+                let one_hour_ago = now_ms - 3_600_000;
+                alarm.snooze.retain(|&s| s > one_hour_ago);
+                alarm.snooze.push(now_ms);
+                if let Some(existing) = state.alarms.iter_mut().find(|a| a.id == alarm.id) {
+                    existing.snooze.clone_from(&alarm.snooze);
+                }
+                add_notification(state, "Alarm", "Snoozed".to_string());
+                let server = state.server_address.clone();
+                let token = state.ws.token.clone();
+                return iced::Task::perform(
+                    async move {
+                        let client = reqwest::Client::new();
+                        match client
+                            .put(format!("{}/api/alarm/{}", server, alarm.id))
+                            .header("token", &token)
+                            .json(&alarm)
+                            .send()
+                            .await
+                        {
+                            Ok(resp) if resp.status().is_success() => Message::FetchUpdate,
+                            Ok(resp) => Message::AlarmEditResult(Err(format!("HTTP {}", resp.status()))),
+                            Err(e) => Message::AlarmEditResult(Err(e.to_string())),
+                        }
+                    },
+                    |m| m,
+                );
+            }
             Task::none()
         }
         Message::SnoozePressStart => {
@@ -1147,11 +1180,7 @@ Message::CloseRequested(id) => {
             if let Some(start) = state.snooze_press_start.take() {
                 let required = std::time::Duration::from_millis(state.settings.snooze_press_ms as u64);
                 if start.elapsed() >= required {
-                    audio::stop_audio();
-                    state.playing_alarm = None;
-                    state.alarm_anim_start = Some(std::time::Instant::now());
-                    state.page = AppPage::Alarms;
-                    add_notification(state, "Alarm", format!("Snoozed for {} minutes", state.snooze_minutes));
+                    return Task::perform(async {}, |_| Message::SnoozeAlarm);
                 }
             }
             Task::none()
