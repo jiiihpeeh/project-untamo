@@ -1,12 +1,13 @@
 use crate::components::icons::{icon_svg, Icon};
 use crate::messages::Message;
 use crate::state::{AddAlarmState, AlarmOccurrence, Device};
+use crate::components::toggle::animated_toggle;
 use crate::theme::{
     card_container_style_colored, danger_button, menu_style, pick_list_style, primary_button,
     secondary_button, text_input_style, COLORS,
 };
 use iced::widget::{
-    button, checkbox, column, container, pick_list, row, scrollable, text, text_input, toggler,
+    button, checkbox, column, container, pick_list, row, scrollable, text, text_input,
 };
 use iced::Element;
 use iced_aw::helpers::{date_picker, time_picker};
@@ -17,6 +18,7 @@ pub fn add_alarm_dialog<'a>(
     available_tunes: &'a [String],
     clock24: bool,
     bg: iced::Color,
+    anims: &std::collections::HashMap<String, f32>,
 ) -> Element<'a, Message> {
     let is_editing = state.editing_alarm_id.is_some();
     let title_text = if is_editing {
@@ -188,13 +190,19 @@ pub fn add_alarm_dialog<'a>(
         .into();
 
     // --- Toggles ---
-    let active_toggler = toggler(state.active)
-        .label("Active")
-        .on_toggle(Message::SetAlarmActive);
+    let active_toggler = row![
+        animated_toggle(anims, "add_active", state.active, Message::SetAlarmActive(!state.active)),
+        text("Active").size(13).color(COLORS.text),
+    ]
+    .spacing(8)
+    .align_y(iced::Alignment::Center);
 
-    let close_task_toggler = toggler(state.close_task)
-        .label("Closing Task")
-        .on_toggle(Message::SetAlarmCloseTask);
+    let close_task_toggler = row![
+        animated_toggle(anims, "add_close_task", state.close_task, Message::SetAlarmCloseTask(!state.close_task)),
+        text("Closing Task").size(13).color(COLORS.text),
+    ]
+    .spacing(8)
+    .align_y(iced::Alignment::Center);
 
     let toggles_row = row![active_toggler, close_task_toggler]
         .spacing(24)

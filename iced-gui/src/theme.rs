@@ -332,6 +332,36 @@ pub fn menu_style() -> Box<dyn Fn(&iced::Theme) -> menu::Style + 'static> {
     })
 }
 
+pub fn slider_style() -> Box<
+    dyn Fn(&iced::Theme, iced::widget::slider::Status) -> iced::widget::slider::Style + 'static,
+> {
+    Box::new(move |_theme, status| {
+        let is_active = matches!(
+            status,
+            iced::widget::slider::Status::Dragged | iced::widget::slider::Status::Hovered
+        );
+        iced::widget::slider::Style {
+            rail: iced::widget::slider::Rail {
+                backgrounds: (
+                    iced::Background::Color(COLORS.primary),
+                    iced::Background::Color(COLORS.border),
+                ),
+                width: 4.0,
+                border: iced::Border {
+                    radius: 2.0.into(),
+                    ..iced::Border::default()
+                },
+            },
+            handle: iced::widget::slider::Handle {
+                shape: iced::widget::slider::HandleShape::Circle { radius: if is_active { 9.0 } else { 7.0 } },
+                background: iced::Background::Color(Color::WHITE),
+                border_width: 2.0,
+                border_color: if is_active { COLORS.primary } else { COLORS.border },
+            },
+        }
+    })
+}
+
 pub fn text_input_style() -> Box<
     dyn Fn(&iced::Theme, iced::widget::text_input::Status) -> iced::widget::text_input::Style
         + 'static,

@@ -1,4 +1,5 @@
 pub mod about;
+pub mod toggle;
 pub mod add_alarm;
 pub mod alarm_pop;
 pub mod alarms;
@@ -18,6 +19,7 @@ pub mod user_menu;
 pub mod welcome;
 
 pub use about::about_view;
+pub use toggle::animated_toggle;
 pub use alarm_pop::alarm_pop_view;
 pub use add_alarm::add_alarm_dialog;
 pub use alarms::alarms_view;

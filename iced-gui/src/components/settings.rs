@@ -1,11 +1,12 @@
+use crate::components::toggle::animated_toggle;
 use crate::messages::Message;
 use crate::state::{CloseTaskBehavior, SettingsState};
 use crate::theme::{
     card_container_style_colored, danger_button, menu_style, pick_list_style, primary_button,
-    secondary_button, COLORS,
+    secondary_button, slider_style, COLORS,
 };
 use iced::{
-    widget::{button, column, container, pick_list, row, slider, text, toggler},
+    widget::{button, column, container, pick_list, row, slider, text},
     Element, Length,
 };
 
@@ -31,7 +32,7 @@ fn row_setting<'a>(
     .into()
 }
 
-pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'a, Message> {
+pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color, anims: &std::collections::HashMap<String, f32>) -> Element<'a, Message> {
     let title = row![
         text("Settings")
             .size(20)
@@ -68,7 +69,8 @@ pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element
     let panel_slider = slider(25.0..=80.0, state.panel_size as f32, |v| {
         Message::SetPanelSize(v as u32)
     })
-    .width(Length::Fill);
+    .width(Length::Fill)
+    .style(slider_style());
 
     // --- Time format ---
     let clock_24_btn = button(text("24 h").size(13))
@@ -93,7 +95,8 @@ pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element
         .color(COLORS.text);
     let vol_slider = slider(0.0..=1.0, state.volume, Message::SetVolume)
         .step(0.01f32)
-        .width(Length::Fill);
+        .width(Length::Fill)
+        .style(slider_style());
 
     // --- Snooze press time ---
     let snooze_label = text(format!("Snooze hold: {} ms", state.snooze_press_ms))
@@ -102,7 +105,8 @@ pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element
     let snooze_slider = slider(3.0..=800.0, state.snooze_press_ms as f32, |v| {
         Message::SetSnoozePressMs(v as u32)
     })
-    .width(Length::Fill);
+    .width(Length::Fill)
+    .style(slider_style());
 
     // --- Close Task behavior ---
     let close_task_picker = pick_list(
@@ -115,13 +119,15 @@ pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element
     .menu_style(menu_style());
 
     // --- Notifications ---
-    let notif_toggler = toggler(state.notifications_enabled)
-        .label(if state.notifications_enabled {
-            "Toast"
-        } else {
-            "None"
-        })
-        .on_toggle(Message::SetNotificationsEnabled);
+    let notif_label = text(if state.notifications_enabled { "Toast" } else { "None" })
+        .size(13)
+        .color(COLORS.text);
+    let notif_toggler = row![
+        animated_toggle(anims, "settings_notif", state.notifications_enabled, Message::SetNotificationsEnabled(!state.notifications_enabled)),
+        notif_label,
+    ]
+    .spacing(8)
+    .align_y(iced::Alignment::Center);
 
     // --- Alarm colors ---
     let colors_btn = button(text("Set Alarm Colors").size(13))

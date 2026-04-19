@@ -122,7 +122,7 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
 
     // Modal dialogs — each replaces previous so only one shows at a time
     if state.settings.show_settings {
-        layers.push(modal(settings_dialog(&state.settings, bg)));
+        layers.push(modal(settings_dialog(&state.settings, bg, &state.toggle_anims)));
     }
 
     if state.settings.show_colors {
@@ -136,6 +136,7 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
             &state.available_tunes,
             state.settings.clock24,
             bg,
+            &state.toggle_anims,
         )));
     }
 

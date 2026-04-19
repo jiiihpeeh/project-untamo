@@ -178,6 +178,26 @@ Message::CloseRequested(id) => {
                 state.alarm_anim_tick += 0.016;
             }
 
+            // ── Toggle switch animations ──────────────────────────────────────
+            {
+                const K: f32 = 0.35;
+                const SNAP: f32 = 0.005;
+                for alarm in &state.alarms {
+                    let target = if alarm.active { 1.0f32 } else { 0.0 };
+                    let e = state.toggle_anims.entry(alarm.id.clone()).or_insert(target);
+                    if (*e - target).abs() > SNAP { *e += (target - *e) * K; } else { *e = target; }
+                }
+                for (key, target) in [
+                    ("settings_notif", if state.settings.notifications_enabled { 1.0f32 } else { 0.0 }),
+                    ("add_active",     if state.add_alarm.active { 1.0 } else { 0.0 }),
+                    ("add_close_task", if state.add_alarm.close_task { 1.0 } else { 0.0 }),
+                    ("play_turn_off",  if state.turn_off { 1.0 } else { 0.0 }),
+                ] {
+                    let e = state.toggle_anims.entry(key.to_string()).or_insert(target);
+                    if (*e - target).abs() > SNAP { *e += (target - *e) * K; } else { *e = target; }
+                }
+            }
+
             // ── Alarm scheduler: check once per minute ────────────────────────
             let mut alarm_to_fire: Option<String> = None;
             if state.page != AppPage::PlayAlarm && state.login.session_status == crate::state::SessionStatus::Valid {
@@ -1177,6 +1197,14 @@ Message::CloseRequested(id) => {
         }
         Message::SetTurnOff(value) => {
             state.turn_off = value;
+            if value {
+                return Task::perform(
+                    async {
+                        tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+                    },
+                    |_| Message::DismissAlarm,
+                );
+            }
             Task::none()
         }
         Message::SetSnoozeMinutes(minutes) => {

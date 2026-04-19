@@ -735,6 +735,8 @@ pub struct AppState {
     pub last_alarm_minute: Option<(u32, u32)>,
     /// Whether the alarm info pop-bubble is visible.
     pub show_alarm_pop: bool,
+    /// Animated visual position (0.0–1.0) for each toggle switch, keyed by alarm ID or a settings key.
+    pub toggle_anims: std::collections::HashMap<String, f32>,
 }
 
 impl AppState {
@@ -825,6 +827,7 @@ impl AppState {
             snooze_press_start: None,
             last_alarm_minute: None,
             show_alarm_pop: false,
+            toggle_anims: std::collections::HashMap::new(),
         }
     }
 }

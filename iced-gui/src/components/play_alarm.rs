@@ -1,9 +1,10 @@
 use crate::messages::Message;
 use crate::state::AppState;
-use crate::theme::{card_container_style, danger_button, COLORS};
+use crate::components::toggle::animated_toggle;
+use crate::theme::{card_container_style_colored, hex_to_color, COLORS};
 use iced::widget::canvas::{self, Canvas, Frame, Geometry, Path};
 use iced::widget::svg::Handle as SvgHandle;
-use iced::widget::{button, column, mouse_area, row, text, toggler};
+use iced::widget::{column, mouse_area, row, text};
 use iced::{
     Background, Border, Color, Element, Length, Point, Radians, Rectangle, Shadow, Size, Vector,
 };
@@ -164,25 +165,14 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     .spacing(4)
     .align_x(iced::Alignment::Center);
 
-    // ── Turn-off toggler + dismiss button ─────────────────────────────────────
-    let turn_off_toggle: Element<Message> = row![
-        toggler(state.turn_off)
-            .on_toggle(Message::SetTurnOff)
-            .size(20),
+    // ── Turn-off toggle (IS the dismiss action when flipped on) ──────────────
+    let bottom_row: Element<Message> = column![
         text("Turn alarm OFF").size(14).color(COLORS.text),
+        animated_toggle(&state.toggle_anims, "play_turn_off", state.turn_off, Message::SetTurnOff(!state.turn_off)),
     ]
     .spacing(8)
-    .align_y(iced::Alignment::Center)
+    .align_x(iced::Alignment::Center)
     .into();
-
-    let dismiss_btn = button(text("Dismiss Alarm"))
-        .on_press(Message::DismissAlarm)
-        .style(danger_button());
-
-    let bottom_row: Element<Message> = row![turn_off_toggle, dismiss_btn]
-        .spacing(16)
-        .align_y(iced::Alignment::Center)
-        .into();
 
     // ── Assemble ──────────────────────────────────────────────────────────────
     let content = column![
@@ -198,11 +188,12 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     .padding(40)
     .align_x(iced::Alignment::Center);
 
+    let bg = hex_to_color(&state.settings.card_colors.background);
     iced::widget::container(content)
         .width(Length::Fill)
         .height(Length::Fill)
         .center_x(Length::Fill)
         .center_y(Length::Fill)
-        .style(card_container_style())
+        .style(card_container_style_colored(bg))
         .into()
 }

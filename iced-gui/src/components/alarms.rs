@@ -1,6 +1,7 @@
 use crate::components::icons::{icon_svg, Icon};
 use crate::messages::Message;
 use crate::state::{Alarm, AppState, Device};
+use crate::components::toggle::animated_toggle;
 use crate::theme::{
     circle_fab_button, danger_button, hex_to_color, secondary_button, COLORS,
 };
@@ -8,7 +9,7 @@ use chrono::{Datelike, Duration, Local, NaiveDateTime, NaiveTime};
 use iced::widget::svg::{Handle, Svg};
 use iced::{
     widget::{
-        button, column, container, mouse_area, row, scrollable, stack, text, toggler, Column,
+        button, column, container, mouse_area, row, scrollable, stack, text, Column,
     },
     Background, Border, Color, Element, Length,
 };
@@ -191,6 +192,7 @@ fn alarm_card<'a>(
     clock24: bool,
     hovered: bool,
     card_color: Color,
+    anims: &std::collections::HashMap<String, f32>,
 ) -> Element<'a, Message> {
     // --- Header row ---
     let mut header = row![
@@ -270,7 +272,7 @@ fn alarm_card<'a>(
         let active_col = container(
             column![
                 text("ACTIVE").size(10).color(COLORS.text_secondary),
-                toggler(alarm.active).on_toggle(|_| Message::ToggleAlarmActive(alarm.id.clone())),
+                animated_toggle(anims, &alarm.id, alarm.active, Message::ToggleAlarmActive(alarm.id.clone())),
             ]
             .spacing(4)
             .align_x(iced::Alignment::Center),
@@ -358,6 +360,7 @@ pub fn alarms_view<'a>(state: &'a AppState) -> Element<'a, Message> {
                 clock24,
                 hovered,
                 card_color,
+                &state.toggle_anims,
             ));
         }
         col.spacing(6)
