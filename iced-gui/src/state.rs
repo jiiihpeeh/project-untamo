@@ -340,6 +340,9 @@ impl ColorMode {
 
     pub fn display_name(&self) -> &'static str {
         match self {
+            //humans percieve 1st card as odd, but it's index 0 which is even
+            // so label the modes from the user's perspective, not 0-indexed
+            //even index cards are "odd" from user's perspective, and odd index cards are "even"
             ColorMode::EvenIndex => "Odd",
             ColorMode::OddIndex => "Even",
             ColorMode::Inactive => "Inactive",
