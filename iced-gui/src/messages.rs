@@ -63,6 +63,7 @@ pub enum Message {
     SetCloseTaskBehavior(CloseTaskBehavior),
     SetSnoozePressMs(u32),
     SetNotificationsEnabled(bool),
+    SetDesktopNotificationsEnabled(bool),
     WsConnect,
     WsDisconnect,
     WsMessageReceived(Result<WsMessage, String>),

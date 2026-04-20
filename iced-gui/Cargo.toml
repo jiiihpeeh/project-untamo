@@ -33,6 +33,7 @@ cbc = "0.1"
 getrandom = "0.2"
 base64 = "0.21"
 ksni = "0.2"
+notify-rust = "4"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 

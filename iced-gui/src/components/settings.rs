@@ -119,15 +119,23 @@ pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color, anims: &st
     .menu_style(menu_style());
 
     // --- Notifications ---
-    let notif_label = text(if state.notifications_enabled { "Toast" } else { "None" })
-        .size(13)
-        .color(COLORS.text);
-    let notif_toggler = row![
+    let toast_toggler = row![
         animated_toggle(anims, "settings_notif", state.notifications_enabled, Message::SetNotificationsEnabled(!state.notifications_enabled)),
-        notif_label,
+        text("In-app toast").size(13).color(COLORS.text),
     ]
     .spacing(8)
     .align_y(iced::Alignment::Center);
+
+    let desktop_toggler = row![
+        animated_toggle(anims, "settings_desktop_notif", state.desktop_notifications, Message::SetDesktopNotificationsEnabled(!state.desktop_notifications)),
+        text("Desktop").size(13).color(COLORS.text),
+    ]
+    .spacing(8)
+    .align_y(iced::Alignment::Center);
+
+    let notif_toggler = row![toast_toggler, desktop_toggler]
+        .spacing(20)
+        .align_y(iced::Alignment::Center);
 
     // --- Alarm colors ---
     let colors_btn = button(text("Set Alarm Colors").size(13))

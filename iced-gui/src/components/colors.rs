@@ -10,6 +10,9 @@ use iced_widget::Action;
 const PICKER_SIZE: f32 = 200.0;
 const HUE_H: f32 = 18.0;
 const BTN_W: f32 = 160.0;
+const ROW_SPACING: f32 = 28.0;
+const CARD_PAD: f32 = 24.0;
+const DIALOG_W: f32 = PICKER_SIZE + ROW_SPACING + BTN_W + CARD_PAD * 2.0; // 436px
 
 // ── SV (saturation / value) square ───────────────────────────────────────────
 
@@ -332,12 +335,15 @@ pub fn colors_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'
     let content = column![
         header,
         divider(),
-        row![left_col, right_col].spacing(28).align_y(iced::Alignment::Start),
+        row![left_col, right_col].spacing(ROW_SPACING).align_y(iced::Alignment::Start),
     ]
     .spacing(16)
-    .padding(24);
+    .padding(CARD_PAD);
 
-    container(content).style(card_container_style_colored(bg)).into()
+    container(content)
+        .max_width(DIALOG_W)
+        .style(card_container_style_colored(bg))
+        .into()
 }
 
 // ── Color math helpers ────────────────────────────────────────────────────────

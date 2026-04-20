@@ -87,7 +87,13 @@ pub struct AppSettings {
     pub device_id: Option<String>,
     #[serde(default)]
     pub viewable_devices: Vec<String>,
+    #[serde(default = "default_true")]
+    pub notifications_enabled: bool,
+    #[serde(default)]
+    pub desktop_notifications: bool,
 }
+
+fn default_true() -> bool { true }
 
 impl Default for AppSettings {
     fn default() -> Self {
@@ -98,6 +104,8 @@ impl Default for AppSettings {
             panel_size: 56,
             device_id: None,
             viewable_devices: Vec::new(),
+            notifications_enabled: true,
+            desktop_notifications: false,
         }
     }
 }

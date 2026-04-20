@@ -11,18 +11,24 @@ pub(super) fn add_notification_kind(
     message: String,
     kind: crate::state::NotificationKind,
 ) {
-    if !state.settings.notifications_enabled {
-        return;
+    if state.settings.desktop_notifications {
+        let t = title.to_string();
+        let m = message.clone();
+        std::thread::spawn(move || {
+            let _ = notify_rust::Notification::new().summary(&t).body(&m).show();
+        });
     }
-    let notif = crate::state::Notification {
-        title: title.to_string(),
-        message,
-        kind,
-        timestamp: std::time::Instant::now(),
-    };
-    state.notifications.push(notif);
-    if state.notifications.len() > 5 {
-        state.notifications.remove(0);
+    if state.settings.notifications_enabled {
+        let notif = crate::state::Notification {
+            title: title.to_string(),
+            message,
+            kind,
+            timestamp: std::time::Instant::now(),
+        };
+        state.notifications.push(notif);
+        if state.notifications.len() > 5 {
+            state.notifications.remove(0);
+        }
     }
 }
 
@@ -34,6 +40,8 @@ pub(super) fn save_settings_from_state(state: &AppState) {
         panel_size: state.settings.panel_size,
         device_id: state.saved_device_id.clone(),
         viewable_devices: state.viewable_devices.clone(),
+        notifications_enabled: state.settings.notifications_enabled,
+        desktop_notifications: state.settings.desktop_notifications,
     };
     let _ = crate::storage::save_settings(&s);
 }

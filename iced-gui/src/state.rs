@@ -367,6 +367,7 @@ pub struct SettingsState {
     pub close_task_behavior: CloseTaskBehavior,
     pub snooze_press_ms: u32,
     pub notifications_enabled: bool,
+    pub desktop_notifications: bool,
 }
 
 impl SettingsState {
@@ -388,6 +389,7 @@ impl SettingsState {
             close_task_behavior: CloseTaskBehavior::Obey,
             snooze_press_ms: 200,
             notifications_enabled: true,
+            desktop_notifications: false,
         }
     }
 }
@@ -788,6 +790,8 @@ impl AppState {
                 volume: settings.volume,
                 nav_bar_top: settings.nav_bar_top,
                 panel_size: settings.panel_size,
+                notifications_enabled: settings.notifications_enabled,
+                desktop_notifications: settings.desktop_notifications,
                 ..SettingsState::new()
             },
             ws,

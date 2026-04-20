@@ -99,7 +99,8 @@ pub fn frame_tick(state: &mut AppState) -> Task<Message> {
             if (*e - target).abs() > SNAP { *e += (target - *e) * K; } else { *e = target; }
         }
         for (key, target) in [
-            ("settings_notif", if state.settings.notifications_enabled { 1.0f32 } else { 0.0 }),
+            ("settings_notif",         if state.settings.notifications_enabled { 1.0f32 } else { 0.0 }),
+            ("settings_desktop_notif", if state.settings.desktop_notifications { 1.0f32 } else { 0.0 }),
             ("add_active",     if state.add_alarm.active { 1.0 } else { 0.0 }),
             ("add_close_task", if state.add_alarm.close_task { 1.0 } else { 0.0 }),
             ("play_turn_off",  if state.turn_off { 1.0 } else { 0.0 }),

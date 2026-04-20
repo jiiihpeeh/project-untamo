@@ -120,6 +120,7 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
         Message::SetCloseTaskBehavior(behavior) => settings::set_close_task_behavior(state, behavior),
         Message::SetSnoozePressMs(ms) => settings::set_snooze_press_ms(state, ms),
         Message::SetNotificationsEnabled(enabled) => settings::set_notifications_enabled(state, enabled),
+        Message::SetDesktopNotificationsEnabled(enabled) => settings::set_desktop_notifications_enabled(state, enabled),
         Message::ToggleColors => settings::toggle_colors(state),
         Message::SetColorMode(mode) => settings::set_color_mode(state, mode),
         Message::SetCardColorEven(color) => settings::set_card_color_even(state, color),

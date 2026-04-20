@@ -147,6 +147,13 @@ pub fn set_snooze_press_ms(state: &mut AppState, ms: u32) -> Task<Message> {
 
 pub fn set_notifications_enabled(state: &mut AppState, enabled: bool) -> Task<Message> {
     state.settings.notifications_enabled = enabled;
+    save_settings_from_state(state);
+    Task::none()
+}
+
+pub fn set_desktop_notifications_enabled(state: &mut AppState, enabled: bool) -> Task<Message> {
+    state.settings.desktop_notifications = enabled;
+    save_settings_from_state(state);
     Task::none()
 }
 
