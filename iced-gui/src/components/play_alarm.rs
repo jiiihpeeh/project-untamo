@@ -4,10 +4,8 @@ use crate::components::toggle::animated_toggle;
 use crate::theme::{card_container_style_colored, hex_to_color, COLORS};
 use iced::widget::canvas::{self, Canvas, Frame, Geometry, Path, Stroke};
 use iced::widget::svg::Handle as SvgHandle;
-use iced::widget::{column, container, mouse_area, row, text};
-use iced::{
-    Background, Border, Color, Element, Length, Point, Radians, Rectangle, Shadow, Size, Vector,
-};
+use iced::widget::{column, container, mouse_area, text};
+use iced::{Color, Element, Length, Point, Radians, Rectangle, Vector};
 use std::f32::consts::PI;
 
 // ── Constants ─────────────────────────────────────────────────────────────────

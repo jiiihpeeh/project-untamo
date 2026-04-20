@@ -19,7 +19,6 @@ pub mod user_menu;
 pub mod welcome;
 
 pub use about::about_view;
-pub use toggle::animated_toggle;
 pub use alarm_pop::alarm_pop_view;
 pub use add_alarm::add_alarm_dialog;
 pub use alarms::alarms_view;
@@ -27,7 +26,6 @@ pub use colors::colors_dialog;
 pub use confirm_dialog::confirm_dialog;
 pub use devices::{devices_view, edit_device_dialog};
 pub use edit_profile::edit_profile_dialog;
-pub use icons::{icon_el, icon_svg, Icon};
 pub use login::login_form;
 pub use navbar::navbar;
 pub use notifications::notifications_view;

@@ -10,7 +10,7 @@ use iced::widget::{
     button, checkbox, column, container, pick_list, row, scrollable, text, text_input,
 };
 use iced::Element;
-use iced_aw::helpers::{date_picker, time_picker};
+use iced_aw::helpers::date_picker;
 
 pub fn add_alarm_dialog<'a>(
     state: &'a AddAlarmState,

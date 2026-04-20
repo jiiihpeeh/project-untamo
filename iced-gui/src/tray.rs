@@ -1,4 +1,4 @@
-use ksni::{menu::StandardItem, Tray, TrayService};
+use ksni::{Tray, TrayService};
 use std::sync::{mpsc, Mutex, OnceLock};
 
 use crate::messages::Message;

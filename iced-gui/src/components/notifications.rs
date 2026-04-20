@@ -1,6 +1,5 @@
 use crate::messages::Message;
 use crate::state::{Notification, NotificationKind};
-use crate::theme::COLORS;
 use iced::{
     widget::{button, column, container, row, text, Column},
     Background, Color, Element, Length,
