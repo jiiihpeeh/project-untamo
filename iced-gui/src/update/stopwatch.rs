@@ -195,13 +195,13 @@ pub fn export_timer_csv(state: &mut AppState, timer_id: String, as_excel: bool) 
                                 if let Some(downloads_dir) = dirs::download_dir() {
                                     let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
                                     let extension = if as_excel { "xlsx" } else { "csv" };
-                                    let filename = format!("stopwatch_export_{}.{}", timestamp, extension);
+                                    let filename = format!("stopwatch_{}.{}", timestamp, extension);
                                     let file_path: PathBuf = downloads_dir.join(&filename);
                                     
                                     let result = if as_excel {
                                         let mut workbook = rust_xlsxwriter::Workbook::new();
                                         let mut sheet = workbook.add_worksheet();
-                                        sheet.set_name("Stopwatch").ok();
+                                        sheet.set_name(format!("stopwatch_{}", timestamp)).ok();
                                         
                                         sheet.write(0, 0, "Lap Number").ok();
                                         sheet.write(0, 1, "Lap Time").ok();
