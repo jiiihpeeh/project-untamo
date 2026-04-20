@@ -1,22 +1,26 @@
 use crate::messages::Message;
 use crate::state::PendingDelete;
+
+fn capitalize(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
+}
 use crate::theme::{card_container_style_colored, danger_button, secondary_button, COLORS};
 use iced::{
     widget::{button, column, container, row, text},
     Element, Length,
 };
 
-pub fn confirm_dialog<'a>(pending: &'a PendingDelete, bg: iced::Color) -> Element<'a, Message> {
-    let (title, body) = match pending {
-        PendingDelete::Alarm(_) => (
-            "Delete Alarm",
-            "Are you sure you want to delete this alarm? This action cannot be undone.",
-        ),
-        PendingDelete::Device(_) => (
-            "Delete Device",
-            "Are you sure you want to delete this device? This action cannot be undone.",
-        ),
+pub fn confirm_dialog(pending: &PendingDelete, bg: iced::Color) -> Element<'static, Message> {
+    let kind = match pending {
+        PendingDelete::Alarm(_) => "alarm",
+        PendingDelete::Device(_) => "device",
     };
+    let title = format!("Delete {}", capitalize(kind));
+    let body = format!("Are you sure you want to delete this {kind}? This action cannot be undone.");
 
     let header = row![
         text(title).size(20).color(COLORS.text).width(Length::Fill),
