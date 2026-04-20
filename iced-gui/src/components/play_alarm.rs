@@ -1,6 +1,6 @@
+use crate::components::toggle::animated_toggle;
 use crate::messages::Message;
 use crate::state::AppState;
-use crate::components::toggle::animated_toggle;
 use crate::theme::{card_container_style_colored, hex_to_color, COLORS};
 use iced::widget::canvas::{self, Canvas, Frame, Geometry, Path, Stroke};
 use iced::widget::svg::Handle as SvgHandle;
@@ -153,7 +153,8 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
         .unwrap_or_else(|| "08:00".to_string());
 
     // ── Pulsing "ALARM" text (6 s cycle) ─────────────────────────────────────
-    let elapsed = state.alarm_anim_start
+    let elapsed = state
+        .alarm_anim_start
         .map(|s| s.elapsed().as_secs_f32())
         .unwrap_or(0.0);
     let text_t = (elapsed % 6.0) / 6.0;
@@ -168,7 +169,8 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     let logo_t = elapsed % 1.0;
     let (angle, scale) = alarm_logo_transform(logo_t);
 
-    let hold_progress = state.snooze_press_start
+    let hold_progress = state
+        .snooze_press_start
         .map(|start| {
             let elapsed_ms = start.elapsed().as_millis() as f32;
             let required_ms = state.settings.snooze_press_ms as f32;
@@ -209,7 +211,12 @@ pub fn play_alarm_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     // ── Turn-off toggle (IS the dismiss action when flipped on) ──────────────
     let bottom_row: Element<Message> = column![
         text("Turn alarm OFF").size(14).color(COLORS.text),
-        animated_toggle(&state.toggle_anims, "play_turn_off", state.turn_off, Message::SetTurnOff(!state.turn_off)),
+        animated_toggle(
+            &state.toggle_anims,
+            "play_turn_off",
+            state.turn_off,
+            Message::SetTurnOff(!state.turn_off)
+        ),
     ]
     .spacing(8)
     .align_x(iced::Alignment::Center)

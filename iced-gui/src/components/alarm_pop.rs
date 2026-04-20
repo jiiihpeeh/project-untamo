@@ -75,12 +75,9 @@ fn seconds_to_next(alarm: &Alarm) -> Option<i64> {
                 return None;
             }
             let year = today.year();
-            let this_year = chrono::NaiveDate::from_ymd_opt(
-                year,
-                alarm.date[1] as u32,
-                alarm.date[2] as u32,
-            )?
-            .and_time(alarm_time);
+            let this_year =
+                chrono::NaiveDate::from_ymd_opt(year, alarm.date[1] as u32, alarm.date[2] as u32)?
+                    .and_time(alarm_time);
             if this_year > now {
                 this_year
             } else {
@@ -247,7 +244,13 @@ pub fn alarm_pop_view<'a>(state: &'a AppState, nav_top: bool) -> Element<'a, Mes
             format!("{:02}:{:02}", h, m)
         } else {
             let is_pm = h >= 12;
-            let h12 = if h == 0 { 12 } else if h > 12 { h - 12 } else { h };
+            let h12 = if h == 0 {
+                12
+            } else if h > 12 {
+                h - 12
+            } else {
+                h
+            };
             format!("{:02}:{:02} {}", h12, m, if is_pm { "PM" } else { "AM" })
         };
 

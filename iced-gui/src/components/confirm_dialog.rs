@@ -20,7 +20,8 @@ pub fn confirm_dialog(pending: &PendingDelete, bg: iced::Color) -> Element<'stat
         PendingDelete::Device(_) => "device",
     };
     let title = format!("Delete {}", capitalize(kind));
-    let body = format!("Are you sure you want to delete this {kind}? This action cannot be undone.");
+    let body =
+        format!("Are you sure you want to delete this {kind}? This action cannot be undone.");
 
     let header = row![
         text(title).size(20).color(COLORS.text).width(Length::Fill),
@@ -48,5 +49,7 @@ pub fn confirm_dialog(pending: &PendingDelete, bg: iced::Color) -> Element<'stat
         .padding(24)
         .width(Length::Fixed(360.0));
 
-    container(card).style(card_container_style_colored(bg)).into()
+    container(card)
+        .style(card_container_style_colored(bg))
+        .into()
 }

@@ -24,5 +24,7 @@ pub fn about_view<'a>(bg: iced::Color) -> Element<'a, Message> {
     .padding(24)
     .width(Length::Fixed(320.0));
 
-    container(card).style(card_container_style_colored(bg)).into()
+    container(card)
+        .style(card_container_style_colored(bg))
+        .into()
 }

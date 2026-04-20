@@ -165,7 +165,9 @@ pub fn devices_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     .width(Length::Fixed(460.0));
 
     let bg = hex_to_color(&state.settings.card_colors.background);
-    container(card).style(card_container_style_colored(bg)).into()
+    container(card)
+        .style(card_container_style_colored(bg))
+        .into()
 }
 
 // ── add / edit dialog ─────────────────────────────────────────────────────────

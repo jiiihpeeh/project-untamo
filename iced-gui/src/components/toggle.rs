@@ -22,9 +22,8 @@ impl canvas::Program<Message> for ToggleCanvas {
         bounds: Rectangle,
         cursor: iced::mouse::Cursor,
     ) -> Option<Action<Message>> {
-        if let canvas::Event::Mouse(iced::mouse::Event::ButtonPressed(
-            iced::mouse::Button::Left,
-        )) = event
+        if let canvas::Event::Mouse(iced::mouse::Event::ButtonPressed(iced::mouse::Button::Left)) =
+            event
         {
             if cursor.is_over(bounds) {
                 return Some(Action::publish(self.on_press.clone()).and_capture());
@@ -60,10 +59,7 @@ impl canvas::Program<Message> for ToggleCanvas {
             &Path::rectangle(Point::new(r, cy - r), Size::new(TRACK_W - TRACK_H, TRACK_H)),
             track_color,
         );
-        frame.fill(
-            &Path::circle(Point::new(TRACK_W - r, cy), r),
-            track_color,
-        );
+        frame.fill(&Path::circle(Point::new(TRACK_W - r, cy), r), track_color);
 
         // Thumb slides from left cap center to right cap center
         let thumb_cx = r + t * (TRACK_W - TRACK_H);
@@ -89,7 +85,10 @@ pub fn animated_toggle<'a>(
     logical: bool,
     on_press: Message,
 ) -> Element<'a, Message> {
-    let pos = anims.get(key).copied().unwrap_or(if logical { 1.0 } else { 0.0 });
+    let pos = anims
+        .get(key)
+        .copied()
+        .unwrap_or(if logical { 1.0 } else { 0.0 });
     Canvas::new(ToggleCanvas { pos, on_press })
         .width(Length::Fixed(TRACK_W))
         .height(Length::Fixed(TRACK_H))

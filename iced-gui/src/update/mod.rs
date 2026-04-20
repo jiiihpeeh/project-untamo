@@ -1,8 +1,10 @@
 mod helpers;
 pub mod alarm;
 pub mod auth;
+pub mod countdown;
 pub mod devices;
 pub mod settings;
+pub mod stopwatch;
 pub mod window;
 
 pub(crate) const ICON_BYTES: &[u8] = include_bytes!("../../resources/icons/icon_32.png");
@@ -165,6 +167,16 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
         Message::SubmitEditProfile => devices::submit_edit_profile(state),
         Message::CancelEditProfile => devices::cancel_edit_profile(state),
         Message::RefreshSession => devices::refresh_session(state),
+        Message::StopwatchStart => stopwatch::start(state),
+        Message::StopwatchStop => stopwatch::stop(state),
+        Message::StopwatchReset => stopwatch::reset(state),
+        Message::StopwatchLap => stopwatch::lap(state),
+        Message::CountdownStart => countdown::start(state),
+        Message::CountdownStop => countdown::stop(state),
+        Message::CountdownReset => countdown::reset(state),
+        Message::CountdownSetHours(h) => countdown::set_hours(state, h),
+        Message::CountdownSetMinutes(m) => countdown::set_minutes(state, m),
+        Message::CountdownSetSeconds(s) => countdown::set_seconds(state, s),
     }
 }
 

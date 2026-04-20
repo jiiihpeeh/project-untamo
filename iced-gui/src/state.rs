@@ -98,6 +98,8 @@ pub enum AppPage {
     Devices,
     User,
     PlayAlarm,
+    Stopwatch,
+    Countdown,
 }
 
 #[derive(Clone, Debug)]
@@ -740,6 +742,20 @@ pub struct AppState {
     pub show_alarm_pop: bool,
     /// Animated visual position (0.0–1.0) for each toggle switch, keyed by alarm ID or a settings key.
     pub toggle_anims: std::collections::HashMap<String, f32>,
+    /// Stopwatch running state
+    pub stopwatch_running: bool,
+    /// Accumulated elapsed milliseconds before current start
+    pub stopwatch_elapsed_ms: u64,
+    /// When the current stopwatch run started (None if not running)
+    pub stopwatch_start: Option<std::time::Instant>,
+    /// Lap times recorded during stopwatch runs (elapsed ms at time of lap)
+    pub stopwatch_laps: Vec<u64>,
+    /// Countdown running state
+    pub countdown_running: bool,
+    /// Countdown target instant (when it should reach zero)
+    pub countdown_target: Option<std::time::Instant>,
+    /// Initial countdown duration in seconds (for reset)
+    pub countdown_duration_secs: u64,
 }
 
 impl AppState {
@@ -833,6 +849,13 @@ impl AppState {
             last_alarm_minute: None,
             show_alarm_pop: false,
             toggle_anims: std::collections::HashMap::new(),
+            stopwatch_running: false,
+            stopwatch_elapsed_ms: 0,
+            stopwatch_start: None,
+            stopwatch_laps: Vec::new(),
+            countdown_running: false,
+            countdown_target: None,
+            countdown_duration_secs: 300,
         }
     }
 }

@@ -1,16 +1,12 @@
 use crate::components::icons::{icon_svg, Icon};
+use crate::components::toggle::animated_toggle;
 use crate::messages::Message;
 use crate::state::{Alarm, AppState, Device};
-use crate::components::toggle::animated_toggle;
-use crate::theme::{
-    circle_fab_button, danger_button, hex_to_color, secondary_button, COLORS,
-};
+use crate::theme::{circle_fab_button, danger_button, hex_to_color, secondary_button, COLORS};
 use chrono::{Datelike, Duration, Local, NaiveDateTime, NaiveTime};
 use iced::widget::svg::{Handle, Svg};
 use iced::{
-    widget::{
-        button, column, container, mouse_area, row, scrollable, stack, text, Column,
-    },
+    widget::{button, column, container, mouse_area, row, scrollable, stack, text, Column},
     Background, Border, Color, Element, Length,
 };
 use iced_widget::rule;
@@ -272,7 +268,12 @@ fn alarm_card<'a>(
         let active_col = container(
             column![
                 text("ACTIVE").size(10).color(COLORS.text_secondary),
-                animated_toggle(anims, &alarm.id, alarm.active, Message::ToggleAlarmActive(alarm.id.clone())),
+                animated_toggle(
+                    anims,
+                    &alarm.id,
+                    alarm.active,
+                    Message::ToggleAlarmActive(alarm.id.clone())
+                ),
             ]
             .spacing(4)
             .align_x(iced::Alignment::Center),

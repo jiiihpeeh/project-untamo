@@ -44,7 +44,7 @@ fn logo_transform(t: f32) -> (f32, f32) {
 
 struct LogoCanvas {
     size: f32,
-    angle: f32,  // radians
+    angle: f32, // radians
     scale: f32,
 }
 
@@ -71,7 +71,10 @@ impl<Message> canvas::Program<Message> for LogoCanvas {
 
             let handle = SvgHandle::from_memory(include_bytes!("../assets/logo.svg"));
             // From<&Handle> → iced_core::Svg
-            f.draw_svg(Rectangle::with_size(Size::new(self.size, self.size)), &handle);
+            f.draw_svg(
+                Rectangle::with_size(Size::new(self.size, self.size)),
+                &handle,
+            );
         });
 
         vec![frame.into_geometry()]
@@ -89,7 +92,11 @@ fn link_style() -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::
         };
         iced::widget::button::Style {
             background: Some(Background::Color(Color::from_rgba(1.0, 1.0, 1.0, alpha))),
-            border: Border { color: Color::TRANSPARENT, width: 0.0, radius: 4.0.into() },
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 4.0.into(),
+            },
             shadow: Shadow::default(),
             text_color: Color::WHITE,
             snap: false,
@@ -158,14 +165,21 @@ pub fn navbar<'a>(
         (0.0, 1.0)
     };
 
-    let logo_elem: Element<Message> = Canvas::new(LogoCanvas { size: logo_size, angle, scale })
-        .width(Length::Fixed(logo_size))
-        .height(Length::Fixed(logo_size))
-        .into();
+    let logo_elem: Element<Message> = Canvas::new(LogoCanvas {
+        size: logo_size,
+        angle,
+        scale,
+    })
+    .width(Length::Fixed(logo_size))
+    .height(Length::Fixed(logo_size))
+    .into();
 
-    let brand_content = row![logo_elem, text("Untamo").size(brand_font).color(Color::WHITE)]
-        .spacing((ps * 0.14).round())
-        .align_y(iced::Alignment::Center);
+    let brand_content = row![
+        logo_elem,
+        text("Untamo").size(brand_font).color(Color::WHITE)
+    ]
+    .spacing((ps * 0.14).round())
+    .align_y(iced::Alignment::Center);
 
     let brand_btn: Element<Message> = mouse_area(
         button(brand_content)
@@ -189,6 +203,8 @@ pub fn navbar<'a>(
         } else {
             Message::NavigateTo(AppPage::Alarms)
         };
+        let on_stopwatch = matches!(current_page, AppPage::Stopwatch);
+        let on_countdown = matches!(current_page, AppPage::Countdown);
         let avatar_size = (nav_font * 1.9).round();
         let avatar_btn: Element<Message> = button(
             text(user_initials)
@@ -202,7 +218,7 @@ pub fn navbar<'a>(
         .height(Length::Fixed(avatar_size))
         .style(move |_theme, status| {
             let bg = match status {
-                iced::widget::button::Status::Hovered =>  Color::from_rgb(0.15, 0.45, 0.85),
+                iced::widget::button::Status::Hovered => Color::from_rgb(0.15, 0.45, 0.85),
                 iced::widget::button::Status::Pressed => Color::from_rgb(0.10, 0.35, 0.75),
                 _ => Color::from_rgb(0.18, 0.52, 0.96),
             };
@@ -221,7 +237,24 @@ pub fn navbar<'a>(
         .into();
         vec![
             nav_link("Alarms", alarms_msg, alarms_active, nav_font),
-            nav_link("Devices", Message::ToggleDevicesModal, devices_modal_open, nav_font),
+            nav_link(
+                "Stopwatch",
+                Message::NavigateTo(AppPage::Stopwatch),
+                on_stopwatch,
+                nav_font,
+            ),
+            nav_link(
+                "Countdown",
+                Message::NavigateTo(AppPage::Countdown),
+                on_countdown,
+                nav_font,
+            ),
+            nav_link(
+                "Devices",
+                Message::ToggleDevicesModal,
+                devices_modal_open,
+                nav_font,
+            ),
             avatar_btn,
         ]
     } else {
@@ -229,7 +262,12 @@ pub fn navbar<'a>(
         let reg_active = matches!(current_page, AppPage::Register);
         vec![
             nav_link("Login", Message::GoToLogin, login_active, nav_font),
-            nav_link("Register", Message::NavigateTo(AppPage::Register), reg_active, nav_font),
+            nav_link(
+                "Register",
+                Message::NavigateTo(AppPage::Register),
+                reg_active,
+                nav_font,
+            ),
         ]
     };
 

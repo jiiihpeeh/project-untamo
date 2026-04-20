@@ -1,7 +1,8 @@
 use crate::messages::Message;
 use crate::state::EditProfileState;
 use crate::theme::{
-    card_container_style_colored, danger_button, primary_button, secondary_button, text_input_style, COLORS,
+    card_container_style_colored, danger_button, primary_button, secondary_button,
+    text_input_style, COLORS,
 };
 use iced::{
     widget::{button, column, container, row, text, text_input, Column},
@@ -15,7 +16,10 @@ fn section_label<'a>(label: &str) -> Element<'a, Message> {
         .into()
 }
 
-pub fn edit_profile_dialog<'a>(state: &'a EditProfileState, bg: iced::Color) -> Element<'a, Message> {
+pub fn edit_profile_dialog<'a>(
+    state: &'a EditProfileState,
+    bg: iced::Color,
+) -> Element<'a, Message> {
     let title_row = row![
         text("Edit Profile")
             .size(20)

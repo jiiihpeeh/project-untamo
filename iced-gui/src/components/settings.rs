@@ -32,7 +32,11 @@ fn row_setting<'a>(
     .into()
 }
 
-pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color, anims: &std::collections::HashMap<String, f32>) -> Element<'a, Message> {
+pub fn settings_dialog<'a>(
+    state: &'a SettingsState,
+    bg: iced::Color,
+    anims: &std::collections::HashMap<String, f32>,
+) -> Element<'a, Message> {
     let title = row![
         text("Settings")
             .size(20)
@@ -120,14 +124,24 @@ pub fn settings_dialog<'a>(state: &'a SettingsState, bg: iced::Color, anims: &st
 
     // --- Notifications ---
     let toast_toggler = row![
-        animated_toggle(anims, "settings_notif", state.notifications_enabled, Message::SetNotificationsEnabled(!state.notifications_enabled)),
+        animated_toggle(
+            anims,
+            "settings_notif",
+            state.notifications_enabled,
+            Message::SetNotificationsEnabled(!state.notifications_enabled)
+        ),
         text("In-app toast").size(13).color(COLORS.text),
     ]
     .spacing(8)
     .align_y(iced::Alignment::Center);
 
     let desktop_toggler = row![
-        animated_toggle(anims, "settings_desktop_notif", state.desktop_notifications, Message::SetDesktopNotificationsEnabled(!state.desktop_notifications)),
+        animated_toggle(
+            anims,
+            "settings_desktop_notif",
+            state.desktop_notifications,
+            Message::SetDesktopNotificationsEnabled(!state.desktop_notifications)
+        ),
         text("Desktop").size(13).color(COLORS.text),
     ]
     .spacing(8)

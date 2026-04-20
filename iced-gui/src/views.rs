@@ -1,9 +1,10 @@
+use crate::components::alarm_pop::{POP_WIDTH, TAIL_H, TAIL_X};
 use crate::components::{
     about_view, add_alarm_dialog, alarm_pop_view, alarms_view, colors_dialog, confirm_dialog,
-    devices_view, edit_device_dialog, edit_profile_dialog, login_form, navbar, notifications_view,
-    play_alarm_view, qr_scanner, register_form, settings_dialog, user_menu_view, welcome_view,
+    countdown_view, devices_view, edit_device_dialog, edit_profile_dialog, login_form, navbar,
+    notifications_view, play_alarm_view, qr_scanner, register_form, settings_dialog,
+    stopwatch_view, user_menu_view, welcome_view,
 };
-use crate::components::alarm_pop::{POP_WIDTH, TAIL_H, TAIL_X};
 use crate::messages::Message;
 use crate::state::{AppPage, AppState, SessionStatus};
 use crate::theme::hex_to_color;
@@ -102,6 +103,8 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
         AppPage::Devices => devices_view(state).into(),
         AppPage::User => alarms_view(state).into(), // fallback: User page is now modal
         AppPage::PlayAlarm => play_alarm_view(state).into(),
+        AppPage::Stopwatch => stopwatch_view(state).into(),
+        AppPage::Countdown => countdown_view(state).into(),
     };
 
     // Base layer: navbar + page content (nav position from settings)
@@ -122,7 +125,11 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
 
     // Modal dialogs — each replaces previous so only one shows at a time
     if state.settings.show_settings {
-        layers.push(modal(settings_dialog(&state.settings, bg, &state.toggle_anims)));
+        layers.push(modal(settings_dialog(
+            &state.settings,
+            bg,
+            &state.toggle_anims,
+        )));
     }
 
     if state.settings.show_colors {
@@ -249,4 +256,3 @@ pub fn view<'a>(state: &'a AppState, _window: window::Id) -> Element<'a, Message
 
     stack(layers).into()
 }
-

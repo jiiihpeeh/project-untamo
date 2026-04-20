@@ -1,7 +1,7 @@
 use crate::components::icons::{icon_svg, Icon};
+use crate::components::toggle::animated_toggle;
 use crate::messages::Message;
 use crate::state::{AddAlarmState, AlarmOccurrence, Device};
-use crate::components::toggle::animated_toggle;
 use crate::theme::{
     card_container_style_colored, danger_button, menu_style, pick_list_style, primary_button,
     secondary_button, text_input_style, COLORS,
@@ -191,14 +191,24 @@ pub fn add_alarm_dialog<'a>(
 
     // --- Toggles ---
     let active_toggler = row![
-        animated_toggle(anims, "add_active", state.active, Message::SetAlarmActive(!state.active)),
+        animated_toggle(
+            anims,
+            "add_active",
+            state.active,
+            Message::SetAlarmActive(!state.active)
+        ),
         text("Active").size(13).color(COLORS.text),
     ]
     .spacing(8)
     .align_y(iced::Alignment::Center);
 
     let close_task_toggler = row![
-        animated_toggle(anims, "add_close_task", state.close_task, Message::SetAlarmCloseTask(!state.close_task)),
+        animated_toggle(
+            anims,
+            "add_close_task",
+            state.close_task,
+            Message::SetAlarmCloseTask(!state.close_task)
+        ),
         text("Closing Task").size(13).color(COLORS.text),
     ]
     .spacing(8)

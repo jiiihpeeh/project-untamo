@@ -68,6 +68,10 @@ pub fn frame_tick(state: &mut AppState) -> Task<Message> {
             }
         }
     }
+    
+    // Check countdown timer - it handles alarm triggering when done
+    crate::update::countdown::tick(state);
+    
     // Auto-dismiss notifications after 4 seconds
     let now = std::time::Instant::now();
     state.notifications.retain(|n| {
