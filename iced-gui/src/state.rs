@@ -321,8 +321,8 @@ impl Default for CardColors {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ColorMode {
-    Even,
-    Odd,
+    EvenIndex,
+    OddIndex,
     Inactive,
     Background,
 }
@@ -331,17 +331,17 @@ impl ColorMode {
     #[allow(dead_code)]
     pub fn next(&self) -> Self {
         match self {
-            ColorMode::Even => ColorMode::Odd,
-            ColorMode::Odd => ColorMode::Inactive,
+            ColorMode::EvenIndex => ColorMode::OddIndex,
+            ColorMode::OddIndex => ColorMode::Inactive,
             ColorMode::Inactive => ColorMode::Background,
-            ColorMode::Background => ColorMode::Even,
+            ColorMode::Background => ColorMode::EvenIndex,
         }
     }
 
-    pub fn as_str(&self) -> &'static str {
+    pub fn display_name(&self) -> &'static str {
         match self {
-            ColorMode::Even => "Odd",
-            ColorMode::Odd => "Even",
+            ColorMode::EvenIndex => "Odd",
+            ColorMode::OddIndex => "Even",
             ColorMode::Inactive => "Inactive",
             ColorMode::Background => "Background",
         }
@@ -384,7 +384,7 @@ impl SettingsState {
             color_picker_value: Color::from_rgb(1.0, 1.0, 0.5),
             web_colors: WebColors::default(),
             card_colors: CardColors::default(),
-            color_mode: ColorMode::Odd,
+            color_mode: ColorMode::OddIndex,
             picker_h: 60.0, // default odd color (#ffff9d) is yellow ≈ 60°
             close_task_behavior: CloseTaskBehavior::Obey,
             snooze_press_ms: 200,
@@ -526,7 +526,6 @@ impl std::fmt::Display for AlarmOccurrence {
 
 #[derive(Clone, Debug)]
 pub struct AddAlarmState {
-    #[allow(dead_code)]
     pub show: bool,
     pub editing_alarm_id: Option<String>,
     pub previewing_tune: Option<String>,
@@ -666,8 +665,7 @@ impl EditProfileState {
         if self.change_password {
             self.form_valid = base_valid
                 && self.new_password.len() >= 6
-                && self.new_password == self.confirm_password
-                && self.new_password != self.password;
+                && self.new_password == self.confirm_password;
         } else {
             self.form_valid = base_valid;
         }
@@ -797,7 +795,7 @@ impl AppState {
             ws,
             alarms: Vec::new(),
             devices: Vec::new(),
-            server_address: String::from("http://localhost:3001"),
+            server_address: crate::constants::get_server(),
             show_qr_scanner: false,
             qr_error: None,
             qr_scanning: false,

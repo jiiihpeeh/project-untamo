@@ -95,7 +95,7 @@ pub fn validate_session(state: &mut AppState) -> Task<Message> {
     let token = state.ws.token.clone();
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             match client
                 .get(format!("{}/api/is-session-valid", server))
                 .header("token", &token)
@@ -127,7 +127,7 @@ pub fn fetch_update(state: &mut AppState) -> Task<Message> {
     let token = state.ws.token.clone();
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             match client
                 .get(format!("{}/api/update", server))
                 .header("token", &token)
@@ -208,7 +208,7 @@ pub fn submit(state: &mut AppState) -> Task<Message> {
     let server = state.server_address.clone();
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             match client
                 .post(format!("{}/login", server))
                 .json(&LoginRequest { email, password })
@@ -232,41 +232,43 @@ pub fn submit(state: &mut AppState) -> Task<Message> {
     )
 }
 
+fn apply_login_response(state: &mut AppState, resp: LoginResponse) {
+    state.login.session_status = SessionStatus::Valid;
+    state.login.user_info = Some(UserInfo {
+        user: String::new(),
+        email: resp.email.clone(),
+        screen_name: resp.screen_name.clone(),
+        first_name: resp.first_name.clone(),
+        last_name: resp.last_name.clone(),
+        admin: resp.admin,
+        owner: resp.owner,
+        active: resp.active,
+        registered: 0,
+    });
+    state.ws.token = resp.token.clone();
+    state.ws.ws_token = resp.ws_token.clone();
+    state.ws.ws_pair = resp.ws_pair.clone();
+    state.page = AppPage::Welcome;
+    if let Err(e) = crate::storage::save_session(&crate::storage::SessionData {
+        token: resp.token,
+        ws_token: resp.ws_token,
+        ws_pair: resp.ws_pair,
+        email: resp.email,
+        screen_name: resp.screen_name,
+        first_name: resp.first_name,
+        last_name: resp.last_name,
+        admin: resp.admin,
+        owner: resp.owner,
+        active: resp.active,
+    }) {
+        eprintln!("Failed to save session: {}", e);
+    }
+}
+
 pub fn login_result(state: &mut AppState, result: Result<LoginResponse, String>) -> Task<Message> {
     match result {
         Ok(resp) => {
-            state.login.session_status = SessionStatus::Valid;
-            state.login.user_info = Some(UserInfo {
-                user: String::new(),
-                email: resp.email.clone(),
-                screen_name: resp.screen_name.clone(),
-                first_name: resp.first_name.clone(),
-                last_name: resp.last_name.clone(),
-                admin: resp.admin,
-                owner: resp.owner,
-                active: resp.active,
-                registered: 0,
-            });
-            state.ws.token = resp.token.clone();
-            state.ws.ws_token = resp.ws_token.clone();
-            state.ws.ws_pair = resp.ws_pair.clone();
-            state.page = AppPage::Welcome;
-
-            if let Err(e) = crate::storage::save_session(&crate::storage::SessionData {
-                token: resp.token,
-                ws_token: resp.ws_token,
-                ws_pair: resp.ws_pair,
-                email: resp.email,
-                screen_name: resp.screen_name,
-                first_name: resp.first_name,
-                last_name: resp.last_name,
-                admin: resp.admin,
-                owner: resp.owner,
-                active: resp.active,
-            }) {
-                eprintln!("Failed to save session: {}", e);
-            }
-
+            apply_login_response(state, resp);
             Task::perform(async { Message::FetchUpdate }, |m| m)
         }
         Err(e) => {
@@ -303,7 +305,7 @@ pub fn qr_submit(state: &mut AppState, qr_token: String) -> Task<Message> {
     let token = qr_token.clone();
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             match client
                 .post(format!("{}/qr-login", server))
                 .json(&QrLoginRequest { qr_token: token })
@@ -331,38 +333,7 @@ pub fn qr_login_result(state: &mut AppState, result: Result<LoginResponse, Strin
     state.show_qr_scanner = false;
     match result {
         Ok(resp) => {
-            state.login.session_status = SessionStatus::Valid;
-            state.login.user_info = Some(UserInfo {
-                user: String::new(),
-                email: resp.email.clone(),
-                screen_name: resp.screen_name.clone(),
-                first_name: resp.first_name.clone(),
-                last_name: resp.last_name.clone(),
-                admin: resp.admin,
-                owner: resp.owner,
-                active: resp.active,
-                registered: 0,
-            });
-            state.ws.token = resp.token.clone();
-            state.ws.ws_token = resp.ws_token.clone();
-            state.ws.ws_pair = resp.ws_pair.clone();
-            state.page = AppPage::Welcome;
-
-            if let Err(e) = crate::storage::save_session(&crate::storage::SessionData {
-                token: resp.token,
-                ws_token: resp.ws_token,
-                ws_pair: resp.ws_pair,
-                email: resp.email,
-                screen_name: resp.screen_name,
-                first_name: resp.first_name,
-                last_name: resp.last_name,
-                admin: resp.admin,
-                owner: resp.owner,
-                active: resp.active,
-            }) {
-                eprintln!("Failed to save session: {}", e);
-            }
-
+            apply_login_response(state, resp);
             Task::perform(async { Message::FetchUpdate }, |m| m)
         }
         Err(e) => {
@@ -391,9 +362,17 @@ pub fn start_scanner(state: &mut AppState) -> Task<Message> {
     state.qr_frame_data = None;
     FRAME_VERSION.store(0, Ordering::SeqCst);
     FRAME_READY.store(false, Ordering::SeqCst);
-    let (result_tx, _result_rx) = std::sync::mpsc::channel();
+    let (result_tx, result_rx) = std::sync::mpsc::channel();
     std::thread::spawn(move || {
         capture_thread(result_tx);
+    });
+    std::thread::spawn(move || {
+        while let Ok(result) = result_rx.recv() {
+            if let Err(e) = result {
+                eprintln!("capture_thread error: {}", e);
+                CANCEL.store(true, Ordering::SeqCst);
+            }
+        }
     });
     Task::none()
 }
@@ -422,9 +401,9 @@ pub fn qr_scanned(state: &mut AppState, token_opt: Option<String>) -> Task<Messa
     if let Some(token) = token_opt {
         state.qr_scanning = false;
         let server = state.server_address.clone();
-        Task::perform(
-            async move {
-                let client = reqwest::Client::new();
+Task::perform(
+        async move {
+            let client = http_client();
                 match client
                     .post(format!("{}/qr-login", server))
                     .json(&QrLoginRequest { qr_token: token })
@@ -518,7 +497,7 @@ pub fn submit_register(state: &mut AppState) -> Task<Message> {
                 email: &'a str,
                 password: &'a str,
             }
-            let client = reqwest::Client::new();
+            let client = http_client();
             match client
                 .post(format!("{}/register", server))
                 .json(&RegisterRequest {

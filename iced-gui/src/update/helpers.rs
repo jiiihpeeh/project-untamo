@@ -1,5 +1,14 @@
 use crate::state::{Alarm, AppState, Device, UserInfo, WebColors};
 use crate::websocket::WsMessage as WsMsg;
+use std::time::Duration;
+
+pub(super) fn http_client() -> reqwest::Client {
+    reqwest::Client::builder()
+        .timeout(Duration::from_secs(10))
+        .connect_timeout(Duration::from_secs(5))
+        .build()
+        .unwrap_or_else(|_| reqwest::Client::new())
+}
 
 pub(super) fn add_notification(state: &mut AppState, title: &str, message: String) {
     add_notification_kind(state, title, message, crate::state::NotificationKind::Info);
@@ -112,12 +121,35 @@ pub(super) fn parse_alarm(value: &serde_json::Value) -> Option<Alarm> {
     Some(Alarm {
         id: value.get("id")?.as_str()?.to_string(),
         occurrence: value.get("occurrence")?.as_str()?.to_string(),
-        time: value.get("time")?.as_array()?.iter().filter_map(|v| v.as_u64()).map(|n| n as u8).collect(),
+        time: value
+            .get("time")?
+            .as_array()?
+            .iter()
+            .filter_map(|v| v.as_u64())
+            .map(|n| n as u8)
+            .collect(),
         weekdays: value.get("weekdays")?.as_u64()? as u8,
-        date: value.get("date")?.as_array()?.iter().filter_map(|v| v.as_u64()).map(|n| n as u16).collect(),
+        date: value
+            .get("date")?
+            .as_array()?
+            .iter()
+            .filter_map(|v| v.as_u64())
+            .map(|n| n as u16)
+            .collect(),
         label: value.get("label")?.as_str()?.to_string(),
-        devices: value.get("devices")?.as_array()?.iter().filter_map(|v| v.as_str()).map(|s| s.to_string()).collect(),
-        snooze: value.get("snooze")?.as_array()?.iter().filter_map(|v| v.as_i64()).collect(),
+        devices: value
+            .get("devices")?
+            .as_array()?
+            .iter()
+            .filter_map(|v| v.as_str())
+            .map(|s| s.to_string())
+            .collect(),
+        snooze: value
+            .get("snooze")?
+            .as_array()?
+            .iter()
+            .filter_map(|v| v.as_i64())
+            .collect(),
         active: value.get("active")?.as_bool()?,
         tune: value.get("tune")?.as_str()?.to_string(),
         modified: value.get("modified")?.as_i64().unwrap_or(0),
@@ -129,8 +161,16 @@ pub(super) fn parse_alarm(value: &serde_json::Value) -> Option<Alarm> {
 pub(super) fn parse_device(value: &serde_json::Value) -> Option<Device> {
     Some(Device {
         id: value.get("id")?.as_str()?.to_string(),
-        device_name: value.get("deviceName").or_else(|| value.get("device_name"))?.as_str()?.to_string(),
-        device_type: value.get("type").or_else(|| value.get("deviceType"))?.as_str()?.to_string(),
+        device_name: value
+            .get("deviceName")
+            .or_else(|| value.get("device_name"))?
+            .as_str()?
+            .to_string(),
+        device_type: value
+            .get("type")
+            .or_else(|| value.get("deviceType"))?
+            .as_str()?
+            .to_string(),
     })
 }
 
@@ -138,9 +178,21 @@ pub(super) fn parse_user_info(value: &serde_json::Value) -> Option<UserInfo> {
     Some(UserInfo {
         user: value.get("user")?.as_str()?.to_string(),
         email: value.get("email")?.as_str()?.to_string(),
-        screen_name: value.get("screenName").or_else(|| value.get("screen_name"))?.as_str()?.to_string(),
-        first_name: value.get("firstName").or_else(|| value.get("first_name"))?.as_str()?.to_string(),
-        last_name: value.get("lastName").or_else(|| value.get("last_name"))?.as_str()?.to_string(),
+        screen_name: value
+            .get("screenName")
+            .or_else(|| value.get("screen_name"))?
+            .as_str()?
+            .to_string(),
+        first_name: value
+            .get("firstName")
+            .or_else(|| value.get("first_name"))?
+            .as_str()?
+            .to_string(),
+        last_name: value
+            .get("lastName")
+            .or_else(|| value.get("last_name"))?
+            .as_str()?
+            .to_string(),
         admin: value.get("admin")?.as_bool()?,
         owner: value.get("owner")?.as_bool()?,
         active: value.get("active")?.as_bool()?,
@@ -157,7 +209,10 @@ pub(super) fn parse_web_colors(value: &serde_json::Value) -> Option<WebColors> {
     })
 }
 
-pub(super) fn alarm_should_fire_now(alarm: &crate::state::Alarm, now: &chrono::DateTime<chrono::Local>) -> bool {
+pub(super) fn alarm_should_fire_now(
+    alarm: &crate::state::Alarm,
+    now: &chrono::DateTime<chrono::Local>,
+) -> bool {
     use chrono::{Datelike, Timelike};
     if alarm.time.len() < 2 {
         return false;

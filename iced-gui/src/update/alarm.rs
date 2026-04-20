@@ -63,7 +63,7 @@ pub fn fetch_alarm_tunes(state: &mut AppState) -> Task<Message> {
     let token = state.ws.token.clone();
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             match client
                 .get(format!("{}/audio-resources/resource_list.json", server))
                 .header("token", &token)
@@ -167,7 +167,7 @@ pub fn submit_add_alarm(state: &mut AppState) -> Task<Message> {
     let body_alarm = new_alarm;
     iced::Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             let url = if is_edit {
                 format!("{}/api/alarm/{}", server, alarm_id)
             } else {
@@ -214,7 +214,7 @@ pub fn reset_snooze(state: &mut AppState, alarm_id: String) -> Task<Message> {
         let token = state.ws.token.clone();
         return iced::Task::perform(
             async move {
-                let client = reqwest::Client::new();
+                let client = http_client();
                 match client
                     .put(format!("{}/api/alarm/{}", server, updated.id))
                     .header("token", &token)
@@ -255,7 +255,7 @@ pub fn trigger_alarm(state: &mut AppState, alarm_id: String) -> Task<Message> {
         let token = state.ws.token.clone();
         let audio_task = Task::perform(
             async move {
-                let client = reqwest::Client::new();
+                let client = http_client();
                 for ext in &["wav", "opus", "flac"] {
                     let url = format!("{}/audio-resources/{}.{}", server, tune, ext);
                     if let Ok(resp) = client.get(&url).header("token", &token).send().await {
@@ -314,7 +314,7 @@ pub fn snooze_alarm(state: &mut AppState) -> Task<Message> {
         let token = state.ws.token.clone();
         return iced::Task::perform(
             async move {
-                let client = reqwest::Client::new();
+                let client = http_client();
                 match client
                     .put(format!("{}/api/alarm/{}", server, alarm.id))
                     .header("token", &token)
@@ -368,7 +368,7 @@ pub fn dismiss_alarm(state: &mut AppState) -> Task<Message> {
             let token = state.ws.token.clone();
             return iced::Task::perform(
                 async move {
-                    let client = reqwest::Client::new();
+                    let client = http_client();
                     match client
                         .put(format!("{}/api/alarm/{}", server, alarm.id))
                         .header("token", &token)
@@ -438,7 +438,7 @@ pub fn toggle_alarm_active(state: &mut AppState, id: String) -> Task<Message> {
         let token = state.ws.token.clone();
         iced::Task::perform(
             async move {
-                let client = reqwest::Client::new();
+                let client = http_client();
                 match client
                     .put(format!("{}/api/alarm/{}", server, updated.id))
                     .header("token", token)
@@ -499,7 +499,7 @@ pub fn confirm_delete(state: &mut AppState) -> Task<Message> {
             let token = state.ws.token.clone();
             iced::Task::perform(
                 async move {
-                    let client = reqwest::Client::new();
+                    let client = http_client();
                     match client
                         .delete(format!("{}/api/alarm/{}", server, id))
                         .header("token", token)
@@ -523,7 +523,7 @@ pub fn confirm_delete(state: &mut AppState) -> Task<Message> {
             let token = state.ws.token.clone();
             iced::Task::perform(
                 async move {
-                    let client = reqwest::Client::new();
+                    let client = http_client();
                     let _ = client
                         .delete(format!("{}/api/device/{}", server, id))
                         .header("token", &token)
@@ -552,7 +552,7 @@ pub fn preview_tune(state: &mut AppState, tune: String) -> Task<Message> {
     let token = state.ws.token.clone();
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             for ext in &["wav", "opus", "flac"] {
                 let url = format!("{}/audio-resources/{}.{}", server, tune, ext);
                 if let Ok(resp) = client.get(&url).header("token", &token).send().await {

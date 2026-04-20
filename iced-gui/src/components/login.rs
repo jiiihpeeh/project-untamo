@@ -1,3 +1,4 @@
+use crate::constants::get_server;
 use crate::messages::Message;
 use crate::state::LoginState;
 use crate::theme::{
@@ -20,7 +21,7 @@ pub fn login_form<'a>(state: &'a LoginState, server_address: &'a str) -> Element
 
     let server_label = text("Server Address").size(14).color(COLORS.text);
 
-    let server_input = text_input("http://localhost:3001", server_address)
+    let server_input = text_input(&get_server(), server_address)
         .on_input(Message::ServerAddressChanged)
         .padding(12)
         .width(Length::Fixed(300.0))

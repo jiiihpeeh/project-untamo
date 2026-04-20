@@ -1,14 +1,14 @@
+use super::helpers::*;
 use crate::messages::Message;
 use crate::state::{AppState, CardColors};
 use iced::Task;
-use super::helpers::*;
 
 // ── Color picker helpers ──────────────────────────────────────────────────────
 
 pub(super) fn current_color_hex(settings: &crate::state::SettingsState) -> String {
     match settings.color_mode {
-        crate::state::ColorMode::Even => settings.card_colors.even.clone(),
-        crate::state::ColorMode::Odd => settings.card_colors.odd.clone(),
+        crate::state::ColorMode::EvenIndex => settings.card_colors.even.clone(),
+        crate::state::ColorMode::OddIndex => settings.card_colors.odd.clone(),
         crate::state::ColorMode::Inactive => settings.card_colors.inactive.clone(),
         crate::state::ColorMode::Background => settings.card_colors.background.clone(),
     }
@@ -16,8 +16,8 @@ pub(super) fn current_color_hex(settings: &crate::state::SettingsState) -> Strin
 
 pub(super) fn apply_current_color(settings: &mut crate::state::SettingsState, hex: String) {
     match settings.color_mode {
-        crate::state::ColorMode::Even => settings.card_colors.even = hex,
-        crate::state::ColorMode::Odd => settings.card_colors.odd = hex,
+        crate::state::ColorMode::EvenIndex => settings.card_colors.even = hex,
+        crate::state::ColorMode::OddIndex => settings.card_colors.odd = hex,
         crate::state::ColorMode::Inactive => settings.card_colors.inactive = hex,
         crate::state::ColorMode::Background => settings.card_colors.background = hex,
     }
@@ -46,7 +46,11 @@ pub(super) fn hex_to_hsv(hex: &str) -> (f32, f32, f32) {
         0.0
     } else if (max - r).abs() < 0.001 {
         let h = 60.0 * ((g - b) / delta);
-        if h < 0.0 { h + 360.0 } else { h }
+        if h < 0.0 {
+            h + 360.0
+        } else {
+            h
+        }
     } else if (max - g).abs() < 0.001 {
         60.0 * ((b - r) / delta + 2.0)
     } else {
@@ -64,12 +68,19 @@ pub(super) fn hsv_to_hex(h: f32, s: f32, v: f32) -> String {
     let c = v * s;
     let x = c * (1.0 - ((h / 60.0) % 2.0 - 1.0).abs());
     let m = v - c;
-    let (r, g, b) = if h < 60.0 { (c, x, 0.0) }
-        else if h < 120.0 { (x, c, 0.0) }
-        else if h < 180.0 { (0.0, c, x) }
-        else if h < 240.0 { (0.0, x, c) }
-        else if h < 300.0 { (x, 0.0, c) }
-        else { (c, 0.0, x) };
+    let (r, g, b) = if h < 60.0 {
+        (c, x, 0.0)
+    } else if h < 120.0 {
+        (x, c, 0.0)
+    } else if h < 180.0 {
+        (0.0, c, x)
+    } else if h < 240.0 {
+        (0.0, x, c)
+    } else if h < 300.0 {
+        (x, 0.0, c)
+    } else {
+        (c, 0.0, x)
+    };
     format!(
         "#{:02x}{:02x}{:02x}",
         ((r + m) * 255.0).round() as u8,
@@ -135,7 +146,10 @@ pub fn set_dialog_size(state: &mut AppState, size: u32) -> Task<Message> {
     Task::none()
 }
 
-pub fn set_close_task_behavior(state: &mut AppState, behavior: crate::state::CloseTaskBehavior) -> Task<Message> {
+pub fn set_close_task_behavior(
+    state: &mut AppState,
+    behavior: crate::state::CloseTaskBehavior,
+) -> Task<Message> {
     state.settings.close_task_behavior = behavior;
     Task::none()
 }
@@ -202,8 +216,8 @@ pub fn set_default_card_colors(state: &mut AppState) -> Task<Message> {
 
 pub fn set_current_card_color(state: &mut AppState, hex: String) -> Task<Message> {
     match state.settings.color_mode {
-        crate::state::ColorMode::Even => state.settings.card_colors.even = hex,
-        crate::state::ColorMode::Odd => state.settings.card_colors.odd = hex,
+        crate::state::ColorMode::EvenIndex => state.settings.card_colors.even = hex,
+        crate::state::ColorMode::OddIndex => state.settings.card_colors.odd = hex,
         crate::state::ColorMode::Inactive => state.settings.card_colors.inactive = hex,
         crate::state::ColorMode::Background => state.settings.card_colors.background = hex,
     }
@@ -229,8 +243,8 @@ pub fn set_color_sv(state: &mut AppState, s: f32, v: f32) -> Task<Message> {
 
 pub fn open_color_picker(state: &mut AppState) -> Task<Message> {
     let hex = match state.settings.color_mode {
-        crate::state::ColorMode::Even => &state.settings.card_colors.even,
-        crate::state::ColorMode::Odd => &state.settings.card_colors.odd,
+        crate::state::ColorMode::EvenIndex => &state.settings.card_colors.even,
+        crate::state::ColorMode::OddIndex => &state.settings.card_colors.odd,
         crate::state::ColorMode::Inactive => &state.settings.card_colors.inactive,
         crate::state::ColorMode::Background => &state.settings.card_colors.background,
     };
@@ -247,8 +261,8 @@ pub fn cancel_color_picker(state: &mut AppState) -> Task<Message> {
 pub fn submit_color_picker(state: &mut AppState, color: iced::Color) -> Task<Message> {
     let hex = color_to_hex(color);
     match state.settings.color_mode {
-        crate::state::ColorMode::Even => state.settings.card_colors.even = hex,
-        crate::state::ColorMode::Odd => state.settings.card_colors.odd = hex,
+        crate::state::ColorMode::EvenIndex => state.settings.card_colors.even = hex,
+        crate::state::ColorMode::OddIndex => state.settings.card_colors.odd = hex,
         crate::state::ColorMode::Inactive => state.settings.card_colors.inactive = hex,
         crate::state::ColorMode::Background => state.settings.card_colors.background = hex,
     }

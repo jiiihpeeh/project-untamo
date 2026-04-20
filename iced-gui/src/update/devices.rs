@@ -81,7 +81,7 @@ pub fn save_device_edit(state: &mut AppState) -> Task<Message> {
         let payload = DeviceOut { id: String::new(), device_name: new_name, device_type: new_type };
         return iced::Task::perform(
             async move {
-                let client = reqwest::Client::new();
+                let client = http_client();
                 match client
                     .post(format!("{}/api/device", server))
                     .header("token", &token)
@@ -107,7 +107,7 @@ pub fn save_device_edit(state: &mut AppState) -> Task<Message> {
         let payload = DeviceOut { id: id.clone(), device_name: new_name, device_type: new_type };
         return iced::Task::perform(
             async move {
-                let client = reqwest::Client::new();
+                let client = http_client();
                 match client
                     .put(format!("{}/api/device/{}", server, id))
                     .header("token", &token)
@@ -210,7 +210,7 @@ pub fn go_to_logout(state: &mut AppState) -> Task<Message> {
 
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             let _ = client
                 .post(format!("{}/logout", server))
                 .header("token", token)
@@ -316,7 +316,7 @@ pub fn submit_edit_profile(state: &mut AppState) -> Task<Message> {
                 password,
                 change_password,
             };
-            let client = reqwest::Client::new();
+            let client = http_client();
             match client
                 .put(format!("{}/api/edit-user/{}", server, email))
                 .header("token", &token)
@@ -354,7 +354,7 @@ pub fn refresh_session(state: &mut AppState) -> Task<Message> {
     let server = state.server_address.clone();
     Task::perform(
         async move {
-            let client = reqwest::Client::new();
+            let client = http_client();
             let resp = client
                 .get(format!("{}/api/session", server))
                 .header("token", token)

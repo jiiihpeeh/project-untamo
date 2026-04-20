@@ -84,22 +84,34 @@ impl canvas::Program<Message> for SVSquare {
         );
 
         // 2. White → transparent overlay (left→right): controls saturation
-        let white_grad = canvas::gradient::Linear::new(Point::ORIGIN, Point::new(bounds.width, 0.0))
-            .add_stop(0.0, Color::WHITE)
-            .add_stop(1.0, Color { r: 1.0, g: 1.0, b: 1.0, a: 0.0 });
-        frame.fill(
-            &Path::rectangle(Point::ORIGIN, bounds.size()),
-            white_grad,
-        );
+        let white_grad =
+            canvas::gradient::Linear::new(Point::ORIGIN, Point::new(bounds.width, 0.0))
+                .add_stop(0.0, Color::WHITE)
+                .add_stop(
+                    1.0,
+                    Color {
+                        r: 1.0,
+                        g: 1.0,
+                        b: 1.0,
+                        a: 0.0,
+                    },
+                );
+        frame.fill(&Path::rectangle(Point::ORIGIN, bounds.size()), white_grad);
 
         // 3. Transparent → black overlay (top→bottom): controls value
-        let black_grad = canvas::gradient::Linear::new(Point::ORIGIN, Point::new(0.0, bounds.height))
-            .add_stop(0.0, Color { r: 0.0, g: 0.0, b: 0.0, a: 0.0 })
-            .add_stop(1.0, Color::BLACK);
-        frame.fill(
-            &Path::rectangle(Point::ORIGIN, bounds.size()),
-            black_grad,
-        );
+        let black_grad =
+            canvas::gradient::Linear::new(Point::ORIGIN, Point::new(0.0, bounds.height))
+                .add_stop(
+                    0.0,
+                    Color {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                        a: 0.0,
+                    },
+                )
+                .add_stop(1.0, Color::BLACK);
+        frame.fill(&Path::rectangle(Point::ORIGIN, bounds.size()), black_grad);
 
         // 4. Cursor circle
         let cx = self.sat * bounds.width;
@@ -177,10 +189,7 @@ impl canvas::Program<Message> for HueBar {
             .add_stop(4.0 / 6.0, Color::from_rgb(0.0, 0.0, 1.0))
             .add_stop(5.0 / 6.0, Color::from_rgb(1.0, 0.0, 1.0))
             .add_stop(1.0, Color::from_rgb(1.0, 0.0, 0.0));
-        frame.fill(
-            &Path::rectangle(Point::ORIGIN, bounds.size()),
-            rainbow,
-        );
+        frame.fill(&Path::rectangle(Point::ORIGIN, bounds.size()), rainbow);
 
         // Hue cursor: vertical white bar with black outline
         let cx = self.hue / 360.0 * bounds.width;
@@ -192,10 +201,7 @@ impl canvas::Program<Message> for HueBar {
             Color::WHITE,
         );
         frame.fill(
-            &Path::rectangle(
-                Point::new(cx - 1.5, 0.0),
-                Size::new(3.0, bounds.height),
-            ),
+            &Path::rectangle(Point::new(cx - 1.5, 0.0), Size::new(3.0, bounds.height)),
             Color::BLACK,
         );
 
@@ -213,14 +219,18 @@ fn mode_btn<'a>(mode: ColorMode, hex: &str, is_selected: bool) -> Element<'a, Me
     } else {
         Color::from_rgb(0.07, 0.07, 0.07)
     };
-    let label = mode.as_str();
+    let label = mode.display_name();
     button(text(label).size(14).color(text_col))
         .on_press(Message::SetColorMode(mode))
         .width(Length::Fixed(BTN_W))
         .style(move |_, status| iced::widget::button::Style {
             background: Some(Background::Color(
                 if matches!(status, iced::widget::button::Status::Hovered) {
-                    Color::from_rgb((r + 0.08).min(1.0), (g + 0.08).min(1.0), (b + 0.08).min(1.0))
+                    Color::from_rgb(
+                        (r + 0.08).min(1.0),
+                        (g + 0.08).min(1.0),
+                        (b + 0.08).min(1.0),
+                    )
                 } else {
                     bg
                 },
@@ -257,8 +267,8 @@ fn divider<'a>() -> Element<'a, Message> {
 pub fn colors_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'a, Message> {
     let mode = &state.color_mode;
     let current_hex = match mode {
-        ColorMode::Even => &state.card_colors.even,
-        ColorMode::Odd => &state.card_colors.odd,
+        ColorMode::EvenIndex => &state.card_colors.even,
+        ColorMode::OddIndex => &state.card_colors.odd,
         ColorMode::Inactive => &state.card_colors.inactive,
         ColorMode::Background => &state.card_colors.background,
     };
@@ -281,18 +291,25 @@ pub fn colors_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'
 
     // Color preview swatch showing hex
     let preview_col = Color::from_rgb(r, g, b);
-    let txt_on_preview = if luminance(r, g, b) < 0.5 { Color::WHITE } else { Color::from_rgb(0.07, 0.07, 0.07) };
-    let preview: Element<Message> = container(
-        text(current_hex.as_str()).size(13).color(txt_on_preview),
-    )
-    .style(move |_| iced::widget::container::Style {
-        background: Some(Background::Color(preview_col)),
-        border: Border { color: Color::from_rgba(0.0, 0.0, 0.0, 0.2), width: 1.0, radius: 6.0.into() },
-        ..Default::default()
-    })
-    .padding([10, 14])
-    .width(Length::Fixed(PICKER_SIZE))
-    .into();
+    let txt_on_preview = if luminance(r, g, b) < 0.5 {
+        Color::WHITE
+    } else {
+        Color::from_rgb(0.07, 0.07, 0.07)
+    };
+    let preview: Element<Message> =
+        container(text(current_hex.as_str()).size(13).color(txt_on_preview))
+            .style(move |_| iced::widget::container::Style {
+                background: Some(Background::Color(preview_col)),
+                border: Border {
+                    color: Color::from_rgba(0.0, 0.0, 0.0, 0.2),
+                    width: 1.0,
+                    radius: 6.0.into(),
+                },
+                ..Default::default()
+            })
+            .padding([10, 14])
+            .width(Length::Fixed(PICKER_SIZE))
+            .into();
 
     let left_col: Element<Message> = column![
         sv_canvas,
@@ -307,10 +324,26 @@ pub fn colors_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'
     // ── Right: mode buttons ──────────────────────────────────────────────────
 
     let right_col: Element<Message> = column![
-        mode_btn(ColorMode::Even, &state.card_colors.even, *mode == ColorMode::Even),
-        mode_btn(ColorMode::Odd, &state.card_colors.odd, *mode == ColorMode::Odd),
-        mode_btn(ColorMode::Inactive, &state.card_colors.inactive, *mode == ColorMode::Inactive),
-        mode_btn(ColorMode::Background, &state.card_colors.background, *mode == ColorMode::Background),
+        mode_btn(
+            ColorMode::EvenIndex,
+            &state.card_colors.even,
+            *mode == ColorMode::EvenIndex
+        ),
+        mode_btn(
+            ColorMode::OddIndex,
+            &state.card_colors.odd,
+            *mode == ColorMode::OddIndex
+        ),
+        mode_btn(
+            ColorMode::Inactive,
+            &state.card_colors.inactive,
+            *mode == ColorMode::Inactive
+        ),
+        mode_btn(
+            ColorMode::Background,
+            &state.card_colors.background,
+            *mode == ColorMode::Background
+        ),
         divider(),
         button(text("Default Colors").size(13))
             .on_press(Message::SetDefaultCardColors)
@@ -335,7 +368,9 @@ pub fn colors_dialog<'a>(state: &'a SettingsState, bg: iced::Color) -> Element<'
     let content = column![
         header,
         divider(),
-        row![left_col, right_col].spacing(ROW_SPACING).align_y(iced::Alignment::Start),
+        row![left_col, right_col]
+            .spacing(ROW_SPACING)
+            .align_y(iced::Alignment::Start),
     ]
     .spacing(16)
     .padding(CARD_PAD);
@@ -353,12 +388,19 @@ fn hsv_to_color(h: f32, s: f32, v: f32) -> Color {
     let c = v * s;
     let x = c * (1.0 - ((h / 60.0) % 2.0 - 1.0).abs());
     let m = v - c;
-    let (r, g, b) = if h < 60.0 { (c, x, 0.0) }
-        else if h < 120.0 { (x, c, 0.0) }
-        else if h < 180.0 { (0.0, c, x) }
-        else if h < 240.0 { (0.0, x, c) }
-        else if h < 300.0 { (x, 0.0, c) }
-        else { (c, 0.0, x) };
+    let (r, g, b) = if h < 60.0 {
+        (c, x, 0.0)
+    } else if h < 120.0 {
+        (x, c, 0.0)
+    } else if h < 180.0 {
+        (0.0, c, x)
+    } else if h < 240.0 {
+        (0.0, x, c)
+    } else if h < 300.0 {
+        (x, 0.0, c)
+    } else {
+        (c, 0.0, x)
+    };
     Color::from_rgb(r + m, g + m, b + m)
 }
 
@@ -372,7 +414,11 @@ fn rgb_to_hsv(r: f32, g: f32, b: f32) -> (f32, f32, f32) {
         0.0
     } else if (max - r).abs() < 0.001 {
         let h = 60.0 * ((g - b) / delta);
-        if h < 0.0 { h + 360.0 } else { h }
+        if h < 0.0 {
+            h + 360.0
+        } else {
+            h
+        }
     } else if (max - g).abs() < 0.001 {
         60.0 * ((b - r) / delta + 2.0)
     } else {
