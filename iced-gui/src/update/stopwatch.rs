@@ -190,65 +190,74 @@ pub fn export_timer_csv(state: &mut AppState, timer_id: String, as_excel: bool) 
                         Ok(timers) => {
                             if let Some(timer) = timers.iter().find(|t| t.id == timer_id) {
                                 use std::fs;
-                                use std::path::PathBuf;
                                 
-                                if let Some(downloads_dir) = dirs::download_dir() {
-                                    let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
-                                    let extension = if as_excel { "xlsx" } else { "csv" };
-                                    let filename = format!("stopwatch_{}.{}", timestamp, extension);
-                                    let file_path: PathBuf = downloads_dir.join(&filename);
+                                let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
+                                let extension = if as_excel { "xlsx" } else { "csv" };
+                                let filename = format!("stopwatch_{}.{}", timestamp, extension);
+                                
+                                let result = if as_excel {
+                                    let mut workbook = rust_xlsxwriter::Workbook::new();
+                                    let mut sheet = workbook.add_worksheet();
+                                    sheet.set_name(format!("stopwatch_{}", timestamp)).ok();
                                     
-                                    let result = if as_excel {
-                                        let mut workbook = rust_xlsxwriter::Workbook::new();
-                                        let mut sheet = workbook.add_worksheet();
-                                        sheet.set_name(format!("stopwatch_{}", timestamp)).ok();
+                                    sheet.write(0, 0, "Lap Number").ok();
+                                    sheet.write(0, 1, "Lap Time").ok();
+                                    sheet.write(0, 2, "Cumulative Time").ok();
+                                    
+                                    sheet.set_column_width(0, 12).ok();
+                                    sheet.set_column_width(1, 15).ok();
+                                    sheet.set_column_width(2, 18).ok();
+                                    
+                                    for (i, lap) in timer.laps.iter().enumerate() {
+                                        let lap_num = (i + 1) as u32;
+                                        let prev = if i == 0 { 0u64 } else { timer.laps[i-1] };
+                                        let diff = lap - prev;
                                         
-                                        sheet.write(0, 0, "Lap Number").ok();
-                                        sheet.write(0, 1, "Lap Time").ok();
-                                        sheet.write(0, 2, "Cumulative Time").ok();
-                                        
-                                        sheet.set_column_width(0, 12).ok();
-                                        sheet.set_column_width(1, 15).ok();
-                                        sheet.set_column_width(2, 18).ok();
-                                        
-                                        for (i, lap) in timer.laps.iter().enumerate() {
-                                            let lap_num = (i + 1) as u32;
-                                            let prev = if i == 0 { 0u64 } else { timer.laps[i-1] };
-                                            let diff = lap - prev;
-                                            
-                                            sheet.write((i + 1) as u32, 0, lap_num).ok();
-                                            sheet.write((i + 1) as u32, 1, &format_lap_time_csv(diff)).ok();
-                                            sheet.write((i + 1) as u32, 2, &format_lap_time_csv(*lap)).ok();
-                                        }
-                                        
-                                        let xlsx_data = workbook.save_to_buffer().unwrap();
-                                        fs::write(&file_path, xlsx_data)
+                                        sheet.write((i + 1) as u32, 0, lap_num).ok();
+                                        sheet.write((i + 1) as u32, 1, &format_lap_time_csv(diff)).ok();
+                                        sheet.write((i + 1) as u32, 2, &format_lap_time_csv(*lap)).ok();
+                                    }
+                                    
+                                    let xlsx_data = workbook.save_to_buffer().unwrap();
+                                    let file_path = rfd::FileDialog::new()
+                                        .add_filter("Excel files", &["xlsx"])
+                                        .set_file_name(&filename)
+                                        .save_file();
+                                    if let Some(path) = file_path {
+                                        fs::write(&path, xlsx_data)
                                     } else {
-                                        let mut csv_content = String::new();
-                                        csv_content.push_str("Lap Number,Lap Time,Cumulative Time\n");
-                                        for (i, lap) in timer.laps.iter().enumerate() {
-                                            let lap_num = i + 1;
-                                            let prev = if i == 0 { 0u64 } else { timer.laps[i-1] };
-                                            let diff = lap - prev;
-                                            csv_content.push_str(&format!(
-                                                "{},{},{}\n",
-                                                lap_num,
-                                                format_lap_time_csv(diff),
-                                                format_lap_time_csv(*lap)
-                                            ));
-                                        }
-                                        fs::write(&file_path, csv_content)
-                                    };
-                                    
-                                    match result {
-                                        Ok(_) => {
-                                            eprintln!("Saved {} to: {:?}", extension, file_path);
-                                            Message::TimerSaveResult(Ok(()))
-                                        }
-                                        Err(e) => Message::TimerSaveResult(Err(format!("Failed to save: {}", e)))
+                                        Ok(())
                                     }
                                 } else {
-                                    Message::TimerSaveResult(Err("Could not find Downloads directory".to_string()))
+                                    let mut csv_content = String::new();
+                                    csv_content.push_str("Lap Number,Lap Time,Cumulative Time\n");
+                                    for (i, lap) in timer.laps.iter().enumerate() {
+                                        let lap_num = i + 1;
+                                        let prev = if i == 0 { 0u64 } else { timer.laps[i-1] };
+                                        let diff = lap - prev;
+                                        csv_content.push_str(&format!(
+                                            "{},{},{}\n",
+                                            lap_num,
+                                            format_lap_time_csv(diff),
+                                            format_lap_time_csv(*lap)
+                                        ));
+                                    }
+                                    let file_path = rfd::FileDialog::new()
+                                        .add_filter("CSV files", &["csv"])
+                                        .set_file_name(&filename)
+                                        .save_file();
+                                    if let Some(path) = file_path {
+                                        fs::write(&path, csv_content)
+                                    } else {
+                                        Ok(())
+                                    }
+                                };
+                                
+                                match result {
+                                    Ok(_) => {
+                                        Message::TimerSaveResult(Ok(()))
+                                    }
+                                    Err(e) => Message::TimerSaveResult(Err(format!("Failed to save: {}", e)))
                                 }
                             } else {
                                 Message::TimerSaveResult(Err("Timer not found".to_string()))

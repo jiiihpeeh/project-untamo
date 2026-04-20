@@ -265,8 +265,9 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
                     .into()
                 })
                 .collect();
-            scrollable(column(timer_items).spacing(4))
-                .height(Length::Fixed(120.0))
+            scrollable(column(timer_items).spacing(4).width(Length::Fill))
+                .width(Length::Fill)
+                .height(Length::Fill)
                 .into()
         }
     } else if state.stopwatch_laps.is_empty() {
@@ -313,16 +314,32 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
             })
             .collect();
 
-        scrollable(column(lap_items).spacing(0))
-            .height(Length::Fixed(120.0))
+        scrollable(column(lap_items).spacing(0).width(Length::Fill))
+            .width(Length::Fill)
+            .height(Length::Fill)
             .into()
     };
 
+    let laps_container_height = if state.show_saved_timers {
+        300.0
+    } else {
+        150.0
+    };
     let laps_container = container(container(lap_list).width(Length::Fill).height(Length::Fill))
-        .width(Length::Fixed(280.0))
-        .height(Length::Fixed(150.0))
+        .width(Length::Fixed(320.0))
+        .height(Length::Fixed(laps_container_height))
+        .padding(15)
         .style(move |_theme: &iced::Theme| iced::widget::container::Style {
-            background: Some(iced::Background::Color(bg_dark)),
+            background: if state.show_saved_timers {
+                Some(iced::Background::Color(Color {
+                    r: 0.8,
+                    g: 0.7,
+                    b: 0.6,
+                    a: bg.a,
+                }))
+            } else {
+                Some(iced::Background::Color(bg_dark))
+            },
             border: iced::Border {
                 color: border_color,
                 width: 1.0,
@@ -500,7 +517,7 @@ fn android_timer_item_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
     move |_theme, status| {
         let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.15, 0.15, 0.15),
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.5, 0.42, 0.35),
             _ => Color::TRANSPARENT,
         };
         iced::widget::button::Style {
