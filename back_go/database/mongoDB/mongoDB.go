@@ -17,6 +17,7 @@ import (
 	"untamo_server.zzz/models/email"
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/session"
+	"untamo_server.zzz/models/timer"
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/utils/id"
 )
@@ -624,5 +625,57 @@ func (m *MongoDB) GetWebColors(userIn *user.User) string {
 	return webColorsUser.Colors
 }
 
-// AddWebColors(user *user.User, webColors *user.WebColors) bool
-// GetWebColors(user *user.User) *user.WebColors
+const (
+	TIMERCOLL = "timers"
+)
+
+func (m *MongoDB) AddTimer(timer *timer.Timer) (string, error) {
+	if timer.ID == (ulid.ULID{}) {
+		entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+		timer.ID = ulid.MustNew(ulid.Timestamp(time.Now()), ulid.Monotonic(entropy, 0))
+	}
+	collection := m.connection.Database(DB_NAME).Collection(TIMERCOLL)
+	_, err := collection.InsertOne(context.Background(), timer)
+	if err != nil {
+		return "", err
+	}
+	return timer.ID.String(), nil
+}
+
+func (m *MongoDB) GetTimers(userID string) []*timer.Timer {
+	userIDObj, _ := ulid.Parse(userID)
+	collection := m.connection.Database(DB_NAME).Collection(TIMERCOLL)
+	cursor, err := collection.Find(context.Background(), bson.M{"user": userIDObj})
+	if err != nil {
+		return nil
+	}
+	defer cursor.Close(context.Background())
+
+	timers := []*timer.Timer{}
+	for cursor.Next(context.Background()) {
+		t := &timer.Timer{}
+		if err := cursor.Decode(t); err != nil {
+			continue
+		}
+		timers = append(timers, t)
+	}
+	return timers
+}
+
+func (m *MongoDB) GetTimerByID(id string) *timer.Timer {
+	idObj, _ := ulid.Parse(id)
+	collection := m.connection.Database(DB_NAME).Collection(TIMERCOLL)
+	t := &timer.Timer{}
+	err := collection.FindOne(context.Background(), bson.M{"_id": idObj}).Decode(t)
+	if err != nil {
+		return nil
+	}
+	return t
+}
+
+func (m *MongoDB) DeleteTimer(id string, userID string) bool {
+	idObj, _ := ulid.Parse(id)
+	collection := m.connection.Database(DB_NAME).Collection(TIMERCOLL)
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": idObj, "user": userID})
+	return err == nil
+}

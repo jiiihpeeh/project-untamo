@@ -1,17 +1,35 @@
 use crate::messages::Message;
 use crate::state::AppState;
-use crate::theme::{card_container_style_colored, hex_to_color, COLORS};
+use crate::theme::hex_to_color;
 use iced::widget::{button, column, container, row, text};
-use iced::{Color, Element, Length};
-
-fn format_countdown_time(total_secs: u64) -> String {
-    let hours = total_secs / 3600;
-    let minutes = (total_secs % 3600) / 60;
-    let seconds = total_secs % 60;
-    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
-}
+use iced::{Color, Element, Length, Vector};
 
 pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
+    let bg = hex_to_color(&state.settings.card_colors.background);
+    let bg_dark = Color {
+        r: (bg.r * 0.4).max(0.05),
+        g: (bg.g * 0.4).max(0.05),
+        b: (bg.b * 0.4).max(0.05),
+        a: bg.a,
+    };
+    let border_color = Color {
+        r: (bg.r + 0.15).min(1.0),
+        g: (bg.g + 0.15).min(1.0),
+        b: (bg.b + 0.15).min(1.0),
+        a: bg.a,
+    };
+    let text_color = if (bg.r + bg.g + bg.b) / 3.0 > 0.5 {
+        Color::BLACK
+    } else {
+        Color::WHITE
+    };
+    let text_secondary = Color {
+        r: text_color.r * 0.6,
+        g: text_color.g * 0.6,
+        b: text_color.b * 0.6,
+        a: text_color.a,
+    };
+
     let remaining_secs = if state.countdown_running {
         if let Some(target) = state.countdown_target {
             let elapsed = target.elapsed().as_secs();
@@ -28,159 +46,311 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     };
 
     let time_string = format_countdown_time(remaining_secs);
-    let time_display = text(time_string).size(72).color(COLORS.text);
 
-    let hours = remaining_secs / 3600;
-    let minutes = (remaining_secs % 3600) / 60;
-    let seconds = remaining_secs % 60;
+    let is_finished = remaining_secs == 0 && !state.countdown_running;
 
-    let time_pickers = if state.countdown_running {
-        column![
-            text(format!("{:02}", hours)).size(32),
-            text("hours").size(12).color(COLORS.text_secondary),
-        ]
-        .spacing(4)
+    let time_display = text(time_string)
+        .size(if remaining_secs >= 3600 { 40 } else { 52 })
+        .color(if is_finished {
+            Color::from_rgb(0.95, 0.3, 0.3)
+        } else {
+            text_color
+        })
+        .align_x(iced::Alignment::Center);
+
+    let clock_size: f32 = 260.0;
+    let clock_border_color = if is_finished {
+        Color::from_rgb(0.9, 0.3, 0.3)
     } else {
-        column![time_adjuster(
-            ":",
-            0,
-            99,
-            hours as u8,
-            Message::CountdownSetHours
-        ),]
-        .spacing(4)
+        border_color
     };
+    let clock_border_width = if is_finished { 3.0 } else { 2.0 };
 
-    let time_pickers2 = if state.countdown_running {
-        column![
-            text(format!("{:02}", minutes)).size(32),
-            text("min").size(12).color(COLORS.text_secondary),
-        ]
-        .spacing(4)
-    } else {
-        column![time_adjuster(
-            ":",
-            0,
-            59,
-            minutes as u8,
-            Message::CountdownSetMinutes
-        ),]
-        .spacing(4)
-    };
+    let clock = container(
+        container(time_display)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill),
+    )
+    .width(Length::Fixed(clock_size))
+    .height(Length::Fixed(clock_size))
+    .style(move |_theme: &iced::Theme| iced::widget::container::Style {
+        background: Some(iced::Background::Color(bg_dark)),
+        border: iced::Border {
+            color: clock_border_color,
+            width: clock_border_width,
+            radius: clock_size.into(),
+        },
+        ..iced::widget::container::Style::default()
+    });
 
-    let time_pickers3 = if state.countdown_running {
-        column![
-            text(format!("{:02}", seconds)).size(32),
-            text("sec").size(12).color(COLORS.text_secondary),
-        ]
-        .spacing(4)
+    let time_pickers: Element<Message> = if state.countdown_running || is_finished {
+        container(text("")).into()
     } else {
-        column![time_adjuster(
-            "",
-            0,
-            59,
-            seconds as u8,
-            Message::CountdownSetSeconds
-        ),]
-        .spacing(4)
+        let hours = remaining_secs / 3600;
+        let minutes = (remaining_secs % 3600) / 60;
+        let seconds = remaining_secs % 60;
+
+        let hour_col = column![
+            container(
+                button(text("+").size(24).align_x(iced::Alignment::Center))
+                    .on_press(Message::CountdownSetHours((hours as u8 + 1).min(99)))
+                    .width(Length::Fill)
+                    .height(Length::Fixed(36.0))
+                    .style(android_adjuster_style())
+            ),
+            text(format!("{:02}", hours))
+                .size(26)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+            container(
+                button(text("-").size(24).align_x(iced::Alignment::Center))
+                    .on_press(Message::CountdownSetHours(hours.saturating_sub(1) as u8))
+                    .width(Length::Fill)
+                    .height(Length::Fixed(36.0))
+                    .style(android_adjuster_style())
+            ),
+        ]
+        .spacing(4);
+
+        let min_col = column![
+            container(
+                button(text("+").size(24).align_x(iced::Alignment::Center))
+                    .on_press(Message::CountdownSetMinutes(((minutes as u8 + 1) % 60)))
+                    .width(Length::Fill)
+                    .height(Length::Fixed(36.0))
+                    .style(android_adjuster_style())
+            ),
+            text(format!("{:02}", minutes))
+                .size(26)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+            container(
+                button(text("-").size(24).align_x(iced::Alignment::Center))
+                    .on_press(Message::CountdownSetMinutes(minutes.saturating_sub(1) as u8))
+                    .width(Length::Fill)
+                    .height(Length::Fixed(36.0))
+                    .style(android_adjuster_style())
+            ),
+        ]
+        .spacing(4);
+
+        let sec_col = column![
+            container(
+                button(text("+").size(24).align_x(iced::Alignment::Center))
+                    .on_press(Message::CountdownSetSeconds(((seconds as u8 + 1) % 60)))
+                    .width(Length::Fill)
+                    .height(Length::Fixed(36.0))
+                    .style(android_adjuster_style())
+            ),
+            text(format!("{:02}", seconds))
+                .size(26)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+            container(
+                button(text("-").size(24).align_x(iced::Alignment::Center))
+                    .on_press(Message::CountdownSetSeconds(seconds.saturating_sub(1) as u8))
+                    .width(Length::Fill)
+                    .height(Length::Fixed(36.0))
+                    .style(android_adjuster_style())
+            ),
+        ]
+        .spacing(4);
+
+        let labels = column![
+            text("hours")
+                .size(10)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+            text("").size(16),
+            text("min")
+                .size(10)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+            text("").size(16),
+            text("sec")
+                .size(10)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+        ]
+        .spacing(4);
+
+        container(
+            column![
+                row![
+                    hour_col,
+                    text(":").size(28).color(text_secondary),
+                    min_col,
+                    text(":").size(28).color(text_secondary),
+                    sec_col
+                ]
+                .spacing(8)
+                .align_y(iced::Alignment::Center),
+                labels,
+            ]
+            .spacing(0),
+        )
+        .padding(iced::Padding {
+            top: 16.0,
+            ..Default::default()
+        })
+        .center_x(Length::Fill)
+        .into()
     };
 
     let btn_start_stop = if state.countdown_running {
-        button(text("Stop").size(20))
+        container(
+            button(
+                text("Stop")
+                    .size(22)
+                    .color(Color::WHITE)
+                    .align_x(iced::Alignment::Center),
+            )
             .on_press(Message::CountdownStop)
-            .style(countdown_button_style(true))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(android_stop_button_style()),
+        )
+        .width(Length::Fixed(120.0))
+        .height(Length::Fixed(56.0))
     } else {
-        button(text("Start").size(20))
+        container(
+            button(
+                text("Start")
+                    .size(22)
+                    .color(Color::WHITE)
+                    .align_x(iced::Alignment::Center),
+            )
             .on_press(Message::CountdownStart)
-            .style(countdown_button_style(false))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(android_start_button_style()),
+        )
+        .width(Length::Fixed(120.0))
+        .height(Length::Fixed(56.0))
     };
 
-    let btn_reset = button(text("Reset").size(20))
+    let btn_reset = container(
+        button(
+            text("Reset")
+                .size(18)
+                .color(text_color)
+                .align_x(iced::Alignment::Center),
+        )
         .on_press(Message::CountdownReset)
-        .style(reset_button_style());
-
-    let controls = column![btn_start_stop, btn_reset]
-        .spacing(12)
-        .padding(iced::Padding {
-            top: 20.0,
-            right: 0.0,
-            bottom: 0.0,
-            left: 0.0,
-        });
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .style(android_reset_button_style()),
+    )
+    .width(Length::Fixed(80.0))
+    .height(Length::Fixed(40.0));
 
     let content = column![
-        container(time_display).padding(iced::Padding {
-            top: 40.0,
-            right: 0.0,
-            bottom: 10.0,
-            left: 0.0,
-        }),
-        row![time_pickers, time_pickers2, time_pickers3].spacing(16),
-        controls,
+        container(clock)
+            .padding(iced::Padding {
+                top: 24.0,
+                ..Default::default()
+            })
+            .center_x(Length::Fill),
+        time_pickers,
+        container(btn_start_stop)
+            .padding(iced::Padding {
+                top: 20.0,
+                ..Default::default()
+            })
+            .center_x(Length::Fill),
+        container(btn_reset)
+            .padding(iced::Padding {
+                top: 12.0,
+                ..Default::default()
+            })
+            .center_x(Length::Fill),
     ]
-    .spacing(10);
+    .spacing(0);
 
-    let bg = hex_to_color(&state.settings.card_colors.background);
     container(content)
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(card_container_style_colored(bg))
+        .style(move |_theme: &iced::Theme| iced::widget::container::Style {
+            background: Some(iced::Background::Color(bg)),
+            ..iced::widget::container::Style::default()
+        })
         .into()
 }
 
-fn time_adjuster(
-    separator: &str,
-    _min: u8,
-    _max: u8,
-    value: u8,
-    msg: fn(u8) -> Message,
-) -> Element<'_, Message> {
-    let btn_dec = button(text("-").size(24))
-        .on_press(msg(value.saturating_sub(1)))
-        .width(Length::Fixed(44.0))
-        .height(Length::Fixed(44.0))
-        .style(adjuster_button_style());
-
-    let btn_inc = button(text("+").size(24))
-        .on_press(msg(value.saturating_add(1)))
-        .width(Length::Fixed(44.0))
-        .height(Length::Fixed(44.0))
-        .style(adjuster_button_style());
-
-    let value_text = if separator.is_empty() {
-        text(format!("{:02}", value)).size(32)
-    } else {
-        text(format!("{}{:02}", separator, value)).size(32)
-    };
-
-    row![
-        btn_dec,
-        container(value_text)
-            .width(Length::Fixed(60.0))
-            .center_x(Length::Fill),
-        btn_inc
-    ]
-    .spacing(4)
-    .into()
+fn format_countdown_time(total_secs: u64) -> String {
+    let hours = total_secs / 3600;
+    let minutes = (total_secs % 3600) / 60;
+    let seconds = total_secs % 60;
+    format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
 }
 
-fn countdown_button_style(
-    running: bool,
+fn android_start_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
     move |_theme, status| {
         let bg = match status {
-            iced::widget::button::Status::Hovered if running => Color::from_rgb(0.75, 0.15, 0.15),
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.15, 0.75, 0.25),
-            iced::widget::button::Status::Pressed if running => Color::from_rgb(0.65, 0.10, 0.10),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.10, 0.65, 0.15),
-            _ if running => Color::from_rgb(0.85, 0.20, 0.20),
-            _ => Color::from_rgb(0.20, 0.85, 0.30),
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.22, 0.82, 0.22),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.12, 0.72, 0.12),
+            _ => Color::from_rgb(0.18, 0.78, 0.18),
         };
         iced::widget::button::Style {
             background: Some(iced::Background::Color(bg)),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
+                radius: 28.0.into(),
+            },
+            shadow: iced::Shadow {
+                offset: Vector::new(0.0, 2.0),
+                blur_radius: 4.0,
+                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
+            },
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    }
+}
+
+fn android_stop_button_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    move |_theme, status| {
+        let bg = match status {
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.85, 0.15, 0.15),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.75, 0.10, 0.10),
+            _ => Color::from_rgb(0.90, 0.20, 0.20),
+        };
+        iced::widget::button::Style {
+            background: Some(iced::Background::Color(bg)),
+            border: iced::Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 28.0.into(),
+            },
+            shadow: iced::Shadow {
+                offset: Vector::new(0.0, 2.0),
+                blur_radius: 4.0,
+                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
+            },
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    }
+}
+
+fn android_adjuster_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    move |_theme, status| {
+        let bg = match status {
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.3, 0.3, 0.3),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.35, 0.35, 0.35),
+            _ => Color::from_rgb(0.22, 0.22, 0.22),
+        };
+        iced::widget::button::Style {
+            background: Some(iced::Background::Color(bg)),
+            border: iced::Border {
+                color: Color::from_rgb(0.35, 0.35, 0.35),
+                width: 1.0,
                 radius: 8.0.into(),
             },
             shadow: iced::Shadow::default(),
@@ -190,42 +360,20 @@ fn countdown_button_style(
     }
 }
 
-fn adjuster_button_style(
+fn android_reset_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
     move |_theme, status| {
         let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.30, 0.30, 0.30),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.40, 0.40, 0.40),
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.3, 0.3, 0.3),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.4, 0.4, 0.4),
             _ => Color::from_rgb(0.25, 0.25, 0.25),
         };
         iced::widget::button::Style {
             background: Some(iced::Background::Color(bg)),
             border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 8.0.into(),
-            },
-            shadow: iced::Shadow::default(),
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
-}
-
-fn reset_button_style(
-) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.45, 0.45, 0.45),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.35, 0.35, 0.35),
-            _ => Color::from_rgb(0.30, 0.30, 0.30),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 8.0.into(),
+                color: Color::from_rgb(0.4, 0.4, 0.4),
+                width: 1.0,
+                radius: 20.0.into(),
             },
             shadow: iced::Shadow::default(),
             text_color: Color::WHITE,

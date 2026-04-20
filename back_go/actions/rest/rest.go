@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"embed"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,6 +29,7 @@ import (
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/register"
 	"untamo_server.zzz/models/session"
+	"untamo_server.zzz/models/timer"
 	"untamo_server.zzz/models/update"
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/models/wsOut"
@@ -333,6 +335,66 @@ func DeleteAlarm(c *gin.Context, db *database.Database) {
 	}
 	broadcast(sess, "alarmDelete", alarmId)
 	c.JSON(200, gin.H{"message": "Alarm deleted"})
+}
+
+func GetTimers(c *gin.Context, db *database.Database) {
+	sess := getSession(c)
+	if sess == nil {
+		return
+	}
+	timers := (*db).GetTimers(sess.UserId)
+	timerOut := []timer.TimerOut{}
+	for _, t := range timers {
+		timerOut = append(timerOut, t.ToTimerOut())
+	}
+	c.JSON(200, timerOut)
+}
+
+func AddTimer(c *gin.Context, db *database.Database) {
+	sess, userInSess := (*db).GetSessionFromHeader(c.Request)
+	if sess == nil {
+		c.JSON(401, gin.H{"message": "Unauthorized"})
+		return
+	}
+	if userInSess == nil {
+		c.JSON(404, gin.H{"message": "User not found"})
+		return
+	}
+	timerIn := timer.TimerOut{}
+	if err := c.ShouldBindJSON(&timerIn); err != nil {
+		c.JSON(400, gin.H{"message": "Bad request: " + err.Error()})
+		return
+	}
+	newTimer := timer.Timer{
+		Title:   timerIn.Title,
+		Laps:    timerIn.Laps,
+		User:    sess.UserId,
+		Created: now.Now(),
+	}
+	timerId, err := (*db).AddTimer(&newTimer)
+	if err != nil {
+		fmt.Println("AddTimer error:", err)
+		c.JSON(500, gin.H{"message": "Failed to add timer to db: " + err.Error()})
+		return
+	}
+	newTimer.ID, _ = ulid.Parse(timerId)
+	added := newTimer.ToTimerOut()
+	broadcast(sess, "timerAdd", added)
+	c.JSON(200, added)
+}
+
+func DeleteTimer(c *gin.Context, db *database.Database) {
+	sess := getSession(c)
+	if sess == nil {
+		return
+	}
+	timerId := c.Param("id")
+	if !(*db).DeleteTimer(timerId, sess.UserId) {
+		c.JSON(500, gin.H{"message": "Failed to delete timer from db"})
+		return
+	}
+	broadcast(sess, "timerDelete", timerId)
+	c.JSON(200, gin.H{"message": "Timer deleted"})
 }
 
 func IsSessionValid(c *gin.Context, db *database.Database) {

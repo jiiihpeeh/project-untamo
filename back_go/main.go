@@ -237,6 +237,15 @@ func main() {
 	sessionGroup.DELETE("/api/alarm/:id", func(c *gin.Context) {
 		rest.DeleteAlarm(c, &db)
 	})
+	sessionGroup.GET("/api/timers", func(c *gin.Context) {
+		rest.GetTimers(c, &db)
+	})
+	sessionGroup.POST("/api/timer", func(c *gin.Context) {
+		rest.AddTimer(c, &db)
+	})
+	sessionGroup.DELETE("/api/timer/:id", func(c *gin.Context) {
+		rest.DeleteTimer(c, &db)
+	})
 	sessionGroup.GET("/api/is-session-valid", func(c *gin.Context) {
 		rest.IsSessionValid(c, &db)
 	})

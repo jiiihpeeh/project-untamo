@@ -195,6 +195,15 @@ pub struct Alarm {
     pub close_task: bool,
 }
 
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Timer {
+    pub id: String,
+    pub title: String,
+    pub laps: Vec<u64>,
+    pub created: i64,
+}
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Device {
@@ -756,6 +765,10 @@ pub struct AppState {
     pub countdown_target: Option<std::time::Instant>,
     /// Initial countdown duration in seconds (for reset)
     pub countdown_duration_secs: u64,
+    /// Saved timers from the server
+    pub timers: Vec<Timer>,
+    /// Whether to show the saved timers list
+    pub show_saved_timers: bool,
 }
 
 impl AppState {
@@ -856,6 +869,8 @@ impl AppState {
             countdown_running: false,
             countdown_target: None,
             countdown_duration_secs: 300,
+            timers: Vec::new(),
+            show_saved_timers: false,
         }
     }
 }

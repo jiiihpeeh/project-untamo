@@ -158,4 +158,12 @@ pub enum Message {
     CountdownSetHours(u8),
     CountdownSetMinutes(u8),
     CountdownSetSeconds(u8),
+    FetchTimers,
+    TimersReceived(Vec<crate::state::Timer>),
+    SaveTimer(String),
+    LoadTimer(String),
+    TimerSaveResult(Result<(), String>),
+    TimerDeleteResult(Result<(), String>),
+    ToggleSavedTimers,
+    ExportTimerCsv(String, bool),
 }

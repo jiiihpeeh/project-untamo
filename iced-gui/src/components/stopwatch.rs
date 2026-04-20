@@ -1,8 +1,9 @@
 use crate::messages::Message;
 use crate::state::AppState;
-use crate::theme::{card_container_style_colored, hex_to_color, COLORS};
-use iced::widget::{button, column, container, scrollable, text};
-use iced::{Color, Element, Length};
+use crate::theme::hex_to_color;
+use chrono;
+use iced::widget::{button, column, container, row, scrollable, text};
+use iced::{Color, Element, Length, Vector};
 
 fn format_lap_time(elapsed_ms: u64) -> String {
     let total_seconds = elapsed_ms / 1000;
@@ -22,6 +23,31 @@ fn format_lap_time(elapsed_ms: u64) -> String {
 }
 
 pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
+    let bg = hex_to_color(&state.settings.card_colors.background);
+    let bg_dark = Color {
+        r: (bg.r * 0.4).max(0.05),
+        g: (bg.g * 0.4).max(0.05),
+        b: (bg.b * 0.4).max(0.05),
+        a: bg.a,
+    };
+    let border_color = Color {
+        r: (bg.r + 0.15).min(1.0),
+        g: (bg.g + 0.15).min(1.0),
+        b: (bg.b + 0.15).min(1.0),
+        a: bg.a,
+    };
+    let text_color = if (bg.r + bg.g + bg.b) / 3.0 > 0.5 {
+        Color::BLACK
+    } else {
+        Color::WHITE
+    };
+    let text_secondary = Color {
+        r: text_color.r * 0.6,
+        g: text_color.g * 0.6,
+        b: text_color.b * 0.6,
+        a: text_color.a,
+    };
+
     let elapsed_ms = if state.stopwatch_running {
         state.stopwatch_elapsed_ms
             + state
@@ -32,38 +58,227 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
         state.stopwatch_elapsed_ms
     };
 
-    let time_string = format_lap_time(elapsed_ms);
-    let time_display = text(time_string).size(72).color(COLORS.text);
+    let total_seconds = elapsed_ms / 1000;
+    let minutes = (total_seconds / 60) % 60;
+    let hours = total_seconds / 3600;
+    let seconds = total_seconds % 60;
+    let centiseconds = (elapsed_ms % 1000) / 10;
+
+    let time_string = if hours > 0 {
+        format!(
+            "{:02}:{:02}:{:02}.{:02}",
+            hours, minutes, seconds, centiseconds
+        )
+    } else {
+        format!("{:02}:{:02}.{:02}", minutes, seconds, centiseconds)
+    };
+
+    let time_display = container(text(time_string).size(52).color(text_color))
+        .width(Length::Fill)
+        .center_x(Length::Fill);
+
+    let clock_size: f32 = 260.0;
+    let clock = container(
+        container(time_display)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill),
+    )
+    .width(Length::Fixed(clock_size))
+    .height(Length::Fixed(clock_size))
+    .style(move |_theme: &iced::Theme| iced::widget::container::Style {
+        background: Some(iced::Background::Color(bg_dark)),
+        border: iced::Border {
+            color: border_color,
+            width: 2.0,
+            radius: clock_size.into(),
+        },
+        ..iced::widget::container::Style::default()
+    });
 
     let btn_start_stop = if state.stopwatch_running {
-        button(text("Stop").size(20))
+        container(
+            button(
+                text("Stop")
+                    .size(22)
+                    .color(Color::WHITE)
+                    .align_x(iced::Alignment::Center),
+            )
             .on_press(Message::StopwatchStop)
-            .style(stopwatch_button_style(true))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(android_stop_button_style()),
+        )
+        .width(Length::Fixed(120.0))
+        .height(Length::Fixed(56.0))
     } else {
-        button(text("Start").size(20))
+        container(
+            button(
+                text("Start")
+                    .size(22)
+                    .color(Color::WHITE)
+                    .align_x(iced::Alignment::Center),
+            )
             .on_press(Message::StopwatchStart)
-            .style(stopwatch_button_style(false))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(android_start_button_style()),
+        )
+        .width(Length::Fixed(120.0))
+        .height(Length::Fixed(56.0))
     };
 
     let btn_lap = if state.stopwatch_running {
-        button(text("Lap").size(20))
+        container(
+            button(
+                text("Lap")
+                    .size(20)
+                    .color(Color::WHITE)
+                    .align_x(iced::Alignment::Center),
+            )
             .on_press(Message::StopwatchLap)
-            .style(lap_button_style())
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(android_lap_button_style()),
+        )
+        .width(Length::Fixed(100.0))
+        .height(Length::Fixed(48.0))
     } else {
-        button(text("Lap").size(20)).style(lap_button_style_disabled())
+        container(
+            text("Lap")
+                .size(20)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+        )
+        .width(Length::Fixed(100.0))
+        .height(Length::Fixed(48.0))
     };
 
-    let btn_reset = button(text("Reset").size(20))
-        .on_press(Message::StopwatchReset)
-        .style(reset_button_style());
-
-    let lap_list: Element<Message> = if state.stopwatch_laps.is_empty() {
+    let btn_reset = if !state.stopwatch_running && elapsed_ms > 0 {
         container(
-            text("No laps recorded")
-                .size(14)
-                .color(COLORS.text_secondary),
+            button(
+                text("Reset")
+                    .size(18)
+                    .color(text_color)
+                    .align_x(iced::Alignment::Center),
+            )
+            .on_press(Message::StopwatchReset)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(android_reset_button_style()),
         )
-        .padding(10)
+        .width(Length::Fixed(80.0))
+        .height(Length::Fixed(40.0))
+    } else {
+        container(
+            text("Reset")
+                .size(18)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+        )
+        .width(Length::Fixed(80.0))
+        .height(Length::Fixed(40.0))
+    };
+
+    let btn_save = if !state.stopwatch_laps.is_empty() && !state.stopwatch_running {
+        container(
+            button(
+                text("Save")
+                    .size(18)
+                    .color(text_color)
+                    .align_x(iced::Alignment::Center),
+            )
+            .on_press(Message::SaveTimer(format!(
+                "Timer {}",
+                chrono::Local::now().format("%Y-%m-%d %H:%M")
+            )))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(android_save_button_style()),
+        )
+        .width(Length::Fixed(70.0))
+        .height(Length::Fixed(40.0))
+    } else {
+        container(
+            text("Save")
+                .size(18)
+                .color(text_secondary)
+                .align_x(iced::Alignment::Center),
+        )
+        .width(Length::Fixed(70.0))
+        .height(Length::Fixed(40.0))
+    };
+
+    let btn_load = container(
+        button(
+            text("Load")
+                .size(18)
+                .color(text_color)
+                .align_x(iced::Alignment::Center),
+        )
+        .on_press(Message::ToggleSavedTimers)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .style(android_save_button_style()),
+    )
+    .width(Length::Fixed(70.0))
+    .height(Length::Fixed(40.0));
+
+    let lap_list: Element<Message> = if state.show_saved_timers {
+        if state.timers.is_empty() {
+            container(text("No saved timers").size(14).color(text_secondary))
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x(Length::Fill)
+                .center_y(Length::Fill)
+                .into()
+        } else {
+            let timer_items: Vec<Element<Message>> = state
+                .timers
+                .iter()
+                .map(|timer| {
+                    let lap_count = timer.laps.len();
+                    let total_time = timer.laps.last().copied().unwrap_or(0);
+                    let timer_text = format!(
+                        "{} ({} laps, {})",
+                        timer.title,
+                        lap_count,
+                        format_lap_time(total_time)
+                    );
+                    let timer_id = timer.id.clone();
+                    row![
+                        container(
+                            button(text(timer_text).size(14).color(text_color))
+                                .on_press(Message::LoadTimer(timer_id.clone()))
+                                .style(android_timer_item_button_style(text_color))
+                        )
+                        .width(Length::Fill),
+                        button(text("XLSX").size(12).color(text_secondary))
+                            .on_press(Message::ExportTimerCsv(timer_id.clone(), true))
+                            .style(android_export_button_style()),
+                        button(text("CSV").size(12).color(text_secondary))
+                            .on_press(Message::ExportTimerCsv(timer_id, false))
+                            .style(android_export_button_style())
+                    ]
+                    .spacing(8)
+                    .into()
+                })
+                .collect();
+            scrollable(column(timer_items).spacing(4))
+                .height(Length::Fixed(120.0))
+                .into()
+        }
+    } else if state.stopwatch_laps.is_empty() {
+        container(
+            text("Tap Lap to record times")
+                .size(14)
+                .color(text_secondary),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x(Length::Fill)
+        .center_y(Length::Fill)
         .into()
     } else {
         let lap_items: Vec<Element<Message>> = state
@@ -71,6 +286,7 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
             .iter()
             .enumerate()
             .rev()
+            .take(10)
             .map(|(i, &lap_ms)| {
                 let lap_num = state.stopwatch_laps.len() - i;
                 let prev_lap_ms = if i == 0 {
@@ -80,138 +296,236 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
                 };
                 let lap_diff = lap_ms - prev_lap_ms;
                 let lap_text = format!(
-                    "Lap {:2}: {} (+{})",
+                    "Lap {}   {}   +{}",
                     lap_num,
                     format_lap_time(lap_ms),
                     format_lap_time(lap_diff)
                 );
-                container(text(lap_text).size(14).color(COLORS.text))
+                container(text(lap_text).size(14).color(text_secondary))
                     .padding(iced::Padding {
-                        top: 4.0,
-                        right: 0.0,
-                        bottom: 4.0,
-                        left: 0.0,
+                        top: 6.0,
+                        right: 8.0,
+                        bottom: 6.0,
+                        left: 8.0,
                     })
+                    .width(Length::Fill)
                     .into()
             })
             .collect();
 
-        scrollable(column(lap_items).spacing(2))
-            .height(Length::Fixed(200.0))
+        scrollable(column(lap_items).spacing(0))
+            .height(Length::Fixed(120.0))
             .into()
     };
 
-    let controls = column![btn_start_stop, btn_lap, btn_reset]
-        .spacing(12)
-        .padding(iced::Padding {
-            top: 20.0,
-            right: 0.0,
-            bottom: 0.0,
-            left: 0.0,
+    let laps_container = container(container(lap_list).width(Length::Fill).height(Length::Fill))
+        .width(Length::Fixed(280.0))
+        .height(Length::Fixed(150.0))
+        .style(move |_theme: &iced::Theme| iced::widget::container::Style {
+            background: Some(iced::Background::Color(bg_dark)),
+            border: iced::Border {
+                color: border_color,
+                width: 1.0,
+                radius: 12.0.into(),
+            },
+            ..iced::widget::container::Style::default()
         });
 
-    let content = column![
-        container(time_display).padding(iced::Padding {
-            top: 40.0,
-            right: 0.0,
-            bottom: 10.0,
-            left: 0.0,
-        }),
-        controls,
-        container(lap_list).padding(iced::Padding {
-            top: 20.0,
-            right: 0.0,
-            bottom: 0.0,
-            left: 0.0,
-        }),
-    ]
-    .spacing(10);
+    let buttons_row = row![btn_lap, btn_start_stop,]
+        .spacing(16)
+        .align_y(iced::Alignment::Center);
 
-    let bg = hex_to_color(&state.settings.card_colors.background);
+    let buttons_row2 = row![btn_reset, btn_save, btn_load]
+        .spacing(20)
+        .align_y(iced::Alignment::Center);
+
+    let content = column![
+        container(clock)
+            .padding(iced::Padding {
+                top: 24.0,
+                ..Default::default()
+            })
+            .center_x(Length::Fill),
+        container(buttons_row)
+            .padding(iced::Padding {
+                top: 20.0,
+                ..Default::default()
+            })
+            .center_x(Length::Fill),
+        container(buttons_row2)
+            .padding(iced::Padding {
+                top: 12.0,
+                ..Default::default()
+            })
+            .center_x(Length::Fill),
+        container(laps_container)
+            .padding(iced::Padding {
+                top: 20.0,
+                ..Default::default()
+            })
+            .center_x(Length::Fill),
+    ]
+    .spacing(0);
+
     container(content)
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(card_container_style_colored(bg))
+        .style(move |_theme: &iced::Theme| iced::widget::container::Style {
+            background: Some(iced::Background::Color(bg)),
+            ..iced::widget::container::Style::default()
+        })
         .into()
 }
 
-fn stopwatch_button_style(
-    running: bool,
+fn android_start_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
     move |_theme, status| {
         let bg = match status {
-            iced::widget::button::Status::Hovered if running => Color::from_rgb(0.75, 0.15, 0.15),
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.15, 0.75, 0.25),
-            iced::widget::button::Status::Pressed if running => Color::from_rgb(0.65, 0.10, 0.10),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.10, 0.65, 0.15),
-            _ if running => Color::from_rgb(0.85, 0.20, 0.20),
-            _ => Color::from_rgb(0.20, 0.85, 0.30),
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.22, 0.82, 0.22),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.12, 0.72, 0.12),
+            _ => Color::from_rgb(0.18, 0.78, 0.18),
         };
         iced::widget::button::Style {
             background: Some(iced::Background::Color(bg)),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
-                radius: 8.0.into(),
+                radius: 28.0.into(),
             },
-            shadow: iced::Shadow::default(),
+            shadow: iced::Shadow {
+                offset: Vector::new(0.0, 2.0),
+                blur_radius: 4.0,
+                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
+            },
             text_color: Color::WHITE,
             snap: false,
         }
     }
 }
 
-fn lap_button_style(
+fn android_stop_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
     move |_theme, status| {
         let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.20, 0.60, 0.90),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.15, 0.50, 0.80),
-            _ => Color::from_rgb(0.25, 0.65, 0.95),
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.85, 0.15, 0.15),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.75, 0.10, 0.10),
+            _ => Color::from_rgb(0.90, 0.20, 0.20),
         };
         iced::widget::button::Style {
             background: Some(iced::Background::Color(bg)),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
-                radius: 8.0.into(),
+                radius: 28.0.into(),
             },
-            shadow: iced::Shadow::default(),
+            shadow: iced::Shadow {
+                offset: Vector::new(0.0, 2.0),
+                blur_radius: 4.0,
+                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
+            },
             text_color: Color::WHITE,
             snap: false,
         }
     }
 }
 
-fn lap_button_style_disabled(
-) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, _status| iced::widget::button::Style {
-        background: Some(iced::Background::Color(Color::from_rgb(0.40, 0.40, 0.40))),
-        border: iced::Border {
-            color: Color::TRANSPARENT,
-            width: 0.0,
-            radius: 8.0.into(),
-        },
-        shadow: iced::Shadow::default(),
-        text_color: Color::from_rgb(0.60, 0.60, 0.60),
-        snap: false,
-    }
-}
-
-fn reset_button_style(
+fn android_lap_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
     move |_theme, status| {
         let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.45, 0.45, 0.45),
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.25, 0.25, 0.25),
             iced::widget::button::Status::Pressed => Color::from_rgb(0.35, 0.35, 0.35),
-            _ => Color::from_rgb(0.30, 0.30, 0.30),
+            _ => Color::from_rgb(0.20, 0.20, 0.20),
+        };
+        iced::widget::button::Style {
+            background: Some(iced::Background::Color(bg)),
+            border: iced::Border {
+                color: Color::from_rgb(0.4, 0.4, 0.4),
+                width: 1.0,
+                radius: 24.0.into(),
+            },
+            shadow: iced::Shadow::default(),
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    }
+}
+
+fn android_reset_button_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    move |_theme, status| {
+        let bg = match status {
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.3, 0.3, 0.3),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.4, 0.4, 0.4),
+            _ => Color::from_rgb(0.25, 0.25, 0.25),
+        };
+        iced::widget::button::Style {
+            background: Some(iced::Background::Color(bg)),
+            border: iced::Border {
+                color: Color::from_rgb(0.4, 0.4, 0.4),
+                width: 1.0,
+                radius: 20.0.into(),
+            },
+            shadow: iced::Shadow::default(),
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    }
+}
+
+fn android_save_button_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    move |_theme, status| {
+        let bg = match status {
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.2, 0.4, 0.8),
+            iced::widget::button::Status::Pressed => Color::from_rgb(0.1, 0.3, 0.7),
+            _ => Color::from_rgb(0.15, 0.35, 0.75),
         };
         iced::widget::button::Style {
             background: Some(iced::Background::Color(bg)),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
-                radius: 8.0.into(),
+                radius: 20.0.into(),
+            },
+            shadow: iced::Shadow::default(),
+            text_color: Color::WHITE,
+            snap: false,
+        }
+    }
+}
+
+fn android_timer_item_button_style(
+    text_color: Color,
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    move |_theme, status| {
+        let bg = match status {
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.15, 0.15, 0.15),
+            _ => Color::TRANSPARENT,
+        };
+        iced::widget::button::Style {
+            background: Some(iced::Background::Color(bg)),
+            border: iced::Border::default(),
+            shadow: iced::Shadow::default(),
+            text_color,
+            snap: false,
+        }
+    }
+}
+
+fn android_export_button_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    move |_theme, status| {
+        let bg = match status {
+            iced::widget::button::Status::Hovered => Color::from_rgb(0.3, 0.5, 0.3),
+            _ => Color::from_rgb(0.2, 0.4, 0.2),
+        };
+        iced::widget::button::Style {
+            background: Some(iced::Background::Color(bg)),
+            border: iced::Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 12.0.into(),
             },
             shadow: iced::Shadow::default(),
             text_color: Color::WHITE,

@@ -17,6 +17,7 @@ import (
 	"untamo_server.zzz/models/email"
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/session"
+	"untamo_server.zzz/models/timer"
 	"untamo_server.zzz/models/user"
 	"untamo_server.zzz/utils/tools"
 )
@@ -72,7 +73,6 @@ func (s *SQLiteDB) CreateTables() {
 	//create email table
 	query = "CREATE TABLE IF NOT EXISTS email (ID INTEGER PRIMARY KEY AUTOINCREMENT, Email TEXT, Subject TEXT, Message TEXT, Time INTEGER)"
 	s.connection.Exec(query)
-
 	//index email table
 	query = "CREATE UNIQUE INDEX IF NOT EXISTS email ON email (Email)"
 	s.connection.Exec(query)
@@ -81,6 +81,13 @@ func (s *SQLiteDB) CreateTables() {
 	s.connection.Exec(query)
 	//index webColors table for ID
 	query = "CREATE UNIQUE INDEX IF NOT EXISTS USER ON webColors (USER)"
+	s.connection.Exec(query)
+
+	//create timers table
+	query = "CREATE TABLE IF NOT EXISTS timers (ID TEXT PRIMARY KEY, Title TEXT, Laps TEXT, User TEXT, Created INTEGER)"
+	s.connection.Exec(query)
+	//index timers table by user
+	query = "CREATE INDEX IF NOT EXISTS timer_user ON timers (User)"
 	s.connection.Exec(query)
 }
 
@@ -702,5 +709,64 @@ func (s *SQLiteDB) GetWebColors(userData *user.User) string {
 func (s *SQLiteDB) AddWebColors(userData *user.User, webColors string) bool {
 	query := "INSERT OR REPLACE INTO webColors (USER, WebColors) VALUES (?, ?)"
 	_, err := s.connection.Exec(query, userData.ID.String(), webColors)
+	return err == nil
+}
+
+func (s *SQLiteDB) AddTimer(timer *timer.Timer) (string, error) {
+	if timer.ID == (ulid.ULID{}) {
+		entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+		timer.ID = ulid.MustNew(ulid.Timestamp(time.Now()), ulid.Monotonic(entropy, 0))
+	}
+
+	timerSql := timer.ToSQLForm()
+	query := "INSERT INTO timers (ID, Title, Laps, User, Created) VALUES (?, ?, ?, ?, ?)"
+	result, err := s.connection.Exec(query, timerSql.ID.String(), timerSql.Title, timerSql.Laps, timerSql.User, timerSql.Created)
+	if err != nil {
+		return "", err
+	}
+	_, _ = result.LastInsertId()
+	return timer.ID.String(), nil
+}
+
+func (s *SQLiteDB) GetTimers(userID string) []*timer.Timer {
+	query := "SELECT * FROM timers WHERE user = ?"
+	rows, err := s.connection.Query(query, userID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	timers := []*timer.Timer{}
+	for rows.Next() {
+		timerSql := &timer.TimerSQL{}
+		err := rows.Scan(&timerSql.ID, &timerSql.Title, &timerSql.Laps, &timerSql.User, &timerSql.Created)
+		if err != nil {
+			return nil
+		}
+		t := timerSql.ToTimer()
+		timers = append(timers, t)
+	}
+	return timers
+}
+
+func (s *SQLiteDB) GetTimerByID(id string) *timer.Timer {
+	query := "SELECT * FROM timers WHERE ID = ?"
+	row := s.connection.QueryRow(query, id)
+
+	timerSql := &timer.TimerSQL{}
+	err := row.Scan(&timerSql.ID, &timerSql.Title, &timerSql.Laps, &timerSql.User, &timerSql.Created)
+	if err != nil {
+		return nil
+	}
+	return timerSql.ToTimer()
+}
+
+func (s *SQLiteDB) DeleteTimer(id string, userID string) bool {
+	existingTimer := s.GetTimerByID(id)
+	if existingTimer == nil || existingTimer.User != userID {
+		return false
+	}
+	query := "DELETE FROM timers WHERE ID = ? AND user = ?"
+	_, err := s.connection.Exec(query, id, userID)
 	return err == nil
 }

@@ -28,6 +28,7 @@ rodio = { version = "0.17", features = ["symphonia-all"] }
 machineid-rs = "1.2.4"
 dirs = "5"
 chrono = "0.4"
+rust_xlsxwriter = "0.94"
 aes = "0.8"
 cbc = "0.1"
 getrandom = "0.2"

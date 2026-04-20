@@ -11,7 +11,7 @@ import (
 	"untamo_server.zzz/models/email"
 	"untamo_server.zzz/models/qr"
 	"untamo_server.zzz/models/session"
-
+	"untamo_server.zzz/models/timer"
 	"untamo_server.zzz/models/user"
 )
 
@@ -82,4 +82,10 @@ type Database interface {
 	//misc
 	AddWebColors(user *user.User, webCols string) bool
 	GetWebColors(user *user.User) string
+
+	//Timer
+	AddTimer(timer *timer.Timer) (string, error)
+	GetTimers(userId string) []*timer.Timer
+	GetTimerByID(id string) *timer.Timer
+	DeleteTimer(id string, userId string) bool
 }
