@@ -236,6 +236,7 @@ pub fn reset_snooze(state: &mut AppState, alarm_id: String) -> Task<Message> {
 pub fn trigger_alarm(state: &mut AppState, alarm_id: String) -> Task<Message> {
     if let Some(alarm) = state.alarms.iter().find(|a| a.id == alarm_id) {
         let tune = alarm.tune.clone();
+        let alarm_id_clone = alarm_id.clone();
         state.playing_alarm = Some(alarm.clone());
         state.alarm_anim_start = Some(std::time::Instant::now());
         state.page = AppPage::PlayAlarm;
@@ -262,7 +263,7 @@ pub fn trigger_alarm(state: &mut AppState, alarm_id: String) -> Task<Message> {
                         if resp.status().is_success() {
                             if let Ok(bytes) = resp.bytes().await {
                                 let tmp = std::env::temp_dir()
-                                    .join(format!("untamo_alarm.{}", ext));
+                                    .join(format!("untamo_alarm_{}.{}", alarm_id_clone, ext));
                                 if std::fs::write(&tmp, &bytes).is_ok() {
                                     return Ok(tmp.to_string_lossy().into_owned());
                                 }
@@ -285,7 +286,7 @@ pub fn trigger_alarm(state: &mut AppState, alarm_id: String) -> Task<Message> {
 pub fn play_alarm_audio(state: &mut AppState, path: String) -> Task<Message> {
     let volume = state.settings.volume;
     if let Err(e) = crate::audio::play_audio_file(&path, volume, true) {
-        println!("Alarm audio play error: {}", e);
+        eprintln!("Alarm audio play error: {}", e);
     }
     Task::none()
 }
@@ -494,6 +495,7 @@ pub fn confirm_delete(state: &mut AppState) -> Task<Message> {
     match pending {
         Some(PendingDelete::Alarm(id)) => {
             state.alarms.retain(|a| a.id != id);
+            state.toggle_anims.remove(&id);
             add_notification(state, "Alarm Deleted", "Alarm removed successfully".to_string());
             let server = state.server_address.clone();
             let token = state.ws.token.clone();
@@ -586,7 +588,7 @@ pub fn stop_preview_tune(state: &mut AppState) -> Task<Message> {
 pub fn play_preview_audio(state: &mut AppState, path: String) -> Task<Message> {
     let volume = state.settings.volume;
     if let Err(e) = crate::audio::play_audio_file(&path, volume, false) {
-        println!("Preview play error: {}", e);
+        eprintln!("Preview play error: {}", e);
         state.add_alarm.previewing_tune = None;
     }
     state.add_alarm.preview_started = true;
@@ -596,7 +598,7 @@ pub fn play_preview_audio(state: &mut AppState, path: String) -> Task<Message> {
 pub fn play_audio(state: &mut AppState, path: String) -> Task<Message> {
     let volume = state.settings.volume;
     if let Err(e) = crate::audio::play_audio_file(&path, volume, false) {
-        println!("Audio play error: {}", e);
+        eprintln!("Audio play error: {}", e);
     }
     Task::none()
 }

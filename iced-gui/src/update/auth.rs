@@ -21,15 +21,13 @@ pub(super) fn update_register_validity(state: &mut AppState) {
 }
 
 pub(super) fn capture_thread(_result_tx: std::sync::mpsc::Sender<Result<Option<String>, String>>) {
-    println!("capture_thread: starting");
     CANCEL.store(false, Ordering::SeqCst);
     FRAME_VERSION.store(0, Ordering::SeqCst);
 
     let mut dev = match v4l::Device::new(0) {
         Ok(d) => d,
         Err(e) => {
-            let err = format!("Failed to open camera: {}", e);
-            eprintln!("{}", err);
+            eprintln!("Failed to open camera: {}", e);
             return;
         }
     };
@@ -39,25 +37,19 @@ pub(super) fn capture_thread(_result_tx: std::sync::mpsc::Sender<Result<Option<S
     let target_height = 480u32;
     let new_fmt = v4l::Format::new(target_width, target_height, fourcc);
 
-    if let Ok(set_fmt) = dev.set_format(&new_fmt) {
-        println!("capture_thread: set format: {}x{} fourcc: {:?}", set_fmt.width, set_fmt.height, set_fmt.fourcc);
-    } else {
-        println!("capture_thread: failed to set format, using current");
+    if dev.set_format(&new_fmt).is_err() {
     }
 
     let mut stream = match v4l::io::mmap::Stream::with_buffers(&mut dev, v4l::buffer::Type::VideoCapture, 4) {
         Ok(s) => s,
         Err(e) => {
-            let err = format!("Failed to create stream: {}", e);
-            eprintln!("{}", err);
+            eprintln!("Failed to create stream: {}", e);
             return;
         }
     };
-    println!("capture_thread: stream created");
 
     for attempt in 0.. {
         if CANCEL.load(Ordering::SeqCst) {
-            println!("capture_thread: cancelled");
             return;
         }
 
@@ -345,12 +337,10 @@ pub fn qr_login_result(state: &mut AppState, result: Result<LoginResponse, Strin
 }
 
 pub fn close_qr_scanner(state: &mut AppState) -> Task<Message> {
-    println!("DEBUG CloseQrScanner: setting CANCEL=true, show_qr_scanner=false");
     CANCEL.store(true, Ordering::SeqCst);
     state.show_qr_scanner = false;
     state.qr_error = None;
     state.qr_token_input = String::new();
-    println!("DEBUG CloseQrScanner: done, qr_scanning={}", state.qr_scanning);
     Task::none()
 }
 
@@ -362,7 +352,10 @@ pub fn start_scanner(state: &mut AppState) -> Task<Message> {
     state.qr_frame_data = None;
     FRAME_VERSION.store(0, Ordering::SeqCst);
     FRAME_READY.store(false, Ordering::SeqCst);
+    CANCEL.store(false, Ordering::SeqCst);
     let (result_tx, result_rx) = std::sync::mpsc::channel();
+    let cancel = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let cancel_clone = cancel.clone();
     std::thread::spawn(move || {
         capture_thread(result_tx);
     });
@@ -370,9 +363,10 @@ pub fn start_scanner(state: &mut AppState) -> Task<Message> {
         while let Ok(result) = result_rx.recv() {
             if let Err(e) = result {
                 eprintln!("capture_thread error: {}", e);
-                CANCEL.store(true, Ordering::SeqCst);
+                cancel_clone.store(true, Ordering::SeqCst);
             }
         }
+        CANCEL.store(true, Ordering::SeqCst);
     });
     Task::none()
 }
@@ -397,7 +391,6 @@ pub fn qr_frame_refresh(state: &mut AppState, frame_data: Option<(u32, u32, Vec<
 }
 
 pub fn qr_scanned(state: &mut AppState, token_opt: Option<String>) -> Task<Message> {
-    println!("DEBUG QrScanned: token_opt.is_some={}", token_opt.is_some());
     if let Some(token) = token_opt {
         state.qr_scanning = false;
         let server = state.server_address.clone();
@@ -573,7 +566,7 @@ pub fn ws_message_received(state: &mut AppState, result: Result<crate::websocket
             handle_ws_message(state, msg);
         }
         Err(e) => {
-            println!("WS error: {}", e);
+            eprintln!("WS error: {}", e);
             state.ws.connected = false;
         }
     }

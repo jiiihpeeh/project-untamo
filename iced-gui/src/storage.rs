@@ -26,30 +26,21 @@ fn get_machine_id() -> String {
 }
 
 fn derive_key(machine_id: &str) -> [u8; 32] {
-    use std::collections::hash_map::DefaultHasher;
-    use std::hash::{Hash, Hasher};
-
-    let mut hasher = DefaultHasher::new();
-    machine_id.hash(&mut hasher);
-    let h1 = hasher.finish();
-
-    let mut hasher = DefaultHasher::new();
-    format!("{:016x}", h1).hash(&mut hasher);
-    let h2 = hasher.finish();
-
-    let mut hasher = DefaultHasher::new();
-    format!("{:016x}{:016x}", h1, h2).hash(&mut hasher);
-    let h3 = hasher.finish();
-
-    let mut hasher = DefaultHasher::new();
-    format!("{:016x}{:016x}{:016x}", h1, h2, h3).hash(&mut hasher);
-    let h4 = hasher.finish();
+    use sha2::{Digest, Sha256};
 
     let mut key = [0u8; 32];
-    key[..8].copy_from_slice(&h1.to_be_bytes());
-    key[8..16].copy_from_slice(&h2.to_be_bytes());
-    key[16..24].copy_from_slice(&h3.to_be_bytes());
-    key[24..32].copy_from_slice(&h4.to_be_bytes());
+    let mut full_hash = [0u8; 64];
+
+    let mut combined = machine_id.as_bytes().to_vec();
+    for i in 0..4 {
+        let mut hasher = Sha256::new();
+        hasher.update(&combined);
+        let result = hasher.finalize();
+        full_hash[i * 16..(i + 1) * 16].copy_from_slice(&result[..16]);
+        combined.extend_from_slice(&result);
+    }
+
+    key.copy_from_slice(&full_hash[..32]);
     key
 }
 
@@ -93,7 +84,9 @@ pub struct AppSettings {
     pub desktop_notifications: bool,
 }
 
-fn default_true() -> bool { true }
+fn default_true() -> bool {
+    true
+}
 
 impl Default for AppSettings {
     fn default() -> Self {

@@ -18,7 +18,6 @@ use update::update_app;
 use views::view;
 
 pub fn main() -> iced::Result {
-    println!("Server: {}", constants::DEFAULT_SERVER);
     audio::start_audio_thread();
     tray::init_tray();
 

@@ -52,7 +52,9 @@ pub(super) fn save_settings_from_state(state: &AppState) {
         notifications_enabled: state.settings.notifications_enabled,
         desktop_notifications: state.settings.desktop_notifications,
     };
-    let _ = crate::storage::save_settings(&s);
+    if let Err(e) = crate::storage::save_settings(&s) {
+        eprintln!("Failed to save settings: {}", e);
+    }
 }
 
 pub(super) fn handle_ws_message(state: &mut AppState, msg: WsMsg) {

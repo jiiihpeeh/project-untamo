@@ -61,7 +61,7 @@ impl Tray for UntamoTray {
 
 pub fn init_tray() {
     let (tx, rx) = mpsc::channel();
-    let _ = RX.set(Mutex::new(rx));
+    let _ = RX.get_or_init(|| Mutex::new(rx));
     let service = TrayService::new(UntamoTray { tx });
     service.spawn();
 }
