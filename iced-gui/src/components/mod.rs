@@ -1,8 +1,8 @@
 pub mod about;
-pub mod toggle;
 pub mod add_alarm;
 pub mod alarm_pop;
 pub mod alarms;
+pub mod buttons;
 pub mod colors;
 pub mod confirm_dialog;
 pub mod countdown;
@@ -17,12 +17,13 @@ pub mod qr_scanner;
 pub mod register;
 pub mod settings;
 pub mod stopwatch;
+pub mod toggle;
 pub mod user_menu;
 pub mod welcome;
 
 pub use about::about_view;
-pub use alarm_pop::alarm_pop_view;
 pub use add_alarm::add_alarm_dialog;
+pub use alarm_pop::alarm_pop_view;
 pub use alarms::alarms_view;
 pub use colors::colors_dialog;
 pub use confirm_dialog::confirm_dialog;

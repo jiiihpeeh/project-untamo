@@ -1,9 +1,61 @@
+use crate::components::buttons::{
+    lap_button_style, reset_button_style, save_button_style, start_button_style, stop_button_style,
+};
 use crate::messages::Message;
 use crate::state::AppState;
 use crate::theme::hex_to_color;
 use chrono;
 use iced::widget::{button, column, container, row, scrollable, text};
 use iced::{Color, Element, Length, Vector};
+
+fn centered_button_content<'a>(label: &'a str, size: f32) -> Element<'a, Message> {
+    container(
+        text(label)
+            .size(size)
+            .color(Color::WHITE)
+            .align_x(iced::Alignment::Center)
+            .align_y(iced::Alignment::Center),
+    )
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .center_x(Length::Fill)
+    .center_y(Length::Fill)
+    .into()
+}
+
+fn action_btn<'a>(
+    label: &'a str,
+    on_press: Message,
+    style: impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style + 'a,
+) -> Element<'a, Message> {
+    container(
+        button(centered_button_content(label, 22.0))
+            .on_press(on_press)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(style),
+    )
+    .width(Length::Fixed(120.0))
+    .height(Length::Fixed(56.0))
+    .into()
+}
+
+fn small_btn<'a>(
+    label: &'a str,
+    on_press: Message,
+    style: impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style + 'a,
+) -> Element<'a, Message> {
+    container(
+        button(centered_button_content(label, 18.0))
+            .on_press(on_press)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(style),
+    )
+    .width(Length::Fixed(80.0))
+    .height(Length::Fixed(40.0))
+    .into()
+}
 
 fn format_lap_time(elapsed_ms: u64) -> String {
     let total_seconds = elapsed_ms / 1000;
@@ -98,48 +150,8 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     });
 
     let (buttons_row, buttons_row2) = if state.stopwatch_running {
-        let start_lap = container(
-            button(
-                container(
-                    text("Lap")
-                        .size(22)
-                        .color(Color::WHITE)
-                        .align_x(iced::Alignment::Center)
-                        .align_y(iced::Alignment::Center),
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .center_x(Length::Fill)
-                .center_y(Length::Fill),
-            )
-            .on_press(Message::StopwatchLap)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(android_lap_button_style()),
-        )
-        .width(Length::Fixed(120.0))
-        .height(Length::Fixed(56.0));
-        let stop = container(
-            button(
-                container(
-                    text("Stop")
-                        .size(22)
-                        .color(Color::WHITE)
-                        .align_x(iced::Alignment::Center)
-                        .align_y(iced::Alignment::Center),
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .center_x(Length::Fill)
-                .center_y(Length::Fill),
-            )
-            .on_press(Message::StopwatchStop)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(android_stop_button_style()),
-        )
-        .width(Length::Fixed(120.0))
-        .height(Length::Fixed(56.0));
+        let start_lap = action_btn("Lap", Message::StopwatchLap, android_lap_button_style());
+        let stop = action_btn("Stop", Message::StopwatchStop, android_stop_button_style());
         (
             row![start_lap, stop]
                 .spacing(16)
@@ -147,53 +159,22 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
             row![].spacing(20).align_y(iced::Alignment::Center),
         )
     } else {
-        let start_lap = container(
-            button(
-                container(
-                    text("Start")
-                        .size(22)
-                        .color(Color::WHITE)
-                        .align_x(iced::Alignment::Center)
-                        .align_y(iced::Alignment::Center),
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .center_x(Length::Fill)
-                .center_y(Length::Fill),
-            )
-            .on_press(Message::StopwatchStart)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(android_start_button_style()),
-        )
-        .width(Length::Fixed(120.0))
-        .height(Length::Fixed(56.0));
+        let start_lap = action_btn(
+            "Start",
+            Message::StopwatchStart,
+            android_start_button_style(),
+        );
         let reset = if elapsed_ms > 0 || !state.stopwatch_laps.is_empty() {
-            container(
-                button(
-                    container(
-                        text("Reset")
-                            .size(18)
-                            .color(Color::WHITE)
-                            .align_x(iced::Alignment::Center)
-                            .align_y(iced::Alignment::Center),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill),
-                )
-                .on_press(Message::StopwatchReset)
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .style(android_reset_button_style()),
+            small_btn(
+                "Reset",
+                Message::StopwatchReset,
+                android_reset_button_style(),
             )
-            .width(Length::Fixed(80.0))
-            .height(Length::Fixed(40.0))
         } else {
             container(text(""))
                 .width(Length::Fixed(80.0))
                 .height(Length::Fixed(40.0))
+                .into()
         };
         (
             row![start_lap].spacing(16).align_y(iced::Alignment::Center),
@@ -650,120 +631,27 @@ pub fn stopwatch_view<'a>(state: &'a AppState) -> Element<'a, Message> {
 
 fn android_start_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.22, 0.82, 0.22),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.12, 0.72, 0.12),
-            _ => Color::from_rgb(0.18, 0.78, 0.18),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 28.0.into(),
-            },
-            shadow: iced::Shadow {
-                offset: Vector::new(0.0, 2.0),
-                blur_radius: 4.0,
-                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
-            },
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
+    start_button_style()
 }
 
 fn android_stop_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.85, 0.15, 0.15),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.75, 0.10, 0.10),
-            _ => Color::from_rgb(0.90, 0.20, 0.20),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 28.0.into(),
-            },
-            shadow: iced::Shadow {
-                offset: Vector::new(0.0, 2.0),
-                blur_radius: 4.0,
-                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
-            },
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
+    stop_button_style()
 }
 
 fn android_lap_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.25, 0.25, 0.25),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.35, 0.35, 0.35),
-            _ => Color::from_rgb(0.20, 0.20, 0.20),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::from_rgb(0.4, 0.4, 0.4),
-                width: 1.0,
-                radius: 24.0.into(),
-            },
-            shadow: iced::Shadow::default(),
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
+    lap_button_style()
 }
 
 fn android_reset_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.3, 0.3, 0.3),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.4, 0.4, 0.4),
-            _ => Color::from_rgb(0.25, 0.25, 0.25),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::from_rgb(0.4, 0.4, 0.4),
-                width: 1.0,
-                radius: 20.0.into(),
-            },
-            shadow: iced::Shadow::default(),
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
+    reset_button_style()
 }
 
 fn android_save_button_style(
 ) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.2, 0.4, 0.8),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.1, 0.3, 0.7),
-            _ => Color::from_rgb(0.15, 0.35, 0.75),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 20.0.into(),
-            },
-            shadow: iced::Shadow::default(),
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
+    save_button_style()
 }
 
 fn android_timer_item_button_style(

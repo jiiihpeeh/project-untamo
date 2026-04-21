@@ -1,8 +1,69 @@
+use crate::components::buttons::{
+    adjuster_button_style, centered_button_content, reset_button_style, start_button_style,
+    stop_button_style,
+};
 use crate::messages::Message;
 use crate::state::AppState;
 use crate::theme::hex_to_color;
 use iced::widget::{button, column, container, row, text};
 use iced::{Color, Element, Length, Vector};
+
+fn spinbox_col(
+    value: u64,
+    on_increment: Message,
+    on_decrement: Message,
+    max_val: u64,
+) -> Element<'static, Message> {
+    column![
+        container(
+            button(
+                container(
+                    text("+")
+                        .size(20)
+                        .align_x(iced::Alignment::Center)
+                        .align_y(iced::Alignment::Center),
+                )
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x(Length::Fill)
+                .center_y(Length::Fill),
+            )
+            .on_press(on_increment)
+            .width(Length::Fill)
+            .height(Length::Fixed(28.0))
+            .style(android_adjuster_style())
+        ),
+        container(
+            text(format!("{:02}", value))
+                .size(22)
+                .color(Color::from_rgb(0.6, 0.6, 0.6))
+                .align_x(iced::Alignment::Center),
+        )
+        .width(Length::Fill)
+        .center_x(Length::Fill),
+        container(
+            button(
+                container(
+                    text("-")
+                        .size(20)
+                        .align_x(iced::Alignment::Center)
+                        .align_y(iced::Alignment::Center),
+                )
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x(Length::Fill)
+                .center_y(Length::Fill),
+            )
+            .on_press(on_decrement)
+            .width(Length::Fill)
+            .height(Length::Fixed(28.0))
+            .style(android_adjuster_style())
+        ),
+    ]
+    .width(Length::Fixed(50.0))
+    .spacing(4)
+    .into()
+}
 
 pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     let bg = hex_to_color(&state.settings.card_colors.background);
@@ -92,152 +153,24 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
         let minutes = (remaining_secs % 3600) / 60;
         let seconds = remaining_secs % 60;
 
-        let hour_col = column![
-            container(
-                button(
-                    container(
-                        text("+")
-                            .size(20)
-                            .align_x(iced::Alignment::Center)
-                            .align_y(iced::Alignment::Center),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill),
-                )
-                .on_press(Message::CountdownSetHours((hours as u8 + 1).min(99)))
-                .width(Length::Fill)
-                .height(Length::Fixed(28.0))
-                .style(android_adjuster_style())
-            ),
-            container(
-                text(format!("{:02}", hours))
-                    .size(22)
-                    .color(text_secondary)
-                    .align_x(iced::Alignment::Center),
-            )
-            .width(Length::Fill)
-            .center_x(Length::Fill),
-            container(
-                button(
-                    container(
-                        text("-")
-                            .size(20)
-                            .align_x(iced::Alignment::Center)
-                            .align_y(iced::Alignment::Center),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill),
-                )
-                .on_press(Message::CountdownSetHours(hours.saturating_sub(1) as u8))
-                .width(Length::Fill)
-                .height(Length::Fixed(28.0))
-                .style(android_adjuster_style())
-            ),
-        ]
-        .width(Length::Fixed(50.0))
-        .spacing(4);
-
-        let min_col = column![
-            container(
-                button(
-                    container(
-                        text("+")
-                            .size(20)
-                            .align_x(iced::Alignment::Center)
-                            .align_y(iced::Alignment::Center),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill),
-                )
-                .on_press(Message::CountdownSetMinutes(((minutes as u8 + 1) % 60)))
-                .width(Length::Fill)
-                .height(Length::Fixed(28.0))
-                .style(android_adjuster_style())
-            ),
-            container(
-                text(format!("{:02}", minutes))
-                    .size(22)
-                    .color(text_secondary)
-                    .align_x(iced::Alignment::Center),
-            )
-            .width(Length::Fill)
-            .center_x(Length::Fill),
-            container(
-                button(
-                    container(
-                        text("-")
-                            .size(20)
-                            .align_x(iced::Alignment::Center)
-                            .align_y(iced::Alignment::Center),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill),
-                )
-                .on_press(Message::CountdownSetMinutes(minutes.saturating_sub(1) as u8))
-                .width(Length::Fill)
-                .height(Length::Fixed(28.0))
-                .style(android_adjuster_style())
-            ),
-        ]
-        .width(Length::Fixed(50.0))
-        .spacing(4);
-
-        let sec_col = column![
-            container(
-                button(
-                    container(
-                        text("+")
-                            .size(20)
-                            .align_x(iced::Alignment::Center)
-                            .align_y(iced::Alignment::Center),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill),
-                )
-                .on_press(Message::CountdownSetSeconds(((seconds as u8 + 1) % 60)))
-                .width(Length::Fill)
-                .height(Length::Fixed(28.0))
-                .style(android_adjuster_style())
-            ),
-            container(
-                text(format!("{:02}", seconds))
-                    .size(22)
-                    .color(text_secondary)
-                    .align_x(iced::Alignment::Center),
-            )
-            .width(Length::Fill)
-            .center_x(Length::Fill),
-            container(
-                button(
-                    container(
-                        text("-")
-                            .size(20)
-                            .align_x(iced::Alignment::Center)
-                            .align_y(iced::Alignment::Center),
-                    )
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .center_x(Length::Fill)
-                    .center_y(Length::Fill),
-                )
-                .on_press(Message::CountdownSetSeconds(seconds.saturating_sub(1) as u8))
-                .width(Length::Fill)
-                .height(Length::Fixed(28.0))
-                .style(android_adjuster_style())
-            ),
-        ]
-        .width(Length::Fixed(50.0))
-        .spacing(4);
+        let hour_col = spinbox_col(
+            hours,
+            Message::CountdownSetHours((hours as u8 + 1).min(99)),
+            Message::CountdownSetHours(hours.saturating_sub(1) as u8),
+            99,
+        );
+        let min_col = spinbox_col(
+            minutes,
+            Message::CountdownSetMinutes(((minutes as u8 + 1) % 60)),
+            Message::CountdownSetMinutes(minutes.saturating_sub(1) as u8),
+            59,
+        );
+        let sec_col = spinbox_col(
+            seconds,
+            Message::CountdownSetSeconds(((seconds as u8 + 1) % 60)),
+            Message::CountdownSetSeconds(seconds.saturating_sub(1) as u8),
+            59,
+        );
 
         container(
             column![row![
@@ -371,105 +304,29 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
         .into()
 }
 
+fn android_start_button_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    start_button_style()
+}
+
+fn android_stop_button_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    stop_button_style()
+}
+
+fn android_adjuster_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    adjuster_button_style()
+}
+
+fn android_reset_button_style(
+) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
+    reset_button_style()
+}
+
 fn format_countdown_time(total_secs: u64) -> String {
     let hours = total_secs / 3600;
     let minutes = (total_secs % 3600) / 60;
     let seconds = total_secs % 60;
     format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
-}
-
-fn android_start_button_style(
-) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.22, 0.82, 0.22),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.12, 0.72, 0.12),
-            _ => Color::from_rgb(0.18, 0.78, 0.18),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 28.0.into(),
-            },
-            shadow: iced::Shadow {
-                offset: Vector::new(0.0, 2.0),
-                blur_radius: 4.0,
-                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
-            },
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
-}
-
-fn android_stop_button_style(
-) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.85, 0.15, 0.15),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.75, 0.10, 0.10),
-            _ => Color::from_rgb(0.90, 0.20, 0.20),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 28.0.into(),
-            },
-            shadow: iced::Shadow {
-                offset: Vector::new(0.0, 2.0),
-                blur_radius: 4.0,
-                color: Color::from_rgba(0.0, 0.0, 0.0, 0.3),
-            },
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
-}
-
-fn android_adjuster_style(
-) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.3, 0.3, 0.3),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.35, 0.35, 0.35),
-            _ => Color::from_rgb(0.22, 0.22, 0.22),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::from_rgb(0.35, 0.35, 0.35),
-                width: 1.0,
-                radius: 8.0.into(),
-            },
-            shadow: iced::Shadow::default(),
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
-}
-
-fn android_reset_button_style(
-) -> impl Fn(&iced::Theme, iced::widget::button::Status) -> iced::widget::button::Style {
-    move |_theme, status| {
-        let bg = match status {
-            iced::widget::button::Status::Hovered => Color::from_rgb(0.3, 0.3, 0.3),
-            iced::widget::button::Status::Pressed => Color::from_rgb(0.4, 0.4, 0.4),
-            _ => Color::from_rgb(0.25, 0.25, 0.25),
-        };
-        iced::widget::button::Style {
-            background: Some(iced::Background::Color(bg)),
-            border: iced::Border {
-                color: Color::from_rgb(0.4, 0.4, 0.4),
-                width: 1.0,
-                radius: 20.0.into(),
-            },
-            shadow: iced::Shadow::default(),
-            text_color: Color::WHITE,
-            snap: false,
-        }
-    }
 }
