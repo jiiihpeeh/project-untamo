@@ -85,7 +85,7 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
         ..iced::widget::container::Style::default()
     });
 
-    let time_pickers: Element<Message> = if state.countdown_running || is_finished {
+    let time_pickers: Element<Message> = if state.countdown_running {
         container(text("")).into()
     } else {
         let hours = remaining_secs / 3600;
@@ -94,118 +94,193 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
 
         let hour_col = column![
             container(
-                button(text("+").size(24).align_x(iced::Alignment::Center))
-                    .on_press(Message::CountdownSetHours((hours as u8 + 1).min(99)))
+                button(
+                    container(
+                        text("+")
+                            .size(20)
+                            .align_x(iced::Alignment::Center)
+                            .align_y(iced::Alignment::Center),
+                    )
                     .width(Length::Fill)
-                    .height(Length::Fixed(36.0))
-                    .style(android_adjuster_style())
+                    .height(Length::Fill)
+                    .center_x(Length::Fill)
+                    .center_y(Length::Fill),
+                )
+                .on_press(Message::CountdownSetHours((hours as u8 + 1).min(99)))
+                .width(Length::Fill)
+                .height(Length::Fixed(28.0))
+                .style(android_adjuster_style())
             ),
-            text(format!("{:02}", hours))
-                .size(26)
-                .color(text_secondary)
-                .align_x(iced::Alignment::Center),
             container(
-                button(text("-").size(24).align_x(iced::Alignment::Center))
-                    .on_press(Message::CountdownSetHours(hours.saturating_sub(1) as u8))
+                text(format!("{:02}", hours))
+                    .size(22)
+                    .color(text_secondary)
+                    .align_x(iced::Alignment::Center),
+            )
+            .width(Length::Fixed(50.0)),
+            container(
+                button(
+                    container(
+                        text("-")
+                            .size(20)
+                            .align_x(iced::Alignment::Center)
+                            .align_y(iced::Alignment::Center),
+                    )
                     .width(Length::Fill)
-                    .height(Length::Fixed(36.0))
-                    .style(android_adjuster_style())
+                    .height(Length::Fill)
+                    .center_x(Length::Fill)
+                    .center_y(Length::Fill),
+                )
+                .on_press(Message::CountdownSetHours(hours.saturating_sub(1) as u8))
+                .width(Length::Fill)
+                .height(Length::Fixed(28.0))
+                .style(android_adjuster_style())
             ),
         ]
+        .width(Length::Fixed(50.0))
         .spacing(4);
 
         let min_col = column![
             container(
-                button(text("+").size(24).align_x(iced::Alignment::Center))
-                    .on_press(Message::CountdownSetMinutes(((minutes as u8 + 1) % 60)))
+                button(
+                    container(
+                        text("+")
+                            .size(20)
+                            .align_x(iced::Alignment::Center)
+                            .align_y(iced::Alignment::Center),
+                    )
                     .width(Length::Fill)
-                    .height(Length::Fixed(36.0))
-                    .style(android_adjuster_style())
+                    .height(Length::Fill)
+                    .center_x(Length::Fill)
+                    .center_y(Length::Fill),
+                )
+                .on_press(Message::CountdownSetMinutes(((minutes as u8 + 1) % 60)))
+                .width(Length::Fill)
+                .height(Length::Fixed(28.0))
+                .style(android_adjuster_style())
             ),
-            text(format!("{:02}", minutes))
-                .size(26)
-                .color(text_secondary)
-                .align_x(iced::Alignment::Center),
             container(
-                button(text("-").size(24).align_x(iced::Alignment::Center))
-                    .on_press(Message::CountdownSetMinutes(minutes.saturating_sub(1) as u8))
+                text(format!("{:02}", minutes))
+                    .size(22)
+                    .color(text_secondary)
+                    .align_x(iced::Alignment::Center),
+            )
+            .width(Length::Fixed(50.0)),
+            container(
+                button(
+                    container(
+                        text("-")
+                            .size(20)
+                            .align_x(iced::Alignment::Center)
+                            .align_y(iced::Alignment::Center),
+                    )
                     .width(Length::Fill)
-                    .height(Length::Fixed(36.0))
-                    .style(android_adjuster_style())
+                    .height(Length::Fill)
+                    .center_x(Length::Fill)
+                    .center_y(Length::Fill),
+                )
+                .on_press(Message::CountdownSetMinutes(minutes.saturating_sub(1) as u8))
+                .width(Length::Fill)
+                .height(Length::Fixed(28.0))
+                .style(android_adjuster_style())
             ),
         ]
+        .width(Length::Fixed(50.0))
         .spacing(4);
 
         let sec_col = column![
             container(
-                button(text("+").size(24).align_x(iced::Alignment::Center))
-                    .on_press(Message::CountdownSetSeconds(((seconds as u8 + 1) % 60)))
+                button(
+                    container(
+                        text("+")
+                            .size(20)
+                            .align_x(iced::Alignment::Center)
+                            .align_y(iced::Alignment::Center),
+                    )
                     .width(Length::Fill)
-                    .height(Length::Fixed(36.0))
-                    .style(android_adjuster_style())
+                    .height(Length::Fill)
+                    .center_x(Length::Fill)
+                    .center_y(Length::Fill),
+                )
+                .on_press(Message::CountdownSetSeconds(((seconds as u8 + 1) % 60)))
+                .width(Length::Fill)
+                .height(Length::Fixed(28.0))
+                .style(android_adjuster_style())
             ),
-            text(format!("{:02}", seconds))
-                .size(26)
-                .color(text_secondary)
-                .align_x(iced::Alignment::Center),
             container(
-                button(text("-").size(24).align_x(iced::Alignment::Center))
-                    .on_press(Message::CountdownSetSeconds(seconds.saturating_sub(1) as u8))
+                text(format!("{:02}", seconds))
+                    .size(22)
+                    .color(text_secondary)
+                    .align_x(iced::Alignment::Center),
+            )
+            .width(Length::Fixed(50.0)),
+            container(
+                button(
+                    container(
+                        text("-")
+                            .size(20)
+                            .align_x(iced::Alignment::Center)
+                            .align_y(iced::Alignment::Center),
+                    )
                     .width(Length::Fill)
-                    .height(Length::Fixed(36.0))
-                    .style(android_adjuster_style())
+                    .height(Length::Fill)
+                    .center_x(Length::Fill)
+                    .center_y(Length::Fill),
+                )
+                .on_press(Message::CountdownSetSeconds(seconds.saturating_sub(1) as u8))
+                .width(Length::Fill)
+                .height(Length::Fixed(28.0))
+                .style(android_adjuster_style())
             ),
         ]
-        .spacing(4);
-
-        let labels = column![
-            text("hours")
-                .size(10)
-                .color(text_secondary)
-                .align_x(iced::Alignment::Center),
-            text("").size(16),
-            text("min")
-                .size(10)
-                .color(text_secondary)
-                .align_x(iced::Alignment::Center),
-            text("").size(16),
-            text("sec")
-                .size(10)
-                .color(text_secondary)
-                .align_x(iced::Alignment::Center),
-        ]
+        .width(Length::Fixed(50.0))
         .spacing(4);
 
         container(
-            column![
-                row![
-                    hour_col,
-                    text(":").size(28).color(text_secondary),
-                    min_col,
-                    text(":").size(28).color(text_secondary),
-                    sec_col
-                ]
-                .spacing(8)
-                .align_y(iced::Alignment::Center),
-                labels,
+            column![row![
+                hour_col,
+                text(":").size(22).color(text_secondary),
+                min_col,
+                text(":").size(22).color(text_secondary),
+                sec_col
             ]
+            .spacing(4)
+            .align_y(iced::Alignment::Center),]
             .spacing(0),
         )
         .padding(iced::Padding {
             top: 16.0,
-            ..Default::default()
+            left: 20.0,
+            right: 20.0,
+            bottom: 8.0,
         })
         .center_x(Length::Fill)
+        .style(move |_theme: &iced::Theme| iced::widget::container::Style {
+            background: Some(iced::Background::Color(bg_dark)),
+            border: iced::Border {
+                color: border_color,
+                width: 1.0,
+                radius: 12.0.into(),
+            },
+            ..iced::widget::container::Style::default()
+        })
         .into()
     };
 
     let btn_start_stop = if state.countdown_running {
         container(
             button(
-                text("Stop")
-                    .size(22)
-                    .color(Color::WHITE)
-                    .align_x(iced::Alignment::Center),
+                container(
+                    text("Stop")
+                        .size(22)
+                        .color(Color::WHITE)
+                        .align_x(iced::Alignment::Center)
+                        .align_y(iced::Alignment::Center),
+                )
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x(Length::Fill)
+                .center_y(Length::Fill),
             )
             .on_press(Message::CountdownStop)
             .width(Length::Fill)
@@ -217,10 +292,17 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
     } else {
         container(
             button(
-                text("Start")
-                    .size(22)
-                    .color(Color::WHITE)
-                    .align_x(iced::Alignment::Center),
+                container(
+                    text("Start")
+                        .size(22)
+                        .color(Color::WHITE)
+                        .align_x(iced::Alignment::Center)
+                        .align_y(iced::Alignment::Center),
+                )
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .center_x(Length::Fill)
+                .center_y(Length::Fill),
             )
             .on_press(Message::CountdownStart)
             .width(Length::Fill)
@@ -233,10 +315,17 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
 
     let btn_reset = container(
         button(
-            text("Reset")
-                .size(18)
-                .color(text_color)
-                .align_x(iced::Alignment::Center),
+            container(
+                text("Reset")
+                    .size(18)
+                    .color(text_color)
+                    .align_x(iced::Alignment::Center)
+                    .align_y(iced::Alignment::Center),
+            )
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill),
         )
         .on_press(Message::CountdownReset)
         .width(Length::Fill)

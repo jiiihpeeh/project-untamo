@@ -162,8 +162,9 @@ pub enum Message {
     TimersReceived(Vec<crate::state::Timer>),
     SaveTimer(String),
     LoadTimer(String),
+    ContinueTimer(String),
     TimerSaveResult(Result<(), String>),
     TimerDeleteResult(Result<(), String>),
-    ToggleSavedTimers,
+    SetTimerTab(usize),
     ExportTimerCsv(String, bool),
 }

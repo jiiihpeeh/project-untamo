@@ -767,8 +767,10 @@ pub struct AppState {
     pub countdown_duration_secs: u64,
     /// Saved timers from the server
     pub timers: Vec<Timer>,
-    /// Whether to show the saved timers list
-    pub show_saved_timers: bool,
+    /// Timer view tab (0 = current, 1 = old session, 2 = saved)
+    pub timer_tab: usize,
+    /// Selected timer ID for continue operation
+    pub selected_timer_id: Option<String>,
 }
 
 impl AppState {
@@ -870,7 +872,8 @@ impl AppState {
             countdown_target: None,
             countdown_duration_secs: 300,
             timers: Vec::new(),
-            show_saved_timers: false,
+            timer_tab: 0,
+            selected_timer_id: None,
         }
     }
 }

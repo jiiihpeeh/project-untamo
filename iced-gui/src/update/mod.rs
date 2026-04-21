@@ -181,9 +181,10 @@ pub fn update_app(state: &mut AppState, message: Message) -> Task<Message> {
         Message::TimersReceived(timers) => stopwatch::timers_received(state, timers),
         Message::SaveTimer(title) => stopwatch::save_timer(state, title),
         Message::LoadTimer(id) => stopwatch::load_timer_by_id(state, id),
+        Message::ContinueTimer(id) => stopwatch::continue_timer(state, id),
         Message::TimerSaveResult(result) => stopwatch::timer_save_result(state, result),
         Message::TimerDeleteResult(result) => stopwatch::timer_delete_result(state, result),
-        Message::ToggleSavedTimers => stopwatch::toggle_saved_timers(state),
+        Message::SetTimerTab(tab) => stopwatch::set_timer_tab(state, tab),
         Message::ExportTimerCsv(id, is_excel) => stopwatch::export_timer_csv(state, id, is_excel),
     }
 }

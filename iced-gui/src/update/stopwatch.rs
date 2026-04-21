@@ -26,7 +26,7 @@ pub fn reset(state: &mut AppState) -> Task<Message> {
     state.stopwatch_elapsed_ms = 0;
     state.stopwatch_start = None;
     state.stopwatch_laps.clear();
-    state.show_saved_timers = false;
+    state.timer_tab = 0;
     Task::none()
 }
 
@@ -102,11 +102,13 @@ pub fn save_timer(state: &mut AppState, title: String) -> Task<Message> {
     )
 }
 
-pub fn timer_save_result(_state: &mut AppState, result: Result<(), String>) -> Task<Message> {
+pub fn timer_save_result(state: &mut AppState, result: Result<(), String>) -> Task<Message> {
     if result.is_err() {
         eprintln!("Failed to save timer: {}", result.unwrap_err());
+    } else {
+        eprintln!("Timer saved successfully, refreshing list");
     }
-    Task::none()
+    fetch_timers(state)
 }
 
 pub fn timer_delete_result(_state: &mut AppState, result: Result<(), String>) -> Task<Message> {
@@ -147,9 +149,9 @@ pub fn delete_timer(state: &mut AppState, timer_id: String) -> Task<Message> {
     )
 }
 
-pub fn toggle_saved_timers(state: &mut AppState) -> Task<Message> {
-    state.show_saved_timers = !state.show_saved_timers;
-    if state.show_saved_timers && state.timers.is_empty() {
+pub fn set_timer_tab(state: &mut AppState, tab: usize) -> Task<Message> {
+    state.timer_tab = tab;
+    if tab == 1 && state.timers.is_empty() {
         return fetch_timers(state);
     }
     Task::none()
@@ -281,7 +283,18 @@ pub fn save_csv_file(_state: &mut AppState, _data: String, _is_excel: bool) -> T
 pub fn load_timer_by_id(state: &mut AppState, timer_id: String) -> Task<Message> {
     if let Some(timer) = state.timers.iter().find(|t| t.id == timer_id) {
         load_timer(state, timer.clone());
-        state.show_saved_timers = false;
+        state.selected_timer_id = Some(timer_id);
+        state.timer_tab = 1;
+    }
+    Task::none()
+}
+
+pub fn continue_timer(state: &mut AppState, timer_id: String) -> Task<Message> {
+    if let Some(timer) = state.timers.iter().find(|t| t.id == timer_id) {
+        load_timer(state, timer.clone());
+        state.stopwatch_running = true;
+        state.stopwatch_start = Some(std::time::Instant::now());
+        state.timer_tab = 0;
     }
     Task::none()
 }

@@ -42,7 +42,8 @@ pub fn set_hours(state: &mut AppState, hours: u8) -> Task<Message> {
 
 pub fn set_minutes(state: &mut AppState, minutes: u8) -> Task<Message> {
     let hours = state.countdown_duration_secs / 3600;
-    let new_total = hours * 3600 + (minutes as u64);
+    let secs = state.countdown_duration_secs % 60;
+    let new_total = hours * 3600 + (minutes as u64 * 60) + secs;
     state.countdown_duration_secs = new_total;
     Task::none()
 }
