@@ -117,7 +117,8 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
                     .color(text_secondary)
                     .align_x(iced::Alignment::Center),
             )
-            .width(Length::Fixed(50.0)),
+            .width(Length::Fill)
+            .center_x(Length::Fill),
             container(
                 button(
                     container(
@@ -165,7 +166,8 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
                     .color(text_secondary)
                     .align_x(iced::Alignment::Center),
             )
-            .width(Length::Fixed(50.0)),
+            .width(Length::Fill)
+            .center_x(Length::Fill),
             container(
                 button(
                     container(
@@ -213,7 +215,8 @@ pub fn countdown_view<'a>(state: &'a AppState) -> Element<'a, Message> {
                     .color(text_secondary)
                     .align_x(iced::Alignment::Center),
             )
-            .width(Length::Fixed(50.0)),
+            .width(Length::Fill)
+            .center_x(Length::Fill),
             container(
                 button(
                     container(
